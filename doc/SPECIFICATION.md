@@ -90,19 +90,54 @@ Below is the step-by-step trace of how AegisInvestigate processes a real-world e
   - **Cloud APIs (When Permitted)**: OpenAI, Anthropic Claude, Google Gemini
 
 ### 3.3 Storage Layer (Polyglot Persistence)
-1. **Neo4j 5.x (Knowledge Graph Database)**: Stores all case entities, typed relationships, layer assignments, temporal intervals, and confidence scores.
-2. **PostgreSQL 16 (Relational & Audit Database)**: Stores cases, RBAC permissions, the deterministic Brick Capability Registry, workflow state, and the **Immutable Hash-Chained Forensic Audit Ledger**.
-3. **MinIO S3 (Forensic Evidence Vault)**: Stores WARC web archives, screenshots, uploaded media, CDR files, and raw unmodified Brick JSON outputs in **S3 Object Lock (WORM Compliance Mode)**.
-4. **Qdrant (Vector Database)**: Stores 512-d facial recognition vectors (`DeepFace`/`ArcFace`), image geolocation/similarity vectors (`CLIP`/`GeoCLIP`), and document chunk embeddings.
-5. **Redis 7 Stack (Cache & Rate-Limit Broker)**: Enforces distributed token-bucket rate limits per OSINT source and per sock-puppet account, plus WebSocket pub/sub.
+1. **Neo4j 5.x Enterprise (Knowledge Graph Database)**: Stores all case entities, typed relationships, layer assignments, temporal intervals, confidence scores, and enables index-free adjacency graph traversals across criminal syndicates.
+2. **PostgreSQL 16 + TimescaleDB (Relational, Audit & Telecom Core)**: Stores cases, RBAC permissions, the deterministic Brick Capability Registry, workflow state, partitioned CDR hyper-tables, and the **Immutable Hash-Chained Forensic Audit Ledger**.
+3. **MongoDB 7.x (Unstructured OSINT & Scraping Depot)**: Stores raw polymorphic BSON document dumps from 500+ scrapers, website HTML DOMs, Meta tracking pixels, and unstructured API payloads with Snappy block compression.
+4. **MinIO S3 (Forensic Evidence Vault)**: Stores WARC web archives, screenshots, intercepted voice notes, CDR spreadsheets, and court artifacts under **S3 Object Lock (WORM Compliance Mode)**.
+5. **Qdrant (Vector Database)**: Stores 512-d facial recognition vectors (`ArcFace`), speaker voiceprints (`PyAnnote 3.1`), image geolocation vectors (`GeoCLIP`), and document chunk embeddings with native single-stage metadata filtering.
+6. **Redis 7 Stack (Cache, Event Bus & Rate-Limit Broker)**: Enforces distributed token-bucket rate limits (`CL.THROTTLE`) per OSINT source and per sock-puppet account, Celery task queue brokering, and sub-millisecond WebSocket fan-out.
 
 ### 3.4 OPSEC & Containerized Brick Sandbox
 - **Container Isolation**: Every OSINT tool runs as a rootless, ephemeral Docker container (`--cap-drop=ALL`, `--security-opt=no-new-privileges`, read-only root filesystem) spawned via a restricted Docker Socket Proxy.
 - **Network Egress Tiers**:
-  - `OFFLINE_LOCAL`: `--network=none` (ExifTool, Sherloq, ObjectId decoder, DeepFace, Whisper).
+  - `OFFLINE_LOCAL`: `--network=none` (ExifTool, Sherloq, ObjectId decoder, DeepFace, Faster-Whisper, PyAnnote).
   - `PASSIVE_API`: Routed via API gateway to passive caches (Shodan, URLScan, Wayback, VirusTotal).
   - `RESIDENTIAL_PROXY / TOR`: Active target queries routed through `Gluetun` WireGuard VPN / Tor SOCKS5 / rotating residential proxies.
 - **Sock-Puppet Session Vault**: AES-256-GCM encrypted credential and cookie vault managing covert accounts for Telegram (`Telethon`), Instagram (`Instaloader`/`Osintgram`), Facebook (`Playwright`), and WhatsApp, with automatic 2FA TOTP generation and cooldown tracking.
+
+### 3.5 Mobile Device Farm & GSM SIM Bank Subsystem (Physical & Virtual Hardware Architecture)
+To penetrate mobile-only walled gardens (WhatsApp Business, Telegram, Truecaller, Viber, BaridiMob) that block standard headless scrapers and desktop emulators, the platform integrates a dedicated mobile infrastructure:
+1. **ReDroid Virtual Android 13 Containers**:
+   - Containerized Android 13 instances running inside Docker on the host Linux kernel via binder IPC, Ashmem, and GPU acceleration.
+   - Requires zero heavy QEMU hardware emulation, allowing 20+ isolated Android instances per workstation with <1.5 GB RAM per instance.
+   - Supports automated container recycling upon dirty state or session termination.
+2. **Physical 4G GSM SIM Bank (Algerian Carriers)**:
+   - Dedicated multi-port SIM bank hardware (CH340 USB/IP serial interface) hosting rotating physical SIM cards from Mobilis, Djezzy, and Ooredoo.
+   - An asynchronous daemon monitors incoming AT unsolicited result codes (`+CMTI: "SM", <index>`) to read incoming SMS verification codes in <3 seconds.
+   - Auto-forwards 2FA OTP tokens directly into Appium authentication handlers without human investigator intervention.
+3. **Appium 2.x & Scrcpy WebRTC Low-Latency Mirroring**:
+   - **Automated Workflow**: Appium 2.x drives UI automation (navigating WhatsApp chat threads, opening media catalogs, downloading voice notes, and capturing screenshot proof).
+   - **Human-in-the-Loop Mirroring**: `scrcpy-server` streams 60 FPS video directly to the investigator's browser via WebSockets / WebRTC with <30ms latency, enabling real-time touch, pinch-to-zoom, and text input from the web UI.
+4. **Zygisk & Magisk Anti-Root Cloaking**:
+   - Injects Shamiko / Zygisk modules into the Android zygote process to conceal root binaries, ADB debugging flags, and containerization artifacts from banking and security-hardened apps (e.g. BaridiMob, WhatsApp).
+5. **Mitmproxy HTTPS Interception & Certificate Pinning Bypass**:
+   - Injects a qualified local root CA into the system trust store (`/system/etc/security/cacerts/`) via an ephemeral Magisk overlay, enabling real-time decryption and extraction of API JSON payloads, uploaded media, and WebSocket streams.
+
+---
+
+### 3.6 Exhaustive Software Engineering Benchmark: Why Every Chosen Database and Tool is Superior for Crime Investigation
+
+| Subsystem / Tier | Selected Technology | Direct Alternatives Compared | Why Selected Engine is Superior for Digital Investigations |
+| :--- | :--- | :--- | :--- |
+| **Knowledge Graph Database** | **Neo4j 5.x Enterprise** (Cypher + GDS) | PostgreSQL Recursive CTEs, JanusGraph + ScyllaDB, NetworkX | **Native Index-Free Adjacency:** $O(1)$ memory pointer-hopping per hop vs $O(\log N)$ or multi-table JOINs. Uncovers cross-case criminal syndicates across 6+ degrees of separation in sub-millisecond time. In-memory Graph Data Science algorithms (*Louvain, PageRank, Betweenness*) automatically pinpoint money mules and syndicate ringleaders. |
+| **Raw OSINT Ingestion Store** | **MongoDB 7.x** (WiredTiger BSON) | PostgreSQL JSONB, Apache Cassandra / ScyllaDB | **Polymorphic Ingestion:** Seamlessly absorbs chaotic, rapidly mutating HTML DOMs, HTTP headers, tracking pixels, and unstructured JSON dumps from 500+ scrapers with zero schema migration overhead. Snappy compression yields ~70% disk savings on text dumps. Change Streams trigger real-time clue extraction reactively. |
+| **Relational Core & Case Ledger** | **PostgreSQL 16 + TimescaleDB** | MySQL 8.x, SQLite 3, CockroachDB | **ACID Serializability & Legal Proof:** Row-Level Security (RLS) guarantees multi-tenant precinct isolation. TimescaleDB hyper-tables partition millions of telecom Call Detail Records (CDRs) by time/BTS cell tower for instant spatial overlap analysis. Forward row-chaining (SHA-256 Merkle hashes) creates an unalterable audit ledger. |
+| **Forensic Evidence Safe (WORM)** | **MinIO S3 Enterprise** (Object Lock) | Local ext4/ZFS filesystem, Ceph / GlusterFS | **ISO 27037 Compliance:** S3 Object Lock in `COMPLIANCE` mode guarantees hardware-independent Write-Once-Read-Many storage. Neither suspects, attackers, nor the system administrator can modify or delete captured screenshots, WARC archives, or voice notes until retention expires. |
+| **Biometric & Semantic Vector Search** | **Qdrant Vector Engine** (Rust) | Milvus, Pinecone, Pgvector | **Sub-8ms Single-Stage Filtered HNSW:** Natively integrates payload filtering into graph traversal (e.g. search 512-d ArcFace facial embeddings *only* within Algiers 2026 scam cases) without recall degradation. Rust engine provides zero GC latency spikes. 100% on-premise air-gapped deployment preserves judicial sovereignty. |
+| **In-Memory Pub/Sub & Rate Limiter** | **Redis 7 Stack** (RESP3 Streams) | RabbitMQ, Apache Kafka | **Sub-Millisecond Synchronization:** Fans out newly discovered clues to the Cytoscape graph canvas over WebSockets in <1ms. Distributed token-bucket rate limiting (`CL.THROTTLE`) shields sock-puppet accounts from anti-scraping bans across social media networks. |
+| **Durable Workflow Orchestrator** | **Temporal.io** | Apache Airflow, Celery (alone), Prefect | **Durable Event-Sourced State:** Forensic investigation pipelines often span days or weeks awaiting human review (`Review-Run`) or telecom subpoena responses. Temporal preserves workflow state without holding server threads, surviving system crashes and power outages with deterministic replay. |
+| **Dialect Voice Forensics** | **Faster-Whisper + PyAnnote 3.1** | Google Cloud Speech-to-Text, OpenAI Whisper API | **Air-Gapped Algerian Darija Model:** CTranslate2 optimization delivers 4x faster transcription on local GPUs. Tuned for North African Arabic/French code-switching, transcribing monetary amounts (*"مية الف"*, *"عشرين مليون"*) and Algerian communes. PyAnnote diarization generates voiceprints for cross-case matching. |
+| **Sovereign Local LLM Router** | **LiteLLM + Ollama / vLLM** | Direct OpenAI / Anthropic Cloud APIs | **Judicial Confidentiality:** Enforces a strict air-gap policy where no criminal intelligence, victim depositions, or suspect PII ever leaves the police precinct's local network. Unified OpenAI-compatible interface allows hot-swapping open models (DeepSeek R1, Llama 3.3, Qwen 2.5). |
 
 ---
 

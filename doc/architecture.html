@@ -170,29 +170,62 @@
             </div>
           </div>
 
-          <!-- Connector 4 -> 5 -->
+          <!-- Connector 4 -> 4B -->
           <div class="arch-pipe-connector">
-            <span class="arch-pipe-pill">⬇️ Persistance Polyglotte Multi-Moteurs &bull; Gremlin, SQL, S3 API</span>
+            <span class="arch-pipe-pill">⬇️ ADB over TCP (5555) &bull; WebRTC Scrcpy Video &bull; AT Commands Modem SIM (/dev/ttyUSB0)</span>
+          </div>
+
+          <!-- Layer 4B: Mobile Phone Farm (Ferme de Smartphones & Modems SIM) -->
+          <div class="arch-shema-layer" style="border-left: 3px solid #f97316;">
+            <div class="arch-shema-header">
+              <span class="arch-shema-title">📱 COUCHE 4B : FERME DE SMARTPHONES &amp; MODEMS SIM 4G (MOBILE PHONE FARM)</span>
+              <span class="badge" style="background:rgba(249,115,22,0.15);color:#fb923c;border:1px solid #f97316;">ReDroid Android 13 &bull; GSM SIM Bank &bull; Appium 2 &bull; Scrcpy &bull; Mitmproxy</span>
+            </div>
+            <div class="arch-nodes-row">
+              <div class="arch-shema-node" data-node="phone_farm" onclick="selectArchNode('phone_farm')">
+                <span>🤖 ReDroid (Conteneurs Android 13 Rootless GPU)</span>
+              </div>
+              <div class="arch-shema-node" data-node="phone_farm" onclick="selectArchNode('phone_farm')">
+                <span>📲 Baie de SIMs 4G Algériennes (Mobilis/Djezzy/Ooredoo)</span>
+              </div>
+              <div class="arch-shema-node" data-node="phone_farm" onclick="selectArchNode('phone_farm')">
+                <span>🎮 Streaming Écran 60 FPS Scrcpy (WebRTC &lt;30ms)</span>
+              </div>
+              <div class="arch-shema-node" data-node="phone_farm" onclick="selectArchNode('phone_farm')">
+                <span>🛡️ Interception TLS &amp; Cloaking Anti-Root (Zygisk/Magisk)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Connector 4B -> 5 -->
+          <div class="arch-pipe-connector">
+            <span class="arch-pipe-pill">⬇️ Persistance Polyglotte Multi-Moteurs &bull; Cypher Bolt, SQL, BSON Wire, S3 API, gRPC</span>
           </div>
 
           <!-- Layer 5 -->
           <div class="arch-shema-layer" style="border-left: 3px solid var(--accent-cyan);">
             <div class="arch-shema-header">
               <span class="arch-shema-title">🗄️ COUCHE 5 : TIER DE STOCKAGE POLYGLOTTE SPÉCIALISÉ</span>
-              <span class="badge badge-cyan">PostgreSQL &bull; JanusGraph &bull; ScyllaDB &bull; MinIO &bull; Redis</span>
+              <span class="badge badge-cyan">Neo4j 5 &bull; PostgreSQL 16 &bull; MongoDB 7 &bull; MinIO WORM &bull; Qdrant &bull; Redis 7</span>
             </div>
             <div class="arch-nodes-row">
-              <div class="arch-shema-node" data-node="storage_postgres" onclick="selectArchNode('storage_postgres')">
-                <span>📋 PostgreSQL 15 (Dossiers &amp; Utilisateurs)</span>
-              </div>
               <div class="arch-shema-node" data-node="storage_graph" onclick="selectArchNode('storage_graph')">
-                <span>🕸️ JanusGraph / Neo4j (Graphe de Connaissances)</span>
+                <span>🕸️ Neo4j 5.x &bull; JanusGraph (Graphe de Connaissances)</span>
+              </div>
+              <div class="arch-shema-node" data-node="storage_postgres" onclick="selectArchNode('storage_postgres')">
+                <span>📋 PostgreSQL 16 (Dossiers ACID &amp; Registre Immuable)</span>
+              </div>
+              <div class="arch-shema-node" data-node="storage_mongodb" onclick="selectArchNode('storage_mongodb')">
+                <span>🍃 MongoDB 7.x (Dépotoir BSON OSINT &amp; Scraping)</span>
               </div>
               <div class="arch-shema-node" data-node="storage_minio" onclick="selectArchNode('storage_minio')">
                 <span>🔒 MinIO S3 WORM (Preuves &amp; Captures Scellées)</span>
               </div>
-              <div class="arch-shema-node" data-node="sandbox_workers" onclick="selectArchNode('sandbox_workers')">
-                <span>⚡ Redis 7 (Broker Celery &amp; Cache Enquête)</span>
+              <div class="arch-shema-node" data-node="storage_qdrant" onclick="selectArchNode('storage_qdrant')">
+                <span>🎯 Qdrant (Biométrie Faciale ArcFace &amp; Vocale)</span>
+              </div>
+              <div class="arch-shema-node" data-node="storage_redis" onclick="selectArchNode('storage_redis')">
+                <span>⚡ Redis 7 Stack (Broker Celery &amp; Cache Temps Réel)</span>
               </div>
             </div>
           </div>
@@ -362,9 +395,46 @@
           </div>
         </div>
 
-        <!-- Connector 4 -> 5 -->
+        <!-- Connector 4 -> 4B -->
         <div class="arch-connector">
-          <span class="arch-connector-pill">⬇️ Returns Newly Discovered Clues &amp; Saved Screenshots</span>
+          <span class="arch-connector-pill">⬇️ ADB over TCP (5555) &bull; WebRTC 60 FPS Video Stream &bull; AT Commands Modem SIM (/dev/ttyUSB0)</span>
+        </div>
+
+        <!-- LAYER 4B -->
+        <div class="arch-plane" style="border-left-color: #f97316;">
+          <div class="arch-plane-header">
+            <div class="arch-plane-title">
+              <span style="font-size:1.5rem;">📱</span>
+              <div>
+                <div>LAYER 4B: Mobile Phone Farm &amp; 4G SIM Bank (Mobile-Only Apps &amp; SMS OTP)</div>
+                <div style="font-size:0.78rem;color:var(--text-secondary);font-weight:400;">Investigates mobile-only walled gardens (WhatsApp Business, BaridiMob, Truecaller, Telegram) using isolated Android 13 containers and real Algerian SIM modems</div>
+              </div>
+            </div>
+            <span class="badge" style="background:rgba(249,115,22,0.15);color:#fb923c;border:1px solid #f97316;">Tech: ReDroid (Android 13) + Appium 2 + Scrcpy WebRTC + GSM SIM Bank + Zygisk Root Cloaking</span>
+          </div>
+          <div class="arch-plane-modules">
+            <div class="arch-module-box">
+              <strong>🤖 ReDroid Virtual Android Containers</strong>
+              <span>Lightweight GPU-accelerated Android 13 containers running isolated mobile apps with no device emulator lag</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>📲 4G GSM SIM Bank (Algerian Carriers)</strong>
+              <span>Physical hardware modem pool hosting Mobilis, Djezzy &amp; Ooredoo SIMs; automatically intercepts incoming 2FA SMS OTP codes</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>🎮 Scrcpy 60 FPS WebRTC Mirroring</strong>
+              <span>Streams fluid, ultra-low latency (&lt;30ms) interactive phone screens directly to the detective's web browser</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>🛡️ Mitmproxy TLS &amp; Zygisk Cloaking</strong>
+              <span>Magisk/Zygisk bypasses emulator &amp; root checks; Mitmproxy decrypts HTTPS API payloads, images, and voice notes</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Connector 4B -> 5 -->
+        <div class="arch-connector">
+          <span class="arch-connector-pill">⬇️ Returns Newly Discovered Clues, Intercepted Vocals &amp; Saved Screenshots</span>
         </div>
 
         <!-- LAYER 5 -->
@@ -374,10 +444,10 @@
               <span style="font-size:1.5rem;">🧩</span>
               <div>
                 <div>LAYER 5: Clue Cleaner, Duplicate Merger &amp; Face/Voice Matcher</div>
-                <div style="font-size:0.78rem;color:var(--text-secondary);font-weight:400;">Cleans messy results, merges duplicate clues, and compares faces across accounts</div>
+                <div style="font-size:0.78rem;color:var(--text-secondary);font-weight:400;">Cleans messy results, transcribes Algerian Darija, merges duplicate clues, and compares faces across accounts</div>
               </div>
             </div>
-            <span class="badge badge-cyan">Tech: Python Entity Resolver + DeepFace + Faster-Whisper + NetworkX</span>
+            <span class="badge badge-cyan">Tech: Python Entity Resolver + ArcFace 512-d + Faster-Whisper Darija + PyAnnote 3.1 + NetworkX</span>
           </div>
           <div class="arch-plane-modules">
             <div class="arch-module-box">
@@ -385,8 +455,12 @@
               <span>Recognizes that <code>0555 01 92 83</code> and <code>+213555019283</code> are the exact same phone number</span>
             </div>
             <div class="arch-module-box">
+              <strong>🎙️ Darija Audio Transcription &amp; Diarization</strong>
+              <span>Faster-Whisper + PyAnnote separates speakers, transcribes code-switching Arabic/French, and tags monetary sums (DZD)</span>
+            </div>
+            <div class="arch-module-box">
               <strong>👤 Biometric Face &amp; Voice Linker</strong>
-              <span>Compares faces and voice notes offline to link different social media profiles to the same suspect</span>
+              <span>Compares 512-d facial embeddings and voiceprints offline to link different social media profiles to the same suspect</span>
             </div>
             <div class="arch-module-box">
               <strong>⏱️ Alibi &amp; Timeline Checker</strong>
@@ -407,27 +481,72 @@
               <span style="font-size:1.5rem;">🗄️</span>
               <div>
                 <div>LAYER 6: Specialized Case Storage Vaults (Behind the Scenes)</div>
-                <div style="font-size:0.78rem;color:var(--text-secondary);font-weight:400;">The investigator sees one unified case file, powered by 5 specialized high-speed storage engines</div>
+                <div style="font-size:0.78rem;color:var(--text-secondary);font-weight:400;">The investigator sees one unified case file, powered by 6 specialized high-speed storage engines</div>
               </div>
             </div>
-            <span class="badge badge-rose">Tech: Neo4j + PostgreSQL + MinIO WORM + Qdrant + Redis</span>
+            <span class="badge badge-rose">Tech: Neo4j 5 + PostgreSQL 16 + MongoDB 7 + MinIO WORM + Qdrant + Redis 7</span>
           </div>
           <div class="arch-plane-modules">
             <div class="arch-module-box">
               <strong>🕸️ Connected Clues Store</strong>
-              <span><em>(Neo4j)</em> Remembers every clue and how they connect across cases</span>
+              <span><em>(Neo4j 5.x)</em> Traverses complex criminal networks across 6+ hops in milliseconds via index-free adjacency</span>
             </div>
             <div class="arch-module-box">
               <strong>📋 Case &amp; Audit Diary Store</strong>
-              <span><em>(PostgreSQL)</em> Keeps case permissions and the uneditable legal log</span>
+              <span><em>(PostgreSQL 16)</em> Holds multi-tenant permissions, TimescaleDB CDR hyper-tables, and unalterable hash-chained audit logs</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>🍃 Raw OSINT Ingestion Store</strong>
+              <span><em>(MongoDB 7.x)</em> Stores raw, unpredictable HTML/JSON scrapers dumps without brittle schema migrations</span>
             </div>
             <div class="arch-module-box">
               <strong>🔒 Certified Evidence Safe</strong>
-              <span><em>(MinIO WORM)</em> Locks screenshots, videos &amp; saved webpages forever</span>
+              <span><em>(MinIO S3 WORM)</em> S3 Object Lock in COMPLIANCE mode guarantees screenshots &amp; voice notes can never be tampered with</span>
             </div>
             <div class="arch-module-box">
-              <strong>👤 Face &amp; Text Memory</strong>
-              <span><em>(Qdrant)</em> Instant search across millions of faces and documents</span>
+              <strong>🎯 Face &amp; Voice Vector Memory</strong>
+              <span><em>(Qdrant)</em> Sub-8ms similarity search across millions of 512-d facial embeddings with single-stage case filtering</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>⚡ Real-Time Broker &amp; Rate-Limiter</strong>
+              <span><em>(Redis 7)</em> Sub-millisecond WebSocket fan-out, Celery task distribution, and anti-ban token-bucket locks</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Connector 6 -> 7 -->
+        <div class="arch-connector">
+          <span class="arch-connector-pill">⬇️ Cryptographic Seal &bull; RFC 3161 Qualified Timestamp &bull; Merkle Root Proof</span>
+        </div>
+
+        <!-- LAYER 7 -->
+        <div class="arch-plane" style="border-left-color: #ec4899;">
+          <div class="arch-plane-header">
+            <div class="arch-plane-title">
+              <span style="font-size:1.5rem;">⚖️</span>
+              <div>
+                <div>LAYER 7: Judicial Chain-of-Custody &amp; Court Dossier Export</div>
+                <div style="font-size:0.78rem;color:var(--text-secondary);font-weight:400;">Automatically compiles forensic proof into court-admissible dossiers according to the Code of Criminal Procedure</div>
+              </div>
+            </div>
+            <span class="badge" style="background:rgba(236,72,153,0.15);color:#f472b6;border:1px solid #ec4899;">Tech: RFC 3161 TSA + Merkle Tree Prover + WeasyPrint PDF/A-3b + ISO 28500 WARC</span>
+          </div>
+          <div class="arch-plane-modules">
+            <div class="arch-module-box">
+              <strong>📜 Certified Synthèse Judiciaire (PDF/A-3b)</strong>
+              <span>Generates court-ready synthesis reports with embedded high-resolution evidence, timelines, and operator signatures</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>🔒 RFC 3161 PKI Digital Timestamping</strong>
+              <span>Applies external or on-premise qualified digital time stamps certifying the exact moment an artifact was secured</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>📦 ISO 28500 Standard Web Archives (WARC)</strong>
+              <span>Packages complete web page captures, HTTP headers, and SSL certificates into internationally recognized court archives</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>🌳 Merkle Tree Integrity Verifier</strong>
+              <span>Enables investigating magistrates to independently verify the cryptographic chain of custody of all clues with one command</span>
             </div>
           </div>
         </div>
@@ -437,9 +556,9 @@
 
     <!-- 2. Detailed Storage Specification (Plain Language + Engineering Spec) -->
     <section>
-      <h2 class="section-title">2. How Case Information Is Stored (Investigator View vs. Engineering Spec)</h2>
+      <h2 class="section-title">2. How Case Information Is Stored &amp; Processed (Investigator View vs. Engineering Spec)</h2>
       <p class="section-subtitle">
-        Notice how the investigator never has to know what a "Graph Database" or "Vector Database" is—to the user, it simply works as the <strong>Case Board</strong>, the <strong>Evidence Safe</strong>, and <strong>Face/Text Search</strong>.
+        Notice how the investigator never has to know what a "Graph Database", "BSON Document Store", or "Vector Database" is—to the user, it simply works as the <strong>Case Board</strong>, the <strong>Evidence Safe</strong>, <strong>Face/Voice Search</strong>, and the <strong>Mobile Investigation Phone</strong>.
       </p>
 
       <div class="table-container">
@@ -456,35 +575,246 @@
             <tr>
               <td>🕸️ <strong>The Visual Case Board</strong><br/><em>(Clues &amp; Connections)</em></td>
               <td>Every person, phone number, social media profile, website link, vehicle, and bank account, plus the lines connecting them and which Layer they belong to.</td>
-              <td><span class="badge badge-blue">Neo4j 5.x Graph DB</span></td>
-              <td>Finds hidden connections across 6+ hops (e.g., "How is Suspect A connected to Phone B across 3 prior cases?") in milliseconds.</td>
+              <td><span class="badge badge-blue">Neo4j 5.x Graph DB (Bolt Protocol)</span></td>
+              <td>Finds hidden connections across 6+ hops (e.g., "How is Suspect A connected to Phone B across 3 prior cases?") in sub-millisecond time via index-free adjacency.</td>
             </tr>
             <tr>
               <td>📋 <strong>Case Files &amp; Official Action Log</strong><br/><em>(Who Did What &amp; When)</em></td>
-              <td>Investigator accounts, case access permissions, tool settings, and the tamper-proof chronological log of every action taken in the case.</td>
-              <td><span class="badge badge-emerald">PostgreSQL 16</span></td>
-              <td>Provides strict transactional safety and cryptographic row-chaining so no historical audit record can ever be modified or deleted.</td>
+              <td>Investigator accounts, case access permissions, tool settings, telecom CDR records, and the tamper-proof chronological log of every action taken in the case.</td>
+              <td><span class="badge badge-emerald">PostgreSQL 16 + TimescaleDB</span></td>
+              <td>Provides strict ACID serializable safety, Row-Level Security (RLS) for precinct multi-tenancy, and cryptographic forward row-chaining (SHA-256 Merkle proofs).</td>
+            </tr>
+            <tr>
+              <td>🍃 <strong>Raw Scraping &amp; OSINT Dump Depot</strong><br/><em>(Webpages, Headers &amp; Payloads)</em></td>
+              <td>Raw JSON dumps from 500+ scrapers, website HTML DOM trees, tracking codes, cookies, and unstructured API responses.</td>
+              <td><span class="badge badge-cyan">MongoDB 7.x (WiredTiger BSON)</span></td>
+              <td>Absorbs polymorphic unstructured payloads with zero schema migrations; Snappy compression saves 70% storage on large text dumps.</td>
             </tr>
             <tr>
               <td>🔒 <strong>The Certified Evidence Safe</strong><br/><em>(Photos, Videos &amp; Frozen Webpages)</em></td>
               <td>Saved Facebook posts, full webpage snapshots, crime scene photos, voice notes, and telecom call log files.</td>
-              <td><span class="badge badge-amber">MinIO Object Vault (WORM)</span></td>
-              <td>Supports "Write-Once, Read-Many" legal lock mode: once a screenshot or webpage is captured, it is mathematically impossible to alter.</td>
+              <td><span class="badge badge-amber">MinIO Object Vault (WORM S3)</span></td>
+              <td>Supports "Write-Once, Read-Many" legal lock mode: once a screenshot or webpage is captured, it is mathematically impossible to alter or delete.</td>
             </tr>
             <tr>
-              <td>👤 <strong>Instant Face, Photo &amp; Document Search</strong><br/><em>(Biometric &amp; Meaning Search)</em></td>
-              <td>Facial features from profile pictures, outdoor photo characteristics, and the meaning of text inside police reports.</td>
-              <td><span class="badge badge-purple">Qdrant Vector Engine</span></td>
-              <td>Finds matching faces or visually similar stolen product photos across hundreds of thousands of images in under 10 milliseconds.</td>
+              <td>🎯 <strong>Instant Face, Voice &amp; Document Search</strong><br/><em>(Biometric &amp; Semantic Matcher)</em></td>
+              <td>Facial features from profile pictures (ArcFace 512-d), speaker voiceprints (PyAnnote), and the meaning of text inside police reports.</td>
+              <td><span class="badge badge-purple">Qdrant Vector Engine (Rust)</span></td>
+              <td>Finds matching faces or voiceprints across millions of records in under 8ms with native single-stage case filtering.</td>
             </tr>
             <tr>
               <td>⚡ <strong>Live Screen Updates &amp; Safety Brakes</strong><br/><em>(Speed &amp; Anti-Ban Protection)</em></td>
               <td>Live progress bars while tools are scanning and safety counters that prevent covert accounts from searching too fast and getting blocked.</td>
-              <td><span class="badge badge-cyan">Redis 7 Stack</span></td>
-              <td>Provides sub-millisecond coordination between background search containers and the investigator's live browser screen.</td>
+              <td><span class="badge badge-cyan">Redis 7 Stack (RESP3 Streams)</span></td>
+              <td>Provides sub-millisecond coordination between background search containers, Celery workers, and the investigator's live browser screen.</td>
+            </tr>
+            <tr>
+              <td>📱 <strong>Mobile Investigation Phone &amp; SIM Bank</strong><br/><em>(WhatsApp, Telegram, BaridiMob)</em></td>
+              <td>Isolated mobile apps, chat histories, audio voice notes, and live SIM card modems receiving SMS 2FA codes.</td>
+              <td><span class="badge" style="background:rgba(249,115,22,0.15);color:#fb923c;border:1px solid #f97316;">ReDroid Android 13 + GSM SIM Bank</span></td>
+              <td>Allows interactive or automated navigation of mobile-only apps, receives carrier SMS OTPs, and streams low-latency 60 FPS video over WebRTC.</td>
+            </tr>
+            <tr>
+              <td>🎙️ <strong>Algerian Darija Audio Transcriber</strong><br/><em>(WhatsApp Voice Note Forensics)</em></td>
+              <td>WhatsApp and Telegram audio messages in Algerian Arabic (Darija) mixed with French and Tamazight words.</td>
+              <td><span class="badge badge-emerald">Faster-Whisper + PyAnnote 3.1</span></td>
+              <td>Transcribes dialectal code-switching offline on local GPUs, separates speakers, and highlights financial amounts (DZD) and rendezvous locations.</td>
+            </tr>
+            <tr>
+              <td>⚙️ <strong>Multi-Step Workflow Coordinator</strong><br/><em>(Durable Investigative Playbooks)</em></td>
+              <td>Automated and human-reviewed multi-tool sequences spanning minutes, hours, or days without losing state.</td>
+              <td><span class="badge badge-purple">Temporal.io Orchestrator</span></td>
+              <td>Event-sourced workflow state machine that survives power outages and server reboots, pausing cleanly for detective approval.</td>
+            </tr>
+            <tr>
+              <td>🤖 <strong>Sovereign Air-Gapped AI Assistant</strong><br/><em>(Local Case Analysis &amp; Extraction)</em></td>
+              <td>Unstructured text understanding, scam pattern detection, and multilingual summary generation.</td>
+              <td><span class="badge badge-blue">LiteLLM + Ollama / vLLM (Local)</span></td>
+              <td>Ensures 100% judicial confidentiality: zero case files or citizen data ever leave the police department's secure intranet.</td>
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- 2.2 Deep-Dive Software Engineering Benchmark -->
+      <div style="margin-top:2.5rem;">
+        <h3 style="color:#f8fafc;font-size:1.25rem;margin-bottom:0.5rem;">2.2 Deep-Dive Software Engineering Justifications: Why Each Technology Was Selected</h3>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:1.5rem;">
+          In digital criminal investigations, choosing the wrong technology stack leads to catastrophic consequences: destroyed evidence, unindexed cross-case links, banned undercover accounts, or judicial dismissal in court. Below is the rigorous computer science justification for each engine:
+        </p>
+
+        <div style="display:flex;flex-direction:column;gap:1.5rem;">
+
+          <!-- 1. Neo4j Benchmark -->
+          <div class="card" style="border-left:4px solid var(--accent-blue);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+              <h4 style="color:#38bdf8;margin:0;font-size:1.05rem;">1. Knowledge Graph Engine: Neo4j 5.x Enterprise vs. PostgreSQL CTEs vs. JanusGraph vs. NetworkX</h4>
+              <span class="badge badge-blue">Graph Analytics &amp; Cross-Case Pivots</span>
+            </div>
+            <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.55;margin-bottom:0.75rem;">
+              <strong>The Problem:</strong> Criminal syndicates operate across layers of indirection—using money mules, burner phones, shell companies, and shared IP/IMEI footprints. Uncovering whether a suspect in Case #2026-089 has an indirect link to a crime syndicate in Case #2025-012 requires traversing 4 to 8 degrees of separation.
+            </p>
+            <div style="background:#090d16;padding:0.85rem;border-radius:6px;font-size:0.8rem;color:#cbd5e1;line-height:1.5;margin-bottom:0.75rem;">
+              <strong style="color:#38bdf8;">Why Neo4j 5.x is Superior:</strong>
+              <ul style="margin:0.4rem 0 0.4rem 1.25rem;padding:0;">
+                <li><strong>Native Index-Free Adjacency:</strong> In Neo4j, each node acts as a micro-index, holding direct physical memory pointers to adjacent nodes. Traversal complexity is <em>O(k)</em> where <em>k</em> is the degree of the node, independent of total database size. In contrast, relational databases (PostgreSQL recursive CTEs) require <em>O(k &bull; log N)</em> index seeks or multi-table JOINs, causing exponential memory explosion and query timeouts past 3 hops.</li>
+                <li><strong>Cypher Graph Pattern Matching:</strong> Cypher provides declarative ASCII-art path syntax (<code>(p:Phone)-[:USED_BY*1..6]-(s:Suspect)</code>) optimized by an enterprise cost-based optimizer, reducing 200-line SQL CTEs to 3 lines of readable code.</li>
+                <li><strong>Graph Data Science (GDS) Algorithms:</strong> Neo4j GDS runs in-memory algorithms directly on the graph projection: <em>Louvain Modularity</em> identifies hidden criminal clusters; <em>Betweenness Centrality</em> isolates financial choke-points (money mules); <em>PageRank</em> pinpoints syndicate leaders.</li>
+              </ul>
+              <strong style="color:#f59e0b;">Why Alternatives Were Rejected as Primary:</strong>
+              <ul style="margin:0.4rem 0 0 1.25rem;padding:0;">
+                <li><em>JanusGraph + ScyllaDB:</em> Excellent for petabyte-scale graphs, but introduces a heavy operational burden (JVM Gremlin server, Cassandra compaction, Solr search index sync) with higher per-query latency unsuitable for interactive investigator drag-and-drop. (Kept as an optional large-scale backend).</li>
+                <li><em>NetworkX:</em> Pure in-memory Python library. Single-threaded, zero persistence, and crashes when graph memory exceeds RAM or when handling concurrent multi-investigator transactions.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- 2. MongoDB Benchmark -->
+          <div class="card" style="border-left:4px solid var(--accent-cyan);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+              <h4 style="color:#06b6d4;margin:0;font-size:1.05rem;">2. Raw Scraping &amp; Polymorphic Ingestion: MongoDB 7.x vs. PostgreSQL JSONB vs. Cassandra</h4>
+              <span class="badge badge-cyan">Unstructured Ingestion Depot</span>
+            </div>
+            <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.55;margin-bottom:0.75rem;">
+              <strong>The Problem:</strong> The platform coordinates 60+ OSINT scrapers querying hundreds of external websites, forums, and APIs. Target websites constantly mutate their DOMs, return inconsistent JSON schemas, inject tracking pixels, or provide unstructured metadata dumps.
+            </p>
+            <div style="background:#090d16;padding:0.85rem;border-radius:6px;font-size:0.8rem;color:#cbd5e1;line-height:1.5;margin-bottom:0.75rem;">
+              <strong style="color:#06b6d4;">Why MongoDB 7.x is Superior:</strong>
+              <ul style="margin:0.4rem 0 0.4rem 1.25rem;padding:0;">
+                <li><strong>Polymorphic Schema-Less Ingestion:</strong> MongoDB stores arbitrary BSON documents without requiring upfront schema definitions or schema migration downtime. A scraper can dump 50 KB of raw HTML, nested cookies, and HTTP headers in one atomic operation.</li>
+                <li><strong>WiredTiger Engine with Snappy Compression:</strong> Compresses text and raw HTML payloads by ~70%, dramatically reducing forensic storage costs for multi-year investigative archives.</li>
+                <li><strong>Change Streams (Reactive Pipeline):</strong> Employs native Change Streams over the replication oplog, allowing downstream extraction workers (e.g., regex phone parsers, IOC extractors) to reactively trigger without database polling.</li>
+              </ul>
+              <strong style="color:#f59e0b;">Why Alternatives Were Rejected as Primary:</strong>
+              <ul style="margin:0.4rem 0 0 1.25rem;padding:0;">
+                <li><em>PostgreSQL JSONB:</em> While PostgreSQL handles semi-structured data well, high-frequency writes ($10^4$ raw scraping documents/sec) cause extreme table bloat, write amplification, and aggressive autovacuum thrashing. Staging raw dumps in MongoDB keeps PostgreSQL clean for relational case state.</li>
+                <li><em>Cassandra / ScyllaDB:</em> Demands strict column family definitions and known query patterns ahead of time; unusable for arbitrary, unpredictable JSON scraping trees.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- 3. PostgreSQL & TimescaleDB Benchmark -->
+          <div class="card" style="border-left:4px solid var(--accent-emerald);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+              <h4 style="color:#10b981;margin:0;font-size:1.05rem;">3. Relational Core &amp; Telecom CDRs: PostgreSQL 16 + TimescaleDB</h4>
+              <span class="badge badge-emerald">ACID State &amp; Immutable Audit Ledger</span>
+            </div>
+            <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.55;margin-bottom:0.75rem;">
+              <strong>The Problem:</strong> Judicial integrity requires strict access controls, audit non-repudiation, and the ability to analyze millions of Call Detail Records (CDRs) from Mobilis, Djezzy, and Ooredoo with exact time-series accuracy.
+            </p>
+            <div style="background:#090d16;padding:0.85rem;border-radius:6px;font-size:0.8rem;color:#cbd5e1;line-height:1.5;margin-bottom:0.75rem;">
+              <strong style="color:#10b981;">Why PostgreSQL 16 + TimescaleDB is Superior:</strong>
+              <ul style="margin:0.4rem 0 0.4rem 1.25rem;padding:0;">
+                <li><strong>ACID &amp; Serializable Isolation:</strong> Ensures zero data loss or partial updates when managing case files, investigator permissions, and judicial warrants.</li>
+                <li><strong>Row-Level Security (RLS):</strong> Enforces multi-tenant jurisdictional boundaries (e.g., Wilaya of Algiers vs. Wilaya of Oran). Even if an investigator executes a query, PostgreSQL automatically filters out cases outside their assigned precinct.</li>
+                <li><strong>TimescaleDB Hyper-Tables for Telecom CDRs:</strong> Automatically partitions millions of telecom call and cell-tower records by time and BTS tower ID. Complex trajectory overlap queries execute in &lt;15ms instead of minutes.</li>
+                <li><strong>Cryptographic Row-Chaining (Merkle Ledger):</strong> Every audit record incorporates a SHA-256 hash of the previous record (<code>hash_n = SHA-256(hash_{n-1} || payload_n)</code>). Any attempt to alter historical logs breaks the cryptographic chain, providing ironclad court defensibility.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- 4. MinIO WORM Benchmark -->
+          <div class="card" style="border-left:4px solid var(--accent-amber);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+              <h4 style="color:#f59e0b;margin:0;font-size:1.05rem;">4. Digital Evidence Safe: MinIO S3 Enterprise (WORM Compliance Mode)</h4>
+              <span class="badge badge-amber">ISO 27037 Digital Evidence Admissibility</span>
+            </div>
+            <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.55;margin-bottom:0.75rem;">
+              <strong>The Problem:</strong> Under criminal procedure law (CPP), digital evidence (screenshots, WARC archives, audio recordings, PDFs) must be secured such that defense attorneys cannot claim the police or an administrator modified the files after seizure.
+            </p>
+            <div style="background:#090d16;padding:0.85rem;border-radius:6px;font-size:0.8rem;color:#cbd5e1;line-height:1.5;margin-bottom:0.75rem;">
+              <strong style="color:#f59e0b;">Why MinIO S3 WORM is Superior:</strong>
+              <ul style="margin:0.4rem 0 0.4rem 1.25rem;padding:0;">
+                <li><strong>S3 Object Lock (COMPLIANCE Mode):</strong> Enforces hardware-independent Write-Once-Read-Many (WORM) storage. Once written with a retention duration (e.g., 10 years), even the root MinIO administrator cannot delete or overwrite the artifact.</li>
+                <li><strong>Industry-Standard S3 API:</strong> Enables streaming high-resolution videos, full-resolution screenshots, and multi-gigabyte disk dumps using secure presigned URLs without loading media into backend application memory.</li>
+                <li><strong>Integrity Verification:</strong> Computes and verifies MD5/SHA-256 checksums on upload and download, guaranteeing zero bit-rot or undetected corruption.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- 5. Qdrant Benchmark -->
+          <div class="card" style="border-left:4px solid var(--accent-purple);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+              <h4 style="color:#a855f7;margin:0;font-size:1.05rem;">5. Biometric &amp; Semantic Vector Search: Qdrant vs. Milvus vs. Pinecone vs. Pgvector</h4>
+              <span class="badge badge-purple">Sub-8ms Face &amp; Voiceprint Biometrics</span>
+            </div>
+            <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.55;margin-bottom:0.75rem;">
+              <strong>The Problem:</strong> Cross-referencing avatar photos across Facebook, Telegram, and Instagram using 512-dimensional facial embeddings (ArcFace) or speaker voiceprints (PyAnnote) requires nearest-neighbor search, but searches must almost always be filtered by case, date, or suspect status.
+            </p>
+            <div style="background:#090d16;padding:0.85rem;border-radius:6px;font-size:0.8rem;color:#cbd5e1;line-height:1.5;margin-bottom:0.75rem;">
+              <strong style="color:#a855f7;">Why Qdrant is Superior:</strong>
+              <ul style="margin:0.4rem 0 0.4rem 1.25rem;padding:0;">
+                <li><strong>Rust Performance &amp; Predictability:</strong> Written in Rust with zero garbage collection pauses. Handles millions of 512-d float vectors with sub-8ms P99 search latency.</li>
+                <li><strong>Single-Stage Filtered HNSW Indexing:</strong> Unlike engines that execute either pre-filtering (which ruins HNSW graph connectivity) or post-filtering (which wastes computation on rejected candidates), Qdrant natively integrates metadata filtering directly during the HNSW graph traversal.</li>
+                <li><strong>100% On-Premise &amp; Air-Gapped:</strong> Runs locally on police servers without internet access, strictly adhering to national sovereignty laws (unlike Pinecone which requires US cloud hosting).</li>
+              </ul>
+              <strong style="color:#f59e0b;">Why Alternatives Were Rejected:</strong>
+              <ul style="margin:0.4rem 0 0 1.25rem;padding:0;">
+                <li><em>Milvus:</em> Requires an entire distributed infrastructure (etcd, MinIO, Pulsar, coordinator nodes), making it excessively complex for local police station deployment.</li>
+                <li><em>Pgvector:</em> Excellent for small datasets (&lt;100k vectors), but search throughput degrades sharply under heavy concurrent write loads and lacks advanced payload filtering optimizations.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- 6. Redis 7 Stack Benchmark -->
+          <div class="card" style="border-left:4px solid #38bdf8;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+              <h4 style="color:#38bdf8;margin:0;font-size:1.05rem;">6. Event Bus, Real-Time Sync &amp; Anti-Ban Rate Limiter: Redis 7 Stack</h4>
+              <span class="badge badge-cyan">Sub-Millisecond Coordination</span>
+            </div>
+            <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.55;margin-bottom:0.75rem;">
+              <strong>The Problem:</strong> When a background scraper discovers a new clue, it must instantly appear on the investigator's screen without refreshing. Furthermore, querying social platforms too fast triggers IP bans and account termination.
+            </p>
+            <div style="background:#090d16;padding:0.85rem;border-radius:6px;font-size:0.8rem;color:#cbd5e1;line-height:1.5;margin-bottom:0.75rem;">
+              <strong style="color:#38bdf8;">Why Redis 7 Stack is Superior:</strong>
+              <ul style="margin:0.4rem 0 0.4rem 1.25rem;padding:0;">
+                <li><strong>Sub-Millisecond Pub/Sub &amp; Streams:</strong> Redis Streams fans out new clues to connected WebSocket clients within &lt;1ms, ensuring instantaneous visual feedback on the Cytoscape graph canvas.</li>
+                <li><strong>Distributed Token-Bucket Rate Limiting (CL.THROTTLE):</strong> Enforces strict per-target rate limits across all distributed Celery workers and proxy nodes, shielding investigative accounts from anti-scraping bans.</li>
+                <li><strong>Redlock Mutex:</strong> Prevents multiple workers from querying the exact same suspect profile simultaneously, avoiding duplicate network traffic.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- 7. Mobile Phone Farm Benchmark -->
+          <div class="card" style="border-left:4px solid #f97316;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+              <h4 style="color:#fb923c;margin:0;font-size:1.05rem;">7. Mobile Device Farm Subsystem: ReDroid + GSM SIM Bank + Appium + Scrcpy</h4>
+              <span class="badge" style="background:rgba(249,115,22,0.15);color:#fb923c;border:1px solid #f97316;">Mobile-Only Walled Gardens</span>
+            </div>
+            <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.55;margin-bottom:0.75rem;">
+              <strong>The Problem:</strong> Modern cybercriminals operate almost exclusively on mobile apps (WhatsApp Business, Telegram, Truecaller, BaridiMob) that have no public web APIs, restrict desktop emulators, and require SMS OTPs sent to real SIM cards for login.
+            </p>
+            <div style="background:#090d16;padding:0.85rem;border-radius:6px;font-size:0.8rem;color:#cbd5e1;line-height:1.5;margin-bottom:0.75rem;">
+              <strong style="color:#fb923c;">Why This Architecture is Superior:</strong>
+              <ul style="margin:0.4rem 0 0.4rem 1.25rem;padding:0;">
+                <li><strong>ReDroid Containerized Android 13:</strong> Uses Linux binder IPC and GPU hardware passthrough inside Docker. Runs 20+ isolated Android instances on a single workstation with 1/10th the RAM and CPU overhead of standard QEMU emulators.</li>
+                <li><strong>Physical 4G GSM SIM Bank:</strong> Houses rotating Mobilis, Djezzy, and Ooredoo SIM cards connected via USB/IP. The backend issues AT commands to automatically read incoming SMS verification codes in &lt;3 seconds, completing 2FA login without manual handling.</li>
+                <li><strong>Scrcpy WebRTC Low-Latency Mirroring:</strong> Streams full 60 FPS interactive device video to the investigator's web browser with &lt;30ms latency, enabling real-time touch, swipe, and keyboard input.</li>
+                <li><strong>Zygisk / Magisk Root Cloaking:</strong> Hides root binaries, ADB debugging flags, and virtualization hooks from target applications, evading anti-tamper detection inside banking and messaging apps.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- 8. Algerian Darija Audio Processing Benchmark -->
+          <div class="card" style="border-left:4px solid #10b981;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+              <h4 style="color:#10b981;margin:0;font-size:1.05rem;">8. Algerian Darija Vocal Processing: Faster-Whisper + PyAnnote 3.1</h4>
+              <span class="badge badge-emerald">Dialectal Code-Switching AI</span>
+            </div>
+            <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.55;margin-bottom:0.75rem;">
+              <strong>The Problem:</strong> In Algerian scam and fraud networks, 80% of negotiations occur through WhatsApp voice notes recorded in Algerian Darija (mixed Arabic, French loanwords, and Tamazight slang). Standard commercial speech-to-text engines fail completely on dialectal Arabic.
+            </p>
+            <div style="background:#090d16;padding:0.85rem;border-radius:6px;font-size:0.8rem;color:#cbd5e1;line-height:1.5;margin-bottom:0.75rem;">
+              <strong style="color:#10b981;">Why Faster-Whisper + PyAnnote is Superior:</strong>
+              <ul style="margin:0.4rem 0 0.4rem 1.25rem;padding:0;">
+                <li><strong>CTranslate2 Optimization (Faster-Whisper):</strong> Executes transcription 4x faster with 50% less GPU VRAM compared to vanilla PyTorch Whisper, running smoothly on consumer-grade police workstation GPUs (e.g., RTX 4080/4090).</li>
+                <li><strong>Dialect-Tuned Acoustic Model:</strong> Accurately transcribes North African code-switching, transcribing spoken numbers (e.g., <em>"مية الف"</em> &rarr; 1,000 DZD, <em>"عشرين مليون"</em> &rarr; 200,000 DZD) and geographical rendezvous locations (e.g., <em>"Kouba", "Bab Ezzouar", "Ain Defla"</em>).</li>
+                <li><strong>PyAnnote 3.1 Diarization &amp; Voiceprinting:</strong> Separates interlocutors (Victim vs. Scammer) and generates 192-dimensional x-vector speaker embeddings stored in Qdrant, allowing cross-case matching of fraudster voices even when using different phone numbers.</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
       </div>
     </section>
 
@@ -492,38 +822,43 @@
     <section>
       <h2 class="section-title">3. Step-by-Step Visual Flow: How Services Communicate During an Investigation</h2>
       <p class="section-subtitle">
-        Here is what happens behind the scenes in 6 simple steps when an investigator pastes a <strong>Facebook Scam Post</strong> into a case:
+        Here is what happens behind the scenes in 7 precise steps when an investigator pastes a <strong>Facebook Scam Post</strong> with an attached WhatsApp vocal note into a case:
       </p>
 
-      <div class="grid-3">
+      <div class="grid-3" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;">
         <div class="card" style="border-top: 3px solid var(--accent-blue);">
           <div class="card-title"><span>1️⃣</span> Clue Added on Screen</div>
-          <p>The investigator pastes the Facebook link or text into the Case Board. The screen sends a secure message (`REST API`) to the Security Gate, which logs the exact time and investigator name.</p>
+          <p style="font-size:0.82rem;line-height:1.5;color:var(--text-secondary);">The investigator pastes the Facebook post URL and an intercepted WhatsApp voice note into the Case Board. The client dispatches a secure request (<code>HTTPS REST</code>) to the <strong>FastAPI Gateway</strong>, which validates JWT credentials and logs the officer's ID.</p>
         </div>
 
         <div class="card" style="border-top: 3px solid var(--accent-emerald);">
-          <div class="card-title"><span>2️⃣</span> Automatic Legal Snapshot</div>
-          <p>Before doing anything else, the Workflow Coordinator (`Temporal.io`) launches the <strong>📸 Page Freezer</strong> in an anonymous container to save a permanent screenshot and copy of the post in the Evidence Safe (`MinIO`).</p>
+          <div class="card-title"><span>2️⃣</span> Certified Legal Snapshot (WORM)</div>
+          <p style="font-size:0.82rem;line-height:1.5;color:var(--text-secondary);">The <strong>Temporal.io</strong> coordinator triggers an ephemeral Playwright container. The page is frozen as an ISO 28500 WARC file and high-res PNG screenshot, locked inside <strong>MinIO S3</strong> under WORM compliance mode with a SHA-256 seal.</p>
         </div>
 
         <div class="card" style="border-top: 3px solid var(--accent-cyan);">
-          <div class="card-title"><span>3️⃣</span> Automatic Clue Extraction</div>
-          <p>The <strong>🔍 Text Clue Extractor</strong> reads the saved post and pulls out the website link (`promo-pneus-express.shop`) and phone number (`+213 555 019 283`), announcing them on the internal event bus (`Redis Streams`).</p>
+          <div class="card-title"><span>3️⃣</span> Polymorphic Scraping Storage</div>
+          <p style="font-size:0.82rem;line-height:1.5;color:var(--text-secondary);">The raw HTML DOM, HTTP headers, Meta Pixel (<code>88419203314</code>), and embedded phone numbers are ingested directly into <strong>MongoDB 7.x</strong> as BSON documents. MongoDB Change Streams emit a reactive event on <strong>Redis Streams</strong>.</p>
+        </div>
+
+        <div class="card" style="border-top: 3px solid #f97316;">
+          <div class="card-title"><span>4️⃣</span> Mobile Phone Farm Interrogation</div>
+          <p style="font-size:0.82rem;line-height:1.5;color:var(--text-secondary);">The system routes the phone number to a virtual <strong>ReDroid Android 13</strong> container. The <strong>GSM SIM Bank</strong> auto-receives the WhatsApp SMS OTP, and Appium extracts the scammer's profile picture, business catalog, and audio notes, with live 60 FPS Scrcpy WebRTC mirror.</p>
+        </div>
+
+        <div class="card" style="border-top: 3px solid #10b981;">
+          <div class="card-title"><span>5️⃣</span> Darija Voice AI &amp; Biometrics</div>
+          <p style="font-size:0.82rem;line-height:1.5;color:var(--text-secondary);"><strong>Faster-Whisper</strong> transcribes the scammer's voice note in Algerian Darija, tagging the requested sum (<code>10,000 DZD</code>) and meetup location. <strong>PyAnnote</strong> and <strong>ArcFace</strong> extract voice and face embeddings, querying <strong>Qdrant</strong> in &lt;8ms to find twin profiles.</p>
         </div>
 
         <div class="card" style="border-top: 3px solid var(--accent-purple);">
-          <div class="card-title"><span>4️⃣</span> Live Board Update</div>
-          <p>The new Phone Number and Website Link cards pop onto the investigator's Case Board live (`WebSockets`) on the <strong>🔎 Online Search Layer</strong>, connected by arrows to the original Facebook post.</p>
-        </div>
-
-        <div class="card" style="border-top: 3px solid var(--accent-amber);">
-          <div class="card-title"><span>5️⃣</span> Smart Next-Tool Suggestions</div>
-          <p>The Detective Brain immediately checks its rulebook for `Phone Number` and `Website Link`, lighting up friendly badges on those two cards: <em>"4 Phone Tools &amp; 3 Website Tools Ready to Run"</em>.</p>
+          <div class="card-title"><span>6️⃣</span> Criminal Knowledge Graph Expansion</div>
+          <p style="font-size:0.82rem;line-height:1.5;color:var(--text-secondary);">The normalized clues are inserted into <strong>Neo4j 5.x</strong>. A Cypher query detects that the scammer's BaridiMob account and phone number are already linked to two active complaints in Oran and Blida, highlighting the cross-case syndicate cluster.</p>
         </div>
 
         <div class="card" style="border-top: 3px solid var(--accent-rose);">
-          <div class="card-title"><span>6️⃣</span> 1-Click or Automatic Pivot</div>
-          <p>Depending on the investigator's toggle (<strong>⚡ Run Automatically</strong> vs. <strong>✋ Ask Before Running</strong>), the system either runs the safe tools immediately or waits for a single click to uncover the suspect's Telegram, Instagram, and twin scam sites.</p>
+          <div class="card-title"><span>7️⃣</span> Real-Time Display &amp; Court Export</div>
+          <p style="font-size:0.82rem;line-height:1.5;color:var(--text-secondary);"><strong>Redis Pub/Sub</strong> pushes the new nodes and cross-case links to the investigator's <strong>Cytoscape.js</strong> canvas live via WebSockets. The officer clicks <em>"Export Judicial Dossier"</em>, generating an RFC 3161 timestamped PDF/A-3b synthesis for the prosecutor.</p>
         </div>
       </div>
     </section>

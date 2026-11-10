@@ -70,11 +70,11 @@ const ARCHITECTURE_SPEC_NODES = {
 }`
   },
 
-  // Layer 4
+  // Layer 4: Execution Sandbox & Distributed Workers
   sandbox_workers: {
     layer: 'Layer 4: Execution Sandbox & Distributed Workers',
     name: 'Isolated OSINT & Forensic Execution Sandbox',
-    tech: 'Celery Distributed Task Queue, Rootless Docker Engine, Playwright Headless Pool, Residential Proxy Mesh',
+    tech: 'Celery Distributed Task Queue, Rootless Docker Engine, Playwright Headless Pool, Residential Proxy Mesh, Bellingcat/Maigret/GHunt',
     protocol: 'AMQP / Redis Streams + Ephemeral UNIX Domain Sockets',
     port: '63379 (Redis Broker), Dynamic Container Sockets',
     throughput: '120 concurrent headless browser sessions • 500 API queries/min across proxies',
@@ -89,15 +89,39 @@ const ARCHITECTURE_SPEC_NODES = {
 }`
   },
 
+  // Layer 4B: Phone Farm & SIM Bank
+  phone_farm: {
+    layer: 'Layer 4B: Mobile Device Farm & GSM SIM Bank',
+    name: 'Ferme de Smartphones Réels & Virtuels (Hardware/Virtual Device Farm)',
+    tech: 'ReDroid (Android 13 in Docker), Appium 2.x, Scrcpy (WebRTC 60 FPS), ADB over TCP, GSM 4G SIM Bank (Mobilis/Djezzy/Ooredoo), Mitmproxy Root CA, Zygisk Root Cloaking',
+    protocol: 'ADB Wire Protocol (TCP 5555), WebRTC / WSS (Scrcpy Screen Mirroring), Appium WebDriver REST (4723), AT Commands TTY (/dev/ttyUSB0)',
+    port: '5555 (ADB), 4723 (Appium), 8000 (WebRTC Scrcpy Video), 8080 (Mitmproxy)',
+    throughput: '60 FPS ultra-low latency (<30ms) interactive screen stream • Automated SMS OTP reception in < 3s',
+    resilience: 'Ephemeral container rotation on dirty state • Isolated network namespaces with per-device VPN KillSwitch • Hardware SIM hot-swapping',
+    payload: `{
+  "deviceFarmAction": "AUTOMATED_APP_INTERROGATION",
+  "deviceId": "redroid_sim_ooredoo_04",
+  "targetApp": "com.whatsapp.w4b",
+  "gsmSimSlot": "SIM_SLOT_02 (Ooredoo +213 555 019 283)",
+  "automationScript": "appium_grab_voice_notes.py",
+  "liveScreenStream": "wss://engine.athar.dz/stream/device/04/scrcpy",
+  "extractedEvidence": {
+    "audioFile": "vocal_darija_kouba_order.opus",
+    "sha256": "8f14b2a90184b2...d014",
+    "otpSmsReceived": "WhatsApp Code 489-012"
+  }
+}`
+  },
+
   // Layer 5: Storage Engines
   storage_postgres: {
     layer: 'Layer 5: Polyglot Storage Tier — Relational & Case State',
-    name: 'PostgreSQL 15 Case Relational Database',
-    tech: 'PostgreSQL 15 with asyncpg driver, SQLModel / SQLAlchemy ORM',
+    name: 'PostgreSQL 16 Case Relational Database & Immutable Audit Ledger',
+    tech: 'PostgreSQL 16 with asyncpg driver, SQLModel / SQLAlchemy ORM, TimescaleDB CDR partitioning',
     protocol: 'PostgreSQL Wire Protocol over TCP',
     port: '55432 (Exposed) -> 5432 (Internal)',
     throughput: '15 000 write operations/sec • ACID Compliance Level: SERIALIZABLE',
-    resilience: 'Write-Ahead Logging (WAL) • Continuous archiving and point-in-time recovery (PITR)',
+    resilience: 'Write-Ahead Logging (WAL) • Continuous archiving and point-in-time recovery (PITR) • Cryptographic row-chaining',
     payload: `CREATE TABLE case_evidence (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   case_id VARCHAR(64) NOT NULL REFERENCES cases(id),
@@ -111,17 +135,58 @@ const ARCHITECTURE_SPEC_NODES = {
 
   storage_graph: {
     layer: 'Layer 5: Polyglot Storage Tier — Knowledge Graph',
-    name: 'JanusGraph 1.0 & Neo4j Criminal Knowledge Graph',
-    tech: 'JanusGraph 1.0 (Gremlin) / Neo4j 5 (Cypher) backed by ScyllaDB & Apache Solr',
-    protocol: 'Apache TinkerPop Gremlin-Bytecode / Neo4j Bolt v5',
-    port: '8182 (JanusGraph Gremlin Server) / 7687 (Neo4j Bolt)',
-    throughput: 'Sub-millisecond 3-hop criminal neighborhood traversals across 500M edges',
-    resilience: 'Distributed multi-datacenter replication via ScyllaDB • Solr cluster failover',
-    payload: `g.V().has('Phone', 'number', '+213555019283')
- .in('MENTIONS_PHONE')
- .out('HOSTED_ON')
- .in('HOSTED_ON')
- .path().by('label')`
+    name: 'Neo4j 5.x & JanusGraph Criminal Knowledge Graph',
+    tech: 'Neo4j 5.x Enterprise (Cypher + Neo4j GDS) / JanusGraph 1.0 (Gremlin) backed by ScyllaDB & Apache Solr',
+    protocol: 'Neo4j Bolt v5 Protocol / Apache TinkerPop Gremlin-Bytecode',
+    port: '7687 (Neo4j Bolt) / 8182 (JanusGraph Gremlin Server)',
+    throughput: 'Sub-millisecond 3-to-6 hop criminal neighborhood traversals across 500M edges (Index-Free Adjacency)',
+    resilience: 'Distributed Raft consensus (Neo4j Causal Cluster) • Multi-datacenter replication via ScyllaDB',
+    payload: `// Cypher: Find cross-case criminal links between Phone and Bank Accounts
+MATCH (p:Phone {number: '+213555019283'})<-[:USES_PHONE]-(s:Suspect)
+MATCH (s)-[:OWNS_ACCOUNT]->(b:BaridiMobAccount)
+MATCH (otherCase:Case)-[:HAS_EVIDENCE]->(b)
+RETURN s.alias, b.rip, collect(otherCase.reference) AS linked_cases;`
+  },
+
+  storage_mongodb: {
+    layer: 'Layer 5: Polyglot Storage Tier — Raw OSINT & Document Store',
+    name: 'MongoDB 7.x Raw Scraping & Unstructured Ingestion Store',
+    tech: 'MongoDB 7.x BSON Document Engine, WiredTiger Storage Engine with Snappy Compression',
+    protocol: 'MongoDB Wire Protocol over TCP',
+    port: '27017 (Internal MongoDB Port)',
+    throughput: '35 000 unindexed BSON document writes/sec • Dynamic polymorphic document schemas',
+    resilience: 'Replica Set with Raft-like election • Change Streams triggering downstream clue extraction workers',
+    payload: `{
+  "_id": ObjectId("672f9a10c8b4a100129b4412"),
+  "sourceUrl": "https://promo-pneus-express.shop/order",
+  "ingestedAt": ISODate("2026-11-01T14:22:08Z"),
+  "rawHeaders": { "server": "nginx/1.24", "cf-ray": "8e14b901a" },
+  "domAst": {
+    "forms": [{ "action": "/checkout", "method": "POST" }],
+    "metaPixels": ["88419203314"],
+    "embeddedPhones": ["+213555019283"]
+  },
+  "warcRef": "s3://case-2026-scam-089/warc/promo-pneus.warc.gz"
+}`
+  },
+
+  storage_qdrant: {
+    layer: 'Layer 5: Polyglot Storage Tier — Biometric & Semantic Vectors',
+    name: 'Qdrant Vector Engine (Biometric Face, Voice & Semantic Search)',
+    tech: 'Qdrant Vector DB (Engine in Rust), HNSW Graph Indexing, Cosine Distance Metrics',
+    protocol: 'gRPC over HTTP/2 / REST JSON',
+    port: '6333 (REST), 6334 (gRPC)',
+    throughput: '< 8ms nearest neighbor search across 2 000 000 512-dimensional facial/voice vectors',
+    resilience: 'Write-ahead log (WAL) • In-memory quantization • Strict payload filtering by Case ID',
+    payload: `{
+  "collection_name": "suspect_biometrics",
+  "vector": [0.0412, -0.0891, 0.1284, "... 512-d ArcFace / PyAnnote embedding ..."],
+  "filter": {
+    "must": [{ "key": "case_id", "match": { "value": "2026-SCAM-089" } }]
+  },
+  "top": 5,
+  "with_payload": true
+}`
   },
 
   storage_minio: {
@@ -141,6 +206,26 @@ const ARCHITECTURE_SPEC_NODES = {
   "x-amz-object-lock-retain-until-date": "2036-11-10T00:00:00Z",
   "sha256": "4a12e88b90123f81e3a99071c771c..."
 }`
+  },
+
+  storage_redis: {
+    layer: 'Layer 5: Polyglot Storage Tier — Cache & In-Memory Event Bus',
+    name: 'Redis 7 Stack (In-Memory Pub/Sub, Distributed Lock & Token-Bucket)',
+    tech: 'Redis 7 Stack Engine, Redis Streams, In-Memory Ephemeral Storage',
+    protocol: 'RESP3 (REdis Serialization Protocol) over TCP',
+    port: '63379 (Exposed) -> 6379 (Internal)',
+    throughput: '120 000 ops/sec • P99 Latency < 0.8ms',
+    resilience: 'RDB Snapshots + AOF (Append-Only File) • Token-bucket rate limiters per OSINT target • Distributed Redlock mutex',
+    payload: `// Redis Stream publication on new suspect clue discovery
+XADD stream:case:2026-SCAM-089:clues *
+  clue_id "voice_darija_01"
+  type "AUDIO_RECORDING"
+  amount_dzd "10000"
+  location "Bab Ezzouar"
+  confidence "0.96";
+
+// Distributed token-bucket rate limiter for Ooredoo/Mobilis API
+CL.THROTTLE rate:ooredoo:requests 100 60 1;`
   },
 
   // Layer 6

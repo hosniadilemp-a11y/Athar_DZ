@@ -1,0 +1,234 @@
+/**
+ * AegisInvestigate Design Tokens
+ * Conforms to Nielsen Norman Group heuristics, WCAG 2.2 AA, and W3C DTCG token structure.
+ * Standard 8-pt spacing grid, 12-24px type scale, dual theme (Dark default / Light).
+ */
+
+:root {
+  /* -------------------------------------------------------------------------
+   * NEUTRAL PALETTE (Dark Mode Default)
+   * WCAG AA contrast calibrated against #090d16 and #0f172a
+   * ------------------------------------------------------------------------- */
+  --color-neutral-950: #070a0f; /* Deepest canvas background */
+  --color-neutral-900: #0f172a; /* Application chrome, panels, toolbars */
+  --color-neutral-850: #141f36; /* Card backgrounds, elevated surfaces */
+  --color-neutral-800: #1e293b; /* Subtle surfaces, hover states, input bg */
+  --color-neutral-750: #25334a; /* Active state highlights */
+  --color-neutral-700: #334155; /* Default structural borders */
+  --color-neutral-600: #475569; /* Subtle borders, disabled elements */
+  --color-neutral-500: #64748b; /* Non-text decorative icons */
+  --color-neutral-400: #94a3b8; /* Secondary text (Contrast: ~5.1:1 on 900) */
+  --color-neutral-300: #cbd5e1; /* Body text (Contrast: ~9.2:1 on 900) */
+  --color-neutral-200: #e2e8f0; /* Emphasized text */
+  --color-neutral-100: #f1f5f9; /* Headings and key labels */
+  --color-neutral-50:  #f8fafc; /* Pure bright accents */
+
+  /* -------------------------------------------------------------------------
+   * SINGLE INTERACTIVE ACCENT (Blue)
+   * Reserved exclusively for interactive elements, focus states, and primary CTAs
+   * ------------------------------------------------------------------------- */
+  --color-accent-primary: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --color-accent-active: #1e40af;
+  --color-accent-subtle: rgba(37, 99, 235, 0.14);
+  --color-accent-border: rgba(37, 99, 235, 0.4);
+  --color-accent-text: #60a5fa;
+
+  /* -------------------------------------------------------------------------
+   * SEMANTIC STATUS COLORS
+   * Used strictly for evidentiary and system status, never for visual styling
+   * ------------------------------------------------------------------------- */
+  /* Verified Forensic Evidence / Success */
+  --color-status-success: #10b981;
+  --color-status-success-bg: rgba(16, 185, 129, 0.12);
+  --color-status-success-border: rgba(16, 185, 129, 0.35);
+  --color-status-success-text: #34d399;
+
+  /* Pending Review / Warning */
+  --color-status-warning: #f59e0b;
+  --color-status-warning-bg: rgba(245, 158, 11, 0.12);
+  --color-status-warning-border: rgba(245, 158, 11, 0.35);
+  --color-status-warning-text: #fbbf24;
+
+  /* Discarded / Error / Destructive */
+  --color-status-danger: #ef4444;
+  --color-status-danger-bg: rgba(239, 68, 68, 0.12);
+  --color-status-danger-border: rgba(239, 68, 68, 0.35);
+  --color-status-danger-text: #f87171;
+
+  /* Informational / Neutral Advisory */
+  --color-status-info: #0284c7;
+  --color-status-info-bg: rgba(2, 132, 199, 0.12);
+  --color-status-info-border: rgba(2, 132, 199, 0.35);
+  --color-status-info-text: #38bdf8;
+
+  /* -------------------------------------------------------------------------
+   * INVESTIGATION LAYERS (Restricted to Graph Canvas & Layer List)
+   * ------------------------------------------------------------------------- */
+  --color-layer-1-verified: #10b981;   /* Solid border */
+  --color-layer-2-osint: #06b6d4;      /* Solid border */
+  --color-layer-3-infra: #64748b;      /* Solid border */
+  --color-layer-4-hypothesis: #a855f7; /* Dashed border + indicator */
+
+  /* -------------------------------------------------------------------------
+   * TYPOGRAPHY SCALE (Minimum 12px, WCAG AA compliant)
+   * ------------------------------------------------------------------------- */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+  --font-arabic: 'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+
+  --font-size-xs: 0.75rem;    /* 12px — Badges, secondary metadata, shortcuts */
+  --font-size-sm: 0.8125rem;  /* 13px — Compact list items, table cells */
+  --font-size-base: 0.875rem; /* 14px — Body text, buttons, inspector labels */
+  --font-size-md: 1rem;       /* 16px — Section headers, prominent values */
+  --font-size-lg: 1.25rem;    /* 20px — Modal titles, card headers */
+  --font-size-xl: 1.5rem;     /* 24px — Case title, screen headers */
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.45;
+  --line-height-relaxed: 1.6;
+
+  /* -------------------------------------------------------------------------
+   * SPACING SCALE (8-pt grid system with 4px half-steps)
+   * ------------------------------------------------------------------------- */
+  --space-0-5: 2px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* -------------------------------------------------------------------------
+   * CORNER RADII (Strict 2-tier system: 4px and 8px)
+   * ------------------------------------------------------------------------- */
+  --radius-sm: 4px;   /* Buttons, chips, small inputs */
+  --radius-md: 8px;   /* Cards, panels, modals */
+  --radius-full: 9999px; /* Circular avatars, pill badges */
+
+  /* -------------------------------------------------------------------------
+   * ELEVATION & SHADOWS
+   * Discrete 1px borders are preferred over heavy blur in dark mode
+   * ------------------------------------------------------------------------- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.7);
+
+  /* -------------------------------------------------------------------------
+   * ACCESSIBILITY & INTERACTION TARGETS
+   * WCAG 2.2 target size >= 32px (strict minimum 24px)
+   * ------------------------------------------------------------------------- */
+  --target-size-min: 32px;
+  --target-size-compact: 28px;
+  --target-size-standard: 36px;
+
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --focus-ring-color: var(--color-accent-primary);
+
+  /* -------------------------------------------------------------------------
+   * APPLICATION CHROME DIMENSIONS (Target <= 100px vertical chrome)
+   * Top bar (48px) + Status bar (24px) = 72px total vertical chrome
+   * ------------------------------------------------------------------------- */
+  --topbar-height: 48px;
+  --statusbar-height: 24px;
+  --panel-left-width: 240px;
+  --panel-right-width: 340px;
+
+  /* -------------------------------------------------------------------------
+   * Z-INDEX SCALE
+   * ------------------------------------------------------------------------- */
+  --z-canvas: 1;
+  --z-panel: 10;
+  --z-topbar: 20;
+  --z-drawer: 30;
+  --z-overlay: 50;
+  --z-modal: 100;
+  --z-command-palette: 150;
+  --z-toast: 200;
+  --z-presenter: 500;
+}
+
+/* ---------------------------------------------------------------------------
+ * LIGHT THEME (Courtroom & Printed Dossier Mode)
+ * Activated via data-theme="light" on root or container
+ * --------------------------------------------------------------------------- */
+[data-theme="light"],
+body.theme-light {
+  --color-neutral-950: #f8fafc;
+  --color-neutral-900: #ffffff;
+  --color-neutral-850: #f1f5f9;
+  --color-neutral-800: #e2e8f0;
+  --color-neutral-750: #cbd5e1;
+  --color-neutral-700: #94a3b8;
+  --color-neutral-600: #64748b;
+  --color-neutral-500: #475569;
+  --color-neutral-400: #334155;
+  --color-neutral-300: #1e293b;
+  --color-neutral-200: #0f172a;
+  --color-neutral-100: #070a0f;
+  --color-neutral-50:  #000000;
+
+  --color-accent-primary: #1d4ed8;
+  --color-accent-hover: #1e40af;
+  --color-accent-active: #172554;
+  --color-accent-subtle: rgba(29, 78, 216, 0.08);
+  --color-accent-border: rgba(29, 78, 216, 0.25);
+  --color-accent-text: #1d4ed8;
+
+  --color-status-success: #059669;
+  --color-status-success-bg: rgba(5, 150, 105, 0.08);
+  --color-status-success-border: rgba(5, 150, 105, 0.25);
+  --color-status-success-text: #065f46;
+
+  --color-status-warning: #d97706;
+  --color-status-warning-bg: rgba(217, 119, 6, 0.08);
+  --color-status-warning-border: rgba(217, 119, 6, 0.25);
+  --color-status-warning-text: #92400e;
+
+  --color-status-danger: #dc2626;
+  --color-status-danger-bg: rgba(220, 38, 38, 0.08);
+  --color-status-danger-border: rgba(220, 38, 38, 0.25);
+  --color-status-danger-text: #991b1b;
+
+  --color-status-info: #0284c7;
+  --color-status-info-bg: rgba(2, 132, 199, 0.08);
+  --color-status-info-border: rgba(2, 132, 199, 0.25);
+  --color-status-info-text: #075985;
+
+  --color-layer-1-verified: #059669;
+  --color-layer-2-osint: #0891b2;
+  --color-layer-3-infra: #475569;
+  --color-layer-4-hypothesis: #7c3aed;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+/* ---------------------------------------------------------------------------
+ * RTL BASELINE ADJUSTMENTS
+ * --------------------------------------------------------------------------- */
+[dir="rtl"] {
+  font-family: var(--font-arabic);
+}
+
+/* ---------------------------------------------------------------------------
+ * REDUCED MOTION PREFERENCE
+ * --------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
