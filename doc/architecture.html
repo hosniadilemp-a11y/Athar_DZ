@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>02. Visual System Architecture, Storage & Communication — AegisInvestigate</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">Æ</div>
+      <div class="brand-text">
+        <h1>AegisInvestigate</h1>
+        <span>Visual Investigation Studio</span>
+      </div>
+    </div>
+
+    <div class="nav-section">Specification Portal</div>
+    <ul class="nav-links">
+      <li><a href="index.html"><span>🏠 01. Executive Summary</span><span class="nav-badge">Overview</span></a></li>
+      <li><a href="architecture.html" class="active"><span>🏗️ 02. Visual Architecture</span><span class="nav-badge">6 Layers</span></a></li>
+      <li><a href="bricks-and-automation.html"><span>🧰 03. Investigation Tools Menu</span><span class="nav-badge">60+ Tools</span></a></li>
+      <li><a href="data-model.html"><span>🕸️ 04. Visual Graph & UI Spec</span><span class="nav-badge">Ontology</span></a></li>
+      <li><a href="roadmap-phases.html"><span>🚀 05. Development Phases</span><span class="nav-badge">6 Releases</span></a></li>
+      <li><a href="github-repos-audit.html"><span>📦 06. GitHub Repos Audit</span><span class="nav-badge">48 Repos</span></a></li>
+      <li><a href="maquette.html" class="maquette-cta"><span>🖥️ Launch App Maquette</span><span class="nav-badge">Live Sim</span></a></li>
+    </ul>
+
+    <div class="nav-section">Markdown Reference</div>
+    <ul class="nav-links">
+      <li><a href="SPECIFICATION.md"><span>📄 Full Technical Spec (.md)</span></a></li>
+      <li><a href="GITHUB_AUDIT.md"><span>📄 GitHub Starter Audit (.md)</span></a></li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div><strong>Designed For:</strong> Investigators (Zero CS Jargon)</div>
+      <div><strong>Proof Standard:</strong> Automatic Legal Snapshots</div>
+      <div><strong>Intelligence:</strong> Standard Rules + Optional AI</div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="page-header">
+      <div class="page-eyebrow">Chapter 02 &bull; Visual System Architecture &amp; Infrastructure</div>
+      <h1>Six-Layer Visual Architecture, Storage &amp; Service Communication</h1>
+      <p>
+        A visual, easy-to-read architectural blueprint showing how the application is organized from the <strong>Investigator's Screen</strong> at the top down to the <strong>Certified Evidence Vaults</strong> at the bottom—combining plain-language operational roles with exact engineering specifications.
+      </p>
+    </header>
+
+    <!-- 1. Visual Six-Layer Architecture Stack (Replaces ASCII Diagram) -->
+    <section>
+      <h2 class="section-title">1. Interactive Six-Layer System Architecture</h2>
+      <p class="section-subtitle">
+        Click any layer, service component, or storage vault below to inspect its exact engineering protocol, data schemas, latency SLA, and resilience strategy in the live inspector card.
+      </p>
+
+      <!-- Interactive Software Engineering Architecture Explorer -->
+      <div class="arch-interactive-canvas">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+          <div>
+            <h3 style="color:#f8fafc;margin:0 0 0.35rem;font-size:1.1rem;">Schéma Interactif d'Ingénierie Logicielle (Six-Plane Architecture)</h3>
+            <p style="font-size:0.8rem;color:var(--text-secondary);margin:0;">
+              Interconnexions directes entre le Studio Enquêteur, l'Ingress sécurisé, l'Orchestrateur, les Briques OSINT et le Tier de Stockage Polyglotte.
+            </p>
+          </div>
+          <span class="badge badge-emerald">Mode Interactif Live</span>
+        </div>
+
+        <div class="arch-shema-grid">
+          <!-- Layer 1 -->
+          <div class="arch-shema-layer" style="border-left: 3px solid var(--accent-blue);">
+            <div class="arch-shema-header">
+              <span class="arch-shema-title">🖥️ COUCHE 1 : STUDIO VISUEL D'INVESTIGATION (CLIENT OPJ)</span>
+              <span class="badge badge-blue">React 19 &bull; Cytoscape &bull; MapLibre &bull; WaveSurfer</span>
+            </div>
+            <div class="arch-nodes-row">
+              <div class="arch-shema-node active" data-node="ui_client" onclick="selectArchNode('ui_client')">
+                <span>🕸️ Tableau de Cas (Cytoscape)</span>
+              </div>
+              <div class="arch-shema-node" data-node="ui_client" onclick="selectArchNode('ui_client')">
+                <span>📅 Chronologie Linéaire</span>
+              </div>
+              <div class="arch-shema-node" data-node="ui_client" onclick="selectArchNode('ui_client')">
+                <span>🗺️ Carte SIG des Bornages</span>
+              </div>
+              <div class="arch-shema-node" data-node="ui_client" onclick="selectArchNode('ui_client')">
+                <span>🎙️ Lecteur Audio Darija</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Connector 1 -> 2 -->
+          <div class="arch-pipe-connector">
+            <span class="arch-pipe-pill">⬇️ HTTPS / REST Commandes Instantanées (Port 48997)</span>
+            <span class="arch-pipe-pill">⬆️ WebSockets WSS Événements en Temps Réel (Port 48997)</span>
+          </div>
+
+          <!-- Layer 2 -->
+          <div class="arch-shema-layer" style="border-left: 3px solid var(--accent-emerald);">
+            <div class="arch-shema-header">
+              <span class="arch-shema-title">🛡️ COUCHE 2 : PASSERELLE DE SÉCURITÉ &amp; AUDIT JUDICIAIRE (INGRESS)</span>
+              <span class="badge badge-emerald">FastAPI &bull; Casdoor/Keycloak &bull; RFC 3161 Interceptor</span>
+            </div>
+            <div class="arch-nodes-row">
+              <div class="arch-shema-node" data-node="gateway_api" onclick="selectArchNode('gateway_api')">
+                <span>🔐 Authentification IAM (Casdoor OAuth2/JWT)</span>
+              </div>
+              <div class="arch-shema-node" data-node="gateway_api" onclick="selectArchNode('gateway_api')">
+                <span>⚡ Passerelle Asynchrone (FastAPI Core)</span>
+              </div>
+              <div class="arch-shema-node" data-node="gateway_api" onclick="selectArchNode('gateway_api')">
+                <span>📜 Intercepteur de Journalisation Légale (WORM)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Connector 2 -> 3 -->
+          <div class="arch-pipe-connector">
+            <span class="arch-pipe-pill">⬇️ gRPC Event Bus &bull; Protobuf v3 State Pipeline</span>
+          </div>
+
+          <!-- Layer 3 -->
+          <div class="arch-shema-layer" style="border-left: 3px solid var(--accent-purple);">
+            <div class="arch-shema-header">
+              <span class="arch-shema-title">🧠 COUCHE 3 : CERVEAU D'ENQUÊTE &amp; ORCHESTRATION DUAL-MODE</span>
+              <span class="badge badge-purple">Temporal.io &bull; Moteur de Règles &bull; Ollama LMM</span>
+            </div>
+            <div class="arch-nodes-row">
+              <div class="arch-shema-node" data-node="brain_orchestrator" onclick="selectArchNode('brain_orchestrator')">
+                <span>🧭 Moteur de Règles Déterministe (Sans IA)</span>
+              </div>
+              <div class="arch-shema-node" data-node="brain_orchestrator" onclick="selectArchNode('brain_orchestrator')">
+                <span>⚙️ Machine d'États Temporels (Temporal.io)</span>
+              </div>
+              <div class="arch-shema-node" data-node="brain_orchestrator" onclick="selectArchNode('brain_orchestrator')">
+                <span>🤖 Agent LMM Autonome Souverain (Ollama/vLLM)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Connector 3 -> 4 -->
+          <div class="arch-pipe-connector">
+            <span class="arch-pipe-pill">⬇️ AMQP Redis Streams Task Queue &bull; Isolation Rootless</span>
+          </div>
+
+          <!-- Layer 4 -->
+          <div class="arch-shema-layer" style="border-left: 3px solid var(--accent-amber);">
+            <div class="arch-shema-header">
+              <span class="arch-shema-title">🧰 COUCHE 4 : BAC À SABLE FORENSIQUE &amp; BRIQUES OSINT (76 OUTILS)</span>
+              <span class="badge badge-amber">Celery &bull; Docker Rootless &bull; Playwright Pool &bull; Proxies</span>
+            </div>
+            <div class="arch-nodes-row">
+              <div class="arch-shema-node" data-node="sandbox_workers" onclick="selectArchNode('sandbox_workers')">
+                <span>📢 Briques Réseaux Sociaux (Bellingcat/Maigret)</span>
+              </div>
+              <div class="arch-shema-node" data-node="sandbox_workers" onclick="selectArchNode('sandbox_workers')">
+                <span>🎙️ Reconnaissance Vocale Darija (Faster-Whisper)</span>
+              </div>
+              <div class="arch-shema-node" data-node="sandbox_workers" onclick="selectArchNode('sandbox_workers')">
+                <span>🕸️ Algorithmes SNA Criminels (Betweenness/Louvain)</span>
+              </div>
+              <div class="arch-shema-node" data-node="sandbox_workers" onclick="selectArchNode('sandbox_workers')">
+                <span>🛡️ Pool de Proxys Résidentiels Anonymes</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Connector 4 -> 5 -->
+          <div class="arch-pipe-connector">
+            <span class="arch-pipe-pill">⬇️ Persistance Polyglotte Multi-Moteurs &bull; Gremlin, SQL, S3 API</span>
+          </div>
+
+          <!-- Layer 5 -->
+          <div class="arch-shema-layer" style="border-left: 3px solid var(--accent-cyan);">
+            <div class="arch-shema-header">
+              <span class="arch-shema-title">🗄️ COUCHE 5 : TIER DE STOCKAGE POLYGLOTTE SPÉCIALISÉ</span>
+              <span class="badge badge-cyan">PostgreSQL &bull; JanusGraph &bull; ScyllaDB &bull; MinIO &bull; Redis</span>
+            </div>
+            <div class="arch-nodes-row">
+              <div class="arch-shema-node" data-node="storage_postgres" onclick="selectArchNode('storage_postgres')">
+                <span>📋 PostgreSQL 15 (Dossiers &amp; Utilisateurs)</span>
+              </div>
+              <div class="arch-shema-node" data-node="storage_graph" onclick="selectArchNode('storage_graph')">
+                <span>🕸️ JanusGraph / Neo4j (Graphe de Connaissances)</span>
+              </div>
+              <div class="arch-shema-node" data-node="storage_minio" onclick="selectArchNode('storage_minio')">
+                <span>🔒 MinIO S3 WORM (Preuves &amp; Captures Scellées)</span>
+              </div>
+              <div class="arch-shema-node" data-node="sandbox_workers" onclick="selectArchNode('sandbox_workers')">
+                <span>⚡ Redis 7 (Broker Celery &amp; Cache Enquête)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Connector 5 -> 6 -->
+          <div class="arch-pipe-connector">
+            <span class="arch-pipe-pill">⬇️ Certification RFC 3161 &bull; Empreintes SHA-256 Merkle Proof</span>
+          </div>
+
+          <!-- Layer 6 -->
+          <div class="arch-shema-layer" style="border-left: 3px solid var(--accent-rose);">
+            <div class="arch-shema-header">
+              <span class="arch-shema-title">📜 COUCHE 6 : CHAÎNE DE GARDE JUDICIAIRE &amp; EXPORT AU TRIBUNAL</span>
+              <span class="badge badge-rose">RFC 3161 TSA &bull; Merkle Proofs &bull; WeasyPrint PDF &bull; WARC</span>
+            </div>
+            <div class="arch-nodes-row">
+              <div class="arch-shema-node" data-node="legal_court_export" onclick="selectArchNode('legal_court_export')">
+                <span>⚖️ Procès-Verbal de Synthèse Judiciaire (PDF/A)</span>
+              </div>
+              <div class="arch-shema-node" data-node="legal_court_export" onclick="selectArchNode('legal_court_export')">
+                <span>🔒 Horodatage Cryptographique Inaltérable</span>
+              </div>
+              <div class="arch-shema-node" data-node="legal_court_export" onclick="selectArchNode('legal_court_export')">
+                <span>📦 Archive Légale Conforme Norme ISO 28500</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Interactive Inspector Card -->
+        <div id="arch-live-inspector" style="background:#0b121e;border:1px solid #23344d;border-radius:8px;padding:1.25rem;">
+          <!-- Populated dynamically by architecture-interactive.js -->
+        </div>
+      </div>
+
+      <div class="arch-stack">
+
+        <!-- LAYER 1 -->
+        <div class="arch-plane" style="border-left-color: var(--accent-blue);">
+          <div class="arch-plane-header">
+            <div class="arch-plane-title">
+              <span style="font-size:1.5rem;">🖥️</span>
+              <div>
+                <div>LAYER 1: Visual Investigation Studio (What the Investigator Sees &amp; Uses)</div>
+                <div style="font-size:0.78rem;color:var(--text-secondary);font-weight:400;">Simple icon-based workspace—no coding or technical commands required</div>
+              </div>
+            </div>
+            <span class="badge badge-blue">Tech: React 19 + Next.js + Cytoscape.js + MapLibre</span>
+          </div>
+          <div class="arch-plane-modules">
+            <div class="arch-module-box">
+              <strong>🕸️ Interactive Case Board</strong>
+              <span>Visual clue cards &amp; connections with Photoshop-style Show/Hide Layers</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>📅 Synchronized Timeline</strong>
+              <span>Chronological bar showing when posts, calls, and website creations happened</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>🗺️ Crime &amp; Tower Map</strong>
+              <span>Plots photo GPS locations, cell towers, and vehicle sightings on a map</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>🧰 1-Click Tool Assistant</strong>
+              <span>Suggests the exact online search tools that work for whichever clue is clicked</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Connector 1 -> 2 -->
+        <div class="arch-connector">
+          <span class="arch-connector-pill">⬇️ Instant Commands (HTTPS)</span>
+          <span class="arch-connector-pill">⬆️ Live Clue Updates on Screen (WebSockets)</span>
+        </div>
+
+        <!-- LAYER 2 -->
+        <div class="arch-plane" style="border-left-color: var(--accent-emerald);">
+          <div class="arch-plane-header">
+            <div class="arch-plane-title">
+              <span style="font-size:1.5rem;">🛡️</span>
+              <div>
+                <div>LAYER 2: Security Gate &amp; Legal Chain-of-Custody Logger</div>
+                <div style="font-size:0.78rem;color:var(--text-secondary);font-weight:400;">Protects case privacy and automatically records every step for court reports</div>
+              </div>
+            </div>
+            <span class="badge badge-emerald">Tech: FastAPI Gateway + Keycloak Auth + Audit Interceptor</span>
+          </div>
+          <div class="arch-plane-modules">
+            <div class="arch-module-box">
+              <strong>👮 Team &amp; Role Access</strong>
+              <span>Ensures only authorized detectives or magistrates assigned to a case can open it</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>📜 Automatic Action Diary</strong>
+              <span>Silently records every search, date, and result so the investigator never has to take manual notes</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>🔒 Tamper-Proof Seal</strong>
+              <span>Applies a digital legal seal to every action so defense lawyers can verify nothing was altered</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Connector 2 -> 3 -->
+        <div class="arch-connector">
+          <span class="arch-connector-pill">⬇️ New Clue Events &amp; Investigator Approvals</span>
+        </div>
+
+        <!-- LAYER 3 -->
+        <div class="arch-plane" style="border-left-color: var(--accent-purple);">
+          <div class="arch-plane-header">
+            <div class="arch-plane-title">
+              <span style="font-size:1.5rem;">🧠</span>
+              <div>
+                <div>LAYER 3: Dual-Mode Detective Brain (Works With or Without AI)</div>
+                <div style="font-size:0.78rem;color:var(--text-secondary);font-weight:400;">Decides which investigation tools match your clues and coordinates multi-step searches</div>
+              </div>
+            </div>
+            <span class="badge badge-purple">Tech: Rule Engine + Temporal.io Workflows + Optional Ollama/vLLM</span>
+          </div>
+          <div class="arch-plane-modules">
+            <div class="arch-module-box">
+              <strong>🧭 Standard Rule Matcher (No AI)</strong>
+              <span>100% reliable rule book: knows that a <em>Phone Number</em> unlocks WhatsApp, Telegram &amp; Carrier tools</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>🤖 Optional Smart AI Assistant</strong>
+              <span>Reads messy posts in French/Arabic/Darija, spots scam patterns, and suggests multi-step search chains</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>⚙️ Workflow Coordinator</strong>
+              <span>Runs safe tools automatically (<em>Auto-Run</em>) or pauses to ask the detective first (<em>Ask Before Running</em>)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Connector 3 -> 4 -->
+        <div class="arch-connector">
+          <span class="arch-connector-pill">⬇️ Dispatches Isolated Search Jobs (Docker Containers)</span>
+        </div>
+
+        <!-- LAYER 4 -->
+        <div class="arch-plane" style="border-left-color: var(--accent-amber);">
+          <div class="arch-plane-header">
+            <div class="arch-plane-title">
+              <span style="font-size:1.5rem;">🕵️</span>
+              <div>
+                <div>LAYER 4: Isolated Investigation Tools &amp; Investigator Stealth Shield</div>
+                <div style="font-size:0.78rem;color:var(--text-secondary);font-weight:400;">Runs 60+ online &amp; forensic tools safely without ever exposing the police station's internet address</div>
+              </div>
+            </div>
+            <span class="badge badge-amber">Tech: Ephemeral Docker Workers + Gluetun VPN/Tor + Covert Session Vault</span>
+          </div>
+          <div class="arch-plane-modules">
+            <div class="arch-module-box">
+              <strong>📦 60+ Modular Search Tools</strong>
+              <span>Each tool (Phone lookup, Social Media archiver, Website scanner, Photo checker) runs in its own isolated box</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>🕶️ Anonymous Connection Shield</strong>
+              <span>Routes online searches through anonymous proxies/VPNs so scammers never know they are being investigated</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>🔑 Covert Account Vault</strong>
+              <span>Manages dedicated investigation accounts for Facebook, Instagram, Telegram &amp; WhatsApp safely</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Connector 4 -> 5 -->
+        <div class="arch-connector">
+          <span class="arch-connector-pill">⬇️ Returns Newly Discovered Clues &amp; Saved Screenshots</span>
+        </div>
+
+        <!-- LAYER 5 -->
+        <div class="arch-plane" style="border-left-color: var(--accent-cyan);">
+          <div class="arch-plane-header">
+            <div class="arch-plane-title">
+              <span style="font-size:1.5rem;">🧩</span>
+              <div>
+                <div>LAYER 5: Clue Cleaner, Duplicate Merger &amp; Face/Voice Matcher</div>
+                <div style="font-size:0.78rem;color:var(--text-secondary);font-weight:400;">Cleans messy results, merges duplicate clues, and compares faces across accounts</div>
+              </div>
+            </div>
+            <span class="badge badge-cyan">Tech: Python Entity Resolver + DeepFace + Faster-Whisper + NetworkX</span>
+          </div>
+          <div class="arch-plane-modules">
+            <div class="arch-module-box">
+              <strong>🧹 Automatic Clue Normalizer</strong>
+              <span>Recognizes that <code>0555 01 92 83</code> and <code>+213555019283</code> are the exact same phone number</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>👤 Biometric Face &amp; Voice Linker</strong>
+              <span>Compares faces and voice notes offline to link different social media profiles to the same suspect</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>⏱️ Alibi &amp; Timeline Checker</strong>
+              <span>Detects contradictions between witness statements, cell tower locations, and online activity</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Connector 5 -> 6 -->
+        <div class="arch-connector">
+          <span class="arch-connector-pill">⬇️ Permanently Stores Verified Clues, Connections &amp; Evidence Files</span>
+        </div>
+
+        <!-- LAYER 6 -->
+        <div class="arch-plane" style="border-left-color: var(--accent-rose);">
+          <div class="arch-plane-header">
+            <div class="arch-plane-title">
+              <span style="font-size:1.5rem;">🗄️</span>
+              <div>
+                <div>LAYER 6: Specialized Case Storage Vaults (Behind the Scenes)</div>
+                <div style="font-size:0.78rem;color:var(--text-secondary);font-weight:400;">The investigator sees one unified case file, powered by 5 specialized high-speed storage engines</div>
+              </div>
+            </div>
+            <span class="badge badge-rose">Tech: Neo4j + PostgreSQL + MinIO WORM + Qdrant + Redis</span>
+          </div>
+          <div class="arch-plane-modules">
+            <div class="arch-module-box">
+              <strong>🕸️ Connected Clues Store</strong>
+              <span><em>(Neo4j)</em> Remembers every clue and how they connect across cases</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>📋 Case &amp; Audit Diary Store</strong>
+              <span><em>(PostgreSQL)</em> Keeps case permissions and the uneditable legal log</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>🔒 Certified Evidence Safe</strong>
+              <span><em>(MinIO WORM)</em> Locks screenshots, videos &amp; saved webpages forever</span>
+            </div>
+            <div class="arch-module-box">
+              <strong>👤 Face &amp; Text Memory</strong>
+              <span><em>(Qdrant)</em> Instant search across millions of faces and documents</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 2. Detailed Storage Specification (Plain Language + Engineering Spec) -->
+    <section>
+      <h2 class="section-title">2. How Case Information Is Stored (Investigator View vs. Engineering Spec)</h2>
+      <p class="section-subtitle">
+        Notice how the investigator never has to know what a "Graph Database" or "Vector Database" is—to the user, it simply works as the <strong>Case Board</strong>, the <strong>Evidence Safe</strong>, and <strong>Face/Text Search</strong>.
+      </p>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>What the Investigator Experiences</th>
+              <th>What Information It Holds</th>
+              <th>Engineering Technology Used</th>
+              <th>Why Engineers Use This Engine</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>🕸️ <strong>The Visual Case Board</strong><br/><em>(Clues &amp; Connections)</em></td>
+              <td>Every person, phone number, social media profile, website link, vehicle, and bank account, plus the lines connecting them and which Layer they belong to.</td>
+              <td><span class="badge badge-blue">Neo4j 5.x Graph DB</span></td>
+              <td>Finds hidden connections across 6+ hops (e.g., "How is Suspect A connected to Phone B across 3 prior cases?") in milliseconds.</td>
+            </tr>
+            <tr>
+              <td>📋 <strong>Case Files &amp; Official Action Log</strong><br/><em>(Who Did What &amp; When)</em></td>
+              <td>Investigator accounts, case access permissions, tool settings, and the tamper-proof chronological log of every action taken in the case.</td>
+              <td><span class="badge badge-emerald">PostgreSQL 16</span></td>
+              <td>Provides strict transactional safety and cryptographic row-chaining so no historical audit record can ever be modified or deleted.</td>
+            </tr>
+            <tr>
+              <td>🔒 <strong>The Certified Evidence Safe</strong><br/><em>(Photos, Videos &amp; Frozen Webpages)</em></td>
+              <td>Saved Facebook posts, full webpage snapshots, crime scene photos, voice notes, and telecom call log files.</td>
+              <td><span class="badge badge-amber">MinIO Object Vault (WORM)</span></td>
+              <td>Supports "Write-Once, Read-Many" legal lock mode: once a screenshot or webpage is captured, it is mathematically impossible to alter.</td>
+            </tr>
+            <tr>
+              <td>👤 <strong>Instant Face, Photo &amp; Document Search</strong><br/><em>(Biometric &amp; Meaning Search)</em></td>
+              <td>Facial features from profile pictures, outdoor photo characteristics, and the meaning of text inside police reports.</td>
+              <td><span class="badge badge-purple">Qdrant Vector Engine</span></td>
+              <td>Finds matching faces or visually similar stolen product photos across hundreds of thousands of images in under 10 milliseconds.</td>
+            </tr>
+            <tr>
+              <td>⚡ <strong>Live Screen Updates &amp; Safety Brakes</strong><br/><em>(Speed &amp; Anti-Ban Protection)</em></td>
+              <td>Live progress bars while tools are scanning and safety counters that prevent covert accounts from searching too fast and getting blocked.</td>
+              <td><span class="badge badge-cyan">Redis 7 Stack</span></td>
+              <td>Provides sub-millisecond coordination between background search containers and the investigator's live browser screen.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 3. Visual Inter-Service Communication Flow -->
+    <section>
+      <h2 class="section-title">3. Step-by-Step Visual Flow: How Services Communicate During an Investigation</h2>
+      <p class="section-subtitle">
+        Here is what happens behind the scenes in 6 simple steps when an investigator pastes a <strong>Facebook Scam Post</strong> into a case:
+      </p>
+
+      <div class="grid-3">
+        <div class="card" style="border-top: 3px solid var(--accent-blue);">
+          <div class="card-title"><span>1️⃣</span> Clue Added on Screen</div>
+          <p>The investigator pastes the Facebook link or text into the Case Board. The screen sends a secure message (`REST API`) to the Security Gate, which logs the exact time and investigator name.</p>
+        </div>
+
+        <div class="card" style="border-top: 3px solid var(--accent-emerald);">
+          <div class="card-title"><span>2️⃣</span> Automatic Legal Snapshot</div>
+          <p>Before doing anything else, the Workflow Coordinator (`Temporal.io`) launches the <strong>📸 Page Freezer</strong> in an anonymous container to save a permanent screenshot and copy of the post in the Evidence Safe (`MinIO`).</p>
+        </div>
+
+        <div class="card" style="border-top: 3px solid var(--accent-cyan);">
+          <div class="card-title"><span>3️⃣</span> Automatic Clue Extraction</div>
+          <p>The <strong>🔍 Text Clue Extractor</strong> reads the saved post and pulls out the website link (`promo-pneus-express.shop`) and phone number (`+213 555 019 283`), announcing them on the internal event bus (`Redis Streams`).</p>
+        </div>
+
+        <div class="card" style="border-top: 3px solid var(--accent-purple);">
+          <div class="card-title"><span>4️⃣</span> Live Board Update</div>
+          <p>The new Phone Number and Website Link cards pop onto the investigator's Case Board live (`WebSockets`) on the <strong>🔎 Online Search Layer</strong>, connected by arrows to the original Facebook post.</p>
+        </div>
+
+        <div class="card" style="border-top: 3px solid var(--accent-amber);">
+          <div class="card-title"><span>5️⃣</span> Smart Next-Tool Suggestions</div>
+          <p>The Detective Brain immediately checks its rulebook for `Phone Number` and `Website Link`, lighting up friendly badges on those two cards: <em>"4 Phone Tools &amp; 3 Website Tools Ready to Run"</em>.</p>
+        </div>
+
+        <div class="card" style="border-top: 3px solid var(--accent-rose);">
+          <div class="card-title"><span>6️⃣</span> 1-Click or Automatic Pivot</div>
+          <p>Depending on the investigator's toggle (<strong>⚡ Run Automatically</strong> vs. <strong>✋ Ask Before Running</strong>), the system either runs the safe tools immediately or waits for a single click to uncover the suspect's Telegram, Instagram, and twin scam sites.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>

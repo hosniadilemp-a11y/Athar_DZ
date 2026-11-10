@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>05. GitHub Repositories Audit & Starter Blueprint — AegisInvestigate</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">Æ</div>
+      <div class="brand-text">
+        <h1>AegisInvestigate</h1>
+        <span>Visual Investigation Studio</span>
+      </div>
+    </div>
+
+    <div class="nav-section">Specification Portal</div>
+    <ul class="nav-links">
+      <li><a href="index.html"><span>🏠 01. Executive Summary</span><span class="nav-badge">Overview</span></a></li>
+      <li><a href="architecture.html"><span>🏗️ 02. Visual Architecture</span><span class="nav-badge">6 Layers</span></a></li>
+      <li><a href="bricks-and-automation.html"><span>🧰 03. Investigation Tools Menu</span><span class="nav-badge">60+ Tools</span></a></li>
+      <li><a href="data-model.html"><span>🕸️ 04. Visual Graph & UI Spec</span><span class="nav-badge">Ontology</span></a></li>
+      <li><a href="roadmap-phases.html"><span>🚀 05. Development Phases</span><span class="nav-badge">6 Releases</span></a></li>
+      <li><a href="github-repos-audit.html" class="active"><span>📦 06. GitHub Repos Audit</span><span class="nav-badge">48 Repos</span></a></li>
+      <li><a href="maquette.html" class="maquette-cta"><span>🖥️ Launch App Maquette</span><span class="nav-badge">Live Sim</span></a></li>
+    </ul>
+
+    <div class="nav-section">Markdown Reference</div>
+    <ul class="nav-links">
+      <li><a href="SPECIFICATION.md"><span>📄 Full Technical Spec (.md)</span></a></li>
+      <li><a href="GITHUB_AUDIT.md"><span>📄 GitHub Starter Audit (.md)</span></a></li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div><strong>Designed For:</strong> Investigators (Zero CS Jargon)</div>
+      <div><strong>Proof Standard:</strong> Automatic Legal Snapshots</div>
+      <div><strong>Intelligence:</strong> Standard Rules + Optional AI</div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="page-header">
+      <div class="page-eyebrow">05 &bull; Open-Source Ecosystem Benchmark & Starter Audit</div>
+      <h1>Audit of 48 Open-Source GitHub Repositories for Criminal & OSINT Investigations</h1>
+      <p>
+        Rather than reinventing 60+ OSINT scrapers or building a graph canvas from zero, we audited the open-source ecosystem to identify the best <strong>Starter Frameworks</strong> to fork/adapt and the best <strong>OSINT & Forensic Tools</strong> to wrap as containerized Bricks.
+      </p>
+    </header>
+
+    <!-- 1. Top 5 Starter Repositories Comparison -->
+    <section>
+      <h2 class="section-title">1. Top 5 Starter Platforms: Architectural Audit & What to Reuse</h2>
+      <p class="section-subtitle">
+        No single existing open-source repository delivers the complete "Photoshop for Criminal Investigations" experience (multi-layer graph + case forensics + deterministic &amp; LLM brick chaining). However, combining architectural patterns from these <strong>five flagship repositories</strong> gives us 70% of the foundation on Day 1.
+      </p>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title"><span class="badge badge-blue">Starter #1</span> <code>jerlendds/osintbuddy</code></div>
+          <p><strong>What it is:</strong> Open-source visual link-analysis &amp; data-mining platform (Maltego alternative) built with React + Python.</p>
+          <p><strong>Strengths:</strong> Clean Python plugin decorator system where each entity node exposes context-menu transforms on an interactive graph canvas.</p>
+          <p><strong>Gaps:</strong> Lacks multi-layer separation (Verified vs. Raw OSINT vs. Hypothesis), lacks multi-step automated playbooks, and lacks forensic chain-of-custody.</p>
+          <p><strong>How we use it:</strong> Adopt its lightweight Python plugin/entity transform syntax as inspiration for our interactive single-node Brick triggers.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span class="badge badge-emerald">Starter #2</span> <code>intelowlproject/IntelOwl</code></div>
+          <p><strong>What it is:</strong> Centralized open-source orchestrator for running 200+ analyzers and external OSINT tools at scale via REST API.</p>
+          <p><strong>Strengths:</strong> Battle-tested Docker + Celery orchestration of heterogeneous CLI tools, API key management, and Playbook grouping.</p>
+          <p><strong>Gaps:</strong> Built primarily for SOC/Malware IOC triage (IPs, hashes, domains) rather than criminal investigations, social media scams, or interactive knowledge graphs.</p>
+          <p><strong>How we use it:</strong> Reuse its containerized Analyzer/Connector runner pattern for our Plane 4 <strong>Brick Execution Engine</strong>.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span class="badge badge-purple">Starter #3</span> <code>blacklanternsecurity/bbot</code></div>
+          <p><strong>What it is:</strong> Recursive, event-driven OSINT and attack-surface framework in Python (modern successor to SpiderFoot).</p>
+          <p><strong>Strengths:</strong> Brilliant pub/sub event architecture: modules declare `watched_events` (e.g. `URL`, `EMAIL`, `PHONE`) and `produced_events`, chaining automatically across hops.</p>
+          <p><strong>Gaps:</strong> CLI-first red-team tool; no visual investigation studio, no human-in-the-loop per-node review canvas, and no police case management.</p>
+          <p><strong>How we use it:</strong> Model our <strong>Non-LLM Deterministic Capability &amp; Chaining Engine</strong> directly on BBOT's `watched_events -> produced_events` pub/sub design.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span class="badge badge-amber">Starter #4</span> <code>OpenCTI-Platform/opencti</code> &amp; <code>yeti-platform/yeti</code></div>
+          <p><strong>What it is:</strong> Enterprise graph-backed threat intelligence platforms using STIX 2.1 ontologies and connector workers.</p>
+          <p><strong>Strengths:</strong> Industry-standard relationship modeling, confidence scoring, sighting timestamps, and asynchronous queue-based enrichment connectors.</p>
+          <p><strong>Gaps:</strong> Heavy cybersecurity jargon (Malware, Intrusion Sets) rather than criminal/fraud entities (`MarketplaceAd`, `PhoneNumber`, `CDR`, `Vehicle`, `BankAccount`).</p>
+          <p><strong>How we use it:</strong> Adapt Yeti/OpenCTI's graph relationship provenance model (`confidence`, `first_seen`, `last_seen`, `source_ref`) for our Neo4j schema.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span class="badge badge-cyan">Starter #5</span> <code>google/timesketch</code> &amp; <code>alephdata/aleph</code></div>
+          <p><strong>What it is:</strong> Google's collaborative forensic timeline analyzer (`Timesketch`) + OCCRP's investigative document &amp; entity cross-referencing platform (`Aleph` / `FollowTheMoney`).</p>
+          <p><strong>Strengths:</strong> `FollowTheMoney` (`alephdata/followthemoney`) has the best open-source ontology for people, companies, bank accounts, courts, and assets; `Timesketch` excels at chronological correlation.</p>
+          <p><strong>How we use it:</strong> Merge `FollowTheMoney` entity schemas with our SOCMINT/Web ontology and embed a `Timesketch`-style timeline bar beneath the graph canvas.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><span class="badge badge-rose">Our Synthesis</span> AegisInvestigate Studio</div>
+          <p><strong>Combining the Best of All 5:</strong></p>
+          <ul style="padding-left:1.15rem;color:var(--text-secondary);font-size:0.86rem;">
+            <li><strong>UI:</strong> OSINTBuddy's visual node transforms + Photoshop Layers + Synchronized Timeline &amp; Map.</li>
+            <li><strong>Brain:</strong> BBOT's deterministic pub/sub event chaining + Optional LLM Playbook Composer.</li>
+            <li><strong>Runner:</strong> IntelOwl's Dockerized analyzer workers + OPSEC Proxy/Sock-Puppet Vault.</li>
+            <li><strong>Ontology:</strong> OCCRP FollowTheMoney + STIX 2.1 + Criminal Forensics (CDR, ALPR, DB IDs).</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Interactive Master Table of 48 Audited GitHub Repositories -->
+    <section>
+      <h2 class="section-title">2. Complete Audit of 48 Open-Source GitHub Repositories</h2>
+      <p class="section-subtitle">
+        Filter by category or search by keyword (e.g., <code>phone</code>, <code>graph</code>, <code>facebook</code>, <code>telegram</code>, <code>image</code>, <code>crypto</code>, <code>timeline</code>) to inspect how each repository fits into our framework.
+      </p>
+
+      <div class="filter-bar">
+        <input
+          type="text"
+          id="repo-search"
+          class="search-input"
+          placeholder="Search 48 repositories by name, clue type, language, or capability..."
+          onkeyup="filterTable('repo-search', 'repos-table', 'repo-category')"
+        />
+        <select
+          id="repo-category"
+          class="search-input"
+          style="max-width:310px;"
+          onchange="filterTable('repo-search', 'repos-table', 'repo-category')"
+        >
+          <option value="all">All Categories (48 Repositories)</option>
+          <option value="platform">1. Starter Platforms &amp; Orchestrators (10)</option>
+          <option value="identity">2. Phone, Email &amp; Username Pivots (8)</option>
+          <option value="socmint">3. Social Media (SOCMINT) &amp; Archiving (7)</option>
+          <option value="web_infra">4. Web, Links, DB IDs &amp; Infrastructure (8)</option>
+          <option value="media_geoint">5. Image Forensics, Biometrics &amp; GEOINT (7)</option>
+          <option value="finance_crypto">6. Financial, Sanctions &amp; Crypto (4)</option>
+          <option value="dfir_viz">7. Traditional DFIR &amp; Graph Engines (4)</option>
+        </select>
+      </div>
+
+      <div class="table-container">
+        <table id="repos-table">
+          <thead>
+            <tr>
+              <th>GitHub Repository</th>
+              <th>Category</th>
+              <th>Tech Stack</th>
+              <th>Core Capability &amp; Strengths</th>
+              <th>Integration Role in AegisInvestigate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 1. Starter Platforms & Orchestrators -->
+            <tr data-category="platform">
+              <td><strong><a href="https://github.com/jerlendds/osintbuddy" target="_blank" style="color:#60a5fa;">jerlendds/osintbuddy</a></strong></td>
+              <td><span class="badge badge-blue">Starter Platform</span></td>
+              <td>Python, FastAPI, React, TypeScript</td>
+              <td>Graph-native visual link analysis with modular Python transform plugins (open-source Maltego alternative).</td>
+              <td><strong>UI &amp; Plugin Inspiration:</strong> Reference architecture for interactive right-click node transforms on the canvas.</td>
+            </tr>
+            <tr data-category="platform">
+              <td><strong><a href="https://github.com/intelowlproject/IntelOwl" target="_blank" style="color:#60a5fa;">intelowlproject/IntelOwl</a></strong></td>
+              <td><span class="badge badge-blue">Starter Platform</span></td>
+              <td>Python, Django, Celery, Docker, React</td>
+              <td>Centralized orchestrator managing 200+ OSINT &amp; threat intelligence analyzers via containerized workers.</td>
+              <td><strong>Worker Architecture Starter:</strong> Adapt its analyzer manifest and Celery/Docker execution engine for Plane 4 Bricks.</td>
+            </tr>
+            <tr data-category="platform">
+              <td><strong><a href="https://github.com/blacklanternsecurity/bbot" target="_blank" style="color:#60a5fa;">blacklanternsecurity/bbot</a></strong></td>
+              <td><span class="badge badge-blue">Starter Platform</span></td>
+              <td>Python (Asyncio), Neo4j/JSON output</td>
+              <td>Recursive, event-driven OSINT pipeline where modules consume and emit typed events across multi-hop scans.</td>
+              <td><strong>Chaining Engine Starter:</strong> Core inspiration for our Non-LLM Deterministic Event Chaining &amp; Brick matcher.</td>
+            </tr>
+            <tr data-category="platform">
+              <td><strong><a href="https://github.com/smicallef/spiderfoot" target="_blank" style="color:#60a5fa;">smicallef/spiderfoot</a></strong></td>
+              <td><span class="badge badge-blue">Starter Platform</span></td>
+              <td>Python, SQLite, CherryPy</td>
+              <td>200+ reconnaissance modules covering domains, IPs, emails, phones, and dark web feeds with automatic chaining.</td>
+              <td><strong>Module Library Reference:</strong> Port high-value passive modules into standalone containerized Bricks.</td>
+            </tr>
+            <tr data-category="platform">
+              <td><strong><a href="https://github.com/OpenCTI-Platform/opencti" target="_blank" style="color:#60a5fa;">OpenCTI-Platform/opencti</a></strong></td>
+              <td><span class="badge badge-blue">Starter Platform</span></td>
+              <td>Node.js, GraphQL, React, Python Workers</td>
+              <td>Enterprise STIX 2.1 knowledge graph, RBAC, confidence scoring, and queue-based enrichment connectors.</td>
+              <td><strong>Graph Provenance Reference:</strong> Adopt its STIX-compatible sighting, confidence, and source-reference metadata model.</td>
+            </tr>
+            <tr data-category="platform">
+              <td><strong><a href="https://github.com/yeti-platform/yeti" target="_blank" style="color:#60a5fa;">yeti-platform/yeti</a></strong></td>
+              <td><span class="badge badge-blue">Starter Platform</span></td>
+              <td>Python, FastAPI, ArangoDB, Celery, Vue</td>
+              <td>Lightweight FastAPI + Graph threat &amp; observable enrichment platform with clean Python analytics plugins.</td>
+              <td><strong>FastAPI Graph Reference:</strong> Clean reference for FastAPI + async task queues + graph database REST endpoints.</td>
+            </tr>
+            <tr data-category="platform">
+              <td><strong><a href="https://github.com/TheHive-Project/TheHive" target="_blank" style="color:#60a5fa;">TheHive-Project/TheHive</a> &amp; Cortex</strong></td>
+              <td><span class="badge badge-blue">Starter Platform</span></td>
+              <td>Scala, Python Responders, Docker</td>
+              <td>Case management, task tracking, observable triage, and isolated Cortex analyzer execution.</td>
+              <td><strong>Case Workflow Reference:</strong> Inspiration for collaborative case tasks, evidence lockers, and responder actions.</td>
+            </tr>
+            <tr data-category="platform">
+              <td><strong><a href="https://github.com/alephdata/aleph" target="_blank" style="color:#60a5fa;">alephdata/aleph</a> &amp; FollowTheMoney</strong></td>
+              <td><span class="badge badge-blue">Starter Platform</span></td>
+              <td>Python, PostgreSQL, Elasticsearch, React</td>
+              <td>OCCRP's investigative journalism platform for massive document leaks, company registries, and entity cross-referencing.</td>
+              <td><strong>Ontology &amp; Document Brick:</strong> Embed `followthemoney` entity schemas for People, Companies, Assets, and Court Cases.</td>
+            </tr>
+            <tr data-category="platform">
+              <td><strong><a href="https://github.com/google/timesketch" target="_blank" style="color:#60a5fa;">google/timesketch</a></strong></td>
+              <td><span class="badge badge-blue">Starter Platform</span></td>
+              <td>Python, OpenSearch, Vue.js</td>
+              <td>Collaborative forensic timeline analysis allowing investigators to correlate millions of timestamped events.</td>
+              <td><strong>Timeline Engine Reference:</strong> Basis for our synchronized Chronological Timeline view and temporal analyzers.</td>
+            </tr>
+            <tr data-category="platform">
+              <td><strong><a href="https://github.com/be0vlk/owlculus" target="_blank" style="color:#60a5fa;">Owlculus OSINT Platform</a></strong></td>
+              <td><span class="badge badge-blue">Starter Platform</span></td>
+              <td>Python, FastAPI, React, Docker</td>
+              <td>OSINT case management platform with built-in entity tracking, browser extension capture, and role collaboration.</td>
+              <td><strong>Case &amp; Browser Capture Reference:</strong> Blueprint for our Investigator Web Clipper browser extension.</td>
+            </tr>
+
+            <!-- 2. Phone, Email & Username Pivots -->
+            <tr data-category="identity">
+              <td><strong><a href="https://github.com/sundowndev/phoneinfoga" target="_blank" style="color:#60a5fa;">sundowndev/phoneinfoga</a></strong></td>
+              <td><span class="badge badge-cyan">Phone &amp; Identity</span></td>
+              <td>Go, React</td>
+              <td>International phone number validation, carrier/line type lookup, and automated search engine footprinting dorks.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.identity.phoneinfoga</code> (Auto-runs on every discovered <code>PhoneNumber</code>).</td>
+            </tr>
+            <tr data-category="identity">
+              <td><strong><a href="https://github.com/megadose/ignorant" target="_blank" style="color:#60a5fa;">megadose/ignorant</a></strong></td>
+              <td><span class="badge badge-cyan">Phone &amp; Identity</span></td>
+              <td>Python (Async HTTP)</td>
+              <td>Checks if a phone number is registered on Instagram, Snapchat, Amazon, and other platforms without alerting the target.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.identity.ignorant</code> (Core phone-to-OSN pivot brick in the Tyre Scam flow).</td>
+            </tr>
+            <tr data-category="identity">
+              <td><strong><a href="https://github.com/megadose/holehe" target="_blank" style="color:#60a5fa;">megadose/holehe</a></strong></td>
+              <td><span class="badge badge-cyan">Phone &amp; Identity</span></td>
+              <td>Python (Trio/Httpx)</td>
+              <td>Checks if an email is attached to 120+ online services via forgotten-password endpoints, often returning masked recovery phones.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.identity.holehe</code> (Links emails to OSN accounts &amp; partial phone hints).</td>
+            </tr>
+            <tr data-category="identity">
+              <td><strong><a href="https://github.com/soxoj/maigret" target="_blank" style="color:#60a5fa;">soxoj/maigret</a></strong></td>
+              <td><span class="badge badge-cyan">Phone &amp; Identity</span></td>
+              <td>Python (Asyncio)</td>
+              <td>Collects a full dossier on a username across 2,500+ sites, parsing profile pages for links, bios, and secondary usernames.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.identity.maigret</code> (Primary recursive username-to-account pivot brick).</td>
+            </tr>
+            <tr data-category="identity">
+              <td><strong><a href="https://github.com/sherlock-project/sherlock" target="_blank" style="color:#60a5fa;">sherlock-project/sherlock</a></strong></td>
+              <td><span class="badge badge-cyan">Phone &amp; Identity</span></td>
+              <td>Python</td>
+              <td>Fast username enumeration across 400+ social networks with low false-positive rates.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.identity.sherlock</code> (Fast lightweight username sweep).</td>
+            </tr>
+            <tr data-category="identity">
+              <td><strong><a href="https://github.com/p1ngul1n0/blackbird" target="_blank" style="color:#60a5fa;">p1ngul1n0/blackbird</a></strong></td>
+              <td><span class="badge badge-cyan">Phone &amp; Identity</span></td>
+              <td>Python</td>
+              <td>High-speed username and email OSINT across 600+ sites with metadata extraction and JSON export.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.identity.blackbird</code> (Complements Holehe &amp; Maigret).</td>
+            </tr>
+            <tr data-category="identity">
+              <td><strong><a href="https://github.com/mxrch/GHunt" target="_blank" style="color:#60a5fa;">mxrch/GHunt</a></strong></td>
+              <td><span class="badge badge-cyan">Phone &amp; Identity</span></td>
+              <td>Python</td>
+              <td>Investigates Google accounts (Gmail, Gaia ID, Google Maps reviews, photos, YouTube, public calendars).</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.identity.ghunt_google</code> (Geolocates targets via historical Google Maps reviews).</td>
+            </tr>
+            <tr data-category="identity">
+              <td><strong><a href="https://github.com/khast3x/h8mail" target="_blank" style="color:#60a5fa;">khast3x/h8mail</a></strong></td>
+              <td><span class="badge badge-cyan">Phone &amp; Identity</span></td>
+              <td>Python</td>
+              <td>Email &amp; username breach hunting across local combo lists, stealer logs, and breach APIs.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.identity.h8mail_breach</code> (Pivots between emails, leaked IPs, phones, and passwords).</td>
+            </tr>
+
+            <!-- 3. Social Media (SOCMINT) & Archiving -->
+            <tr data-category="socmint">
+              <td><strong><a href="https://github.com/ArchiveBox/ArchiveBox" target="_blank" style="color:#60a5fa;">ArchiveBox/ArchiveBox</a></strong></td>
+              <td><span class="badge badge-purple">SOCMINT &amp; Archive</span></td>
+              <td>Python, Django, Playwright, WARC</td>
+              <td>Self-hosted internet archiving solution saving HTML, WARC, PDF, screenshots, media, and git clones of target URLs.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.socmint.post_archiver</code> (Preserves court-admissible snapshots in MinIO Vault).</td>
+            </tr>
+            <tr data-category="socmint">
+              <td><strong><a href="https://github.com/LonamiWebs/Telethon" target="_blank" style="color:#60a5fa;">LonamiWebs/Telethon</a></strong></td>
+              <td><span class="badge badge-purple">SOCMINT &amp; Archive</span></td>
+              <td>Python (MTProto API)</td>
+              <td>Full Telegram client library capable of resolving phone numbers to Telegram numeric IDs, avatars, and group messages.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.socmint.telegram_lookup</code> (Powered by Sock-Puppet Session Vault).</td>
+            </tr>
+            <tr data-category="socmint">
+              <td><strong><a href="https://github.com/instaloader/instaloader" target="_blank" style="color:#60a5fa;">instaloader/instaloader</a></strong></td>
+              <td><span class="badge badge-purple">SOCMINT &amp; Archive</span></td>
+              <td>Python</td>
+              <td>Downloads public and private Instagram profiles, stories, geotags, captions, and comments with full metadata JSON.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.socmint.instagram_osint</code> (Extracts geotags, co-tagged accounts, and image hashes).</td>
+            </tr>
+            <tr data-category="socmint">
+              <td><strong><a href="https://github.com/Datalux/Osintgram" target="_blank" style="color:#60a5fa;">Datalux/Osintgram</a></strong></td>
+              <td><span class="badge badge-purple">SOCMINT &amp; Archive</span></td>
+              <td>Python</td>
+              <td>Interactive Instagram OSINT tool extracting followers, tagged users, most common locations, and commenter graphs.</td>
+              <td><strong>Wrapped as Brick:</strong> Merged into <code>brick.socmint.instagram_osint</code> social-circle mapper.</td>
+            </tr>
+            <tr data-category="socmint">
+              <td><strong><a href="https://github.com/megadose/toutatis" target="_blank" style="color:#60a5fa;">megadose/toutatis</a></strong></td>
+              <td><span class="badge badge-purple">SOCMINT &amp; Archive</span></td>
+              <td>Python</td>
+              <td>Extracts public account IDs, bio history, and obfuscated recovery phone numbers &amp; emails from Instagram accounts.</td>
+              <td><strong>Wrapped as Brick:</strong> Cross-validates whether a suspect's phone number matches an Instagram account's masked recovery digits.</td>
+            </tr>
+            <tr data-category="socmint">
+              <td><strong><a href="https://github.com/Greenwolf/social_mapper" target="_blank" style="color:#60a5fa;">Greenwolf/social_mapper</a></strong></td>
+              <td><span class="badge badge-purple">SOCMINT &amp; Archive</span></td>
+              <td>Python, Selenium, Face Recognition</td>
+              <td>Correlates profiles across Facebook, Instagram, LinkedIn, and X using automated name search + facial recognition matching.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.socmint.cross_platform_face_pivot</code> (Finds same suspect across platforms even under different usernames).</td>
+            </tr>
+            <tr data-category="socmint">
+              <td><strong><a href="https://github.com/yt-dlp/yt-dlp" target="_blank" style="color:#60a5fa;">yt-dlp/yt-dlp</a></strong></td>
+              <td><span class="badge badge-purple">SOCMINT &amp; Archive</span></td>
+              <td>Python</td>
+              <td>Downloads videos, live streams, thumbnails, subtitles, and JSON metadata from 1,000+ social/video platforms (FB, TikTok, YouTube).</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.socmint.video_archiver</code> (Feeds video/audio directly to Whisper &amp; Frame Forensics).</td>
+            </tr>
+
+            <!-- 4. Web, Links, DB IDs & Infrastructure -->
+            <tr data-category="web_infra">
+              <td><strong><a href="https://github.com/projectdiscovery/httpx" target="_blank" style="color:#60a5fa;">projectdiscovery/httpx</a></strong></td>
+              <td><span class="badge badge-amber">Web &amp; Infra</span></td>
+              <td>Go</td>
+              <td>Fast multi-purpose HTTP toolkit probing status codes, favicon hashes (MurmurHash3), TLS certs, JARM, tech stack, and DOM hashes.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.web.httpx_fingerprint</code> (Matches scam websites using the same phishing kit favicon/JARM).</td>
+            </tr>
+            <tr data-category="web_infra">
+              <td><strong><a href="https://github.com/projectdiscovery/katana" target="_blank" style="color:#60a5fa;">projectdiscovery/katana</a></strong></td>
+              <td><span class="badge badge-amber">Web &amp; Infra</span></td>
+              <td>Go (Headless Chrome support)</td>
+              <td>Next-generation web crawler parsing JavaScript bundles, API routes, form endpoints, and hidden parameters.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.web.katana_js_secrets</code> (Extracts exposed DB IDs, API routes, and hardcoded keys from scam sites).</td>
+            </tr>
+            <tr data-category="web_infra">
+              <td><strong><a href="https://github.com/projectdiscovery/subfinder" target="_blank" style="color:#60a5fa;">projectdiscovery/subfinder</a></strong></td>
+              <td><span class="badge badge-amber">Web &amp; Infra</span></td>
+              <td>Go</td>
+              <td>Passive subdomain discovery across 40+ certificate transparency and passive DNS sources.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.web.subfinder_amass</code> (Finds hidden admin or staging subdomains on scam infrastructure).</td>
+            </tr>
+            <tr data-category="web_infra">
+              <td><strong><a href="https://github.com/owasp-amass/amass" target="_blank" style="color:#60a5fa;">owasp-amass/amass</a></strong></td>
+              <td><span class="badge badge-amber">Web &amp; Infra</span></td>
+              <td>Go</td>
+              <td>In-depth attack surface mapping, ASN/BGP discovery, and OpenAssetModel graph storage.</td>
+              <td><strong>Wrapped as Brick:</strong> Deep infrastructure pivot for organized cybercrime campaigns.</td>
+            </tr>
+            <tr data-category="web_infra">
+              <td><strong><a href="https://github.com/projectdiscovery/nuclei" target="_blank" style="color:#60a5fa;">projectdiscovery/nuclei</a></strong></td>
+              <td><span class="badge badge-amber">Web &amp; Infra</span></td>
+              <td>Go, YAML Templates</td>
+              <td>Template-based scanner capable of detecting exposed `.env` files, open `.git` repos, Firebase/Supabase misconfigurations, and admin panels.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.web.exposure_scanner</code> (Guarded `Review-Run` brick to check if a scammer left their `.git` or DB open).</td>
+            </tr>
+            <tr data-category="web_infra">
+              <td><strong><a href="https://github.com/trufflesecurity/trufflehog" target="_blank" style="color:#60a5fa;">trufflesecurity/trufflehog</a></strong></td>
+              <td><span class="badge badge-amber">Web &amp; Infra</span></td>
+              <td>Go</td>
+              <td>Scans web pages, JS bundles, and repositories for 700+ types of leaked API keys, Telegram Bot tokens, and DB credentials.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.web.secret_extractor</code> (Extracts Telegram Bot tokens often hardcoded in phishing checkout forms!).</td>
+            </tr>
+            <tr data-category="web_infra">
+              <td><strong><a href="https://github.com/laramies/theHarvester" target="_blank" style="color:#60a5fa;">laramies/theHarvester</a></strong></td>
+              <td><span class="badge badge-amber">Web &amp; Infra</span></td>
+              <td>Python</td>
+              <td>Gathers emails, names, subdomains, IPs, and URLs associated with a target domain from public sources.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.web.theharvester</code> (Domain-to-Email/Person discovery).</td>
+            </tr>
+            <tr data-category="web_infra">
+              <td><strong><a href="https://github.com/sensepost/gowitness" target="_blank" style="color:#60a5fa;">sensepost/gowitness</a></strong></td>
+              <td><span class="badge badge-amber">Web &amp; Infra</span></td>
+              <td>Go, Headless Chromium</td>
+              <td>High-speed web screenshot and DOM/network header collection utility.</td>
+              <td><strong>Wrapped as Brick:</strong> Visual preview generator for all discovered `URL` and `Domain` nodes on the canvas.</td>
+            </tr>
+
+            <!-- 5. Image Forensics, Biometrics & GEOINT -->
+            <tr data-category="media_geoint">
+              <td><strong><a href="https://github.com/GuidoBartoli/sherloq" target="_blank" style="color:#60a5fa;">GuidoBartoli/sherloq</a></strong></td>
+              <td><span class="badge badge-emerald">Media &amp; GEOINT</span></td>
+              <td>Python, OpenCV, Qt/CLI</td>
+              <td>Comprehensive digital image forensics suite: Error Level Analysis (ELA), clone detection, noiseprint, JPEG ghost, and metadata inspection.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.media.sherloq_forensics</code> (Detects forged documents, edited receipts, and manipulated crime photos).</td>
+            </tr>
+            <tr data-category="media_geoint">
+              <td><strong><a href="https://github.com/exiftool/exiftool" target="_blank" style="color:#60a5fa;">exiftool/exiftool</a></strong></td>
+              <td><span class="badge badge-emerald">Media &amp; GEOINT</span></td>
+              <td>Perl</td>
+              <td>Gold-standard metadata reader extracting EXIF, GPS, XMP, MakerNotes, camera serial numbers, and PDF edit history across 1,000+ file formats.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.media.exiftool_deep</code> (Auto-runs offline on every uploaded image, video, audio, or document).</td>
+            </tr>
+            <tr data-category="media_geoint">
+              <td><strong><a href="https://github.com/serengil/deepface" target="_blank" style="color:#60a5fa;">serengil/deepface</a></strong></td>
+              <td><span class="badge badge-emerald">Media &amp; GEOINT</span></td>
+              <td>Python, PyTorch/TensorFlow</td>
+              <td>Lightweight facial recognition and attribute analysis library wrapping ArcFace, Facenet512, and RetinaFace.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.media.deepface_biometrics</code> (Indexes all OSN avatars &amp; suspect photos into Qdrant for instant face matching).</td>
+            </tr>
+            <tr data-category="media_geoint">
+              <td><strong><a href="https://github.com/VicenteVivan/geo-clip" target="_blank" style="color:#60a5fa;">VicenteVivan/geo-clip</a></strong></td>
+              <td><span class="badge badge-emerald">Media &amp; GEOINT</span></td>
+              <td>Python, PyTorch (CLIP)</td>
+              <td>Worldwide image geolocation model predicting GPS coordinate probability distributions directly from outdoor photos without EXIF.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.media.geoclip_locator</code> (Plots top-5 location heatmaps on the GEOINT Map canvas).</td>
+            </tr>
+            <tr data-category="media_geoint">
+              <td><strong><a href="https://github.com/bellingcat/ShadowFinder" target="_blank" style="color:#60a5fa;">bellingcat/ShadowFinder</a></strong></td>
+              <td><span class="badge badge-emerald">Media &amp; GEOINT</span></td>
+              <td>Python, Matplotlib</td>
+              <td>Bellingcat's tool calculating possible geographic coordinates on Earth given an object's height, shadow length, and date/time.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.media.shadow_suncalc</code> (Chronolocation &amp; geolocation verification for outdoor evidence photos).</td>
+            </tr>
+            <tr data-category="media_geoint">
+              <td><strong><a href="https://github.com/exadel-inc/CompreFace" target="_blank" style="color:#60a5fa;">exadel-inc/CompreFace</a></strong></td>
+              <td><span class="badge badge-emerald">Media &amp; GEOINT</span></td>
+              <td>Docker, Python, Java, REST API</td>
+              <td>Self-hosted Dockerized facial recognition microservice with ready-to-use REST endpoints.</td>
+              <td><strong>Alternative Face Service:</strong> Drop-in Docker service for multi-investigator facial search.</td>
+            </tr>
+            <tr data-category="media_geoint">
+              <td><strong><a href="https://github.com/SYSTRAN/faster-whisper" target="_blank" style="color:#60a5fa;">SYSTRAN/faster-whisper</a></strong></td>
+              <td><span class="badge badge-emerald">Media &amp; GEOINT</span></td>
+              <td>Python, CTranslate2</td>
+              <td>High-speed local speech-to-text transcription (4x faster than OpenAI Whisper) supporting multilingual audio &amp; voice notes.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.media.audio_whisper_diarize</code> (Transcribes WhatsApp/Telegram voice notes &amp; wiretaps offline).</td>
+            </tr>
+
+            <!-- 6. Financial, Sanctions & Crypto -->
+            <tr data-category="finance_crypto">
+              <td><strong><a href="https://github.com/graphsense/graphsense-dashboard" target="_blank" style="color:#60a5fa;">graphsense/graphsense-dashboard</a></strong></td>
+              <td><span class="badge badge-rose">Finance &amp; Crypto</span></td>
+              <td>Python, Cassandra/Spark, TypeScript</td>
+              <td>Open-source cryptocurrency investigation platform performing wallet co-spend clustering and exchange attribution across BTC, ETH, TRX, USDT.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.finance.graphsense_crypto</code> (Traces scammer crypto addresses to cash-out exchanges).</td>
+            </tr>
+            <tr data-category="finance_crypto">
+              <td><strong><a href="https://github.com/opensanctions/yente" target="_blank" style="color:#60a5fa;">opensanctions/yente</a></strong></td>
+              <td><span class="badge badge-rose">Finance &amp; Crypto</span></td>
+              <td>Python, FastAPI, Elasticsearch</td>
+              <td>Self-hosted entity matching API searching global sanctions lists, Interpol Red Notices, PEPs, and wanted criminals.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.finance.opensanctions_pep</code> (Fuzzy name/DOB/passport matching against global crime lists).</td>
+            </tr>
+            <tr data-category="finance_crypto">
+              <td><strong><a href="https://github.com/alephdata/followthemoney" target="_blank" style="color:#60a5fa;">alephdata/followthemoney</a></strong></td>
+              <td><span class="badge badge-rose">Finance &amp; Crypto</span></td>
+              <td>Python</td>
+              <td>Anti-corruption and financial crime data ontology modeling companies, directorships, bank accounts, payments, and court filings.</td>
+              <td><strong>Core Ontology Library:</strong> Used in our Python backend to validate and export financial &amp; corporate subgraphs.</td>
+            </tr>
+            <tr data-category="finance_crypto">
+              <td><strong><a href="https://github.com/mdomke/schwifty" target="_blank" style="color:#60a5fa;">mdomke/schwifty</a></strong></td>
+              <td><span class="badge badge-rose">Finance &amp; Crypto</span></td>
+              <td>Python</td>
+              <td>Offline IBAN, BIC, and bank routing code validator and bank-branch resolver across 80+ countries.</td>
+              <td><strong>Wrapped as Brick:</strong> <code>brick.finance.iban_ccp_analyzer</code> (Resolves bank names &amp; branches from scam payment requests).</td>
+            </tr>
+
+            <!-- 7. Traditional DFIR & Graph Visualization Engines -->
+            <tr data-category="dfir_viz">
+              <td><strong><a href="https://github.com/cytoscape/cytoscape.js" target="_blank" style="color:#60a5fa;">cytoscape/cytoscape.js</a></strong></td>
+              <td><span class="badge badge-blue">Graph &amp; DFIR</span></td>
+              <td>JavaScript / TypeScript</td>
+              <td>Feature-rich graph theory and network visualization library supporting compound nodes, Dagre/Cola layouts, and shortest-path algorithms.</td>
+              <td><strong>Core UI Graph Engine:</strong> Powers our interactive Knowledge Graph canvas for graphs up to 5,000 nodes.</td>
+            </tr>
+            <tr data-category="dfir_viz">
+              <td><strong><a href="https://github.com/jacomyal/sigma.js" target="_blank" style="color:#60a5fa;">jacomyal/sigma.js</a> &amp; Graphology</strong></td>
+              <td><span class="badge badge-blue">Graph &amp; DFIR</span></td>
+              <td>TypeScript, WebGL</td>
+              <td>High-performance WebGL graph rendering engine capable of displaying 50,000+ nodes &amp; CDR call graphs at 60 FPS.</td>
+              <td><strong>Core UI WebGL Engine:</strong> Activated automatically when visualizing massive CDR telecom or crypto transaction graphs.</td>
+            </tr>
+            <tr data-category="dfir_viz">
+              <td><strong><a href="https://github.com/sleuthkit/autopsy" target="_blank" style="color:#60a5fa;">sleuthkit/autopsy</a></strong></td>
+              <td><span class="badge badge-blue">Graph &amp; DFIR</span></td>
+              <td>Java, C/C++, Python Modules</td>
+              <td>Premier open-source digital forensics platform for analyzing seized hard drives, smartphones, SQLite DBs, and deleted files.</td>
+              <td><strong>DFIR Import Connector:</strong> Ingests Autopsy JSON/CSV exports (contacts, call logs, browser history) directly onto the Case Graph.</td>
+            </tr>
+            <tr data-category="dfir_viz">
+              <td><strong><a href="https://github.com/Velocidex/velociraptor" target="_blank" style="color:#60a5fa;">Velocidex/velociraptor</a></strong></td>
+              <td><span class="badge badge-blue">Graph &amp; DFIR</span></td>
+              <td>Go, VQL</td>
+              <td>Endpoint visibility and digital forensic artifact collection platform using Velociraptor Query Language (VQL).</td>
+              <td><strong>DFIR Live Collector Brick:</strong> Imports forensic triage artifacts from compromised servers or seized machines.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>

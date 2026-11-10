@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>03. Investigation Tools Menu & Automation — AegisInvestigate</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">Æ</div>
+      <div class="brand-text">
+        <h1>AegisInvestigate</h1>
+        <span>Visual Investigation Studio</span>
+      </div>
+    </div>
+
+    <div class="nav-section">Specification Portal</div>
+    <ul class="nav-links">
+      <li><a href="index.html"><span>🏠 01. Executive Summary</span><span class="nav-badge">Overview</span></a></li>
+      <li><a href="architecture.html"><span>🏗️ 02. Visual Architecture</span><span class="nav-badge">6 Layers</span></a></li>
+      <li><a href="bricks-and-automation.html" class="active"><span>🧰 03. Investigation Tools Menu</span><span class="nav-badge">76 Tools</span></a></li>
+      <li><a href="data-model.html"><span>🕸️ 04. Visual Graph & UI Spec</span><span class="nav-badge">Ontology</span></a></li>
+      <li><a href="roadmap-phases.html"><span>🚀 05. Development Phases</span><span class="nav-badge">6 Releases</span></a></li>
+      <li><a href="github-repos-audit.html"><span>📦 06. GitHub Repos Audit</span><span class="nav-badge">48 Repos</span></a></li>
+      <li><a href="maquette.html" class="maquette-cta"><span>🖥️ Launch App Maquette</span><span class="nav-badge">Live Sim</span></a></li>
+    </ul>
+
+    <div class="nav-section">Markdown Reference</div>
+    <ul class="nav-links">
+      <li><a href="SPECIFICATION.md"><span>📄 Full Technical Spec (.md)</span></a></li>
+      <li><a href="GITHUB_AUDIT.md"><span>📄 GitHub Starter Audit (.md)</span></a></li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div><strong>Designed For:</strong> Investigators (Zero CS Jargon)</div>
+      <div><strong>Proof Standard:</strong> Automatic Legal Snapshots</div>
+      <div><strong>Intelligence:</strong> Standard Rules + Optional AI</div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="page-header">
+      <div class="page-eyebrow">Chapter 03 &bull; Categorized Investigation Tools &amp; Automation</div>
+      <h1>Investigation Tools Menu &amp; How Clues Are Extracted</h1>
+      <p>
+        In AegisInvestigate, every online search technique and forensic analysis utility is packaged as an easy-to-use <strong>Investigation Tool</strong>. When you select a clue on your Case Board, the app highlights only the tools that actually work with that clue—explaining in plain language <strong>what clue you start with</strong>, <strong>how the tool extracts info step-by-step</strong>, and <strong>what new clues it discovers</strong>.
+      </p>
+    </header>
+
+    <!-- 1. How Automation Works (Plain Language) -->
+    <section>
+      <h2 class="section-title">1. How Automation Works for Investigators (No AI Required vs. With AI)</h2>
+      <p class="section-subtitle">
+        You never have to guess what tool to use. The platform automatically organizes tools according to your case type and the clues you have collected.
+      </p>
+
+      <div class="grid-2">
+        <div class="card" style="border-top:4px solid var(--accent-cyan);">
+          <div class="card-title"><span>🧭</span> Standard Mode (Works 100% Without AI)</div>
+          <p><strong>Strict Investigative Logic:</strong></p>
+          <ul style="padding-left:1.2rem;color:var(--text-secondary);font-size:0.88rem;display:flex;flex-direction:column;gap:0.45rem;">
+            <li><strong>Clue-to-Tool Matching:</strong> If you click a <em>Phone Number</em>, only phone tools appear. If you click a <em>Photo</em>, only image forensics and facial comparison tools appear.</li>
+            <li><strong>Safe vs. Active Tools:</strong> Completely passive tools (like reading hidden camera dates or looking up telecom operators) run <strong>Automatically</strong> in the background. Active tools (like checking Instagram or WhatsApp) wait for your 1-click confirmation.</li>
+            <li><strong>Chained Investigation Steps:</strong> When Tool 1 discovers a new website link from a post, Tool 2 automatically offers to scan that link for hidden codes and twin scam websites.</li>
+          </ul>
+        </div>
+
+        <div class="card" style="border-top:4px solid var(--accent-purple);">
+          <div class="card-title"><span>🤖</span> Smart AI Assistant Mode (Optional Copilot)</div>
+          <p><strong>When You Connect an AI (Local or Cloud):</strong></p>
+          <ul style="padding-left:1.2rem;color:var(--text-secondary);font-size:0.88rem;display:flex;flex-direction:column;gap:0.45rem;">
+            <li><strong>Reads Messy Multilingual Text:</strong> Reads Facebook posts and WhatsApp chat screenshots in French, Arabic, or Algerian Darija, picking out hidden phone numbers, payment details, and slang fraud methods.</li>
+            <li><strong>Assembles Custom Investigation Plans:</strong> Generates multi-step search pipelines (e.g. <em>"Step 1: Save Post → Step 2: Extract Phone → Step 3: Check Telegram &amp; Marketplace Ads"</em>).</li>
+            <li><strong>You Stay in Control:</strong> The AI proposes the search sequence with a clear explanation, and you choose whether to <strong>Run Step-by-Step</strong> or <strong>Run Entire Chain</strong>.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Interactive Tool Explorer Menu (Master-Detail) -->
+    <section>
+      <h2 class="section-title">2. Interactive Investigation Tools Menu (Click Any Category or Tool)</h2>
+      <p class="section-subtitle">
+        Browse the categorized catalog of 76 forensic tools below. Select any category in the left column, pick a tool in the middle column, and read its detailed extraction flow, real case example, and legal proof standard in the right panel.
+      </p>
+
+      <!-- Prerequisite Breakdown Bar -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1.15rem;background:var(--bg-card);border:1px solid var(--border-color);padding:0.75rem 1rem;border-radius:8px;">
+        <div style="font-size:0.84rem;color:var(--text-primary);font-weight:600;">
+          📊 <strong>76 Outils d'Investigation Référencés</strong> &bull; Inventaire Complet &amp; Prérequis :
+        </div>
+        <div style="display:flex;gap:0.45rem;flex-wrap:wrap;">
+          <button class="btn btn-emerald" style="font-size:0.74rem;padding:0.3rem 0.65rem;" onclick="filterToolsByPrereq('DIRECT')">🟢 Direct &amp; Gratuit (58)</button>
+          <button class="btn" style="font-size:0.74rem;padding:0.3rem 0.65rem;" onclick="filterToolsByPrereq('FREE_API')">🟡 Clé API Gratuite (11)</button>
+          <button class="btn" style="font-size:0.74rem;padding:0.3rem 0.65rem;" onclick="filterToolsByPrereq('ACCOUNT')">🟠 Compte Dédié (6)</button>
+          <button class="btn" style="font-size:0.74rem;padding:0.3rem 0.65rem;" onclick="filterToolsByPrereq('PAID')">🔴 Payant (1)</button>
+          <button class="btn" style="font-size:0.74rem;padding:0.3rem 0.65rem;" onclick="filterToolsByPrereq('ALL')">🔄 Tous (76)</button>
+        </div>
+      </div>
+
+      <div id="interactive-tool-explorer" class="tool-explorer">
+        <!-- Column 1: Category Menu -->
+        <div class="tool-cat-menu">
+          <div class="dock-heading" style="padding:0 0.4rem;">Toolbox Categories</div>
+          <button class="tool-cat-btn active" data-tool-cat="socmint" onclick="selectToolCategory('socmint')">
+            <span>📢</span>
+            <div>
+              <div>Social Media &amp; Ads</div>
+              <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Facebook, Telegram, Marketplaces</div>
+            </div>
+          </button>
+          <button class="tool-cat-btn" data-tool-cat="phone_id" onclick="selectToolCategory('phone_id')">
+            <span>📱</span>
+            <div>
+              <div>Phone, Email &amp; ID</div>
+              <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Carrier, 100+ Apps, Breaches</div>
+            </div>
+          </button>
+          <button class="tool-cat-btn" data-tool-cat="web_infra" onclick="selectToolCategory('web_infra')">
+            <span>🌐</span>
+            <div>
+              <div>Websites &amp; Servers</div>
+              <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Hidden Codes, Twin Scam Sites</div>
+            </div>
+          </button>
+          <button class="tool-cat-btn" data-tool-cat="media_geoint" onclick="selectToolCategory('media_geoint')">
+            <span>🖼️</span>
+            <div>
+              <div>Photos, Faces &amp; Audio</div>
+              <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Tampering, Face Matches, Voice Darija</div>
+            </div>
+          </button>
+          <button class="tool-cat-btn" data-tool-cat="police_forensics" onclick="selectToolCategory('police_forensics')">
+            <span>🚔</span>
+            <div>
+              <div>Police, CDR &amp; Vehicles</div>
+              <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Cell Towers, Alibis, License Plates</div>
+            </div>
+          </button>
+          <button class="tool-cat-btn" data-tool-cat="finance_crypto" onclick="selectToolCategory('finance_crypto')">
+            <span>💳</span>
+            <div>
+              <div>Bank, CCP &amp; Crypto</div>
+              <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">BaridiMob, CCP, USDT Wallets</div>
+            </div>
+          </button>
+          <button class="tool-cat-btn" data-tool-cat="sna" onclick="selectToolCategory('sna')">
+            <span>🕸️</span>
+            <div>
+              <div>Social Network Analysis</div>
+              <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">PageRank, Louvain, Bridges, Centrality</div>
+            </div>
+          </button>
+          <button class="tool-cat-btn" data-tool-cat="github_osint" onclick="selectToolCategory('github_osint')">
+            <span>📦</span>
+            <div>
+              <div>Modern GitHub Tools</div>
+              <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Bellingcat, Maigret, GHunt, InsightFace</div>
+            </div>
+          </button>
+          <button class="tool-cat-btn" data-tool-cat="all" onclick="selectToolCategory('all')">
+            <span>🧰</span>
+            <div>
+              <div>View All 76 Tools</div>
+              <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Complete search tool suite</div>
+            </div>
+          </button>
+        </div>
+
+        <!-- Column 2: Tools in Category -->
+        <div id="tool-explorer-list" class="tool-list-pane">
+          <!-- Populated by JavaScript -->
+        </div>
+
+        <!-- Column 3: Tool Detail & Extraction Flow -->
+        <div id="tool-explorer-detail" class="tool-detail-pane">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Tool Manifest: How Developers Add a New Tool in 10 Minutes -->
+    <section>
+      <h2 class="section-title">3. Modular Tool Plug-in Specification (Simple Recipe)</h2>
+      <p class="section-subtitle">
+        Every tool follows a simple, standardized recipe. Adding a new script or online tool takes less than 15 minutes by writing a simple descriptive configuration file:
+      </p>
+
+      <div class="grid-2">
+        <div>
+          <h3 style="font-size:0.95rem;color:var(--accent-cyan);margin-bottom:0.5rem;">Tool Descriptor Recipe (<code>tool.yaml</code>)</h3>
+          <pre><code># tools/web/hidden_code_finder/tool.yaml
+id: "tool.web.hidden_code_finder"
+title: "Website Hidden Code & Tracker Extractor"
+icon: "🏷️"
+category: "WEBSITES_AND_SERVERS"
+
+# Which clues can this tool start from?
+starts_from_clues:
+  - "Website_Link"
+  - "Web_Domain"
+
+# What new clues does this tool discover?
+discovers_clues:
+  - "Hidden_Order_Code"
+  - "Creation_Timestamp"
+  - "Ad_Tracker_ID"
+  - "Hosting_Server_IP"
+
+# How does it run?
+run_settings:
+  execution_mode: "AUTOMATIC"   # Safe passive query
+  stealth_tier: "RESIDENTIAL_ANONYMOUS_PROXY"
+  evidence_snapshot: true      # Automatically freezes the webpage in the Evidence Safe</code></pre>
+        </div>
+
+        <div>
+          <h3 style="font-size:0.95rem;color:var(--accent-emerald);margin-bottom:0.5rem;">Standardized Clue Output Envelope</h3>
+          <pre><code>{
+  "tool_id": "tool.web.hidden_code_finder",
+  "starting_clue": "https://promo-pneus-express.shop/order?uid=672f9a10...",
+  "evidence_snapshot": {
+    "filename": "scam_page_order.warc.gz",
+    "safe_location": "evidence_safe/case_089/scam_page.warc.gz",
+    "tamper_proof_seal": "c019d34f8812...90a1"
+  },
+  "discovered_clues": [
+    {
+      "type": "Hidden_Order_Code",
+      "value": "672f9a10c8b4a100129b4412",
+      "decoded_creation_date": "2026-11-01 14:22:08 UTC",
+      "connection_label": "Reveals Order Code & Creation Date"
+    },
+    {
+      "type": "Ad_Tracker_ID",
+      "value": "Meta_Pixel_88419203314",
+      "connection_label": "Uses Ad Tracker"
+    }
+  ]
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="assets/tools-catalog.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>

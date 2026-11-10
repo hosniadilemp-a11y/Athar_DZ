@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>04. Visual Case Board Ontology & UI Spec — AegisInvestigate</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">Æ</div>
+      <div class="brand-text">
+        <h1>AegisInvestigate</h1>
+        <span>Visual Investigation Studio</span>
+      </div>
+    </div>
+
+    <div class="nav-section">Specification Portal</div>
+    <ul class="nav-links">
+      <li><a href="index.html"><span>🏠 01. Executive Summary</span><span class="nav-badge">Overview</span></a></li>
+      <li><a href="architecture.html"><span>🏗️ 02. Visual Architecture</span><span class="nav-badge">6 Layers</span></a></li>
+      <li><a href="bricks-and-automation.html"><span>🧰 03. Investigation Tools Menu</span><span class="nav-badge">60+ Tools</span></a></li>
+      <li><a href="data-model.html" class="active"><span>🕸️ 04. Visual Graph & UI Spec</span><span class="nav-badge">Ontology</span></a></li>
+      <li><a href="roadmap-phases.html"><span>🚀 05. Development Phases</span><span class="nav-badge">6 Releases</span></a></li>
+      <li><a href="github-repos-audit.html"><span>📦 06. GitHub Repos Audit</span><span class="nav-badge">48 Repos</span></a></li>
+      <li><a href="maquette.html" class="maquette-cta"><span>🖥️ Launch App Maquette</span><span class="nav-badge">Live Sim</span></a></li>
+    </ul>
+
+    <div class="nav-section">Markdown Reference</div>
+    <ul class="nav-links">
+      <li><a href="SPECIFICATION.md"><span>📄 Full Technical Spec (.md)</span></a></li>
+      <li><a href="GITHUB_AUDIT.md"><span>📄 GitHub Starter Audit (.md)</span></a></li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div><strong>Designed For:</strong> Investigators (Zero CS Jargon)</div>
+      <div><strong>Proof Standard:</strong> Automatic Legal Snapshots</div>
+      <div><strong>Intelligence:</strong> Standard Rules + Optional AI</div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="page-header">
+      <div class="page-eyebrow">Chapter 04 &bull; Visual Clue Structure &amp; Photoshop Studio Interface</div>
+      <h1>Visual Case Board Ontology &amp; User Interface Specification</h1>
+      <p>
+        How clues, connections, and proof are visually structured on the <strong>Case Board</strong>, and how the <strong>"Photoshop for Investigations"</strong> interface empowers detectives to navigate complex investigations without visual clutter.
+      </p>
+    </header>
+
+    <!-- 1. Interactive Visual Ontology Diagram (Replaces raw Cypher code) -->
+    <section>
+      <h2 class="section-title">1. Visual Clue Map: How Investigation Elements Connect Together</h2>
+      <p class="section-subtitle">
+        Click any clue node in the diagram below to see its plain-language meaning, real-world case examples, the clues it connects to, and the automatic tools it unlocks on your board.
+      </p>
+
+      <div style="background:#0d131f;border:1px solid var(--border-color);border-radius:14px;padding:1.5rem;margin-bottom:1.75rem;">
+        <!-- Visual SVG Map of Clues -->
+        <div style="width:100%;overflow-x:auto;">
+          <svg viewBox="0 0 940 330" style="width:100%;min-width:760px;height:auto;display:block;">
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="28" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b82f6" />
+              </marker>
+              <marker id="arrow-purple" viewBox="0 0 10 10" refX="28" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#8b5cf6" />
+              </marker>
+            </defs>
+
+            <!-- Connections -->
+            <!-- FB Account -> Post -->
+            <line x1="110" y1="80" x2="110" y2="190" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#arrow)" />
+            <text x="125" y="140" fill="#9ca3af" font-size="11" font-family="sans-serif">Published Post</text>
+
+            <!-- Post -> URL -->
+            <line x1="170" y1="210" x2="350" y2="140" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#arrow)" />
+            <text x="250" y="165" fill="#9ca3af" font-size="11" font-family="sans-serif">Contains Link</text>
+
+            <!-- Post -> Phone -->
+            <line x1="170" y1="225" x2="350" y2="255" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#arrow)" />
+            <text x="235" y="255" fill="#9ca3af" font-size="11" font-family="sans-serif">Mentions Phone</text>
+
+            <!-- URL -> Hidden Code -->
+            <line x1="440" y1="120" x2="620" y2="70" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#arrow)" />
+            <text x="510" y="85" fill="#9ca3af" font-size="11" font-family="sans-serif">Reveals Code &amp; Date</text>
+
+            <!-- Phone -> Social Media Accounts -->
+            <line x1="440" y1="265" x2="620" y2="265" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#arrow)" />
+            <text x="500" y="255" fill="#9ca3af" font-size="11" font-family="sans-serif">Registered On</text>
+
+            <!-- Social Accounts -> Suspect -->
+            <line x1="710" y1="250" x2="810" y2="185" stroke="#8b5cf6" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#arrow-purple)" />
+            <text x="735" y="210" fill="#a78bfa" font-size="11" font-family="sans-serif">Identifies Suspect</text>
+
+            <!-- Hidden Code -> Suspect -->
+            <line x1="710" y1="80" x2="810" y2="145" stroke="#8b5cf6" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#arrow-purple)" />
+            <text x="740" y="115" fill="#a78bfa" font-size="11" font-family="sans-serif">Links Scam Sites</text>
+
+            <!-- Node 1: Social Account -->
+            <g style="cursor:pointer;" onclick="selectOntologyEntity('social_account')" data-onto-node="social_account">
+              <rect x="30" y="45" width="160" height="65" rx="12" fill="#151e2e" stroke="#3b82f6" stroke-width="2" />
+              <text x="45" y="73" font-size="18">👤</text>
+              <text x="75" y="72" fill="#fff" font-size="13" font-weight="bold" font-family="sans-serif">Social Profile</text>
+              <text x="45" y="96" fill="#9ca3af" font-size="11" font-family="sans-serif">fb.com/pneus.promo</text>
+            </g>
+
+            <!-- Node 2: Social Post -->
+            <g style="cursor:pointer;" onclick="selectOntologyEntity('social_post')" data-onto-node="social_post">
+              <rect x="30" y="185" width="160" height="65" rx="12" fill="#151e2e" stroke="#10b981" stroke-width="2" />
+              <text x="45" y="213" font-size="18">📢</text>
+              <text x="75" y="212" fill="#fff" font-size="13" font-weight="bold" font-family="sans-serif">Scam Post / Ad</text>
+              <text x="45" y="236" fill="#9ca3af" font-size="11" font-family="sans-serif">FB Ad #98124 (Tyres)</text>
+            </g>
+
+            <!-- Node 3: URL -->
+            <g style="cursor:pointer;" onclick="selectOntologyEntity('website')" data-onto-node="website">
+              <rect x="330" y="105" width="160" height="65" rx="12" fill="#151e2e" stroke="#f59e0b" stroke-width="2" />
+              <text x="345" y="133" font-size="18">🌐</text>
+              <text x="375" y="132" fill="#fff" font-size="13" font-weight="bold" font-family="sans-serif">Website Link</text>
+              <text x="345" y="156" fill="#9ca3af" font-size="11" font-family="sans-serif">promo-pneus.shop</text>
+            </g>
+
+            <!-- Node 4: Phone -->
+            <g style="cursor:pointer;" onclick="selectOntologyEntity('phone')" data-onto-node="phone">
+              <rect x="330" y="235" width="160" height="65" rx="12" fill="#151e2e" stroke="#06b6d4" stroke-width="2" />
+              <text x="345" y="263" font-size="18">📱</text>
+              <text x="375" y="262" fill="#fff" font-size="13" font-weight="bold" font-family="sans-serif">Phone Number</text>
+              <text x="345" y="286" fill="#9ca3af" font-size="11" font-family="sans-serif">+213 555 019 283</text>
+            </g>
+
+            <!-- Node 5: Hidden Code -->
+            <g style="cursor:pointer;" onclick="selectOntologyEntity('hidden_code')" data-onto-node="hidden_code">
+              <rect x="580" y="45" width="170" height="65" rx="12" fill="#151e2e" stroke="#f43f5e" stroke-width="2" />
+              <text x="595" y="73" font-size="18">🏷️</text>
+              <text x="625" y="72" fill="#fff" font-size="13" font-weight="bold" font-family="sans-serif">Code &amp; Tracker</text>
+              <text x="595" y="96" fill="#9ca3af" font-size="11" font-family="sans-serif">Order Code &amp; Pixel ID</text>
+            </g>
+
+            <!-- Node 6: OSN Accounts -->
+            <g style="cursor:pointer;" onclick="selectOntologyEntity('social_account')" data-onto-node="osn">
+              <rect x="580" y="235" width="170" height="65" rx="12" fill="#151e2e" stroke="#06b6d4" stroke-width="2" />
+              <text x="595" y="263" font-size="18">💬</text>
+              <text x="625" y="262" fill="#fff" font-size="13" font-weight="bold" font-family="sans-serif">Linked Socials</text>
+              <text x="595" y="286" fill="#9ca3af" font-size="11" font-family="sans-serif">Telegram &amp; Instagram</text>
+            </g>
+
+            <!-- Node 7: Suspect -->
+            <g style="cursor:pointer;" onclick="selectOntologyEntity('person')" data-onto-node="person">
+              <rect x="780" y="130" width="150" height="75" rx="14" fill="#1f1635" stroke="#8b5cf6" stroke-width="2.5" stroke-dasharray="6,4" />
+              <text x="795" y="162" font-size="20">🎯</text>
+              <text x="825" y="160" fill="#fff" font-size="13" font-weight="bold" font-family="sans-serif">Suspect Amine</text>
+              <text x="795" y="188" fill="#a78bfa" font-size="11" font-family="sans-serif">92% Match (Theory)</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Clue Explanation Box (Updates on click) -->
+        <div id="ontology-detail-box" style="margin-top:1.25rem;background:#151e2e;border:1px solid var(--border-color);border-radius:10px;padding:1.15rem;">
+          <!-- Rendered by app.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. "Photoshop for Investigations" Direct Feature Specification -->
+    <section>
+      <h2 class="section-title">2. "Photoshop for Investigations": Detailed Interface Specification</h2>
+      <p class="section-subtitle">
+        Why use the Photoshop metaphor? Because in real criminal investigations, you deal with <strong>hundreds of raw leads</strong> that must be separated from <strong>court-verified facts</strong> without cluttering the screen.
+      </p>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Photoshop Feature</th>
+              <th>How It Works in AegisInvestigate</th>
+              <th>What the Detective Does in Real Practice</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>🎨 Investigation Layers</strong><br/><em>(Show / Hide Eye)</em></td>
+              <td>Separates your case into 4 clear layers:<br/>
+                &bull; <strong>Layer 1 (Verified Facts):</strong> Official police reports, victim depositions, verified photos.<br/>
+                &bull; <strong>Layer 2 (Online Search):</strong> Scraped social media accounts and search engine hits.<br/>
+                &bull; <strong>Layer 3 (Website &amp; Servers):</strong> Technical links, hosting servers, and shared trackers.<br/>
+                &bull; <strong>Layer 4 (Suspect Theories):</strong> Proposed matches and suspect candidates.
+              </td>
+              <td>If an automated search on a username returns 40 social media profiles, they all land on <strong>Layer 2</strong>. The detective can hide Layer 2 anytime with one click to keep the board clean, or right-click the real suspect's account and click <strong>"Lock as Verified Fact (Move to Layer 1)"</strong>.</td>
+            </tr>
+            <tr>
+              <td><strong>🎚️ Confidence Slider</strong><br/><em>(Like Layer Opacity)</em></td>
+              <td>A slider at the top of the screen (0% to 100%). Dragging the slider fades out weak clues and highlights solid, certified proof.</td>
+              <td>Set to <code>90%</code> when preparing a presentation for the prosecutor or magistrate to show only 100% verified facts. Set to <code>40%</code> when brainstorming all possible leads.</td>
+            </tr>
+            <tr>
+              <td><strong>🪄 Magic Wand &amp; Cluster Selector</strong></td>
+              <td>Click any clue to instantly highlight everything connected to it, or all websites sharing the exact same tracking code.</td>
+              <td>Click the Facebook Ad Tracker ID to immediately highlight the 3 fake tyre websites operated by the scammer across the board.</td>
+            </tr>
+            <tr>
+              <td><strong>🩹 Clue Healing &amp; Merge Brush</strong></td>
+              <td>Drag one clue card onto another when you discover they represent the same real-world item.</td>
+              <td>Drag the phone number card <code>0555 01 92 83</code> onto <code>+213 555 019 283</code> to merge them into one clean card while preserving the history of where both were found.</td>
+            </tr>
+            <tr>
+              <td><strong>⏪ History &amp; Checkpoint Undo</strong></td>
+              <td>Every search tool run creates an instant checkpoint in your History list.</td>
+              <td>If a search expansion leads down a dead end, click the checkpoint from 10 minutes ago to roll back the board instantly.</td>
+            </tr>
+            <tr>
+              <td><strong>📄 Flatten &amp; Export Official Dossier</strong></td>
+              <td>Exports visible layers into a clean, court-admissible PDF dossier complete with photos, timeline, map cutouts, and official operator request letters.</td>
+              <td>Click <strong>"Export Court Dossier"</strong> to generate a ready-to-print official case binder for the prosecutor in seconds.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>

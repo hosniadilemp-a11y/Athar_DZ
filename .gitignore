@@ -1,0 +1,59 @@
+# ==============================================================================
+# Athar DZ (أثر) — Git Ignore Rules
+# ==============================================================================
+
+# Starters & External Heavy Repositories (Explicitly ignored per user request)
+starters/
+
+# Operating System & Editor Files
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+*.bak
+.idea/
+.vscode/
+
+# Logs & Runtime Artifacts
+*.log
+*.tmp
+*.pid
+
+# Environment & Secret Files
+.env
+.env.*
+!.env.example
+
+# Node / Frontend Artifacts
+node_modules/
+.npm/
+.yarn/
+dist/
+build/
+
+# Python Cache & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg

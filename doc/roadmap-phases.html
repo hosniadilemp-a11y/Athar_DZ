@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>05. Phases de Développement Incrémentales (Applications Fonctionnelles) — AegisInvestigate</title>
+  <link rel="stylesheet" href="assets/style.css" />
+  <style>
+    /* Tab System Styling */
+    .roadmap-tabs-bar {
+      display: flex;
+      gap: 0.4rem;
+      border-bottom: 2px solid var(--border-color);
+      margin-bottom: 2rem;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      flex-wrap: wrap;
+    }
+    .phase-tab-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-bottom: none;
+      color: var(--text-secondary);
+      padding: 0.65rem 1rem;
+      border-radius: 8px 8px 0 0;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .phase-tab-btn:hover {
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+    .phase-tab-btn.active {
+      background: linear-gradient(180deg, #1e293b 0%, #151e2e 100%);
+      color: #60a5fa;
+      border-color: #3b82f6;
+      border-top: 3px solid #3b82f6;
+    }
+    .tab-content-panel {
+      display: none;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .tab-content-panel.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .deliverable-banner {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(6, 182, 212, 0.12));
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .spec-table th {
+      width: 25%;
+    }
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin: 1rem 0;
+    }
+    .step-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.85rem 1.1rem;
+    }
+    .step-item strong {
+      color: #93c5fd;
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">Æ</div>
+      <div class="brand-text">
+        <h1>AegisInvestigate</h1>
+        <span>Visual Investigation Studio</span>
+      </div>
+    </div>
+
+    <div class="nav-section">Portail de Spécifications</div>
+    <ul class="nav-links">
+      <li><a href="index.html"><span>🏠 01. Résumé Exécutif</span><span class="nav-badge">Aperçu</span></a></li>
+      <li><a href="architecture.html"><span>🏗️ 02. Architecture Visuelle</span><span class="nav-badge">6 Niveaux</span></a></li>
+      <li><a href="bricks-and-automation.html"><span>🧰 03. Menu des Outils</span><span class="nav-badge">60+ Outils</span></a></li>
+      <li><a href="data-model.html"><span>🕸️ 04. Graphe Visuel &amp; IHM</span><span class="nav-badge">Ontologie</span></a></li>
+      <li><a href="roadmap-phases.html" class="active"><span>🚀 05. Phases de Dév.</span><span class="nav-badge">6 Onglets</span></a></li>
+      <li><a href="github-repos-audit.html"><span>📦 06. Audit GitHub</span><span class="nav-badge">48 Repos</span></a></li>
+      <li><a href="maquette.html" class="maquette-cta"><span>🖥️ Lancer la Maquette</span><span class="nav-badge">Simulateur</span></a></li>
+    </ul>
+
+    <div class="nav-section">Références Markdown</div>
+    <ul class="nav-links">
+      <li><a href="SPECIFICATION.md"><span>📄 Spécification Technique (.md)</span></a></li>
+      <li><a href="GITHUB_AUDIT.md"><span>📄 Audit Repos GitHub (.md)</span></a></li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div><strong>Conçu pour:</strong> Enquêteurs &amp; Policiers</div>
+      <div><strong>Règle d'or:</strong> 1 Application Fonctionnelle par Phase</div>
+      <div><strong>Langues:</strong> Français / العربية / English</div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="page-header">
+      <div class="page-eyebrow">Chapitre 05 &bull; Feuille de Route Agile &amp; Livrables Fonctionnels</div>
+      <h1>Six Phases de Développement Incrémentales</h1>
+      <p>
+        Pour garantir des retours continus des enquêteurs sans attendre 6 mois de développement, chaque phase livre une <strong>application autonome, prête à être lancée avec Docker</strong>. Utilisez les onglets ci-dessous pour consulter la vue d'ensemble ou le plan détaillé d'ingénierie de chaque phase.
+      </p>
+    </header>
+
+    <!-- Navigation Tabs for Phases -->
+    <div class="roadmap-tabs-bar">
+      <button class="phase-tab-btn active" onclick="showRoadmapTab('overview')">
+        <span>📊</span> Vue d'Ensemble des 6 Phases
+      </button>
+      <button class="phase-tab-btn" onclick="showRoadmapTab('phase1')">
+        <span>Phase 1</span> Studio Graphique (v0.1)
+      </button>
+      <button class="phase-tab-btn" onclick="showRoadmapTab('phase2')">
+        <span>Phase 2</span> Coffre &amp; Extraction (v0.2)
+      </button>
+      <button class="phase-tab-btn" onclick="showRoadmapTab('phase3')">
+        <span>Phase 3</span> Outils OSINT Clés (v0.3)
+      </button>
+      <button class="phase-tab-btn" onclick="showRoadmapTab('phase4')">
+        <span>Phase 4</span> Médias &amp; Visages (v0.4)
+      </button>
+      <button class="phase-tab-btn" onclick="showRoadmapTab('phase5')">
+        <span>Phase 5</span> Télécoms CDR &amp; Carte (v0.5)
+      </button>
+      <button class="phase-tab-btn" onclick="showRoadmapTab('phase6')">
+        <span>Phase 6</span> IA &amp; Dossier Judiciaire (v1.0)
+      </button>
+    </div>
+
+    <!-- TAB 0: OVERVIEW -->
+    <div id="tab-overview" class="tab-content-panel active">
+      <div class="deliverable-banner">
+        <div>
+          <strong style="color:#34d399;font-size:1.05rem;">Principes Directeurs du Développement</strong>
+          <p style="font-size:0.86rem;color:var(--text-secondary);margin:0.2rem 0 0;">
+            Chaque phase est testable immédiatement par un officier de police judiciaire sur un cas réel d'arnaque ou de cybercriminalité.
+          </p>
+        </div>
+        <a href="maquette.html" class="btn btn-emerald" style="text-decoration:none;">
+          🖥️ Tester la Maquette Interactive Complète →
+        </a>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Phase &amp; Version</th>
+              <th>Objectif &amp; Périmètre Fonctionnel</th>
+              <th>Ce Que l'Enquêteur Peut Tester</th>
+              <th>Stack Logiciel Livré</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-blue">PHASE 1</span><br/><strong>App v0.1</strong><br/><em>(Sem. 1–3)</em></td>
+              <td><strong>Tableau d'Affaire &amp; Calques Photoshop</strong><br/>Création de dossiers d'enquête, ajout manuel de fiches indices (post FB, téléphone, lien, suspect), tracé de liens de cause à effet, masquage/affichage des 4 calques.</td>
+              <td>Créer une affaire d'arnaque, placer les cartes d'indices, basculer entre les calques <em>Faits Vérifiés</em> et <em>Hypothèses</em>, sauvegarder et exporter le graphe en PNG/JSON.</td>
+              <td>React 19 + Cytoscape.js + FastAPI + Neo4j 5.x + PostgreSQL 16 (Docker Compose)</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-cyan">PHASE 2</span><br/><strong>App v0.2</strong><br/><em>(Sem. 4–6)</em></td>
+              <td><strong>Coffre-fort des Preuves &amp; Extraction Automatique</strong><br/>Geler une page web ou un post Facebook en archive WARC avec capture d'écran horodatée. Extraction automatique d'IOCs (téléphones, URLs, IBAN, emails).</td>
+              <td>Coller le texte d'une annonce Facebook : le lien frauduleux et le numéro de téléphone apparaissent automatiquement sur le graphe, avec capture d'écran certifiée au coffre.</td>
+              <td>ArchiveBox + Playwright + Parsers Regex/AST + MinIO WORM S3 + Journal d'audit haché</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-emerald">PHASE 3</span><br/><strong>App v0.3</strong><br/><em>(Sem. 7–9)</em></td>
+              <td><strong>Suite d'Outils OSINT Essentiels (Téléphone, Web &amp; Alias)</strong><br/>Reconnaissance opérateur, test de présence sur Instagram/Snapchat/Amazon, recherche de pseudonymes sur 2500+ sites, décodage de code interne web (MongoDB ObjectId) et sites jumeaux.</td>
+              <td>Cliquer sur le téléphone du vendeur pour découvrir son profil Telegram @amine_import et son compte Instagram, puis trouver 2 autres faux sites partageant le même pixel Meta.</td>
+              <td>Conteneurs Docker : PhoneInfoga, Ignorant, Maigret, httpx, Shodan API, Temporal.io</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-purple">PHASE 4</span><br/><strong>App v0.4</strong><br/><em>(Sem. 10–12)</em></td>
+              <td><strong>Analyse d'Images, Falsification &amp; Comparaison Faciale</strong><br/>Détection de retouche d'image (Sherloq), recherche inversée de photos de stock, métadonnées EXIF, comparaison faciale biométrique ArcFace, transcription audio Whisper.</td>
+              <td>Uploader les 3 photos de pneus pour prouver qu'elles sont volées, puis comparer la photo Telegram et Instagram pour obtenir une confirmation biométrique à 89%.</td>
+              <td>Qdrant Vector DB + DeepFace (ArcFace) + Sherloq + ExifTool + Faster-Whisper</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-amber">PHASE 5</span><br/><strong>App v0.5</strong><br/><em>(Sem. 13–15)</em></td>
+              <td><strong>Enquête Terrain, Bornage Télécom CDR &amp; Carte SIG</strong><br/>Import de fichiers d'appels opérateurs (CDR Excel), triangulation des antennes relais, détection de co-déplacements, détection de contradictions temporelles d'alibi.</td>
+              <td>Glisser une feuille Excel d'appels téléphoniques : visualiser le parcours géographique du suspect et vérifier à quelle antenne il était connecté lors de la publication de l'annonce.</td>
+              <td>MapLibre GL JS + Deck.gl + Vis-Timeline + Triangulateur Voronoi + Moteur OSRM</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-rose">PHASE 6</span><br/><strong>App v1.0</strong><br/><em>(Sem. 16–18)</em></td>
+              <td><strong>Copilot IA, Coffre de Comptes Secrets &amp; Dossier Judiciaire</strong><br/>Assistant IA local (Ollama/vLLM) en français/arabe, coffre chiffré de comptes d'investigation Telegram/WhatsApp, et exportateur automatique du procès-verbal judiciaire complet en PDF.</td>
+              <td>Exécuter toute l'affaire de A à Z puis cliquer sur <em>"Générer Rapport Judiciaire"</em> pour sortir un dossier de 25 pages prêt à signer pour le procureur de la République.</td>
+              <td>LiteLLM Gateway + Ollama (Qwen 2.5) + WeasyPrint/Typst + Coffre AES-256 Sock-Puppets</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 1: PHASE 1 DETAIL -->
+    <div id="tab-phase1" class="tab-content-panel">
+      <div class="deliverable-banner">
+        <div>
+          <span class="badge badge-blue">APPLICATION FONCTIONNELLE v0.1</span>
+          <h2 style="font-size:1.25rem;color:#fff;margin:0.25rem 0;">Phase 1: Studio d'Enquête Visuel &amp; Calques Multi-Niveaux</h2>
+          <span style="font-size:0.84rem;color:var(--text-secondary);">Durée: Semaines 1 à 3 &bull; Focus: Socle ergonomique &amp; Graphe d'affaire</span>
+        </div>
+        <span class="badge badge-emerald">Livrable: <code>docker compose up aegis-studio</code></span>
+      </div>
+
+      <h3 class="section-title">1. Objectifs &amp; Expérience de l'Enquêteur</h3>
+      <p class="section-subtitle">
+        L'officier de police ouvre son navigateur, crée une nouvelle affaire "Affaire #2026-PNEUS-089", et dispose d'un canevas interactif où il peut placer des cartes d'indices, tracer des liens étiquetés, et filtrer les informations grâce aux <strong>Calques d'Enquête</strong>.
+      </p>
+
+      <div class="step-list">
+        <div class="step-item">
+          <strong>1. Gestion Complète des Dossiers d'Enquête</strong>
+          Interface de création, ouverture, sauvegarde et clôture d'affaires. Chaque dossier est stocké de manière isolée avec référence de parquet et nom de l'officier enquêteur.
+        </div>
+        <div class="step-item">
+          <strong>2. Canevas Graphique Visuel avec Palette d'Indices</strong>
+          Composants glisser-déposer pour 8 types d'indices initiaux : 👤 Personne / Suspect, 📢 Annonce / Post Réseau Social, 📱 Numéro de Téléphone, 🌐 Lien / Site Web, 💳 Compte Bancaire / CCP, 🚗 Véhicule, 📍 Emplacement Géographique, 📄 Document.
+        </div>
+        <div class="step-item">
+          <strong>3. Système de Calques Style Photoshop</strong>
+          4 calques indépendants avec bouton œil (Afficher / Masquer) :
+          <ul style="padding-left:1.2rem;font-size:0.83rem;color:var(--text-secondary);margin-top:0.3rem;">
+            <li><strong>Calque 1 (Faits Vérifiés) :</strong> Éléments certifiés par PV et dépositions (bordure verte).</li>
+            <li><strong>Calque 2 (Pistes &amp; OSINT) :</strong> Données collectées en ligne en attente de vérification (bordure cyan).</li>
+            <li><strong>Calque 3 (Infrastructure &amp; Réseau) :</strong> Adresses IP, hébergeurs, pixels et identifiants techniques (bordure orange).</li>
+            <li><strong>Calque 4 (Théories &amp; Hypothèses) :</strong> Suspects potentiels et scénarios de travail (bordure violette en pointillés).</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 class="section-title">2. Architecture &amp; Spécifications Techniques</h3>
+      <div class="table-container">
+        <table class="spec-table">
+          <tr><th>Frontend UI</th><td>Next.js 15 (React 19, TypeScript, Tailwind CSS) + <strong>Cytoscape.js</strong> (moteur de graphe interactif avec layouts Dagre et Cola).</td></tr>
+          <tr><th>Backend API</th><td>Python 3.12 + <strong>FastAPI</strong> + Pydantic v2 pour la validation stricte des entités d'enquête.</td></tr>
+          <tr><th>Base de Données Graphe</th><td><strong>Neo4j 5.x Community</strong> avec connecteur Bolt asynchrone pour stocker les nœuds, relations et propriétés de calques.</td></tr>
+          <tr><th>Base Relationnelle</th><td><strong>PostgreSQL 16</strong> pour la gestion des utilisateurs, des dossiers et des permissions.</td></tr>
+          <tr><th>Critères de Validation</th><td>Créer un dossier, ajouter 10 nœuds reliés, masquer le Calque 4, recharger la page : l'état exact du tableau est persisté.</td></tr>
+        </table>
+      </div>
+
+      <h3 class="section-title">3. Commandes de Démarrage Rapide</h3>
+      <pre><code># Démarrer la version v0.1 de l'application
+git clone https://github.com/votre-org/aegis-investigate.git
+cd aegis-investigate && git checkout release-v0.1
+docker compose up -d
+
+# Accès immédiat dans le navigateur :
+# URL Studio : http://localhost:3000
+# API Docs   : http://localhost:8000/docs
+# Neo4j UI   : http://localhost:7474</code></pre>
+    </div>
+
+    <!-- TAB 2: PHASE 2 DETAIL -->
+    <div id="tab-phase2" class="tab-content-panel">
+      <div class="deliverable-banner">
+        <div>
+          <span class="badge badge-cyan">APPLICATION FONCTIONNELLE v0.2</span>
+          <h2 style="font-size:1.25rem;color:#fff;margin:0.25rem 0;">Phase 2: Coffre-fort des Preuves &amp; Extracteur Automatique d'Indices</h2>
+          <span style="font-size:0.84rem;color:var(--text-secondary);">Durée: Semaines 4 à 6 &bull; Focus: Préservation légale &amp; Extraction instantanée</span>
+        </div>
+        <span class="badge badge-emerald">Livrable: Archivage WARC certifié &amp; Extracteur d'IOC</span>
+      </div>
+
+      <h3 class="section-title">1. Objectifs &amp; Expérience de l'Enquêteur</h3>
+      <p class="section-subtitle">
+        L'enquêteur colle simplement le texte d'une annonce ou une URL suspecte : le système fige immédiatement la page avant qu'elle ne disparaisse, crée un enregistrement légal inaltérable, et extrait tous les numéros de téléphone et liens sur le tableau.
+      </p>
+
+      <div class="step-list">
+        <div class="step-item">
+          <strong>1. Coffre-fort Numérique (MinIO S3 en Mode WORM)</strong>
+          Stockage des captures au format Write-Once-Read-Many : une fois la page ou la photo enregistrée, même l'administrateur système ne peut ni modifier ni effacer la preuve.
+        </div>
+        <div class="step-item">
+          <strong>2. Outil "Geler &amp; Certifier la Page Web"</strong>
+          Génération automatique d'un fichier d'archive normalisé ISO (<code>.WARC</code>), d'une capture d'écran pleine page (PNG) et du code source HTML avec empreinte cryptographique SHA-256 et horodatage RFC 3161.
+        </div>
+        <div class="step-item">
+          <strong>3. Extracteur Déterministe d'Indices Textuels</strong>
+          Analyse automatique de texte pour détecter instantanément : numéros mobiles algériens et internationaux (+213, 05, 06, 07), comptes CCP et RIB bancaires, adresses e-mail, liens web et adresses de portefeuilles crypto.
+        </div>
+      </div>
+
+      <h3 class="section-title">2. Architecture &amp; Spécifications Techniques</h3>
+      <div class="table-container">
+        <table class="spec-table">
+          <tr><th>Moteur d'Archivage</th><td><strong>ArchiveBox + Playwright Headless</strong> conteneurisé s'exécutant dans un bac à sable sécurisé.</td></tr>
+          <tr><th>Coffre d'Éléments de Preuve</th><td><strong>MinIO Object Storage</strong> configuré avec <em>S3 Object Lock (Compliance Mode)</em>.</td></tr>
+          <tr><th>Moteur d'Extraction</th><td>Module Python optimisé combinant <strong>phonenumbers (Google E.164)</strong>, validateurs d'IBAN/CCP et règles d'expressions rationnelles compilées.</td></tr>
+          <tr><th>Journalisation d'Audit</th><td>Table PostgreSQL avec chaînage cryptographique SHA-256 garantissant la traçabilité des pièces saisies.</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: PHASE 3 DETAIL -->
+    <div id="tab-phase3" class="tab-content-panel">
+      <div class="deliverable-banner">
+        <div>
+          <span class="badge badge-emerald">APPLICATION FONCTIONNELLE v0.3</span>
+          <h2 style="font-size:1.25rem;color:#fff;margin:0.25rem 0;">Phase 3: Suite d'Outils OSINT Clés (Téléphone, Web &amp; Alias)</h2>
+          <span style="font-size:0.84rem;color:var(--text-secondary);">Durée: Semaines 7 à 9 &bull; Focus: Pivots d'investigation en ligne automatisés</span>
+        </div>
+        <span class="badge badge-emerald">Livrable: Première version opérationnelle d'enquête OSINT</span>
+      </div>
+
+      <h3 class="section-title">1. Objectifs &amp; Expérience de l'Enquêteur</h3>
+      <p class="section-subtitle">
+        C'est l'étape où le cas de l'arnaque aux pneus devient entièrement résoluble dans l'application. En sélectionnant un numéro de téléphone ou un lien web, les outils d'enrichissement s'exécutent en 1 clic.
+      </p>
+
+      <div class="step-list">
+        <div class="step-item">
+          <strong>1. Scanner Téléphonique Multi-Plateformes</strong>
+          Vérification de l'opérateur (Ooredoo, Mobilis, Djezzy) et test silencieux de présence de compte sur Instagram, Snapchat, Amazon et Telegram.
+        </div>
+        <div class="step-item">
+          <strong>2. Recherche d'Alias &amp; Pseudonymes sur 2 500+ Sites</strong>
+          Intégration des moteurs Maigret et Sherlock pour cartographier la présence en ligne d'un suspect à partir d'un seul nom d'utilisateur (ex: <code>@amine_import</code>).
+        </div>
+        <div class="step-item">
+          <strong>3. Détecteur de Codes Cachés &amp; Sites Jumeaux</strong>
+          Décodage automatique des identifiants d'annonces (ex: MongoDB ObjectId révélant la création le 1er nov à 14h22) et recherche inversée des pixels de suivi (Meta Pixel) pour démasquer les boutiques sœurs de l'escroc.
+        </div>
+      </div>
+
+      <h3 class="section-title">2. Architecture &amp; Spécifications Techniques</h3>
+      <div class="table-container">
+        <table class="spec-table">
+          <tr><th>Outils Intégrés</th><td>Conteneurs Docker autonomes : <code>PhoneInfoga</code>, <code>Ignorant</code>, <code>Maigret</code>, <code>httpx</code>, <code>subfinder</code>.</td></tr>
+          <tr><th>Orchestrateur de Tâches</th><td><strong>Temporal.io</strong> pour gérer les scans asynchrones, les reprises sur erreur et les délais de temporisation.</td></tr>
+          <tr><th>Protection &amp; Furtivité</th><td>Routage des requêtes externes à travers un pool de proxys anonymes (Gluetun VPN).</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 4: PHASE 4 DETAIL -->
+    <div id="tab-phase4" class="tab-content-panel">
+      <div class="deliverable-banner">
+        <div>
+          <span class="badge badge-purple">APPLICATION FONCTIONNELLE v0.4</span>
+          <h2 style="font-size:1.25rem;color:#fff;margin:0.25rem 0;">Phase 4: Analyse Médias, Falsification &amp; Comparaison Faciale</h2>
+          <span style="font-size:0.84rem;color:var(--text-secondary);">Durée: Semaines 10 à 12 &bull; Focus: Criminalistique numérique &amp; Biométrie faciale</span>
+        </div>
+        <span class="badge badge-emerald">Livrable: Module complet d'analyse multimédia hors-ligne</span>
+      </div>
+
+      <h3 class="section-title">1. Objectifs &amp; Expérience de l'Enquêteur</h3>
+      <p class="section-subtitle">
+        L'enquêteur dispose désormais d'un laboratoire multimédia intégré : détection de faux documents, recherche de photos volées et comparaison faciale entre les photos de profil Telegram et Instagram.
+      </p>
+
+      <div class="step-list">
+        <div class="step-item">
+          <strong>1. Détecteur de Falsification &amp; Retouche Photo (Sherloq)</strong>
+          Analyse du niveau d'erreur (ELA) et cohérence des bruits de capteur pour détecter si le montant d'un reçu de virement CCP ou une facture de pneus a été modifié.
+        </div>
+        <div class="step-item">
+          <strong>2. Comparaison Faciale Biométrique Hors-Ligne (DeepFace / ArcFace)</strong>
+          Comparaison automatisée entre deux visages avec score de similarité en pourcentage, permettant de lier formellement un profil Telegram et un compte Instagram sous deux pseudonymes différents.
+        </div>
+        <div class="step-item">
+          <strong>3. Transcription des Messages Vocaux (Faster-Whisper)</strong>
+          Transcription audio locale rapide supportant l'arabe, le français et la darija algérienne avec extraction automatique des noms et numéros prononcés.
+        </div>
+      </div>
+
+      <h3 class="section-title">2. Architecture &amp; Spécifications Techniques</h3>
+      <div class="table-container">
+        <table class="spec-table">
+          <tr><th>Base Vectorielle</th><td><strong>Qdrant</strong> pour l'indexation et la recherche de similarité des vecteurs faciaux 512-d (ArcFace).</td></tr>
+          <tr><th>Moteurs de Criminalistique</th><td><code>ExifTool</code> (métadonnées d'appareils et GPS), <code>Sherloq</code> (OpenCV), <code>Faster-Whisper</code> (CTranslate2 GPU/CPU).</td></tr>
+          <tr><th>Confidentialité</th><td>Fonctionnement à <strong>100% hors-ligne</strong> sans envoyer aucune image vers des serveurs tiers.</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 5: PHASE 5 DETAIL -->
+    <div id="tab-phase5" class="tab-content-panel">
+      <div class="deliverable-banner">
+        <div>
+          <span class="badge badge-amber">APPLICATION FONCTIONNELLE v0.5</span>
+          <h2 style="font-size:1.25rem;color:#fff;margin:0.25rem 0;">Phase 5: Enquête Terrain, Bornage Télécom CDR &amp; Carte SIG</h2>
+          <span style="font-size:0.84rem;color:var(--text-secondary);">Durée: Semaines 13 à 15 &bull; Focus: Données opérateurs &amp; Analyse spatio-temporelle</span>
+        </div>
+        <span class="badge badge-emerald">Livrable: Synchronisation Graphe + Carte + Chronologie</span>
+      </div>
+
+      <h3 class="section-title">1. Objectifs &amp; Expérience de l'Enquêteur</h3>
+      <p class="section-subtitle">
+        Intégration des données d'investigation judiciaire traditionnelles : fiches d'appels et bornages cellulaires fournis par les opérateurs de téléphonie mobile.
+      </p>
+
+      <div class="step-list">
+        <div class="step-item">
+          <strong>1. Importateur Universel de Relevés Télécoms (CDR Excel / CSV)</strong>
+          Glisser-déposer des listings d'appels d'Ooredoo, Mobilis ou Djezzy : normalisation instantanée des numéros appelés, durées, IMEI et identifiants de relais.
+        </div>
+        <div class="step-item">
+          <strong>2. Carte Géographique des Déplacements &amp; Co-Déplacements</strong>
+          Tracé cartographique des déplacements du téléphone suspect et détection automatique des "téléphones jumeaux" bornant simultanément sur les mêmes antennes.
+        </div>
+        <div class="step-item">
+          <strong>3. Détecteur de Contradictions d'Alibis</strong>
+          Calcul des vitesses de trajet et détection des impossibilités physiques entre deux bornages ou entre une déposition et une connexion technique.
+        </div>
+      </div>
+
+      <h3 class="section-title">2. Architecture &amp; Spécifications Techniques</h3>
+      <div class="table-container">
+        <table class="spec-table">
+          <tr><th>Cartographie SIG</th><td><strong>MapLibre GL JS + Deck.gl</strong> avec tuiles vectorielles hors-ligne (OpenStreetMap locales).</td></tr>
+          <tr><th>Chronologie Synchronisée</th><td>Composant <strong>Vis-Timeline</strong> interactif relié en temps réel aux nœuds du graphe.</td></tr>
+          <tr><th>Calcul d'Itinéraires</th><td>Moteur <strong>OSRM (Open Source Routing Machine)</strong> pour vérifier la faisabilité des trajets routiers.</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 6: PHASE 6 DETAIL -->
+    <div id="tab-phase6" class="tab-content-panel">
+      <div class="deliverable-banner">
+        <div>
+          <span class="badge badge-rose">APPLICATION COMPLÈTE v1.0</span>
+          <h2 style="font-size:1.25rem;color:#fff;margin:0.25rem 0;">Phase 6: Copilot IA, Comptes Secrets &amp; Rapport Judiciaire</h2>
+          <span style="font-size:0.84rem;color:var(--text-secondary);">Durée: Semaines 16 à 18 &bull; Focus: Clôture d'enquête &amp; Remise au parquet</span>
+        </div>
+        <span class="badge badge-emerald">Livrable: Plateforme Entreprise Complète &amp; Prête à l'Emploi</span>
+      </div>
+
+      <h3 class="section-title">1. Objectifs &amp; Expérience de l'Enquêteur</h3>
+      <p class="section-subtitle">
+        L'enquêteur finalise son affaire : l'assistant IA synthétise les preuves accumulées, le coffre de comptes secrets protège les infiltrations Telegram/WhatsApp, et un clic génère le rapport officiel pour le juge d'instruction.
+      </p>
+
+      <div class="step-list">
+        <div class="step-item">
+          <strong>1. Assistant IA Copilot Spécialisé (Local ou Cloud)</strong>
+          Propose des plans d'investigation en français ou arabe, résume les faits marquants et rédige les synthèses chronologiques sans jamais inventer de fausses preuves.
+        </div>
+        <div class="step-item">
+          <strong>2. Coffre-fort Chiffré de Comptes d'Enquête (Sock-Puppets)</strong>
+          Gestion sécurisée des comptes de recherche pour Facebook, Telegram et WhatsApp avec gestion automatique de la 2FA (TOTP) et rotation anti-bannissement.
+        </div>
+        <div class="step-item">
+          <strong>3. Générateur Automatique de Dossiers Judiciaires (PDF Officiel)</strong>
+          Édition d'un rapport PDF complet et numéroté, comprenant la chronologie des faits, la cartographie des relais, la liste des preuves hachées SHA-256 et les projets de réquisition judiciaire pour les opérateurs.
+        </div>
+      </div>
+
+      <h3 class="section-title">2. Architecture &amp; Spécifications Techniques</h3>
+      <div class="table-container">
+        <table class="spec-table">
+          <tr><th>Passerelle IA</th><td><strong>LiteLLM</strong> avec support natif d'<strong>Ollama / vLLM</strong> (modèles <em>Qwen-2.5</em> ou <em>Llama-3.3</em> fonctionnant sur GPU local).</td></tr>
+          <tr><th>Moteur d'Édition PDF</th><td><strong>WeasyPrint / Typst</strong> pour composer des documents judiciaires conformes aux standards officiels.</td></tr>
+          <tr><th>Sécurité du Coffre</th><td>Chiffrement matériel AES-256-GCM des sessions et cookies des comptes d'infiltration.</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="assets/app.js"></script>
+  <script>
+    function showRoadmapTab(tabId) {
+      document.querySelectorAll('.tab-content-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.phase-tab-btn').forEach(b => b.classList.remove('active'));
+
+      const target = document.getElementById(`tab-${tabId}`);
+      if (target) target.classList.add('active');
+
+      const activeBtn = Array.from(document.querySelectorAll('.phase-tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+      if (activeBtn) activeBtn.classList.add('active');
+    }
+  </script>
+</body>
+</html>
