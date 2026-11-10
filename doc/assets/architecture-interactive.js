@@ -247,13 +247,123 @@ CL.THROTTLE rate:ooredoo:requests 100 60 1;`
   }
 };
 
+const ARCHITECTURE_FLOWS = {
+  all: {
+    name: 'Tous les Flux Interconnectés',
+    badge: '13 Canaux Actifs',
+    color: '#38bdf8',
+    desc: 'Visualisation globale de l\'ensemble des 13 flux de communication asynchrones, RPC et temps réel reliant les 7 couches de la plateforme.',
+    activeNodes: ['ui_client', 'gateway_api', 'brain_orchestrator', 'sandbox_workers', 'phone_farm', 'storage_graph', 'storage_postgres', 'storage_mongodb', 'storage_minio', 'storage_qdrant', 'storage_redis', 'legal_court_export'],
+    activeEdges: ['e_ui_gw', 'e_gw_brain', 'e_brain_workers', 'e_brain_phone', 'e_sim_phone', 'e_phone_voice', 'e_workers_mongo', 'e_workers_minio', 'e_workers_neo', 'e_workers_pg', 'e_voice_qdrant', 'e_redis_push', 'e_storage_court']
+  },
+  whatsapp_voice: {
+    name: 'Flux 1 : Infiltration WhatsApp, Baie SIM & Transcription Darija',
+    badge: 'Mobile + Speech AI',
+    color: '#f97316',
+    desc: 'L\'enquêteur saisit un numéro suspect. ReDroid initialise WhatsApp Business, la baie SIM 4G reçoit l\'OTP SMS en <3s, le vocal Darija est intercepté via Mitmproxy, transcrit par Faster-Whisper, et l\'empreinte vocale est projetée dans Qdrant.',
+    activeNodes: ['ui_client', 'gateway_api', 'brain_orchestrator', 'phone_farm', 'sandbox_workers', 'storage_qdrant', 'storage_graph', 'storage_redis'],
+    activeEdges: ['e_ui_gw', 'e_gw_brain', 'e_brain_phone', 'e_sim_phone', 'e_phone_voice', 'e_voice_qdrant', 'e_workers_neo', 'e_redis_push']
+  },
+  web_scam: {
+    name: 'Flux 2 : Capture Web WORM, DOM BSON & Pivot Neo4j',
+    badge: 'Forensique Web',
+    color: '#06b6d4',
+    desc: 'Pistage d\'une boutique frauduleuse. Playwright génère une capture WARC scellée dans MinIO WORM (ISO 28500), dépose le DOM dans MongoDB 7.x et extrait le Meta Pixel et le JARM TLS vers le graphe Neo4j.',
+    activeNodes: ['ui_client', 'gateway_api', 'brain_orchestrator', 'sandbox_workers', 'storage_minio', 'storage_mongodb', 'storage_graph', 'storage_redis'],
+    activeEdges: ['e_ui_gw', 'e_gw_brain', 'e_brain_workers', 'e_workers_minio', 'e_workers_mongo', 'e_workers_neo', 'e_redis_push']
+  },
+  telecom_cdr: {
+    name: 'Flux 3 : Bornage Télécom Mobilis/Djezzy & Alibis TimescaleDB',
+    badge: 'Big Data CDR',
+    color: '#10b981',
+    desc: 'Traitement des listings d\'appels (CDR). PostgreSQL + TimescaleDB partitionne des millions d\'événements d\'antennes relais (BTS) et calcule les chevauchements spatio-temporels pour invalider un faux alibi.',
+    activeNodes: ['ui_client', 'gateway_api', 'brain_orchestrator', 'sandbox_workers', 'storage_postgres', 'storage_graph', 'storage_redis'],
+    activeEdges: ['e_ui_gw', 'e_gw_brain', 'e_brain_workers', 'e_workers_pg', 'e_workers_neo', 'e_redis_push']
+  },
+  court_export: {
+    name: 'Flux 4 : Scellement Légal RFC 3161 & Export du Procès-Verbal',
+    badge: 'Chaîne de Garde',
+    color: '#ec4899',
+    desc: 'Génération du dossier pour le parquet. Compilation des preuves scellées (MinIO), des liens de causalité (Neo4j), calcul de la racine d\'arbre de Merkle et signature qualifiée RFC 3161 sur le PDF/A-3b.',
+    activeNodes: ['ui_client', 'gateway_api', 'storage_minio', 'storage_graph', 'storage_postgres', 'legal_court_export'],
+    activeEdges: ['e_ui_gw', 'e_workers_minio', 'e_workers_neo', 'e_workers_pg', 'e_storage_court']
+  }
+};
+
+let isAnimationPlaying = true;
+
+function filterArchFlow(flowKey) {
+  const flow = ARCHITECTURE_FLOWS[flowKey];
+  if (!flow) return;
+
+  // Update button active state
+  document.querySelectorAll('.flow-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-flow') === flowKey);
+  });
+
+  // Update flow description banner
+  const banner = document.getElementById('arch-flow-banner');
+  if (banner) {
+    banner.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.25rem;">
+        <strong style="color:${flow.color};font-size:0.85rem;">${flow.name}</strong>
+        <span class="badge" style="background:rgba(255,255,255,0.08);color:${flow.color};border:1px solid ${flow.color};font-size:0.68rem;">${flow.badge}</span>
+      </div>
+      <div style="font-size:0.77rem;color:#cbd5e1;line-height:1.45;">${flow.desc}</div>
+    `;
+  }
+
+  // Update SVG Edge classes
+  document.querySelectorAll('.arch-flow-edge').forEach(edge => {
+    const edgeId = edge.getAttribute('data-edge') || edge.id;
+    const isActive = flow.activeEdges.includes(edgeId);
+    edge.classList.toggle('dimmed', !isActive);
+    edge.classList.toggle('active', isActive);
+  });
+
+  // Update SVG Edge labels
+  document.querySelectorAll('.flow-edge-badge').forEach(badge => {
+    const edgeId = badge.getAttribute('data-edge');
+    const isActive = flow.activeEdges.includes(edgeId);
+    badge.style.opacity = isActive ? '1' : '0.15';
+  });
+
+  // Update SVG Nodes
+  document.querySelectorAll('.svg-node').forEach(node => {
+    const nodeKey = node.getAttribute('data-node');
+    const isActive = flow.activeNodes.includes(nodeKey);
+    node.style.opacity = isActive ? '1' : '0.25';
+  });
+
+  // Update HTML Grid Nodes
+  document.querySelectorAll('.arch-shema-node').forEach(el => {
+    const nodeKey = el.getAttribute('data-node');
+    const isActive = flow.activeNodes.includes(nodeKey);
+    el.style.opacity = isActive ? '1' : '0.35';
+  });
+}
+
+function toggleFlowAnimation() {
+  isAnimationPlaying = !isAnimationPlaying;
+  const btn = document.getElementById('flow-anim-toggle');
+  document.querySelectorAll('.arch-flow-edge').forEach(edge => {
+    edge.classList.toggle('animated', isAnimationPlaying);
+  });
+  if (btn) {
+    btn.innerHTML = isAnimationPlaying ? '⏸️ Mettre en Pause les Flux' : '▶️ Animer les Flux d\'Indices';
+  }
+}
+
 function selectArchNode(nodeKey) {
   const node = ARCHITECTURE_SPEC_NODES[nodeKey];
   const inspector = document.getElementById('arch-live-inspector');
   if (!node || !inspector) return;
 
-  // Highlight active diagram node
+  // Highlight active diagram nodes (both HTML grid & SVG canvas)
   document.querySelectorAll('.arch-shema-node').forEach(el => {
+    el.classList.toggle('active', el.getAttribute('data-node') === nodeKey);
+  });
+  document.querySelectorAll('.svg-node').forEach(el => {
     el.classList.toggle('active', el.getAttribute('data-node') === nodeKey);
   });
 
@@ -299,4 +409,5 @@ document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('arch-live-inspector')) {
     selectArchNode('ui_client');
   }
+  filterArchFlow('all');
 });

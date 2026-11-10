@@ -910,3 +910,128 @@ pre code {
   padding: 0.2rem 0.6rem;
   border-radius: 20px;
 }
+
+/* ==========================================================================
+   INTERACTIVE SVG ARCHITECTURE FLOW CANVAS WITH DIRECTIONAL ARROWS & ICONS
+   ========================================================================== */
+.arch-flow-wrapper {
+  background: #080d16;
+  border: 1px solid #1f2d45;
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.arch-flow-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid #1e293b;
+}
+
+.arch-flow-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.flow-btn {
+  background: #0f172a;
+  border: 1px solid #23344d;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.flow-btn:hover {
+  background: #172540;
+  color: #f1f5f9;
+  border-color: #38bdf8;
+}
+
+.flow-btn.active {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+}
+
+.arch-svg-canvas {
+  width: 100%;
+  height: auto;
+  min-height: 640px;
+  display: block;
+}
+
+/* SVG Node cards */
+.svg-node {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.svg-node rect {
+  transition: all 0.2s ease;
+}
+.svg-node:hover rect {
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));
+  stroke: #38bdf8 !important;
+}
+.svg-node.active rect {
+  stroke: #38bdf8 !important;
+  stroke-width: 2.5px !important;
+  filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.6));
+}
+
+/* Animated Directional Flow Arrows */
+.arch-flow-edge {
+  fill: none;
+  stroke-width: 2px;
+  transition: all 0.25s ease;
+  stroke-linecap: round;
+}
+
+.arch-flow-edge.animated {
+  stroke-dasharray: 6, 5;
+  animation: flowDashAnim 1.8s linear infinite;
+}
+
+@keyframes flowDashAnim {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -22;
+  }
+}
+
+.arch-flow-edge.dimmed {
+  opacity: 0.12 !important;
+  stroke-dasharray: none !important;
+  animation: none !important;
+}
+
+.arch-flow-edge.active {
+  stroke-width: 3px !important;
+  filter: drop-shadow(0 0 6px currentColor);
+}
+
+.flow-edge-badge {
+  font-family: var(--font-mono, monospace);
+  font-size: 9px;
+  font-weight: 700;
+  text-anchor: middle;
+  pointer-events: none;
+}
+

@@ -71,188 +71,298 @@
           <span class="badge badge-emerald">Mode Interactif Live</span>
         </div>
 
-        <div class="arch-shema-grid">
-          <!-- Layer 1 -->
-          <div class="arch-shema-layer" style="border-left: 3px solid var(--accent-blue);">
-            <div class="arch-shema-header">
-              <span class="arch-shema-title">🖥️ COUCHE 1 : STUDIO VISUEL D'INVESTIGATION (CLIENT OPJ)</span>
-              <span class="badge badge-blue">React 19 &bull; Cytoscape &bull; MapLibre &bull; WaveSurfer</span>
-            </div>
-            <div class="arch-nodes-row">
-              <div class="arch-shema-node active" data-node="ui_client" onclick="selectArchNode('ui_client')">
-                <span>🕸️ Tableau de Cas (Cytoscape)</span>
-              </div>
-              <div class="arch-shema-node" data-node="ui_client" onclick="selectArchNode('ui_client')">
-                <span>📅 Chronologie Linéaire</span>
-              </div>
-              <div class="arch-shema-node" data-node="ui_client" onclick="selectArchNode('ui_client')">
-                <span>🗺️ Carte SIG des Bornages</span>
-              </div>
-              <div class="arch-shema-node" data-node="ui_client" onclick="selectArchNode('ui_client')">
-                <span>🎙️ Lecteur Audio Darija</span>
-              </div>
-            </div>
+        <!-- Flow Filter Toolbar -->
+        <div class="arch-flow-toolbar">
+          <div class="arch-flow-filters">
+            <button class="flow-btn active" data-flow="all" onclick="filterArchFlow('all')">
+              <span>🌐</span> Tous les Flux
+            </button>
+            <button class="flow-btn" data-flow="whatsapp_voice" onclick="filterArchFlow('whatsapp_voice')">
+              <span>📱</span> Infiltration WhatsApp &amp; Voix Darija
+            </button>
+            <button class="flow-btn" data-flow="web_scam" onclick="filterArchFlow('web_scam')">
+              <span>🕸️</span> Capture Web WORM &amp; Scraping BSON
+            </button>
+            <button class="flow-btn" data-flow="telecom_cdr" onclick="filterArchFlow('telecom_cdr')">
+              <span>📶</span> Bornage Télécom &amp; CDR TimescaleDB
+            </button>
+            <button class="flow-btn" data-flow="court_export" onclick="filterArchFlow('court_export')">
+              <span>⚖️</span> Scellement Légal RFC 3161 &amp; PDF/A
+            </button>
           </div>
+          <button id="flow-anim-toggle" class="flow-btn" style="border-color:#38bdf8;color:#38bdf8;" onclick="toggleFlowAnimation()">
+            ⏸️ Mettre en Pause les Flux
+          </button>
+        </div>
 
-          <!-- Connector 1 -> 2 -->
-          <div class="arch-pipe-connector">
-            <span class="arch-pipe-pill">⬇️ HTTPS / REST Commandes Instantanées (Port 48997)</span>
-            <span class="arch-pipe-pill">⬆️ WebSockets WSS Événements en Temps Réel (Port 48997)</span>
-          </div>
+        <!-- Dynamic Flow Explanatory Banner -->
+        <div id="arch-flow-banner" style="background:#0b111c;border:1px dashed #24354f;border-radius:6px;padding:0.75rem 1rem;margin-bottom:1rem;">
+          <!-- Populated dynamically by architecture-interactive.js -->
+        </div>
 
-          <!-- Layer 2 -->
-          <div class="arch-shema-layer" style="border-left: 3px solid var(--accent-emerald);">
-            <div class="arch-shema-header">
-              <span class="arch-shema-title">🛡️ COUCHE 2 : PASSERELLE DE SÉCURITÉ &amp; AUDIT JUDICIAIRE (INGRESS)</span>
-              <span class="badge badge-emerald">FastAPI &bull; Casdoor/Keycloak &bull; RFC 3161 Interceptor</span>
-            </div>
-            <div class="arch-nodes-row">
-              <div class="arch-shema-node" data-node="gateway_api" onclick="selectArchNode('gateway_api')">
-                <span>🔐 Authentification IAM (Casdoor OAuth2/JWT)</span>
-              </div>
-              <div class="arch-shema-node" data-node="gateway_api" onclick="selectArchNode('gateway_api')">
-                <span>⚡ Passerelle Asynchrone (FastAPI Core)</span>
-              </div>
-              <div class="arch-shema-node" data-node="gateway_api" onclick="selectArchNode('gateway_api')">
-                <span>📜 Intercepteur de Journalisation Légale (WORM)</span>
-              </div>
-            </div>
-          </div>
+        <!-- Interactive SVG Architecture Flow Diagram with Directional Arrows & Icons -->
+        <div style="background:#060a12;border:1px solid #1a2538;border-radius:8px;padding:0.75rem;margin-bottom:1.25rem;overflow-x:auto;">
+          <svg viewBox="0 0 1000 780" xmlns="http://www.w3.org/2000/svg" class="arch-svg-canvas" style="min-width:900px;font-family:system-ui,-apple-system,sans-serif;">
+            <defs>
+              <!-- Arrow Marker Heads -->
+              <marker id="arr-cyan" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#38bdf8"/>
+              </marker>
+              <marker id="arr-emerald" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#10b981"/>
+              </marker>
+              <marker id="arr-purple" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#a855f7"/>
+              </marker>
+              <marker id="arr-amber" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#f59e0b"/>
+              </marker>
+              <marker id="arr-orange" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#f97316"/>
+              </marker>
+              <marker id="arr-rose" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#ec4899"/>
+              </marker>
 
-          <!-- Connector 2 -> 3 -->
-          <div class="arch-pipe-connector">
-            <span class="arch-pipe-pill">⬇️ gRPC Event Bus &bull; Protobuf v3 State Pipeline</span>
-          </div>
+              <!-- Linear Gradients for Layer Backdrops -->
+              <linearGradient id="grad-layer" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#0e1726"/>
+                <stop offset="100%" stop-color="#090e17"/>
+              </linearGradient>
+            </defs>
 
-          <!-- Layer 3 -->
-          <div class="arch-shema-layer" style="border-left: 3px solid var(--accent-purple);">
-            <div class="arch-shema-header">
-              <span class="arch-shema-title">🧠 COUCHE 3 : CERVEAU D'ENQUÊTE &amp; ORCHESTRATION DUAL-MODE</span>
-              <span class="badge badge-purple">Temporal.io &bull; Moteur de Règles &bull; Ollama LMM</span>
-            </div>
-            <div class="arch-nodes-row">
-              <div class="arch-shema-node" data-node="brain_orchestrator" onclick="selectArchNode('brain_orchestrator')">
-                <span>🧭 Moteur de Règles Déterministe (Sans IA)</span>
-              </div>
-              <div class="arch-shema-node" data-node="brain_orchestrator" onclick="selectArchNode('brain_orchestrator')">
-                <span>⚙️ Machine d'États Temporels (Temporal.io)</span>
-              </div>
-              <div class="arch-shema-node" data-node="brain_orchestrator" onclick="selectArchNode('brain_orchestrator')">
-                <span>🤖 Agent LMM Autonome Souverain (Ollama/vLLM)</span>
-              </div>
-            </div>
-          </div>
+            <!-- ================= LAYER 1: CLIENT STUDIO ================= -->
+            <rect x="20" y="15" width="960" height="78" rx="8" fill="url(#grad-layer)" stroke="#2563eb" stroke-width="1.5"/>
+            <text x="35" y="34" fill="#93c5fd" font-size="11" font-weight="700" letter-spacing="0.5">🖥️ COUCHE 1 : STUDIO VISUEL D'INVESTIGATION (CLIENT OPJ)</text>
+            <text x="890" y="34" fill="#60a5fa" font-size="9" text-anchor="end" font-family="monospace">React 19 • 60 FPS Canvas</text>
 
-          <!-- Connector 3 -> 4 -->
-          <div class="arch-pipe-connector">
-            <span class="arch-pipe-pill">⬇️ AMQP Redis Streams Task Queue &bull; Isolation Rootless</span>
-          </div>
+            <g class="svg-node" data-node="ui_client" onclick="selectArchNode('ui_client')">
+              <rect x="35" y="44" width="220" height="40" rx="5" fill="#131e33" stroke="#1d4ed8" stroke-width="1"/>
+              <text x="45" y="62" fill="#fff" font-size="11" font-weight="600">⚛️ React 19 + TypeScript</text>
+              <text x="45" y="76" fill="#94a3b8" font-size="9">Interface Responsive &bull; Next.js</text>
+            </g>
+            <g class="svg-node" data-node="ui_client" onclick="selectArchNode('ui_client')">
+              <rect x="270" y="44" width="225" height="40" rx="5" fill="#131e33" stroke="#1d4ed8" stroke-width="1"/>
+              <text x="280" y="62" fill="#fff" font-size="11" font-weight="600">🕸️ Cytoscape &bull; Sigma WebGL</text>
+              <text x="280" y="76" fill="#94a3b8" font-size="9">Graphe Interactif 4 Calques</text>
+            </g>
+            <g class="svg-node" data-node="ui_client" onclick="selectArchNode('ui_client')">
+              <rect x="510" y="44" width="225" height="40" rx="5" fill="#131e33" stroke="#1d4ed8" stroke-width="1"/>
+              <text x="520" y="62" fill="#fff" font-size="11" font-weight="600">🗺️ MapLibre GL &bull; Deck.gl</text>
+              <text x="520" y="76" fill="#94a3b8" font-size="9">Bornages BTS &bull; SIG Hors-Ligne</text>
+            </g>
+            <g class="svg-node" data-node="ui_client" onclick="selectArchNode('ui_client')">
+              <rect x="750" y="44" width="215" height="40" rx="5" fill="#131e33" stroke="#1d4ed8" stroke-width="1"/>
+              <text x="760" y="62" fill="#fff" font-size="11" font-weight="600">🎙️ WaveSurfer.js Audio</text>
+              <text x="760" y="76" fill="#94a3b8" font-size="9">Lecteur Vocaux Darija Algérienne</text>
+            </g>
 
-          <!-- Layer 4 -->
-          <div class="arch-shema-layer" style="border-left: 3px solid var(--accent-amber);">
-            <div class="arch-shema-header">
-              <span class="arch-shema-title">🧰 COUCHE 4 : BAC À SABLE FORENSIQUE &amp; BRIQUES OSINT (76 OUTILS)</span>
-              <span class="badge badge-amber">Celery &bull; Docker Rootless &bull; Playwright Pool &bull; Proxies</span>
-            </div>
-            <div class="arch-nodes-row">
-              <div class="arch-shema-node" data-node="sandbox_workers" onclick="selectArchNode('sandbox_workers')">
-                <span>📢 Briques Réseaux Sociaux (Bellingcat/Maigret)</span>
-              </div>
-              <div class="arch-shema-node" data-node="sandbox_workers" onclick="selectArchNode('sandbox_workers')">
-                <span>🎙️ Reconnaissance Vocale Darija (Faster-Whisper)</span>
-              </div>
-              <div class="arch-shema-node" data-node="sandbox_workers" onclick="selectArchNode('sandbox_workers')">
-                <span>🕸️ Algorithmes SNA Criminels (Betweenness/Louvain)</span>
-              </div>
-              <div class="arch-shema-node" data-node="sandbox_workers" onclick="selectArchNode('sandbox_workers')">
-                <span>🛡️ Pool de Proxys Résidentiels Anonymes</span>
-              </div>
-            </div>
-          </div>
+            <!-- CONNECTOR L1 -> L2 (Arrow & Protocol Badge) -->
+            <path id="e_ui_gw" class="arch-flow-edge animated" data-edge="e_ui_gw" d="M 500 93 L 500 132" stroke="#38bdf8" marker-end="url(#arr-cyan)"/>
+            <rect x="405" y="103" width="190" height="18" rx="4" fill="#08101e" stroke="#0284c7" stroke-width="0.8"/>
+            <text class="flow-edge-badge" data-edge="e_ui_gw" x="500" y="115" fill="#67e8f9">⬇️ HTTPS REST / WSS (Port 48997)</text>
 
-          <!-- Connector 4 -> 4B -->
-          <div class="arch-pipe-connector">
-            <span class="arch-pipe-pill">⬇️ ADB over TCP (5555) &bull; WebRTC Scrcpy Video &bull; AT Commands Modem SIM (/dev/ttyUSB0)</span>
-          </div>
+            <!-- ================= LAYER 2: SECURITY INGRESS ================= -->
+            <rect x="20" y="132" width="960" height="78" rx="8" fill="url(#grad-layer)" stroke="#059669" stroke-width="1.5"/>
+            <text x="35" y="151" fill="#6ee7b7" font-size="11" font-weight="700" letter-spacing="0.5">🛡️ COUCHE 2 : PASSERELLE DE SÉCURITÉ &amp; AUDIT JUDICIAIRE (INGRESS)</text>
+            <text x="890" y="151" fill="#34d399" font-size="9" text-anchor="end" font-family="monospace">FastAPI &bull; Casdoor IAM &bull; P99 &lt;12ms</text>
 
-          <!-- Layer 4B: Mobile Phone Farm (Ferme de Smartphones & Modems SIM) -->
-          <div class="arch-shema-layer" style="border-left: 3px solid #f97316;">
-            <div class="arch-shema-header">
-              <span class="arch-shema-title">📱 COUCHE 4B : FERME DE SMARTPHONES &amp; MODEMS SIM 4G (MOBILE PHONE FARM)</span>
-              <span class="badge" style="background:rgba(249,115,22,0.15);color:#fb923c;border:1px solid #f97316;">ReDroid Android 13 &bull; GSM SIM Bank &bull; Appium 2 &bull; Scrcpy &bull; Mitmproxy</span>
-            </div>
-            <div class="arch-nodes-row">
-              <div class="arch-shema-node" data-node="phone_farm" onclick="selectArchNode('phone_farm')">
-                <span>🤖 ReDroid (Conteneurs Android 13 Rootless GPU)</span>
-              </div>
-              <div class="arch-shema-node" data-node="phone_farm" onclick="selectArchNode('phone_farm')">
-                <span>📲 Baie de SIMs 4G Algériennes (Mobilis/Djezzy/Ooredoo)</span>
-              </div>
-              <div class="arch-shema-node" data-node="phone_farm" onclick="selectArchNode('phone_farm')">
-                <span>🎮 Streaming Écran 60 FPS Scrcpy (WebRTC &lt;30ms)</span>
-              </div>
-              <div class="arch-shema-node" data-node="phone_farm" onclick="selectArchNode('phone_farm')">
-                <span>🛡️ Interception TLS &amp; Cloaking Anti-Root (Zygisk/Magisk)</span>
-              </div>
-            </div>
-          </div>
+            <g class="svg-node" data-node="gateway_api" onclick="selectArchNode('gateway_api')">
+              <rect x="35" y="161" width="295" height="40" rx="5" fill="#061f18" stroke="#059669" stroke-width="1"/>
+              <text x="45" y="179" fill="#fff" font-size="11" font-weight="600">⚡ FastAPI Core Gateway</text>
+              <text x="45" y="193" fill="#94a3b8" font-size="9">Python 3.11 Asynchrone &bull; 3 500 req/s</text>
+            </g>
+            <g class="svg-node" data-node="gateway_api" onclick="selectArchNode('gateway_api')">
+              <rect x="345" y="161" width="310" height="40" rx="5" fill="#061f18" stroke="#059669" stroke-width="1"/>
+              <text x="355" y="179" fill="#fff" font-size="11" font-weight="600">🔐 Casdoor / Keycloak IAM</text>
+              <text x="355" y="193" fill="#94a3b8" font-size="9">OAuth2 / OIDC JWT &bull; Multi-Juridictions</text>
+            </g>
+            <g class="svg-node" data-node="gateway_api" onclick="selectArchNode('gateway_api')">
+              <rect x="670" y="161" width="295" height="40" rx="5" fill="#061f18" stroke="#059669" stroke-width="1"/>
+              <text x="680" y="179" fill="#fff" font-size="11" font-weight="600">📜 Intercepteur d'Audit Hash-Chain</text>
+              <text x="680" y="193" fill="#94a3b8" font-size="9">Horodatage SHA-256 Inaltérable</text>
+            </g>
 
-          <!-- Connector 4B -> 5 -->
-          <div class="arch-pipe-connector">
-            <span class="arch-pipe-pill">⬇️ Persistance Polyglotte Multi-Moteurs &bull; Cypher Bolt, SQL, BSON Wire, S3 API, gRPC</span>
-          </div>
+            <!-- CONNECTOR L2 -> L3 (Arrow & Protocol Badge) -->
+            <path id="e_gw_brain" class="arch-flow-edge animated" data-edge="e_gw_brain" d="M 500 210 L 500 248" stroke="#a855f7" marker-end="url(#arr-purple)"/>
+            <rect x="405" y="220" width="190" height="18" rx="4" fill="#08101e" stroke="#7c3aed" stroke-width="0.8"/>
+            <text class="flow-edge-badge" data-edge="e_gw_brain" x="500" y="232" fill="#c084fc">⬇️ gRPC Protobuf v3 (Port 7233)</text>
 
-          <!-- Layer 5 -->
-          <div class="arch-shema-layer" style="border-left: 3px solid var(--accent-cyan);">
-            <div class="arch-shema-header">
-              <span class="arch-shema-title">🗄️ COUCHE 5 : TIER DE STOCKAGE POLYGLOTTE SPÉCIALISÉ</span>
-              <span class="badge badge-cyan">Neo4j 5 &bull; PostgreSQL 16 &bull; MongoDB 7 &bull; MinIO WORM &bull; Qdrant &bull; Redis 7</span>
-            </div>
-            <div class="arch-nodes-row">
-              <div class="arch-shema-node" data-node="storage_graph" onclick="selectArchNode('storage_graph')">
-                <span>🕸️ Neo4j 5.x &bull; JanusGraph (Graphe de Connaissances)</span>
-              </div>
-              <div class="arch-shema-node" data-node="storage_postgres" onclick="selectArchNode('storage_postgres')">
-                <span>📋 PostgreSQL 16 (Dossiers ACID &amp; Registre Immuable)</span>
-              </div>
-              <div class="arch-shema-node" data-node="storage_mongodb" onclick="selectArchNode('storage_mongodb')">
-                <span>🍃 MongoDB 7.x (Dépotoir BSON OSINT &amp; Scraping)</span>
-              </div>
-              <div class="arch-shema-node" data-node="storage_minio" onclick="selectArchNode('storage_minio')">
-                <span>🔒 MinIO S3 WORM (Preuves &amp; Captures Scellées)</span>
-              </div>
-              <div class="arch-shema-node" data-node="storage_qdrant" onclick="selectArchNode('storage_qdrant')">
-                <span>🎯 Qdrant (Biométrie Faciale ArcFace &amp; Vocale)</span>
-              </div>
-              <div class="arch-shema-node" data-node="storage_redis" onclick="selectArchNode('storage_redis')">
-                <span>⚡ Redis 7 Stack (Broker Celery &amp; Cache Temps Réel)</span>
-              </div>
-            </div>
-          </div>
+            <!-- ================= LAYER 3: DETECTIVE BRAIN ================= -->
+            <rect x="20" y="248" width="960" height="78" rx="8" fill="url(#grad-layer)" stroke="#7c3aed" stroke-width="1.5"/>
+            <text x="35" y="267" fill="#d8b4fe" font-size="11" font-weight="700" letter-spacing="0.5">🧠 COUCHE 3 : CERVEAU D'ENQUÊTE &amp; ORCHESTRATION DUAL-MODE</text>
+            <text x="890" y="267" fill="#c084fc" font-size="9" text-anchor="end" font-family="monospace">Temporal.io &bull; Moteur Déterministe &bull; Ollama</text>
 
-          <!-- Connector 5 -> 6 -->
-          <div class="arch-pipe-connector">
-            <span class="arch-pipe-pill">⬇️ Certification RFC 3161 &bull; Empreintes SHA-256 Merkle Proof</span>
-          </div>
+            <g class="svg-node" data-node="brain_orchestrator" onclick="selectArchNode('brain_orchestrator')">
+              <rect x="35" y="277" width="295" height="40" rx="5" fill="#1b122e" stroke="#7c3aed" stroke-width="1"/>
+              <text x="45" y="295" fill="#fff" font-size="11" font-weight="600">🧭 Moteur Déterministe (Sans IA)</text>
+              <text x="45" y="309" fill="#94a3b8" font-size="9">Règles Strictes &bull; Graphe de Compatibilité</text>
+            </g>
+            <g class="svg-node" data-node="brain_orchestrator" onclick="selectArchNode('brain_orchestrator')">
+              <rect x="345" y="277" width="310" height="40" rx="5" fill="#1b122e" stroke="#7c3aed" stroke-width="1"/>
+              <text x="355" y="295" fill="#fff" font-size="11" font-weight="600">⚙️ Temporal.io State Engine</text>
+              <text x="355" y="309" fill="#94a3b8" font-size="9">Workflows Durables &bull; Validation Humaine</text>
+            </g>
+            <g class="svg-node" data-node="brain_orchestrator" onclick="selectArchNode('brain_orchestrator')">
+              <rect x="670" y="277" width="295" height="40" rx="5" fill="#1b122e" stroke="#7c3aed" stroke-width="1"/>
+              <text x="680" y="295" fill="#fff" font-size="11" font-weight="600">🤖 LiteLLM &bull; Ollama / vLLM</text>
+              <text x="680" y="309" fill="#94a3b8" font-size="9">Modèles Souverains Hors-Ligne (DeepSeek/Llama)</text>
+            </g>
 
-          <!-- Layer 6 -->
-          <div class="arch-shema-layer" style="border-left: 3px solid var(--accent-rose);">
-            <div class="arch-shema-header">
-              <span class="arch-shema-title">📜 COUCHE 6 : CHAÎNE DE GARDE JUDICIAIRE &amp; EXPORT AU TRIBUNAL</span>
-              <span class="badge badge-rose">RFC 3161 TSA &bull; Merkle Proofs &bull; WeasyPrint PDF &bull; WARC</span>
-            </div>
-            <div class="arch-nodes-row">
-              <div class="arch-shema-node" data-node="legal_court_export" onclick="selectArchNode('legal_court_export')">
-                <span>⚖️ Procès-Verbal de Synthèse Judiciaire (PDF/A)</span>
-              </div>
-              <div class="arch-shema-node" data-node="legal_court_export" onclick="selectArchNode('legal_court_export')">
-                <span>🔒 Horodatage Cryptographique Inaltérable</span>
-              </div>
-              <div class="arch-shema-node" data-node="legal_court_export" onclick="selectArchNode('legal_court_export')">
-                <span>📦 Archive Légale Conforme Norme ISO 28500</span>
-              </div>
-            </div>
-          </div>
+            <!-- CONNECTORS L3 -> L4 (Left) and L3 -> L4B (Right) -->
+            <path id="e_brain_workers" class="arch-flow-edge animated" data-edge="e_brain_workers" d="M 370 326 C 370 348, 270 348, 270 368" stroke="#f59e0b" marker-end="url(#arr-amber)"/>
+            <rect x="185" y="338" width="170" height="18" rx="4" fill="#08101e" stroke="#d97706" stroke-width="0.8"/>
+            <text class="flow-edge-badge" data-edge="e_brain_workers" x="270" y="350" fill="#fcd34d">⬇️ AMQP Redis Streams (63379)</text>
+
+            <path id="e_brain_phone" class="arch-flow-edge animated" data-edge="e_brain_phone" d="M 630 326 C 630 348, 770 348, 770 368" stroke="#f97316" marker-end="url(#arr-orange)"/>
+            <rect x="685" y="338" width="170" height="18" rx="4" fill="#08101e" stroke="#ea580c" stroke-width="0.8"/>
+            <text class="flow-edge-badge" data-edge="e_brain_phone" x="770" y="350" fill="#fdba74">⬇️ ADB TCP 5555 &bull; Appium</text>
+
+            <!-- ================= LAYER 4 (OSINT WORKERS) & LAYER 4B (PHONE FARM) ================= -->
+            <!-- Left: OSINT Workers -->
+            <rect x="20" y="368" width="530" height="96" rx="8" fill="url(#grad-layer)" stroke="#d97706" stroke-width="1.5"/>
+            <text x="35" y="387" fill="#fde68a" font-size="11" font-weight="700" letter-spacing="0.5">🧰 COUCHE 4 : BAC À SABLE OSINT (76 OUTILS DOCKER)</text>
+            <text x="535" y="387" fill="#f59e0b" font-size="9" text-anchor="end" font-family="monospace">Docker Rootless</text>
+
+            <g class="svg-node" data-node="sandbox_workers" onclick="selectArchNode('sandbox_workers')">
+              <rect x="35" y="398" width="155" height="52" rx="5" fill="#241906" stroke="#d97706" stroke-width="1"/>
+              <text x="45" y="418" fill="#fff" font-size="11" font-weight="600">🐳 Celery Workers</text>
+              <text x="45" y="432" fill="#94a3b8" font-size="9">Maigret &bull; PhoneInfoga &bull; GHunt</text>
+              <text x="45" y="443" fill="#64748b" font-size="8">Proxys WireGuard / Tor</text>
+            </g>
+            <g class="svg-node" data-node="sandbox_workers" onclick="selectArchNode('sandbox_workers')">
+              <rect x="200" y="398" width="165" height="52" rx="5" fill="#241906" stroke="#d97706" stroke-width="1"/>
+              <text x="210" y="418" fill="#fff" font-size="11" font-weight="600">🎭 Playwright Pool</text>
+              <text x="210" y="432" fill="#94a3b8" font-size="9">Captures Écrans &bull; WARC WORM</text>
+              <text x="210" y="443" fill="#64748b" font-size="8">Scraping DOM &bull; Meta Pixels</text>
+            </g>
+            <g class="svg-node" data-node="sandbox_workers" onclick="selectArchNode('sandbox_workers')">
+              <rect x="375" y="398" width="165" height="52" rx="5" fill="#241906" stroke="#d97706" stroke-width="1"/>
+              <text x="385" y="418" fill="#fff" font-size="11" font-weight="600">🎙️ Faster-Whisper</text>
+              <text x="385" y="432" fill="#94a3b8" font-size="9">Darija Algérienne &bull; PyAnnote</text>
+              <text x="385" y="443" fill="#64748b" font-size="8">Diarisation Interlocuteurs</text>
+            </g>
+
+            <!-- Right: Mobile Phone Farm -->
+            <rect x="565" y="368" width="415" height="96" rx="8" fill="url(#grad-layer)" stroke="#ea580c" stroke-width="1.5"/>
+            <text x="580" y="387" fill="#fed7aa" font-size="11" font-weight="700" letter-spacing="0.5">📱 COUCHE 4B : FERME SMARTPHONES &amp; SIMS 4G</text>
+            <text x="965" y="387" fill="#f97316" font-size="9" text-anchor="end" font-family="monospace">ReDroid &bull; Scrcpy 60 FPS</text>
+
+            <g class="svg-node" data-node="phone_farm" onclick="selectArchNode('phone_farm')">
+              <rect x="580" y="398" width="190" height="52" rx="5" fill="#281105" stroke="#ea580c" stroke-width="1"/>
+              <text x="590" y="418" fill="#fff" font-size="11" font-weight="600">🤖 ReDroid Android 13</text>
+              <text x="590" y="432" fill="#94a3b8" font-size="9">WhatsApp &bull; Telegram &bull; BaridiMob</text>
+              <text x="590" y="443" fill="#64748b" font-size="8">Zygisk Cloaking &bull; Mitmproxy</text>
+            </g>
+            <g class="svg-node" data-node="phone_farm" onclick="selectArchNode('phone_farm')">
+              <rect x="780" y="398" width="190" height="52" rx="5" fill="#281105" stroke="#ea580c" stroke-width="1"/>
+              <text x="790" y="418" fill="#fff" font-size="11" font-weight="600">📲 Baie SIMs 4G DZ</text>
+              <text x="790" y="432" fill="#94a3b8" font-size="9">Mobilis &bull; Djezzy &bull; Ooredoo</text>
+              <text x="790" y="443" fill="#64748b" font-size="8">Commandes AT &bull; OTP &lt;3s</text>
+            </g>
+
+            <!-- Arrow: SIM Bank to ReDroid (SMS OTP) -->
+            <path id="e_sim_phone" class="arch-flow-edge animated" data-edge="e_sim_phone" d="M 780 424 L 770 424" stroke="#f97316" marker-end="url(#arr-orange)"/>
+
+            <!-- Arrow: ReDroid to Faster-Whisper (Audio Vocal) -->
+            <path id="e_phone_voice" class="arch-flow-edge animated" data-edge="e_phone_voice" d="M 580 424 L 540 424" stroke="#10b981" marker-end="url(#arr-emerald)"/>
+
+            <!-- CONNECTORS L4/L4B -> L5 (Polyglot Storage Vaults) -->
+            <path id="e_workers_neo" class="arch-flow-edge animated" data-edge="e_workers_neo" d="M 112 450 L 112 510" stroke="#38bdf8" marker-end="url(#arr-cyan)"/>
+            <path id="e_workers_pg" class="arch-flow-edge animated" data-edge="e_workers_pg" d="M 270 450 L 270 510" stroke="#10b981" marker-end="url(#arr-emerald)"/>
+            <path id="e_workers_mongo" class="arch-flow-edge animated" data-edge="e_workers_mongo" d="M 320 450 C 320 480, 425 480, 425 510" stroke="#06b6d4" marker-end="url(#arr-cyan)"/>
+            <path id="e_workers_minio" class="arch-flow-edge animated" data-edge="e_workers_minio" d="M 350 450 C 350 485, 580 480, 580 510" stroke="#f59e0b" marker-end="url(#arr-amber)"/>
+            <path id="e_voice_qdrant" class="arch-flow-edge animated" data-edge="e_voice_qdrant" d="M 460 450 C 460 485, 735 480, 735 510" stroke="#a855f7" marker-end="url(#arr-purple)"/>
+
+            <!-- Protocol Badges for Storage Connections -->
+            <rect x="65" y="475" width="95" height="16" rx="3" fill="#08101e" stroke="#0284c7" stroke-width="0.7"/>
+            <text class="flow-edge-badge" data-edge="e_workers_neo" x="112" y="486" fill="#38bdf8">Bolt 7687</text>
+
+            <rect x="225" y="475" width="90" height="16" rx="3" fill="#08101e" stroke="#059669" stroke-width="0.7"/>
+            <text class="flow-edge-badge" data-edge="e_workers_pg" x="270" y="486" fill="#10b981">SQL 55432</text>
+
+            <rect x="375" y="475" width="100" height="16" rx="3" fill="#08101e" stroke="#0891b2" stroke-width="0.7"/>
+            <text class="flow-edge-badge" data-edge="e_workers_mongo" x="425" y="486" fill="#06b6d4">BSON 27017</text>
+
+            <rect x="530" y="475" width="100" height="16" rx="3" fill="#08101e" stroke="#d97706" stroke-width="0.7"/>
+            <text class="flow-edge-badge" data-edge="e_workers_minio" x="580" y="486" fill="#f59e0b">S3 WORM 9000</text>
+
+            <rect x="685" y="475" width="100" height="16" rx="3" fill="#08101e" stroke="#7c3aed" stroke-width="0.7"/>
+            <text class="flow-edge-badge" data-edge="e_voice_qdrant" x="735" y="486" fill="#a855f7">gRPC 6334</text>
+
+            <!-- ================= LAYER 5: POLYGLOT STORAGE TIER ================= -->
+            <rect x="20" y="510" width="960" height="96" rx="8" fill="url(#grad-layer)" stroke="#0891b2" stroke-width="1.5"/>
+            <text x="35" y="529" fill="#a5f3fc" font-size="11" font-weight="700" letter-spacing="0.5">🗄️ COUCHE 5 : TIER DE STOCKAGE POLYGLOTTE SPÉCIALISÉ</text>
+            <text x="890" y="529" fill="#22d3ee" font-size="9" text-anchor="end" font-family="monospace">6 Moteurs &bull; Index-Free &bull; WORM</text>
+
+            <g class="svg-node" data-node="storage_graph" onclick="selectArchNode('storage_graph')">
+              <rect x="35" y="540" width="145" height="52" rx="5" fill="#0c1e2b" stroke="#0284c7" stroke-width="1"/>
+              <text x="45" y="560" fill="#fff" font-size="11" font-weight="600">🕸️ Neo4j 5.x</text>
+              <text x="45" y="574" fill="#94a3b8" font-size="9">Graphe Cypher &bull; GDS</text>
+              <text x="45" y="585" fill="#38bdf8" font-size="8">Index-Free Adjacency</text>
+            </g>
+            <g class="svg-node" data-node="storage_postgres" onclick="selectArchNode('storage_postgres')">
+              <rect x="190" y="540" width="145" height="52" rx="5" fill="#0a2318" stroke="#059669" stroke-width="1"/>
+              <text x="200" y="560" fill="#fff" font-size="11" font-weight="600">🐘 PostgreSQL 16</text>
+              <text x="200" y="574" fill="#94a3b8" font-size="9">TimescaleDB CDR</text>
+              <text x="200" y="585" fill="#10b981" font-size="8">ACID &bull; Registre Merkle</text>
+            </g>
+            <g class="svg-node" data-node="storage_mongodb" onclick="selectArchNode('storage_mongodb')">
+              <rect x="345" y="540" width="145" height="52" rx="5" fill="#082329" stroke="#0891b2" stroke-width="1"/>
+              <text x="355" y="560" fill="#fff" font-size="11" font-weight="600">🍃 MongoDB 7.x</text>
+              <text x="355" y="574" fill="#94a3b8" font-size="9">BSON WiredTiger</text>
+              <text x="355" y="585" fill="#06b6d4" font-size="8">Dépotoir OSINT Brut</text>
+            </g>
+            <g class="svg-node" data-node="storage_minio" onclick="selectArchNode('storage_minio')">
+              <rect x="500" y="540" width="145" height="52" rx="5" fill="#241a08" stroke="#d97706" stroke-width="1"/>
+              <text x="510" y="560" fill="#fff" font-size="11" font-weight="600">🔒 MinIO S3</text>
+              <text x="510" y="574" fill="#94a3b8" font-size="9">Object Lock (WORM)</text>
+              <text x="510" y="585" fill="#f59e0b" font-size="8">ISO 27037 Scellé</text>
+            </g>
+            <g class="svg-node" data-node="storage_qdrant" onclick="selectArchNode('storage_qdrant')">
+              <rect x="655" y="540" width="145" height="52" rx="5" fill="#1e102e" stroke="#7c3aed" stroke-width="1"/>
+              <text x="665" y="560" fill="#fff" font-size="11" font-weight="600">🎯 Qdrant (Rust)</text>
+              <text x="665" y="574" fill="#94a3b8" font-size="9">Vecteurs ArcFace/Voice</text>
+              <text x="665" y="585" fill="#a855f7" font-size="8">HNSW &lt;8ms Filtré</text>
+            </g>
+            <g class="svg-node" data-node="storage_redis" onclick="selectArchNode('storage_redis')">
+              <rect x="810" y="540" width="155" height="52" rx="5" fill="#290b16" stroke="#db2777" stroke-width="1"/>
+              <text x="820" y="560" fill="#fff" font-size="11" font-weight="600">⚡ Redis 7 Stack</text>
+              <text x="820" y="574" fill="#94a3b8" font-size="9">Broker Celery &bull; PubSub</text>
+              <text x="820" y="585" fill="#f43f5e" font-size="8">Rate-Limit Anti-Ban</text>
+            </g>
+
+            <!-- REDIS RETURN LOOP ARROW TO LAYER 1 (Live WebSocket Push) -->
+            <path id="e_redis_push" class="arch-flow-edge animated" data-edge="e_redis_push" d="M 965 555 C 990 555, 990 60, 965 60" stroke="#f43f5e" marker-end="url(#arr-rose)"/>
+            <rect x="895" y="300" width="100" height="18" rx="4" fill="#180710" stroke="#db2777" stroke-width="0.8"/>
+            <text class="flow-edge-badge" data-edge="e_redis_push" x="945" y="312" fill="#fda4af">⬆️ Push WSS (&lt;1ms)</text>
+
+            <!-- CONNECTOR L5 -> L6 (Legal Chain of Custody) -->
+            <path id="e_storage_court" class="arch-flow-edge animated" data-edge="e_storage_court" d="M 500 606 L 500 644" stroke="#ec4899" marker-end="url(#arr-rose)"/>
+            <rect x="365" y="616" width="270" height="18" rx="4" fill="#180710" stroke="#db2777" stroke-width="0.8"/>
+            <text class="flow-edge-badge" data-edge="e_storage_court" x="500" y="628" fill="#f472b6">⬇️ Certification RFC 3161 TSA &bull; Racine d'Arbre de Merkle</text>
+
+            <!-- ================= LAYER 6: COURT EXPORT ================= -->
+            <rect x="20" y="644" width="960" height="78" rx="8" fill="url(#grad-layer)" stroke="#db2777" stroke-width="1.5"/>
+            <text x="35" y="663" fill="#fbcfe8" font-size="11" font-weight="700" letter-spacing="0.5">⚖️ COUCHE 6 : CHAÎNE DE GARDE JUDICIAIRE &amp; EXPORT AU TRIBUNAL</text>
+            <text x="890" y="663" fill="#f472b6" font-size="9" text-anchor="end" font-family="monospace">Code de Procédure Pénale (CPP)</text>
+
+            <g class="svg-node" data-node="legal_court_export" onclick="selectArchNode('legal_court_export')">
+              <rect x="35" y="673" width="295" height="40" rx="5" fill="#240c17" stroke="#db2777" stroke-width="1"/>
+              <text x="45" y="691" fill="#fff" font-size="11" font-weight="600">📜 Synthèse Procès-Verbal (PDF/A-3b)</text>
+              <text x="45" y="705" fill="#94a3b8" font-size="9">Rapport Destiné au Juge d'Instruction</text>
+            </g>
+            <g class="svg-node" data-node="legal_court_export" onclick="selectArchNode('legal_court_export')">
+              <rect x="345" y="673" width="310" height="40" rx="5" fill="#240c17" stroke="#db2777" stroke-width="1"/>
+              <text x="355" y="691" fill="#fff" font-size="11" font-weight="600">🔒 Horodatage Qualifié Inaltérable</text>
+              <text x="355" y="705" fill="#94a3b8" font-size="9">Autorité de Confiance Qualifiée RFC 3161</text>
+            </g>
+            <g class="svg-node" data-node="legal_court_export" onclick="selectArchNode('legal_court_export')">
+              <rect x="670" y="673" width="295" height="40" rx="5" fill="#240c17" stroke="#db2777" stroke-width="1"/>
+              <text x="680" y="691" fill="#fff" font-size="11" font-weight="600">📦 Archive Judiciaire ISO 28500 (WARC)</text>
+              <text x="680" y="705" fill="#94a3b8" font-size="9">Scellé Numérique Garanti Non-Répudiable</text>
+            </g>
+          </svg>
         </div>
 
         <!-- Live Interactive Inspector Card -->
