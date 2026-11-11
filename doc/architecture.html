@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>02. Six-Layer Visual Architecture & Infrastructure — Athar DZ / AegisInvestigate</title>
+  <title>02. Architecture Système en 6 Couches &amp; Infrastructure d'Ingénierie — Athar DZ / AegisInvestigate</title>
   <link rel="stylesheet" href="assets/style.css" />
   <style>
     .arch-subnav-tabs {
@@ -94,10 +94,43 @@
     .pros-list li::before { content: "✔ "; color: #10b981; }
     .cons-list { color: #fca5a5; list-style: none; padding-left: 0; margin: 0; }
     .cons-list li::before { content: "⚠ "; color: #ef4444; }
+
+    .svg-node {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .svg-node:hover rect {
+      filter: brightness(1.25);
+    }
+    .svg-node.active rect {
+      stroke-width: 2.5px !important;
+      filter: drop-shadow(0 0 10px currentColor);
+    }
+    .fix-banner {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(14, 165, 233, 0.1));
+      border: 1px solid #10b981;
+      border-left: 5px solid #10b981;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .fix-banner h3 {
+      color: #10b981;
+      margin: 0 0 0.4rem 0;
+      font-size: 0.98rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .fix-banner p {
+      color: #cbd5e1;
+      font-size: 0.82rem;
+      margin: 0;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
-
   <!-- Sidebar Navigation -->
   <aside class="sidebar">
     <div class="brand">
@@ -127,19 +160,18 @@
     </ul>
 
     <div class="sidebar-footer">
-      <div><strong>Designed For:</strong> Investigators (Zero CS Jargon)</div>
-      <div><strong>Proof Standard:</strong> Automatic Legal Snapshots</div>
-      <div><strong>Intelligence:</strong> Standard Rules + Optional AI</div>
+      <div><strong>Conception:</strong> Enquêteurs Judiciaires (Zéro Jargon CS)</div>
+      <div><strong>Chaîne de Preuve:</strong> Scellés WORM RFC 3161 / ISO 27037</div>
+      <div><strong>Intelligence:</strong> GDS In-Memory + IA Locale Souveraine</div>
     </div>
   </aside>
-
   <!-- Main Content -->
   <main class="main-content">
     <header class="page-header">
-      <div class="page-eyebrow">Chapter 02 &bull; Visual System Architecture &amp; Infrastructure</div>
-      <h1>Six-Layer Visual Architecture, Storage &amp; Service Communication</h1>
+      <div class="page-eyebrow">Chapitre 02 &bull; Architecture Système &amp; Infrastructure d'Ingénierie Logicielle</div>
+      <h1>Architecture Visuelle en Six Couches, Stockage Polyglotte &amp; Flux Inter-Services</h1>
       <p>
-        An interactive, modular software engineering blueprint detailing the platform's <strong>Six Operational Layers</strong>: from covert Android phone farm infiltration and polyglot ingestion, through specialized multi-engine storage, Graph Data Science analytics, and sovereign local AI, to the high-performance <strong>Neo4j NVL WebGL Dual-Canvas</strong> presentation tier.
+        Schéma d'ingénierie logicielle interactif et modulaire détaillant les <strong>Six Couches Opérationnelles</strong> de la plateforme : de l'infiltration mobile discrète via Phone Farm Android et l'ingestion polyglotte, au travers du stockage persistant spécialisé à 6 moteurs, des algorithmes Graph Data Science (GDS) et de l'IA locale souveraine, jusqu'au moteur de rendu accéléré matériel <strong>Neo4j NVL WebGL Dual-Canvas</strong>.
       </p>
     </header>
 
@@ -167,24 +199,32 @@
         <span>🖥️</span> 7. Layer 6: Présentation NVL WebGL
       </button>
     </div>
-
     <!-- ====================================================================
-         TAB 1: VUE GLOBALE INTERACTIVE (SIX-PLANE FLOW)
+         TAB 1: VUE GLOBALE INTERACTIVE (SIX-PLANE DECOUPLED FLOW)
          ==================================================================== -->
     <div id="panel-arch-global" class="arch-tab-panel active">
       <section>
-        <h2 class="section-title">1. Vue Globale : Architecture des 6 Couches Logicielles</h2>
+        <h2 class="section-title">1. Vue Globale : Architecture des 6 Couches Logicielles &amp; Flux Inter-Services</h2>
         <p class="section-subtitle">
-          Explorez les interconnexions synchrones et asynchrones entre les couches. Filtrez les flux d'investigation en temps réel pour inspecter les protocoles, les files d'attente et la résilience du système.
+          Architecture découplée de haute précision : accès direct au stockage persistant, ingestion périphérique par Phone Farm Android, et exécution d'intelligence en mémoire (GDS &amp; IA locale).
         </p>
+
+        <!-- Inconsistency Resolution Notice Banner -->
+        <div class="fix-banner">
+          <h3><span>✅</span> Résolution de l'Incohérence Architecturale &amp; Règle d'Accès Direct au Tier de Stockage</h3>
+          <p>
+            <strong>Correction fondamentale :</strong> Dans la modélisation précédente, un schéma de flux linéaire erroné laissait entendre que la couche d'orchestration (Layer 2) devait obligatoirement transiter par la Phone Farm mobile (Layer 1) puis par les moteurs d'intelligence (Layer 4 &amp; 5) pour accéder au stockage (Layer 3). Cette anomalie est désormais résolue :
+            <strong>Layer 2 (API Gateway &amp; Pipeline) communique DIRECTEMENT avec Layer 3 (Stockage Polyglotte)</strong> via des protocoles natifs haute performance (Bolt, asyncpg, S3 REST, BSON, gRPC, RESP3). La couche <strong>Layer 1</strong> constitue une périphérie d'acquisition externe déclenchée par des tâches asynchrones, tandis que les couches <strong>Layer 4</strong> (GDS) et <strong>Layer 5</strong> (IA) opèrent directement sur les moteurs de données (en mémoire vive et vectorielle) sous l'autorité de l'orchestrateur.
+          </p>
+        </div>
 
         <!-- Interactive Software Engineering Architecture Explorer -->
         <div class="arch-interactive-canvas">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:0.75rem;">
             <div>
-              <h3 style="color:#f8fafc;margin:0 0 0.35rem;font-size:1.1rem;">Schéma Interactif d'Ingénierie Logicielle (Six-Plane Architecture)</h3>
+              <h3 style="color:#f8fafc;margin:0 0 0.35rem;font-size:1.1rem;">Schéma Interactif d'Ingénierie Logicielle (Architecture en 6 Couches Découplées)</h3>
               <p style="font-size:0.8rem;color:var(--text-secondary);margin:0;">
-                Interconnexions directes entre le Studio Enquêteur (NVL WebGL), l'Ingress sécurisé, l'Orchestrateur, les Briques OSINT, la Phone Farm et le Tier de Stockage Polyglotte.
+                Cliquez sur un composant pour inspecter son profil technique en direct (protocoles, ports, débits SLA, tolérance aux pannes, charges utiles JSON).
               </p>
             </div>
             <span class="badge badge-emerald">Mode Interactif Live</span>
@@ -194,7 +234,7 @@
           <div class="arch-flow-toolbar">
             <div class="arch-flow-filters">
               <button class="flow-btn active" data-flow="all" onclick="filterArchFlow('all')">
-                <span>🌐</span> Tous les Flux
+                <span>🌐</span> Tous les Flux (13 Canaux)
               </button>
               <button class="flow-btn" data-flow="whatsapp_voice" onclick="filterArchFlow('whatsapp_voice')">
                 <span>📱</span> Infiltration WhatsApp &amp; Voix Darija
@@ -221,7 +261,7 @@
 
           <!-- Global Interactive SVG Architecture Schema -->
           <div style="background:#060a12;border:1px solid #1a2538;border-radius:8px;padding:0.75rem;margin-bottom:1.25rem;overflow-x:auto;">
-            <svg viewBox="0 0 1000 780" xmlns="http://www.w3.org/2000/svg" class="arch-svg-canvas" style="min-width:900px;font-family:system-ui,-apple-system,sans-serif;">
+            <svg viewBox="0 0 1000 880" xmlns="http://www.w3.org/2000/svg" class="arch-svg-canvas" style="min-width:920px;font-family:system-ui,-apple-system,sans-serif;">
               <defs>
                 <marker id="arr-cyan" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                   <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#38bdf8"/>
@@ -241,232 +281,504 @@
                 <marker id="arr-rose" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                   <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#f43f5e"/>
                 </marker>
+                <filter id="glow-bus" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="glow"/>
+                  <feComposite in="SourceGraphic" in2="glow" operator="over"/>
+                </filter>
               </defs>
 
-              <!-- PLANE 1: Presentation & Dual-Canvas NVL WebGL -->
-              <g class="flow-group" data-group="ui">
-                <rect x="30" y="20" width="940" height="90" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
-                <text x="50" y="48" fill="#38bdf8" font-size="13" font-weight="bold">LAYER 6 : TIER PRÉSENTATION &amp; STUDIO D'ENQUÊTE DUAL-CANVAS</text>
-                <text x="50" y="68" fill="#94a3b8" font-size="10">Neo4j NVL WebGL Engine (@neo4j-nvl/react) • Minimap Synchronisée • Layout-Workers WebWorkers • Chatbot Ollama DavidLanz</text>
-                <rect x="50" y="80" width="160" height="22" rx="4" fill="#1e293b"/>
-                <text x="60" y="95" fill="#e2e8f0" font-size="9" font-weight="600">🖥️ NVL Graph Canvas</text>
-                <rect x="220" y="80" width="150" height="22" rx="4" fill="#1e293b"/>
-                <text x="230" y="95" fill="#e2e8f0" font-size="9" font-weight="600">🗺️ Dual-Canvas Minimap</text>
-                <rect x="380" y="80" width="150" height="22" rx="4" fill="#1e293b"/>
-                <text x="390" y="95" fill="#e2e8f0" font-size="9" font-weight="600">💬 Text-to-Cypher Copilot</text>
-                <rect x="540" y="80" width="160" height="22" rx="4" fill="#1e293b"/>
-                <text x="550" y="95" fill="#e2e8f0" font-size="9" font-weight="600">⏳ Sliced Timeline Slider</text>
-                <rect x="710" y="80" width="160" height="22" rx="4" fill="#1e293b"/>
-                <text x="720" y="95" fill="#e2e8f0" font-size="9" font-weight="600">⚖️ Export PV Conforme CPP</text>
+              <!-- ============================================================ -->
+              <!-- LAYER 6: PRESENTATION & INVESTIGATION STUDIO DUAL-CANVAS    -->
+              <!-- ============================================================ -->
+              <g class="svg-node" data-node="ui_client" onclick="selectArchNode('ui_client')">
+                <rect x="30" y="20" width="940" height="95" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
+                <text x="50" y="46" fill="#38bdf8" font-size="13" font-weight="bold">LAYER 6 : TIER PRÉSENTATION &amp; STUDIO D'ENQUÊTE DUAL-CANVAS NVL WEBGL</text>
+                <text x="50" y="66" fill="#94a3b8" font-size="10">Neo4j NVL WebGL Engine (@neo4j-nvl/react) • Minimap Synchronisée • Layout-Workers WebWorkers • Chatbot Ollama DavidLanz</text>
+                <rect x="50" y="78" width="165" height="24" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="0.8"/>
+                <text x="60" y="94" fill="#e2e8f0" font-size="9.5" font-weight="600">🖥️ Canvas NVL WebGL (60 FPS)</text>
+                <rect x="225" y="78" width="155" height="24" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="0.8"/>
+                <text x="235" y="94" fill="#e2e8f0" font-size="9.5" font-weight="600">🗺️ Dual-Canvas Minimap</text>
+                <rect x="390" y="78" width="165" height="24" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="0.8"/>
+                <text x="400" y="94" fill="#e2e8f0" font-size="9.5" font-weight="600">💬 Copilot Text-to-Cypher</text>
+                <rect x="565" y="78" width="165" height="24" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="0.8"/>
+                <text x="575" y="94" fill="#e2e8f0" font-size="9.5" font-weight="600">⏳ Curseur Temporel (APOC)</text>
+                <rect x="740" y="78" width="210" height="24" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="0.8"/>
+                <text x="750" y="94" fill="#e2e8f0" font-size="9.5" font-weight="600">⚖️ Export PV Scellé RFC 3161</text>
               </g>
 
-              <!-- DOWNWARD CONNECTOR: UI -> Ingress Gateway -->
-              <path class="flow-edge flow-main" d="M 500 110 L 500 150" stroke="#38bdf8" stroke-width="2" marker-end="url(#arr-cyan)" stroke-dasharray="4"/>
-              <text x="510" y="135" fill="#38bdf8" font-size="9" font-family="monospace">HTTPS / WSS (WebSocket)</text>
+              <!-- EDGE: UI <-> Gateway (HTTPS / WSS) -->
+              <path id="e_ui_gw" data-edge="e_ui_gw" class="arch-flow-edge animated" d="M 500 115 L 500 155" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arr-cyan)"/>
+              <rect x="420" y="125" width="160" height="18" rx="4" fill="#090d16" stroke="#38bdf8" stroke-width="0.8"/>
+              <text x="430" y="137" fill="#38bdf8" font-size="8.5" font-family="monospace">HTTPS / WSS (Port 48997)</text>
 
-              <!-- PLANE 2: Ingress & Orchestration Tier -->
-              <g class="flow-group" data-group="ingress">
-                <rect x="30" y="150" width="940" height="85" rx="8" fill="#0c1929" stroke="#0ea5e9" stroke-width="1.5"/>
-                <text x="50" y="175" fill="#0ea5e9" font-size="12" font-weight="bold">LAYER 2 : API GATEWAY &amp; ORCHESTRATEUR DE WORKFLOWS</text>
-                <text x="50" y="193" fill="#94a3b8" font-size="10">FastAPI Gateway • JWT Auth &amp; RBAC • Celery Workers • Broker Redis 7 / RabbitMQ • Normalisation Pydantic v2</text>
-                <rect x="50" y="202" width="170" height="24" rx="4" fill="#132338"/>
-                <text x="60" y="218" fill="#38bdf8" font-size="9">🚪 FastAPI Ingress Gateway</text>
-                <rect x="230" y="202" width="170" height="24" rx="4" fill="#132338"/>
-                <text x="240" y="218" fill="#38bdf8" font-size="9">⚡ Celery Asynchronous Queue</text>
-                <rect x="410" y="202" width="190" height="24" rx="4" fill="#132338"/>
-                <text x="420" y="218" fill="#38bdf8" font-size="9">🔄 Event Bus (Redis 7 Streams)</text>
-                <rect x="610" y="202" width="170" height="24" rx="4" fill="#132338"/>
-                <text x="620" y="218" fill="#38bdf8" font-size="9">🛡️ Token Bucket Anti-Ban</text>
+              <!-- ============================================================ -->
+              <!-- LAYER 2: API GATEWAY & WORKFLOW ORCHESTRATION TIER          -->
+              <!-- ============================================================ -->
+              <g class="svg-node" data-node="gateway_api" onclick="selectArchNode('gateway_api')">
+                <rect x="30" y="155" width="940" height="95" rx="8" fill="#0c1929" stroke="#0ea5e9" stroke-width="2"/>
+                <text x="50" y="180" fill="#0ea5e9" font-size="13" font-weight="bold">LAYER 2 : API GATEWAY, INGESTION &amp; ORCHESTRATEUR DE WORKFLOWS</text>
+                <text x="50" y="198" fill="#94a3b8" font-size="10">FastAPI ASGI Ingress • JWT RBAC Casdoor/Keycloak • Celery 5.4 Priority Workers • Event Bus Redis 7.2 Streams • Normalisation Pydantic v2</text>
+                <rect x="50" y="212" width="180" height="25" rx="4" fill="#132338" stroke="#0ea5e9" stroke-width="0.8"/>
+                <text x="60" y="228" fill="#38bdf8" font-size="9">🚪 FastAPI Ingress Gateway</text>
+                <rect x="240" y="212" width="180" height="25" rx="4" fill="#132338" stroke="#0ea5e9" stroke-width="0.8"/>
+                <text x="250" y="228" fill="#38bdf8" font-size="9">⚡ Celery Asynchronous Queue</text>
+                <rect x="430" y="212" width="180" height="25" rx="4" fill="#132338" stroke="#0ea5e9" stroke-width="0.8"/>
+                <text x="440" y="228" fill="#38bdf8" font-size="9">🔄 Event Bus (Redis Streams)</text>
+                <rect x="620" y="212" width="170" height="25" rx="4" fill="#132338" stroke="#0ea5e9" stroke-width="0.8"/>
+                <text x="630" y="228" fill="#38bdf8" font-size="9">📐 Normaliseur Pydantic v2</text>
+                <rect x="800" y="212" width="150" height="25" rx="4" fill="#132338" stroke="#0ea5e9" stroke-width="0.8"/>
+                <text x="810" y="228" fill="#38bdf8" font-size="9">🛡️ Token Bucket Anti-Ban</text>
               </g>
 
-              <!-- DOWNWARD CONNECTOR: Orchestrator -> OSINT & Phone Farm -->
-              <path class="flow-edge flow-main" d="M 280 235 L 280 275" stroke="#f97316" stroke-width="2" marker-end="url(#arr-orange)"/>
-              <path class="flow-edge flow-main" d="M 720 235 L 720 275" stroke="#10b981" stroke-width="2" marker-end="url(#arr-emerald)"/>
-
-              <!-- PLANE 3: Investigation Arsenal & Phone Farm -->
-              <g class="flow-group" data-group="tools">
-                <rect x="30" y="275" width="460" height="110" rx="8" fill="#1a140d" stroke="#f97316" stroke-width="1.5"/>
-                <text x="50" y="298" fill="#f97316" font-size="12" font-weight="bold">LAYER 1 : ACQUISITION FORENSIQUE &amp; PHONE FARM</text>
-                <text x="50" y="315" fill="#fdba74" font-size="9.5">Phone Farm Android 13 • Modem GSM SIM 4G DZ • Scrcpy WebRTC • Infiltration WhatsApp</text>
-                <rect x="50" y="325" width="190" height="22" rx="4" fill="#2c1f14"/>
-                <text x="60" y="340" fill="#fed7aa" font-size="8.5">📲 Modem SIM DZ (Mobilis/Djezzy/Oor)</text>
-                <rect x="250" y="325" width="180" height="22" rx="4" fill="#2c1f14"/>
-                <text x="260" y="340" fill="#fed7aa" font-size="8.5">🤖 ReDroid Containers &amp; Appium</text>
-                <rect x="50" y="353" width="190" height="22" rx="4" fill="#2c1f14"/>
-                <text x="60" y="368" fill="#fed7aa" font-size="8.5">🎮 Scrcpy 60 FPS WebRTC Stream</text>
-                <rect x="250" y="353" width="180" height="22" rx="4" fill="#2c1f14"/>
-                <text x="260" y="368" fill="#fed7aa" font-size="8.5">🛡️ Zygisk Anti-Root Cloaking</text>
-
-                <rect x="510" y="275" width="460" height="110" rx="8" fill="#0d1f18" stroke="#10b981" stroke-width="1.5"/>
-                <text x="530" y="298" fill="#10b981" font-size="12" font-weight="bold">ARSENAL OSINT &amp; BRIQUES SPÉCIALISÉES (76 OUTILS)</text>
-                <text x="530" y="315" fill="#86efac" font-size="9.5">Web Scrapers • SOCMINT • Fuites Git &amp; Dépôts • Réseau Discord/Telegram • Forensic DFIR</text>
-                <rect x="530" y="325" width="200" height="22" rx="4" fill="#143026"/>
-                <text x="540" y="340" fill="#bbf7d0" font-size="8.5">🕸️ Playwright Scrapers (FB/TikTok/Insta)</text>
-                <rect x="740" y="325" width="200" height="22" rx="4" fill="#143026"/>
-                <text x="750" y="340" fill="#bbf7d0" font-size="8.5">📱 PhoneInfoga &amp; Truecaller Reverse</text>
-                <rect x="530" y="353" width="200" height="22" rx="4" fill="#143026"/>
-                <text x="540" y="368" fill="#bbf7d0" font-size="8.5">🔍 Jadx-GUI / Ghidra Decompiler APK</text>
-                <rect x="740" y="353" width="200" height="22" rx="4" fill="#143026"/>
-                <text x="750" y="368" fill="#bbf7d0" font-size="8.5">📸 ArchiveBox WARC Snapshot (ISO 28500)</text>
+              <!-- ============================================================ -->
+              <!-- DIRECT PERSISTENCE HIGHWAY: LAYER 2 -> LAYER 3               -->
+              <!-- (Resolves Inconsistency: No Hop through Layer 1 or Layer 4/5) -->
+              <!-- ============================================================ -->
+              <!-- Central Vertical Data Bus -->
+              <path id="e_gw_storage_direct" data-edge="e_gw_storage_direct" class="arch-flow-edge animated" d="M 500 250 L 500 580" stroke="#f43f5e" stroke-width="4" marker-end="url(#arr-rose)"/>
+              <g transform="translate(415, 395)">
+                <rect x="0" y="0" width="170" height="42" rx="6" fill="#17111c" stroke="#f43f5e" stroke-width="1.5" filter="url(#glow-bus)"/>
+                <text x="85" y="16" fill="#fda4af" font-size="9" font-weight="bold" text-anchor="middle">BUS DIRECT PERSISTANCE</text>
+                <text x="85" y="32" fill="#f43f5e" font-size="8" font-family="monospace" text-anchor="middle">Bolt • SQL • S3 • BSON • REST</text>
               </g>
 
-              <!-- DOWNWARD CONNECTOR: Acquisition -> AI & Analytics -->
-              <path class="flow-edge flow-main" d="M 280 385 L 280 425" stroke="#a855f7" stroke-width="2" marker-end="url(#arr-purple)"/>
-              <path class="flow-edge flow-main" d="M 720 385 L 720 425" stroke="#a855f7" stroke-width="2" marker-end="url(#arr-purple)"/>
+              <!-- ============================================================ -->
+              <!-- LEFT WING: LAYER 1 - COVERT ACQUISITION & PHONE FARM         -->
+              <!-- ============================================================ -->
+              <!-- Command Edge: Layer 2 -> Layer 1 -->
+              <path id="e_gw_phone_cmd" data-edge="e_gw_phone_cmd" class="arch-flow-edge animated" d="M 200 250 L 200 295" stroke="#f97316" stroke-width="2" marker-end="url(#arr-orange)"/>
+              <text x="125" y="275" fill="#f97316" font-size="8" font-family="monospace">Ordre Tâche Celery / ADB</text>
 
-              <!-- PLANE 4: Analytics GDS & Sovereign AI -->
-              <g class="flow-group" data-group="ai">
-                <rect x="30" y="425" width="460" height="110" rx="8" fill="#1c1228" stroke="#a855f7" stroke-width="1.5"/>
-                <text x="50" y="448" fill="#a855f7" font-size="12" font-weight="bold">LAYER 4 : MOTEUR ANALYTICS &amp; GDS GRAPH SCIENCE</text>
-                <text x="50" y="465" fill="#d8b4fe" font-size="9.5">Neo4j GDS 2.6 • Betweenness Centrality • Louvain Modularity • Link Prediction • Rôles Criminels</text>
-                <rect x="50" y="475" width="200" height="22" rx="4" fill="#2d1c42"/>
-                <text x="60" y="490" fill="#e9d5ff" font-size="8.5">🌉 Betweenness Centrality (Mules)</text>
-                <rect x="260" y="475" width="180" height="22" rx="4" fill="#2d1c42"/>
-                <text x="270" y="490" fill="#e9d5ff" font-size="8.5">👥 Louvain / Label Propagation</text>
-                <rect x="50" y="503" width="200" height="22" rx="4" fill="#2d1c42"/>
-                <text x="60" y="518" fill="#e9d5ff" font-size="8.5">🔗 Link Prediction (Co-offending)</text>
-                <rect x="260" y="503" width="180" height="22" rx="4" fill="#2d1c42"/>
-                <text x="270" y="518" fill="#e9d5ff" font-size="8.5">🏷️ Rôles: Opérationnel, Soutien, Leader</text>
+              <g class="svg-node" data-node="phone_farm" onclick="selectArchNode('phone_farm')">
+                <rect x="30" y="295" width="370" height="245" rx="8" fill="#140f0a" stroke="#f97316" stroke-width="2"/>
+                <text x="45" y="320" fill="#f97316" font-size="12" font-weight="bold">LAYER 1 : ACQUISITION FORENSIQUE &amp; PHONE FARM</text>
+                <text x="45" y="338" fill="#fed7aa" font-size="9">Infiltration sécurisée d'écosystèmes mobiles fermés (WhatsApp, Telegram, BaridiMob)</text>
 
-                <rect x="510" y="425" width="460" height="110" rx="8" fill="#131e33" stroke="#38bdf8" stroke-width="1.5"/>
-                <text x="530" y="448" fill="#38bdf8" font-size="12" font-weight="bold">LAYER 5 : IA SOUVERAINE &amp; BIOMÉTRIE MULTIMODALE</text>
-                <text x="530" y="465" fill="#7dd3fc" font-size="9.5">Ollama LLM Text-to-Cypher • Faster-Whisper Darija DZ • PyAnnote 3.1 • ArcFace DeepFace 512-d</text>
-                <rect x="530" y="475" width="200" height="22" rx="4" fill="#1b2f4f"/>
-                <text x="540" y="490" fill="#bae6fd" font-size="8.5">🎙️ Faster-Whisper (Darija Algérienne)</text>
-                <rect x="740" y="475" width="200" height="22" rx="4" fill="#1b2f4f"/>
-                <text x="750" y="490" fill="#bae6fd" font-size="8.5">👥 PyAnnote 3.1 (Diarisation Locuteurs)</text>
-                <rect x="530" y="503" width="200" height="22" rx="4" fill="#1b2f4f"/>
-                <text x="540" y="518" fill="#bae6fd" font-size="8.5">👤 ArcFace 512-d (Biométrie Faciale)</text>
-                <rect x="740" y="503" width="200" height="22" rx="4" fill="#1b2f4f"/>
-                <text x="750" y="518" fill="#bae6fd" font-size="8.5">🤖 Ollama (DavidLanz/text2cypher)</text>
+                <rect x="45" y="350" width="340" height="38" rx="4" fill="#2c1f14" stroke="#f97316" stroke-width="0.8"/>
+                <text x="55" y="367" fill="#fed7aa" font-size="9" font-weight="bold">📶 Banque Modems GSM USB 4G Algériens</text>
+                <text x="55" y="380" fill="#cbd5e1" font-size="8">Puces SIM Mobilis / Djezzy / Ooredoo • Interception SMS OTP &lt;1.5s</text>
+
+                <rect x="45" y="395" width="340" height="38" rx="4" fill="#2c1f14" stroke="#f97316" stroke-width="0.8"/>
+                <text x="55" y="412" fill="#fed7aa" font-size="9" font-weight="bold">📲 Ferme ReDroid Android 13 Conteneurisée</text>
+                <text x="55" y="425" fill="#cbd5e1" font-size="8">AOSP 13 GPU Passthrough • Cloaking Magisk + Zygisk • ADB over TCP</text>
+
+                <rect x="45" y="440" width="340" height="38" rx="4" fill="#2c1f14" stroke="#f97316" stroke-width="0.8"/>
+                <text x="55" y="457" fill="#fed7aa" font-size="9" font-weight="bold">🎥 Scrcpy WebRTC 60 FPS Low-Latency</text>
+                <text x="55" y="470" fill="#cbd5e1" font-size="8">Stream H.264 interactif &lt;30ms • Injection tactile &amp; clavier en temps réel</text>
+
+                <rect x="45" y="485" width="340" height="42" rx="4" fill="#2c1f14" stroke="#f97316" stroke-width="0.8"/>
+                <text x="55" y="502" fill="#fed7aa" font-size="9" font-weight="bold">🛡️ Mitmproxy 10.3 TLS &amp; Rétro-Ingénierie APK</text>
+                <text x="55" y="518" fill="#cbd5e1" font-size="8">Frida Universal SSL Unpinning • Jadx/Ghidra décompilation APK BaridiMob</text>
               </g>
 
-              <!-- DOWNWARD CONNECTOR: Processing -> Storage Tier -->
-              <path class="flow-edge flow-main" d="M 500 535 L 500 575" stroke="#f43f5e" stroke-width="2" marker-end="url(#arr-rose)"/>
-              <text x="510" y="560" fill="#f43f5e" font-size="9" font-family="monospace">Persistance Polyglotte Atomique</text>
+              <!-- Edge: Layer 1 -> Layer 2 Stream / OTP -->
+              <path id="e_phone_gw_stream" data-edge="e_phone_gw_stream" class="arch-flow-edge animated" d="M 240 295 L 240 250" stroke="#f97316" stroke-width="1.8" stroke-dasharray="3,3" marker-end="url(#arr-orange)"/>
+              <text x="250" y="275" fill="#f97316" font-size="8" font-family="monospace">SMS OTP / Vocaux WebRTC</text>
 
-              <!-- PLANE 5: Polyglot Storage Tier -->
-              <g class="flow-group" data-group="storage">
-                <rect x="30" y="575" width="940" height="175" rx="8" fill="#17111c" stroke="#f43f5e" stroke-width="2"/>
-                <text x="50" y="600" fill="#f43f5e" font-size="13" font-weight="bold">LAYER 3 : TIER DE STOCKAGE POLYGLOTTE SPÉCIALISÉ (6 MOTEURS COMPLÉMENTAIRES)</text>
-                <text x="50" y="618" fill="#fda4af" font-size="10">Chaque type de données est affecté à son moteur mathématique optimal, garantissant performance sub-milliseconde et conformité légale CPP.</text>
+              <!-- Direct Evidence Storage Edges: Layer 1 -> Layer 3 -->
+              <path id="e_phone_minio_worm" data-edge="e_phone_minio_worm" class="arch-flow-edge animated" d="M 120 540 L 120 580" stroke="#f59e0b" stroke-width="2" marker-end="url(#arr-amber)"/>
+              <text x="60" y="562" fill="#f59e0b" font-size="8" font-family="monospace">Dépôt Scellé WORM (MinIO)</text>
 
-                <g transform="translate(50, 630)">
-                  <rect x="0" y="0" width="138" height="95" rx="6" fill="#261725" stroke="#38bdf8"/>
-                  <text x="10" y="22" fill="#38bdf8" font-size="11" font-weight="bold">🕸️ Neo4j 5.20+</text>
-                  <text x="10" y="38" fill="#94a3b8" font-size="8.5">Graphe &amp; Relations</text>
-                  <text x="10" y="55" fill="#cbd5e1" font-size="7.5">• Index-free adjacency</text>
-                  <text x="10" y="68" fill="#cbd5e1" font-size="7.5">• Recommandations GDS</text>
-                  <text x="10" y="81" fill="#cbd5e1" font-size="7.5">• Protocole Bolt &lt;5ms</text>
+              <path id="e_phone_mongo_raw" data-edge="e_phone_mongo_raw" class="arch-flow-edge animated" d="M 320 540 L 320 580" stroke="#10b981" stroke-width="2" marker-end="url(#arr-emerald)"/>
+              <text x="325" y="562" fill="#10b981" font-size="8" font-family="monospace">Dépôt BSON Brut (MongoDB)</text>
+
+              <!-- ============================================================ -->
+              <!-- RIGHT WING: INTELLIGENCE & ANALYTICS (LAYER 4 & LAYER 5)    -->
+              <!-- ============================================================ -->
+              <!-- Trigger Edges: Layer 2 -> Layer 4 & Layer 5 -->
+              <path id="e_gw_gds_trigger" data-edge="e_gw_gds_trigger" class="arch-flow-edge animated" d="M 700 250 L 700 295" stroke="#a855f7" stroke-width="2" marker-end="url(#arr-purple)"/>
+              <text x="630" y="275" fill="#a855f7" font-size="8" font-family="monospace">Déclencheur GDS &amp; IA</text>
+
+              <g transform="translate(600, 295)">
+                <!-- LAYER 4: GDS GRAPH SCIENCE -->
+                <g class="svg-node" data-node="engine_gds" onclick="selectArchNode('engine_gds')">
+                  <rect x="0" y="0" width="180" height="245" rx="8" fill="#171026" stroke="#a855f7" stroke-width="2"/>
+                  <text x="12" y="24" fill="#a855f7" font-size="11" font-weight="bold">LAYER 4 : GDS 2.6 ANALYTICS</text>
+                  <text x="12" y="40" fill="#d8b4fe" font-size="8.5">Projection Graphe In-Memory</text>
+
+                  <rect x="10" y="50" width="160" height="34" rx="4" fill="#291a42" stroke="#a855f7" stroke-width="0.8"/>
+                  <text x="16" y="66" fill="#e9d5ff" font-size="8.5" font-weight="bold">🌉 Betweenness Brandes</text>
+                  <text x="16" y="78" fill="#cbd5e1" font-size="7.5">Détection mules financières</text>
+
+                  <rect x="10" y="90" width="160" height="34" rx="4" fill="#291a42" stroke="#a855f7" stroke-width="0.8"/>
+                  <text x="16" y="106" fill="#e9d5ff" font-size="8.5" font-weight="bold">👥 Louvain / Communautés</text>
+                  <text x="16" y="118" fill="#cbd5e1" font-size="7.5">Clustering cellules étanches</text>
+
+                  <rect x="10" y="130" width="160" height="34" rx="4" fill="#291a42" stroke="#a855f7" stroke-width="0.8"/>
+                  <text x="16" y="146" fill="#e9d5ff" font-size="8.5" font-weight="bold">🔗 Prédiction de Liens</text>
+                  <text x="16" y="158" fill="#cbd5e1" font-size="7.5">Adamic-Adar / Co-implication</text>
+
+                  <rect x="10" y="170" width="160" height="34" rx="4" fill="#291a42" stroke="#a855f7" stroke-width="0.8"/>
+                  <text x="16" y="186" fill="#e9d5ff" font-size="8.5" font-weight="bold">🏷️ Classification Rôles</text>
+                  <text x="16" y="198" fill="#cbd5e1" font-size="7.5">Opérationnel, Soutien, Leader</text>
+
+                  <rect x="10" y="210" width="160" height="26" rx="4" fill="#291a42" stroke="#a855f7" stroke-width="0.8"/>
+                  <text x="16" y="226" fill="#e9d5ff" font-size="8" font-weight="bold">📍 Profilage Wilaya BTS/GAB</text>
                 </g>
 
-                <g transform="translate(200, 630)">
-                  <rect x="0" y="0" width="138" height="95" rx="6" fill="#261725" stroke="#10b981"/>
-                  <text x="10" y="22" fill="#10b981" font-size="11" font-weight="bold">📋 PostgreSQL 16</text>
-                  <text x="10" y="38" fill="#94a3b8" font-size="8.5">+ TimescaleDB CDRs</text>
-                  <text x="10" y="55" fill="#cbd5e1" font-size="7.5">• ACID &amp; RLS Wilayas</text>
-                  <text x="10" y="68" fill="#cbd5e1" font-size="7.5">• Audit Merkle SHA-256</text>
-                  <text x="10" y="81" fill="#cbd5e1" font-size="7.5">• Hyper-tables télécom</text>
-                </g>
+                <!-- LAYER 5: SOVEREIGN LOCAL AI -->
+                <g class="svg-node" data-node="engine_ai" onclick="selectArchNode('engine_ai')">
+                  <rect x="190" y="0" width="180" height="245" rx="8" fill="#0d1b2a" stroke="#38bdf8" stroke-width="2"/>
+                  <text x="202" y="24" fill="#38bdf8" font-size="11" font-weight="bold">LAYER 5 : IA SOUVERAINE</text>
+                  <text x="202" y="40" fill="#7dd3fc" font-size="8.5">Inférence 100% Locale (Zero Cloud)</text>
 
-                <g transform="translate(350, 630)">
-                  <rect x="0" y="0" width="138" height="95" rx="6" fill="#261725" stroke="#06b6d4"/>
-                  <text x="10" y="22" fill="#06b6d4" font-size="11" font-weight="bold">🍃 MongoDB 7.0</text>
-                  <text x="10" y="38" fill="#94a3b8" font-size="8.5">Dépôt Brut OSINT</text>
-                  <text x="10" y="55" fill="#cbd5e1" font-size="7.5">• BSON polymorphe</text>
-                  <text x="10" y="68" fill="#cbd5e1" font-size="7.5">• Snappy compress 70%</text>
-                  <text x="10" y="81" fill="#cbd5e1" font-size="7.5">• Zero migration</text>
-                </g>
+                  <rect x="200" y="50" width="160" height="34" rx="4" fill="#162c46" stroke="#38bdf8" stroke-width="0.8"/>
+                  <text x="206" y="66" fill="#bae6fd" font-size="8.5" font-weight="bold">🤖 Ollama Text-to-Cypher</text>
+                  <text x="206" y="78" fill="#cbd5e1" font-size="7.5">Gemma-2-9b + boucle AST</text>
 
-                <g transform="translate(500, 630)">
-                  <rect x="0" y="0" width="138" height="95" rx="6" fill="#261725" stroke="#f59e0b"/>
-                  <text x="10" y="22" fill="#f59e0b" font-size="11" font-weight="bold">🔒 MinIO WORM S3</text>
-                  <text x="10" y="38" fill="#94a3b8" font-size="8.5">Coffre-fort Scellés</text>
-                  <text x="10" y="55" fill="#cbd5e1" font-size="7.5">• S3 Object Lock</text>
-                  <text x="10" y="68" fill="#cbd5e1" font-size="7.5">• Horodatage RFC 3161</text>
-                  <text x="10" y="81" fill="#cbd5e1" font-size="7.5">• WARC ISO 28500</text>
-                </g>
+                  <rect x="200" y="90" width="160" height="34" rx="4" fill="#162c46" stroke="#38bdf8" stroke-width="0.8"/>
+                  <text x="206" y="106" fill="#bae6fd" font-size="8.5" font-weight="bold">🎙️ Faster-Whisper Darija</text>
+                  <text x="206" y="118" fill="#cbd5e1" font-size="7.5">Audio ar-DZ + extraction DZD</text>
 
-                <g transform="translate(650, 630)">
-                  <rect x="0" y="0" width="138" height="95" rx="6" fill="#261725" stroke="#a855f7"/>
-                  <text x="10" y="22" fill="#a855f7" font-size="11" font-weight="bold">🎯 Qdrant 1.9</text>
-                  <text x="10" y="38" fill="#94a3b8" font-size="8.5">Moteur Vectoriel</text>
-                  <text x="10" y="55" fill="#cbd5e1" font-size="7.5">• Moteur Rust HNSW</text>
-                  <text x="10" y="68" fill="#cbd5e1" font-size="7.5">• Vecteurs visage/voix</text>
-                  <text x="10" y="81" fill="#cbd5e1" font-size="7.5">• Filtrage payload &lt;8ms</text>
-                </g>
+                  <rect x="200" y="130" width="160" height="34" rx="4" fill="#162c46" stroke="#38bdf8" stroke-width="0.8"/>
+                  <text x="206" y="146" fill="#bae6fd" font-size="8.5" font-weight="bold">👥 PyAnnote Audio 3.1</text>
+                  <text x="206" y="158" fill="#cbd5e1" font-size="7.5">Diarisation &amp; empreintes 192-d</text>
 
-                <g transform="translate(800, 630)">
-                  <rect x="0" y="0" width="145" height="95" rx="6" fill="#261725" stroke="#ec4899"/>
-                  <text x="10" y="22" fill="#ec4899" font-size="11" font-weight="bold">⚡ Redis 7 Stack</text>
-                  <text x="10" y="38" fill="#94a3b8" font-size="8.5">Bus Temps-Réel</text>
-                  <text x="10" y="55" fill="#cbd5e1" font-size="7.5">• Pub/Sub WebSocket</text>
-                  <text x="10" y="68" fill="#cbd5e1" font-size="7.5">• Anti-ban Token Bucket</text>
-                  <text x="10" y="81" fill="#cbd5e1" font-size="7.5">• Broker Celery RESP3</text>
+                  <rect x="200" y="170" width="160" height="34" rx="4" fill="#162c46" stroke="#38bdf8" stroke-width="0.8"/>
+                  <text x="206" y="186" fill="#bae6fd" font-size="8.5" font-weight="bold">👤 ArcFace 512-d Face</text>
+                  <text x="206" y="198" fill="#cbd5e1" font-size="7.5">Similarité cosinus sub-8ms</text>
+
+                  <rect x="200" y="210" width="160" height="26" rx="4" fill="#162c46" stroke="#38bdf8" stroke-width="0.8"/>
+                  <text x="206" y="226" fill="#bae6fd" font-size="8" font-weight="bold">🛡️ Détecteur Deepfake Audio</text>
                 </g>
               </g>
+
+              <!-- Layer 4 <-> Layer 3 Neo4j Bolt In-Memory Projection -->
+              <path id="e_gds_neo_bolt" data-edge="e_gds_neo_bolt" class="arch-flow-edge animated" d="M 680 540 L 680 580" stroke="#a855f7" stroke-width="2" marker-end="url(#arr-purple)"/>
+              <text x="635" y="562" fill="#a855f7" font-size="8" font-family="monospace">Bolt Graph Projection</text>
+
+              <!-- Layer 5 <-> Layer 3 Vector & Audio Connection -->
+              <path id="e_ai_qdrant_vec" data-edge="e_ai_qdrant_vec" class="arch-flow-edge animated" d="M 860 540 L 860 580" stroke="#38bdf8" stroke-width="2" marker-end="url(#arr-cyan)"/>
+              <text x="815" y="562" fill="#38bdf8" font-size="8" font-family="monospace">gRPC Vectors &amp; MinIO</text>
+
+              <!-- ============================================================ -->
+              <!-- LAYER 3: SPECIALIZED POLYGLOT STORAGE TIER (6 DEDICATED)    -->
+              <!-- ============================================================ -->
+              <g>
+                <rect x="30" y="580" width="940" height="270" rx="8" fill="#17111c" stroke="#f43f5e" stroke-width="2"/>
+                <text x="50" y="605" fill="#f43f5e" font-size="13" font-weight="bold">LAYER 3 : TIER DE STOCKAGE POLYGLOTTE SPÉCIALISÉ (6 MOTEURS COMPLÉMENTAIRES DÉDIÉS)</text>
+                <text x="50" y="623" fill="#fda4af" font-size="10">Accès direct et indépendant : chaque moteur est optimisé mathématiquement pour son modèle de données judiciaire (Index-Free Adjacency, ACID, HNSW, WORM).</text>
+
+                <!-- Database 1: Neo4j 5.20+ -->
+                <g class="svg-node" data-node="storage_graph" onclick="selectArchNode('storage_graph')" transform="translate(50, 635)">
+                  <rect x="0" y="0" width="140" height="195" rx="6" fill="#241424" stroke="#38bdf8" stroke-width="1.4"/>
+                  <text x="12" y="24" fill="#38bdf8" font-size="11" font-weight="bold">🕸️ Neo4j 5.20+</text>
+                  <text x="12" y="40" fill="#94a3b8" font-size="8.5">Graphe &amp; Relations</text>
+                  <text x="12" y="60" fill="#cbd5e1" font-size="8">• Index-free adjacency</text>
+                  <text x="12" y="75" fill="#cbd5e1" font-size="8">• Traversée O(k) sub-ms</text>
+                  <text x="12" y="90" fill="#cbd5e1" font-size="8">• Requêtes Cypher pures</text>
+                  <text x="12" y="105" fill="#cbd5e1" font-size="8">• Plugin APOC étendu</text>
+                  <text x="12" y="120" fill="#cbd5e1" font-size="8">• GDS in-memory catalog</text>
+                  <rect x="10" y="145" width="120" height="22" rx="3" fill="#141f36"/>
+                  <text x="15" y="160" fill="#38bdf8" font-size="8" font-family="monospace">Bolt Port 7687</text>
+                  <text x="12" y="185" fill="#34d399" font-size="7.5">● Sub-5ms 5-hops</text>
+                </g>
+
+                <!-- Database 2: PostgreSQL 16 + TimescaleDB -->
+                <g class="svg-node" data-node="storage_postgres" onclick="selectArchNode('storage_postgres')" transform="translate(205, 635)">
+                  <rect x="0" y="0" width="140" height="195" rx="6" fill="#141a29" stroke="#0ea5e9" stroke-width="1.4"/>
+                  <text x="12" y="24" fill="#0ea5e9" font-size="11" font-weight="bold">🐘 PostgreSQL 16</text>
+                  <text x="12" y="40" fill="#94a3b8" font-size="8.5">ACID &amp; TimescaleDB</text>
+                  <text x="12" y="60" fill="#cbd5e1" font-size="8">• Dossiers &amp; comptes</text>
+                  <text x="12" y="75" fill="#cbd5e1" font-size="8">• RLS Multi-Wilayas</text>
+                  <text x="12" y="90" fill="#cbd5e1" font-size="8">• Hypertables CDR BTS</text>
+                  <text x="12" y="105" fill="#cbd5e1" font-size="8">• Arbre de Merkle audit</text>
+                  <text x="12" y="120" fill="#cbd5e1" font-size="8">• Partitionnement jour</text>
+                  <rect x="10" y="145" width="120" height="22" rx="3" fill="#0c1929"/>
+                  <text x="15" y="160" fill="#0ea5e9" font-size="8" font-family="monospace">SQL Port 5432</text>
+                  <text x="12" y="185" fill="#34d399" font-size="7.5">● ACID Strict CPP</text>
+                </g>
+
+                <!-- Database 3: Qdrant 1.9 Rust -->
+                <g class="svg-node" data-node="storage_qdrant" onclick="selectArchNode('storage_qdrant')" transform="translate(360, 635)">
+                  <rect x="0" y="0" width="140" height="195" rx="6" fill="#17122b" stroke="#a855f7" stroke-width="1.4"/>
+                  <text x="12" y="24" fill="#a855f7" font-size="11" font-weight="bold">🎯 Qdrant 1.9 Rust</text>
+                  <text x="12" y="40" fill="#94a3b8" font-size="8.5">Index Vectoriel HNSW</text>
+                  <text x="12" y="60" fill="#cbd5e1" font-size="8">• ArcFace 512-d visages</text>
+                  <text x="12" y="75" fill="#cbd5e1" font-size="8">• PyAnnote 192-d voix</text>
+                  <text x="12" y="90" fill="#cbd5e1" font-size="8">• Similarité cosinus</text>
+                  <text x="12" y="105" fill="#cbd5e1" font-size="8">• Filtrage strict dossier</text>
+                  <text x="12" y="120" fill="#cbd5e1" font-size="8">• Quantification mémoire</text>
+                  <rect x="10" y="145" width="120" height="22" rx="3" fill="#24153b"/>
+                  <text x="15" y="160" fill="#a855f7" font-size="8" font-family="monospace">gRPC Port 6334</text>
+                  <text x="12" y="185" fill="#34d399" font-size="7.5">● &lt;8ms sur 2M vecteurs</text>
+                </g>
+
+                <!-- Database 4: MinIO S3 Enterprise WORM -->
+                <g class="svg-node" data-node="storage_minio" onclick="selectArchNode('storage_minio')" transform="translate(515, 635)">
+                  <rect x="0" y="0" width="140" height="195" rx="6" fill="#241417" stroke="#f43f5e" stroke-width="1.4"/>
+                  <text x="12" y="24" fill="#f43f5e" font-size="11" font-weight="bold">🗄️ MinIO S3 WORM</text>
+                  <text x="12" y="40" fill="#94a3b8" font-size="8.5">Coffre-fort Immuable</text>
+                  <text x="12" y="60" fill="#cbd5e1" font-size="8">• Object Lock Compliance</text>
+                  <text x="12" y="75" fill="#cbd5e1" font-size="8">• Scellés SHA-256</text>
+                  <text x="12" y="90" fill="#cbd5e1" font-size="8">• Horodatage RFC 3161</text>
+                  <text x="12" y="105" fill="#cbd5e1" font-size="8">• Archives WARC ISO</text>
+                  <text x="12" y="120" fill="#cbd5e1" font-size="8">• Enregistrements voix</text>
+                  <rect x="10" y="145" width="120" height="22" rx="3" fill="#38131a"/>
+                  <text x="15" y="160" fill="#f43f5e" font-size="8" font-family="monospace">S3 REST Port 9000</text>
+                  <text x="12" y="185" fill="#34d399" font-size="7.5">● Immuabilité ISO 27037</text>
+                </g>
+
+                <!-- Database 5: MongoDB 7.0 WiredTiger -->
+                <g class="svg-node" data-node="storage_mongodb" onclick="selectArchNode('storage_mongodb')" transform="translate(670, 635)">
+                  <rect x="0" y="0" width="140" height="195" rx="6" fill="#0d1f17" stroke="#10b981" stroke-width="1.4"/>
+                  <text x="12" y="24" fill="#10b981" font-size="11" font-weight="bold">🍃 MongoDB 7.0</text>
+                  <text x="12" y="40" fill="#94a3b8" font-size="8.5">Dépôt Document BSON</text>
+                  <text x="12" y="60" fill="#cbd5e1" font-size="8">• Dumps scrapers bruts</text>
+                  <text x="12" y="75" fill="#cbd5e1" font-size="8">• DOM HTML polymorphe</text>
+                  <text x="12" y="90" fill="#cbd5e1" font-size="8">• Compression Snappy 70%</text>
+                  <text x="12" y="105" fill="#cbd5e1" font-size="8">• Schema-on-read rapide</text>
+                  <text x="12" y="120" fill="#cbd5e1" font-size="8">• Change streams temps réel</text>
+                  <rect x="10" y="145" width="120" height="22" rx="3" fill="#143323"/>
+                  <text x="15" y="160" fill="#10b981" font-size="8" font-family="monospace">Wire TCP Port 27017</text>
+                  <text x="12" y="185" fill="#34d399" font-size="7.5">● 35k writes/sec</text>
+                </g>
+
+                <!-- Database 6: Redis 7.2 Stack -->
+                <g class="svg-node" data-node="storage_redis" onclick="selectArchNode('storage_redis')" transform="translate(825, 635)">
+                  <rect x="0" y="0" width="125" height="195" rx="6" fill="#241014" stroke="#e11d48" stroke-width="1.4"/>
+                  <text x="10" y="24" fill="#f43f5e" font-size="11" font-weight="bold">⚡ Redis 7.2</text>
+                  <text x="10" y="40" fill="#94a3b8" font-size="8.5">In-Memory Cache &amp; Bus</text>
+                  <text x="10" y="60" fill="#cbd5e1" font-size="8">• Pub/Sub WebSockets</text>
+                  <text x="10" y="75" fill="#cbd5e1" font-size="8">• Streams d'événements</text>
+                  <text x="10" y="90" fill="#cbd5e1" font-size="8">• Quotas Anti-Ban</text>
+                  <text x="10" y="105" fill="#cbd5e1" font-size="8">• Verrous Redlock</text>
+                  <text x="10" y="120" fill="#cbd5e1" font-size="8">• Sessions enquêteurs</text>
+                  <rect x="8" y="145" width="108" height="22" rx="3" fill="#3b111a"/>
+                  <text x="12" y="160" fill="#f43f5e" font-size="8" font-family="monospace">RESP3 Port 6379</text>
+                  <text x="10" y="185" fill="#34d399" font-size="7.5">● Latence &lt;0.5ms</text>
+                </g>
+              </g>
+
+              <!-- Real-time Push Edge: Redis -> UI WebSockets -->
+              <path id="e_redis_websocket" data-edge="e_redis_websocket" class="arch-flow-edge animated" d="M 960 635 L 960 115" stroke="#e11d48" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arr-rose)"/>
+              <text x="860" y="270" fill="#e11d48" font-size="8" font-family="monospace">Push WebSocket Temps Réel (Redis Pub/Sub)</text>
             </svg>
           </div>
+
+          <!-- Dynamic Live Node Inspector -->
+          <div id="arch-live-inspector" style="background:#080d16;border:1px solid #1e293b;border-radius:8px;padding:1.25rem;">
+            <!-- Populated dynamically by selectArchNode(nodeKey) in architecture-interactive.js -->
+          </div>
         </div>
+
+        <!-- Six-Layer Architectural Summary Matrix Table -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin:1.5rem 0 0.6rem;">Matrice Synthétique des 6 Couches d'Ingénierie Logicielle</h3>
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Couche</th>
+              <th>Dénomination Opérationnelle</th>
+              <th>Technologies Clés</th>
+              <th>Rôle dans le Pipeline Judiciaire</th>
+              <th>Mode d'Interconnexion &amp; Protocoles</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-blue">Layer 6</span></td>
+              <td><strong>Présentation &amp; Studio Dual-Canvas</strong></td>
+              <td><code>@neo4j-nvl/react</code>, WebGL, WebWorkers, React 19, TimelineBar</td>
+              <td>Exploration visuelle jusqu'à 50k nœuds à 60 FPS, minimap radar, requêtage copilot en langage naturel</td>
+              <td>HTTPS / WSS vers Layer 2 (Port 48997) • Mises à jour temps réel via Redis Pub/Sub</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-cyan">Layer 2</span></td>
+              <td><strong>Ingress API Gateway &amp; Orchestrateur</strong></td>
+              <td>FastAPI, Celery 5.4, Temporal.io, Pydantic v2, Casdoor JWT RBAC</td>
+              <td>Point d'entrée unique, vérification des habilitations, dispatch de tâches, normalisation E.164 / SHA-256</td>
+              <td><strong>Accès direct au Stockage (Layer 3)</strong> via Bolt/SQL/S3/BSON • Pilotage de Layer 1 par Celery</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-orange">Layer 1</span></td>
+              <td><strong>Acquisition Forensique &amp; Phone Farm</strong></td>
+              <td>ReDroid Android 13, Modems USB SIM 4G DZ, Scrcpy WebRTC, Mitmproxy</td>
+              <td>Infiltration de messageries chiffrées (WhatsApp/TG), réception d'OTP SMS, flux vidéo 60 FPS &lt;30ms</td>
+              <td>Périphérie d'acquisition : pousse les flux vers Layer 2 et scelle les preuves brutes dans MinIO/MongoDB</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-purple">Layer 4</span></td>
+              <td><strong>Analytics Graph Data Science (GDS)</strong></td>
+              <td>Neo4j GDS 2.6, Betweenness Brandes, Louvain Modularity, Link Prediction</td>
+              <td>Identification de mules financières, segmentation de cellules criminelles étanches, classification des rôles</td>
+              <td>Opère en mémoire vive directement sur Neo4j 5.20+ via le protocole Bolt interne</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-emerald">Layer 5</span></td>
+              <td><strong>IA Souveraine Locale &amp; Biométrie</strong></td>
+              <td>Ollama Gemma-2-9b, Faster-Whisper Darija DZ, PyAnnote 3.1, ArcFace 512-d</td>
+              <td>Transcription phonétique Darija, diarisation multi-locuteurs, reconnaissance faciale, Text-to-Cypher sécurisé</td>
+              <td>Traitement 100% on-premise (VRAM locale) • Interroge MinIO pour l'audio et Qdrant pour les vecteurs</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-rose">Layer 3</span></td>
+              <td><strong>Tier de Stockage Polyglotte (6 Moteurs)</strong></td>
+              <td>Neo4j, PostgreSQL/TimescaleDB, Qdrant, MinIO WORM, MongoDB, Redis Stack</td>
+              <td>Persistance immuable WORM, relations graphe sans index, séries temporelles CDR, indexation vectorielle HNSW</td>
+              <td>Desservi directement par Layer 2, Layer 4 et Layer 5 selon les besoins spécifiques de chaque moteur</td>
+            </tr>
+          </tbody>
+        </table>
       </section>
     </div>
-
     <!-- ====================================================================
-         TAB 2: LAYER 1 - ACQUISITION FORENSIQUE & PHONE FARM
+         TAB 2: LAYER 1 - ACQUISITION FORENSIQUE & PHONE FARM ANDROID
          ==================================================================== -->
     <div id="panel-arch-layer1" class="arch-tab-panel">
       <section>
-        <h2 class="section-title">2. Layer 1 : Acquisition Forensique &amp; Phone Farm Android</h2>
+        <h2 class="section-title">2. Layer 1 : Acquisition Forensique, Baie Modems SIM &amp; Phone Farm Android</h2>
         <p class="section-subtitle">
-          Infiltration des écosystèmes fermés 100% mobiles (WhatsApp, Telegram, BaridiMob, TikTok) et gestion physique des cartes SIM algériennes sans déclencher de bannissement de sécurité.
+          Infiltration sécurisée des écosystèmes mobiles fermés (WhatsApp, Telegram, BaridiMob, TikTok), interception matérielle des cartes SIM algériennes et préservation légale des scellés WORM.
         </p>
 
         <div class="card" style="border-left:4px solid #f97316;margin-bottom:1.5rem;">
           <h3 style="color:#f97316;margin-bottom:0.5rem;">🎯 Mission Opérationnelle du Layer 1</h3>
           <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.55;">
-            Les réseaux criminels modernes (notamment en Algérie) évitent le web statique pour communiquer exclusivement via des messageries chiffrées de bout en bout sur mobile. Layer 1 fournit une infrastructure matérielle et conteneurisée permettant aux enquêteurs de piloter des instances Android réelles, d'intercepter les SMS de validation OTP des opérateurs nationaux (Mobilis, Djezzy, Ooredoo) et de capturer des flux vidéo WebRTC à 60 FPS sans latence perceptible (&lt;30ms).
+            Les réseaux criminels modernes (notamment en Algérie) évitent le web statique pour communiquer exclusivement via des messageries chiffrées de bout en bout sur smartphone. Layer 1 fournit l'infrastructure matérielle et conteneurisée permettant aux enquêteurs de piloter des instances Android 13 réelles, d'intercepter les SMS de validation OTP des opérateurs nationaux (Mobilis, Djezzy, Ooredoo) en <strong>&lt;1.5 seconde</strong> et de capturer des flux vidéo WebRTC à 60 FPS sans latence perceptible (&lt;30ms). <strong>Rôle d'ingestion périphérique :</strong> Layer 1 ne stocke pas de données applicatives : il transmet les flux vers <strong>Layer 2</strong> pour normalisation et scelle les preuves brutes directement dans <strong>MinIO WORM (Layer 3)</strong>.
           </p>
         </div>
 
-        <!-- Layer 1 Specific Diagram -->
+        <!-- Layer 1 Specific High-Resolution Architecture SVG -->
         <div style="background:#060a12;border:1px solid #1a2538;border-radius:8px;padding:0.75rem;margin-bottom:1.5rem;overflow-x:auto;">
-          <svg viewBox="0 0 900 240" xmlns="http://www.w3.org/2000/svg" style="min-width:800px;font-family:system-ui,-apple-system,sans-serif;">
-            <rect x="20" y="20" width="240" height="200" rx="8" fill="#140f0a" stroke="#f97316" stroke-width="1.5"/>
-            <text x="35" y="45" fill="#f97316" font-size="11" font-weight="bold">BANQUE MODEMS SIM 4G DZ</text>
-            <text x="35" y="65" fill="#fed7aa" font-size="8.5">• SIM800C / SIM7600G-H USB</text>
-            <text x="35" y="85" fill="#fed7aa" font-size="8.5">• Puces Mobilis, Djezzy, Ooredoo</text>
-            <text x="35" y="105" fill="#fed7aa" font-size="8.5">• Daemon AT Commands (/dev/ttyUSB)</text>
-            <text x="35" y="130" fill="#fca5a5" font-size="8.5">⚡ Interception SMS 2FA en &lt;1.5s</text>
-            <text x="35" y="150" fill="#fed7aa" font-size="8.5">• Rotation dynamique des APN 4G</text>
-            <text x="35" y="175" fill="#94a3b8" font-size="8">• Push direct dans Redis Queue</text>
+          <svg viewBox="0 0 940 430" xmlns="http://www.w3.org/2000/svg" style="min-width:880px;font-family:system-ui,-apple-system,sans-serif;">
+            <defs>
+              <marker id="arr-l1-orange" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#f97316"/>
+              </marker>
+              <marker id="arr-l1-cyan" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#38bdf8"/>
+              </marker>
+              <marker id="arr-l1-green" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#10b981"/>
+              </marker>
+            </defs>
 
-            <path d="M 260 120 L 320 120" stroke="#f97316" stroke-width="2" marker-end="url(#arr-orange)"/>
-            <text x="265" y="112" fill="#f97316" font-size="8" font-family="monospace">OTP Codes</text>
+            <!-- SUB-BLOCK 1: HARDWARE MODEM POOL -->
+            <g transform="translate(20, 25)">
+              <rect x="0" y="0" width="275" height="255" rx="8" fill="#140f0a" stroke="#f97316" stroke-width="1.8"/>
+              <text x="15" y="25" fill="#f97316" font-size="11.5" font-weight="bold">1. BANQUE MODEMS GSM USB 4G DZ</text>
+              <text x="15" y="42" fill="#fed7aa" font-size="8.5">• Racks USB SIM800C &amp; SIM7600G-H</text>
+              <text x="15" y="58" fill="#fed7aa" font-size="8.5">• Puces SIM Mobilis, Djezzy, Ooredoo</text>
+              <text x="15" y="74" fill="#fed7aa" font-size="8.5">• Kernel Linux /dev/ttyUSB0..31</text>
+              <text x="15" y="90" fill="#fed7aa" font-size="8.5">• Daemon AT Commands (pyserial async)</text>
 
-            <rect x="330" y="20" width="270" height="200" rx="8" fill="#1a140d" stroke="#f97316" stroke-width="1.5"/>
-            <text x="345" y="45" fill="#f97316" font-size="11" font-weight="bold">CONTENEURS ANDROID (ReDroid)</text>
-            <text x="345" y="65" fill="#fed7aa" font-size="8.5">• Android 13 AOSP GPU Passthrough</text>
-            <text x="345" y="85" fill="#fed7aa" font-size="8.5">• Magisk + Zygisk Root Cloaking</text>
-            <text x="345" y="105" fill="#fed7aa" font-size="8.5">• Contournement détection émulateur</text>
-            <text x="345" y="125" fill="#fed7aa" font-size="8.5">• Appium 2.x UiAutomator2 Daemon</text>
-            <text x="345" y="150" fill="#38bdf8" font-size="8.5">🎮 Scrcpy WebRTC Server (Port 5555)</text>
-            <text x="345" y="175" fill="#fed7aa" font-size="8.5">• Mitmproxy 10.3 Déchiffrement TLS</text>
+              <rect x="15" y="105" width="245" height="42" rx="4" fill="#2c1f14" stroke="#f97316" stroke-width="0.8"/>
+              <text x="22" y="122" fill="#fdba74" font-size="8.5" font-weight="bold">⚡ Interception SMS OTP en &lt;1.5s</text>
+              <text x="22" y="137" fill="#cbd5e1" font-size="7.5">Push asynchrone direct vers Redis Streams</text>
 
-            <path d="M 600 120 L 660 120" stroke="#38bdf8" stroke-width="2" marker-end="url(#arr-cyan)"/>
-            <text x="605" y="112" fill="#38bdf8" font-size="8" font-family="monospace">WebRTC 60 FPS</text>
+              <text x="15" y="165" fill="#fed7aa" font-size="8.5">• Rotation dynamique APN 4G opérateur</text>
+              <text x="15" y="181" fill="#fed7aa" font-size="8.5">• Émulation IMEI &amp; IMSI conforme</text>
+              <text x="15" y="197" fill="#fed7aa" font-size="8.5">• Monitoring force signal RSSI (-65 dBm)</text>
+              <rect x="15" y="212" width="245" height="28" rx="4" fill="#1e150e"/>
+              <text x="22" y="230" fill="#f97316" font-size="8" font-family="monospace">Driver: pyserial-asyncio (Port ttyUSB)</text>
+            </g>
 
-            <rect x="670" y="20" width="210" height="200" rx="8" fill="#0c1726" stroke="#38bdf8" stroke-width="1.5"/>
-            <text x="685" y="45" fill="#38bdf8" font-size="11" font-weight="bold">POSTE ENQUÊTEUR (STUDIO)</text>
-            <text x="685" y="65" fill="#94a3b8" font-size="8.5">• Canvas WebGL interactif</text>
-            <text x="685" y="85" fill="#94a3b8" font-size="8.5">• Clics &amp; saisie clavier miroir</text>
-            <text x="685" y="105" fill="#94a3b8" font-size="8.5">• Écoute vocale WhatsApp live</text>
-            <text x="685" y="130" fill="#86efac" font-size="8.5">📸 Capture d'écran certifiée WORM</text>
-            <text x="685" y="150" fill="#94a3b8" font-size="8.5">• Extraction automatique des vocaux</text>
-            <text x="685" y="175" fill="#94a3b8" font-size="8.5">• Découverte d'indices en direct</text>
+            <!-- SUB-BLOCK 2: REDROID ANDROID 13 FARM -->
+            <g transform="translate(325, 25)">
+              <rect x="0" y="0" width="290" height="255" rx="8" fill="#1a140d" stroke="#f97316" stroke-width="1.8"/>
+              <text x="15" y="25" fill="#f97316" font-size="11.5" font-weight="bold">2. FERME CONTENEURS ANDROID 13</text>
+              <text x="15" y="42" fill="#fed7aa" font-size="8.5">• ReDroid AOSP Android 13 (Docker Engine)</text>
+              <text x="15" y="58" fill="#fed7aa" font-size="8.5">• GPU Passthrough accélération virgl / mesa</text>
+              <text x="15" y="74" fill="#fed7aa" font-size="8.5">• Masquage Root : Magisk 26 + Zygisk</text>
+              <text x="15" y="90" fill="#fed7aa" font-size="8.5">• Évasion détection Play Integrity / SafetyNet</text>
+
+              <rect x="15" y="105" width="260" height="42" rx="4" fill="#2c1f14" stroke="#f97316" stroke-width="0.8"/>
+              <text x="22" y="122" fill="#fdba74" font-size="8.5" font-weight="bold">🛡️ Profiling d'Application Criminelle</text>
+              <text x="22" y="137" fill="#cbd5e1" font-size="7.5">BaridiMob cloné, WhatsApp Business, Telegram</text>
+
+              <text x="15" y="165" fill="#fed7aa" font-size="8.5">• Pont réseau isolé avec KillSwitch VPN</text>
+              <text x="15" y="181" fill="#fed7aa" font-size="8.5">• ADB over TCP (Port 5555)</text>
+              <text x="15" y="197" fill="#fed7aa" font-size="8.5">• Appium WebDriver 2.x pour injection tactile</text>
+              <rect x="15" y="212" width="260" height="28" rx="4" fill="#1e150e"/>
+              <text x="22" y="230" fill="#f97316" font-size="8" font-family="monospace">Orchestrateur: Celery + Docker SDK</text>
+            </g>
+
+            <!-- SUB-BLOCK 3: SCRCPY WEBRTC STREAMING -->
+            <g transform="translate(645, 25)">
+              <rect x="0" y="0" width="275" height="255" rx="8" fill="#141a24" stroke="#38bdf8" stroke-width="1.8"/>
+              <text x="15" y="25" fill="#38bdf8" font-size="11.5" font-weight="bold">3. STREAMING SCRCPY WEBRTC 60 FPS</text>
+              <text x="15" y="42" fill="#7dd3fc" font-size="8.5">• Serveur scrcpy injecté dans ReDroid</text>
+              <text x="15" y="58" fill="#7dd3fc" font-size="8.5">• Encodage H.264 matériel ultra-faible latence</text>
+              <text x="15" y="74" fill="#7dd3fc" font-size="8.5">• Passerelle WebRTC vers navigateur enquêteur</text>
+              <text x="15" y="90" fill="#7dd3fc" font-size="8.5">• Latence verre-à-verre &lt;30 millisecondes</text>
+
+              <rect x="15" y="105" width="245" height="42" rx="4" fill="#162a40" stroke="#38bdf8" stroke-width="0.8"/>
+              <text x="22" y="122" fill="#bae6fd" font-size="8.5" font-weight="bold">🎮 Contrôle Interactif Transparent</text>
+              <text x="22" y="137" fill="#cbd5e1" font-size="7.5">Navigation tactile, clavier, presse-papier</text>
+
+              <text x="15" y="165" fill="#7dd3fc" font-size="8.5">• Enregistrement continu de session (MP4)</text>
+              <text x="15" y="181" fill="#7dd3fc" font-size="8.5">• Capture d'écran horodatée en 1 clic</text>
+              <text x="15" y="197" fill="#7dd3fc" font-size="8.5">• Scellement automatique dans MinIO WORM</text>
+              <rect x="15" y="212" width="245" height="28" rx="4" fill="#0f1f33"/>
+              <text x="22" y="230" fill="#38bdf8" font-size="8" font-family="monospace">Flux: WSS / WebRTC Video RFC 8825</text>
+            </g>
+
+            <!-- SUB-BLOCK 4: MITMPROXY & FORENSICS -->
+            <g transform="translate(20, 295)">
+              <rect x="0" y="0" width="900" height="115" rx="8" fill="#101c18" stroke="#10b981" stroke-width="1.8"/>
+              <text x="15" y="24" fill="#10b981" font-size="12" font-weight="bold">4. INTERCEPTION RÉSEAU TLS 1.3, RÉTRO-INGÉNIERIE APK &amp; CAPTURE WEB WORM</text>
+              <text x="15" y="42" fill="#a7f3d0" font-size="9">• Mitmproxy 10.3 avec certificat CA injecté au niveau système Android (/system/etc/security/cacerts/)</text>
+
+              <g transform="translate(15, 52)">
+                <rect x="0" y="0" width="275" height="50" rx="4" fill="#143026" stroke="#10b981" stroke-width="0.8"/>
+                <text x="10" y="18" fill="#bbf7d0" font-size="8.5" font-weight="bold">💉 Frida 16.x Script Injection</text>
+                <text x="10" y="32" fill="#cbd5e1" font-size="7.5">Contournement du SSL Pinning WhatsApp &amp; apps bancaires</text>
+                <text x="10" y="44" fill="#6ee7b7" font-size="7">Hook OkHttp, TrustManager, NetworkSecurityConfig</text>
+              </g>
+
+              <g transform="translate(305, 52)">
+                <rect x="0" y="0" width="275" height="50" rx="4" fill="#143026" stroke="#10b981" stroke-width="0.8"/>
+                <text x="10" y="18" fill="#bbf7d0" font-size="8.5" font-weight="bold">🔍 Jadx-GUI &amp; Ghidra Sandbox</text>
+                <text x="10" y="32" fill="#cbd5e1" font-size="7.5">Décompilation d'APKs malveillantes (ex: AutoPneusDZ.apk)</text>
+                <text x="10" y="44" fill="#6ee7b7" font-size="7">Extraction serveurs C2, permissions et clés volées</text>
+              </g>
+
+              <g transform="translate(595, 52)">
+                <rect x="0" y="0" width="290" height="50" rx="4" fill="#143026" stroke="#10b981" stroke-width="0.8"/>
+                <text x="10" y="18" fill="#bbf7d0" font-size="8.5" font-weight="bold">📸 ArchiveBox WARC Snapshot (ISO 28500)</text>
+                <text x="10" y="32" fill="#cbd5e1" font-size="7.5">Glace les fausses boutiques et profils réseaux sociaux</text>
+                <text x="10" y="44" fill="#6ee7b7" font-size="7">Dépôt scellé direct dans MinIO WORM S3</text>
+              </g>
+            </g>
+
+            <!-- Connectors Between Sub-Blocks -->
+            <path d="M 295 140 L 325 140" stroke="#f97316" stroke-width="2" marker-end="url(#arr-l1-orange)"/>
+            <text x="298" y="132" fill="#fdba74" font-size="7.5" font-family="monospace">SMS OTP</text>
+
+            <path d="M 615 140 L 645 140" stroke="#38bdf8" stroke-width="2" marker-end="url(#arr-l1-cyan)"/>
+            <text x="618" y="132" fill="#7dd3fc" font-size="7.5" font-family="monospace">H.264 Raw</text>
+
+            <path d="M 470 280 L 470 295" stroke="#10b981" stroke-width="2" marker-end="url(#arr-l1-green)"/>
           </svg>
         </div>
 
-        <!-- Layer 1 Tech Stack Table -->
+        <!-- Technical Deep-Dive Narrative -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin:1.5rem 0 0.6rem;">Spécifications d'Ingénierie &amp; Procédures de Cloaking du Layer 1</h3>
+        <p style="font-size:0.82rem;color:var(--text-secondary);line-height:1.55;">
+          L'infiltration judiciaire requiert une imperméabilité totale face aux protections anti-fraude déployées par les éditeurs d'applications :
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;margin-bottom:1.5rem;">
+          <div style="background:#0c1322;border:1px solid #1e293b;border-radius:6px;padding:0.9rem;">
+            <h4 style="color:#f97316;margin:0 0 0.4rem;font-size:0.9rem;">1. Masquage Zygisk &amp; Émulation Matérielle</h4>
+            <p style="color:#cbd5e1;font-size:0.78rem;line-height:1.45;margin:0;">
+              Chaque conteneur ReDroid charge un module <code>Zygisk-Next</code> qui intercepte les appels système <code>stat()</code> et <code>access()</code> pour masquer la présence des fichiers suspects (<code>/system/bin/su</code>, <code>/system/xbin/daemonsu</code>). Le <code>build.prop</code> est forgé avec l'empreinte d'un Samsung Galaxy S23 officiel algérien (SM-S911B) avec certificat de sécurité conforme.
+            </p>
+          </div>
+          <div style="background:#0c1322;border:1px solid #1e293b;border-radius:6px;padding:0.9rem;">
+            <h4 style="color:#38bdf8;margin:0 0 0.4rem;font-size:0.9rem;">2. Interception AT des SMS OTP en &lt;1.5s</h4>
+            <p style="color:#cbd5e1;font-size:0.78rem;line-height:1.45;margin:0;">
+              Les modems SIM800C/7600 sont pilotés en mode <code>AT+CNMI=2,2,0,0,0</code>, ce qui déclenche un événement <code>+CMT:</code> immédiat dès la réception d'un SMS sans attendre l'écriture sur la puce SIM. Une tâche Celery extrait le code 6 chiffres par expression régulière et le pousse instantanément dans Redis Streams pour valider WhatsApp ou BaridiMob.
+            </p>
+          </div>
+          <div style="background:#0c1322;border:1px solid #1e293b;border-radius:6px;padding:0.9rem;">
+            <h4 style="color:#10b981;margin:0 0 0.4rem;font-size:0.9rem;">3. Préservation Cryptographique WORM ISO 28500</h4>
+            <p style="color:#cbd5e1;font-size:0.78rem;line-height:1.45;margin:0;">
+              Dès qu'une page frauduleuse ou un canal Telegram est aspiré, ArchiveBox compile l'ensemble des requêtes HTTP brutes, certificats TLS et captures d'écran dans une archive WARC. Le hash SHA-256 de ce fichier est immédiatement scellé dans <strong>MinIO S3 (Mode COMPLIANCE)</strong> avec horodatage RFC 3161, rendant la preuve recevable devant la juridiction de jugement.
+            </p>
+          </div>
+        </div>
+
+        <!-- Tech Stack Evaluation Table -->
         <h3 style="color:#f8fafc;font-size:1.05rem;margin-bottom:0.6rem;">Composants Technologiques de Layer 1 (Versions, Rôles, Avantages &amp; Limites)</h3>
         <table class="tech-table">
           <thead>
@@ -481,89 +793,71 @@
           <tbody>
             <tr>
               <td><strong>ReDroid</strong></td>
-              <td><span class="badge-ver">Android 13 (v2024.04)</span></td>
-              <td>Conteneurs Android légers avec accélération GPU physique</td>
+              <td><span class="badge-ver">Android 13 AOSP</span></td>
+              <td>Exécution isolée d'applications Android sur serveur hôte Linux avec accélération GPU</td>
               <td>
                 <ul class="pros-list">
-                  <li>Consomme 10x moins de RAM qu'un émulateur QEMU/AVD classique</li>
-                  <li>Démarrage d'une instance en &lt;4 secondes</li>
-                  <li>Isolation stricte par conteneur Docker étanche</li>
+                  <li>Démarrage d'une instance complète en &lt;8 secondes</li>
+                  <li>Densité de conteneurs élevée (jusqu'à 16 smartphones virtuels par serveur 64 Go RAM)</li>
+                  <li>Compatibilité totale avec l'écosystème ARM via libndk_translation</li>
                 </ul>
               </td>
               <td>
                 <ul class="cons-list">
-                  <li>Requiert translation binaire ARM-sur-x86 (libndk/houdini)</li>
-                  <li>Mitigation : compilation d'images Docker multi-arch optimisées</li>
+                  <li>Certaines applications bancaires détectent les hyperviseurs</li>
+                  <li>Mitigation : cloaking Zygisk + MagiskHidePropsConf</li>
                 </ul>
               </td>
             </tr>
             <tr>
               <td><strong>Scrcpy WebRTC</strong></td>
-              <td><span class="badge-ver">v2.4</span></td>
-              <td>Streaming vidéo ultra-faible latence (&lt;30ms) du téléphone vers le navigateur web</td>
+              <td><span class="badge-ver">v2.4 / WebRTC</span></td>
+              <td>Miroir d'écran haute fluidité et commande tactile interactive dans le navigateur</td>
               <td>
                 <ul class="pros-list">
-                  <li>Fluidité native 60 images par seconde sans lag</li>
-                  <li>Pass-through direct des événements souris et tactile</li>
-                  <li>Aucun client lourd requis sur le poste de l'enquêteur</li>
+                  <li>Fréquence 60 FPS sans à-coups avec latence inférieure à 30 ms</li>
+                  <li>Aucune application cliente requise : rendu HTML5 Canvas WebRTC standard</li>
+                  <li>Faible consommation de bande passante réseau (&lt;2.5 Mbps en H.264)</li>
                 </ul>
               </td>
               <td>
                 <ul class="cons-list">
-                  <li>Consommation bande-passante si 20+ flux simultanés</li>
-                  <li>Mitigation : limitation de débit adaptative à 1080p@30fps</li>
-                </ul>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>Banque Modems SIM 4G</strong></td>
-              <td><span class="badge-ver">SIM7600G-H USB</span></td>
-              <td>Puces SIM réelles des 3 opérateurs nationaux (Mobilis, Djezzy, Ooredoo)</td>
-              <td>
-                <ul class="pros-list">
-                  <li>Indétectable comme numéro virtuel VoIP par WhatsApp/Meta</li>
-                  <li>Réception instantanée des codes SMS 2FA via commandes AT</li>
-                  <li>Permet l'assignation de proxies 4G résidentiels algériens</li>
-                </ul>
-              </td>
-              <td>
-                <ul class="cons-list">
-                  <li>Maintenance physique du matériel (recharges puces SIM)</li>
-                  <li>Mitigation : module d'alerte solde SMS automatisé</li>
-                </ul>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>Zygisk / Magisk</strong></td>
-              <td><span class="badge-ver">v27.0</span></td>
-              <td>Camouflage du statut root et masquage d'empreinte d'émulateur</td>
-              <td>
-                <ul class="pros-list">
-                  <li>Permet l'exécution d'applications bancaires strictes (BaridiMob)</li>
-                  <li>Empêche WhatsApp de bannir le compte pour "système non officiel"</li>
-                </ul>
-              </td>
-              <td>
-                <ul class="cons-list">
-                  <li>Mises à jour fréquentes des détections Play Integrity de Google</li>
-                  <li>Mitigation : profils Zygisk-Shamiko testés en sandbox d'abord</li>
+                  <li>Consommation GPU sur encodage vidéo simultané de 10+ flux</li>
+                  <li>Mitigation : carte d'accélération Nvidia NVENC dédiée aux conteneurs</li>
                 </ul>
               </td>
             </tr>
             <tr>
               <td><strong>Mitmproxy</strong></td>
-              <td><span class="badge-ver">v10.3.1</span></td>
-              <td>Interception et déchiffrement des payloads HTTP/TLS des applications</td>
+              <td><span class="badge-ver">v10.3.0</span></td>
+              <td>Interception et déchiffrement des flux HTTPS/WebSockets des cibles mobiles</td>
               <td>
                 <ul class="pros-list">
-                  <li>Extraction automatique des clés API, tokens de session et pièces jointes</li>
-                  <li>Capture des URLs directes des vocaux et photos haute résolution</li>
+                  <li>Inspection transparente de toutes les requêtes REST et WebSockets des APKs</li>
+                  <li>Scripting Python natif pour extraire les tokens de session et numéros CCP</li>
                 </ul>
               </td>
               <td>
                 <ul class="cons-list">
-                  <li>Certificate Pinning strict sur certaines applications récentes</li>
-                  <li>Mitigation : scripts Frida d'unpinning SSL injectés automatiquement</li>
+                  <li>Bloqué par le SSL Certificate Pinning dans les versions récentes</li>
+                  <li>Mitigation : script Frida universel injecté au démarrage du conteneur</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Jadx / Ghidra</strong></td>
+              <td><span class="badge-ver">Jadx 1.5.0 / Ghidra 11.1</span></td>
+              <td>Décompilation statique et analyse dynamique des malwares financiers ciblant l'Algérie</td>
+              <td>
+                <ul class="pros-list">
+                  <li>Reconstitution quasi-parfaite du code Java/Kotlin et extraction des URLs C2</li>
+                  <li>Désassemblage natif des bibliothèques C++ (.so) obfusquées par les criminels</li>
+                </ul>
+              </td>
+              <td>
+                <ul class="cons-list">
+                  <li>Les malwares récents utilisent des packers commerciaux (ex: Bangcle, DexGuard)</li>
+                  <li>Mitigation : dump mémoire dynamique via Frida lors de l'exécution ReDroid</li>
                 </ul>
               </td>
             </tr>
@@ -571,25 +865,200 @@
         </table>
       </section>
     </div>
-
     <!-- ====================================================================
          TAB 3: LAYER 2 - INGESTION & PIPELINE DE NORMALISATION POLYGLOTTE
          ==================================================================== -->
     <div id="panel-arch-layer2" class="arch-tab-panel">
       <section>
-        <h2 class="section-title">3. Layer 2 : Ingestion &amp; Pipeline de Normalisation Polyglotte</h2>
+        <h2 class="section-title">3. Layer 2 : Ingestion, Orchestration de Workflows &amp; Pipeline de Normalisation</h2>
         <p class="section-subtitle">
-          Passerelle d'entrée sécurisée, orchestration asynchrone des tâches d'investigation et nettoyage canonique des indices bruts selon le standard GFPG.
+          Passerelle d'entrée sécurisée, orchestration asynchrone des tâches d'investigation, validation stricte RBAC et persistance directe dans le tier de stockage polyglotte.
         </p>
 
         <div class="card" style="border-left:4px solid #0ea5e9;margin-bottom:1.5rem;">
-          <h3 style="color:#0ea5e9;margin-bottom:0.5rem;">🎯 Mission Opérationnelle du Layer 2</h3>
+          <h3 style="color:#0ea5e9;margin-bottom:0.5rem;">🎯 Mission Opérationnelle du Layer 2 &amp; Règle d'Accès Direct au Stockage</h3>
           <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.55;">
-            Les données récoltées sur le terrain ou par scraping OSINT arrivent sous des formats chaotiques : chaînes brutes, pages HTML volumineuses, numéros de téléphone mal formatés (ex: <code>0555019283</code> vs <code>+213 555 01 92 83</code>), reçus bancaires froissés. Layer 2 garantit la validation cryptographique de l'enquêteur (JWT + RBAC), distribue les charges sur des files asynchrones Celery/Redis, normalise chaque entité dans son format canonique E.164 / SHA-256 et scelle les preuves au format WORM ISO 28500.
+            Les données récoltées sur le terrain ou par scraping OSINT arrivent sous des formats chaotiques : chaînes brutes, pages HTML volumineuses, numéros de téléphone mal formatés (ex: <code>0555019283</code> vs <code>+213 555 01 92 83</code>), reçus bancaires froissés. Layer 2 garantit la validation cryptographique de l'enquêteur (JWT + RBAC), distribue les charges sur des files asynchrones Celery/Redis, normalise chaque entité dans son format canonique E.164 / SHA-256 et scelle les preuves au format WORM ISO 28500.<br/>
+            <strong>Règle d'accès direct au stockage :</strong> Layer 2 persiste et interroge <strong>DIRECTEMENT</strong> les 6 moteurs du <strong>Layer 3</strong> (PostgreSQL, Neo4j, MinIO, MongoDB, Qdrant, Redis) via des pilotes natifs asynchrones (asyncpg, Bolt, boto3, Motor, gRPC), <strong>sans jamais transiter par Layer 1 ni par Layer 4/5</strong> pour les opérations CRUD ou la restitution au Studio d'Enquête (Layer 6).
           </p>
         </div>
 
-        <!-- Layer 2 Tech Stack Table -->
+        <!-- Layer 2 Specific High-Resolution Architecture SVG -->
+        <div style="background:#060a12;border:1px solid #1a2538;border-radius:8px;padding:0.75rem;margin-bottom:1.5rem;overflow-x:auto;">
+          <svg viewBox="0 0 940 440" xmlns="http://www.w3.org/2000/svg" style="min-width:880px;font-family:system-ui,-apple-system,sans-serif;">
+            <defs>
+              <marker id="arr-l2-cyan" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0ea5e9"/>
+              </marker>
+              <marker id="arr-l2-blue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#38bdf8"/>
+              </marker>
+              <marker id="arr-l2-rose" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#f43f5e"/>
+              </marker>
+            </defs>
+
+            <!-- SUB-BOX 1: INGRESS & SECURITY GATEWAY -->
+            <g transform="translate(20, 25)">
+              <rect x="0" y="0" width="280" height="230" rx="8" fill="#0c1929" stroke="#0ea5e9" stroke-width="1.8"/>
+              <text x="15" y="25" fill="#0ea5e9" font-size="11.5" font-weight="bold">1. API GATEWAY &amp; SÉCURITÉ INGRESS</text>
+              <text x="15" y="42" fill="#94a3b8" font-size="8.5">• Nginx Reverse Proxy (Terminaison TLS 1.3)</text>
+              <text x="15" y="58" fill="#94a3b8" font-size="8.5">• FastAPI 0.111.x (Python 3.11 Async / Uvicorn)</text>
+              <text x="15" y="74" fill="#94a3b8" font-size="8.5">• Casdoor / Keycloak (OAuth2 / OIDC JWT)</text>
+              <text x="15" y="90" fill="#94a3b8" font-size="8.5">• Intercepteur d'audit non-répudiable SHA-256</text>
+
+              <rect x="15" y="105" width="250" height="42" rx="4" fill="#132338" stroke="#0ea5e9" stroke-width="0.8"/>
+              <text x="22" y="122" fill="#38bdf8" font-size="8.5" font-weight="bold">🛡️ RBAC &amp; RLS Judiciaire Granulaire</text>
+              <text x="22" y="137" fill="#cbd5e1" font-size="7.5">Filtrage multi-wilayas étanche (01 à 58)</text>
+
+              <text x="15" y="165" fill="#94a3b8" font-size="8.5">• Validation automatique schémas OpenAPI v3</text>
+              <text x="15" y="181" fill="#94a3b8" font-size="8.5">• Passerelle WebSockets Multiplexée</text>
+              <text x="15" y="197" fill="#94a3b8" font-size="8.5">• Débit SLA : 3 500 req/sec (P99 &lt;12ms)</text>
+              <rect x="15" y="208" width="250" height="16" rx="3" fill="#10253d"/>
+              <text x="22" y="220" fill="#38bdf8" font-size="7.5" font-family="monospace">REST Port 48997 • Casdoor Port 45910</text>
+            </g>
+
+            <!-- SUB-BOX 2: WORKFLOW ORCHESTRATOR & CELERY -->
+            <g transform="translate(330, 25)">
+              <rect x="0" y="0" width="280" height="230" rx="8" fill="#0f1f33" stroke="#0ea5e9" stroke-width="1.8"/>
+              <text x="15" y="25" fill="#0ea5e9" font-size="11.5" font-weight="bold">2. ORCHESTRATEUR DE WORKFLOWS</text>
+              <text x="15" y="42" fill="#94a3b8" font-size="8.5">• Celery 5.4 Task Distributed Cluster</text>
+              <text x="15" y="58" fill="#94a3b8" font-size="8.5">• Temporal.io v1.24 Machine à États Finis</text>
+              <text x="15" y="74" fill="#94a3b8" font-size="8.5">• Broker de messages Redis 7.2 Streams</text>
+              <text x="15" y="90" fill="#94a3b8" font-size="8.5">• Gestion déterministe des reprises sur panne</text>
+
+              <rect x="15" y="105" width="250" height="42" rx="4" fill="#132338" stroke="#0ea5e9" stroke-width="0.8"/>
+              <text x="22" y="122" fill="#38bdf8" font-size="8.5" font-weight="bold">⚡ 3 Niveaux de Files de Priorité</text>
+              <text x="22" y="137" fill="#cbd5e1" font-size="7.5">High: OTP/WebRTC • Normal: OSINT • Low: OCR/WARC</text>
+
+              <text x="15" y="165" fill="#94a3b8" font-size="8.5">• Dead-Letter Queue (DLQ) automatique</text>
+              <text x="15" y="181" fill="#94a3b8" font-size="8.5">• Supervision en direct via Flower UI</text>
+              <text x="15" y="197" fill="#94a3b8" font-size="8.5">• Capacité : 10 000 transitions/sec</text>
+              <rect x="15" y="208" width="250" height="16" rx="3" fill="#10253d"/>
+              <text x="22" y="220" fill="#38bdf8" font-size="7.5" font-family="monospace">Temporal Port 7233 • Redis Streams 6379</text>
+            </g>
+
+            <!-- SUB-BOX 3: CANONICAL NORMALIZATION & TOKEN BUCKET -->
+            <g transform="translate(640, 25)">
+              <rect x="0" y="0" width="280" height="230" rx="8" fill="#0d1b2a" stroke="#0ea5e9" stroke-width="1.8"/>
+              <text x="15" y="25" fill="#0ea5e9" font-size="11.5" font-weight="bold">3. NORMALISATION &amp; ANTI-BAN</text>
+              <text x="15" y="42" fill="#94a3b8" font-size="8.5">• Pydantic v2 Canonical Validation Engine</text>
+              <text x="15" y="58" fill="#94a3b8" font-size="8.5">• E.164 Phone Normalizer (+213 xx xx xx xx)</text>
+              <text x="15" y="74" fill="#94a3b8" font-size="8.5">• Algérie Poste BaridiMob RIP Luhn Check</text>
+              <text x="15" y="90" fill="#94a3b8" font-size="8.5">• Normalisation temporelle Africa/Algiers</text>
+
+              <rect x="15" y="105" width="250" height="42" rx="4" fill="#132338" stroke="#0ea5e9" stroke-width="0.8"/>
+              <text x="22" y="122" fill="#38bdf8" font-size="8.5" font-weight="bold">🛡️ Token Bucket &amp; Proxy Mesh</text>
+              <text x="22" y="137" fill="#cbd5e1" font-size="7.5">Quotas stricts anti-blocage (Facebook, Truecaller)</text>
+
+              <text x="15" y="165" fill="#94a3b8" font-size="8.5">• Rotation dynamique de proxies résidentiels</text>
+              <text x="15" y="181" fill="#94a3b8" font-size="8.5">• Circuit-breaker sur HTTP 429 / 403</text>
+              <text x="15" y="197" fill="#94a3b8" font-size="8.5">• Déduplication stricte par empreinte SHA-256</text>
+              <rect x="15" y="208" width="250" height="16" rx="3" fill="#10253d"/>
+              <text x="22" y="220" fill="#38bdf8" font-size="7.5" font-family="monospace">Standard Universel GFPG (14 Entités)</text>
+            </g>
+
+            <!-- SUB-BOX 4: DIRECT STORAGE PERSISTENCE CONNECTORS -->
+            <g transform="translate(20, 275)">
+              <rect x="0" y="0" width="900" height="145" rx="8" fill="#140d1a" stroke="#f43f5e" stroke-width="2"/>
+              <text x="15" y="25" fill="#f43f5e" font-size="12" font-weight="bold">4. PASSERELLES D'ACCÈS DIRECT AU STOCKAGE POLYGLOTTE (LAYER 3 DIRECT DRIVERS)</text>
+              <text x="15" y="42" fill="#fda4af" font-size="9">Connexions asynchrones directes : aucun intermédiaire entre Layer 2 et les 6 moteurs de persistance de Layer 3.</text>
+
+              <!-- Connector 1: Neo4j Bolt -->
+              <g transform="translate(15, 55)">
+                <rect x="0" y="0" width="135" height="75" rx="5" fill="#241424" stroke="#38bdf8" stroke-width="1"/>
+                <text x="10" y="18" fill="#38bdf8" font-size="9.5" font-weight="bold">Neo4j Bolt Pool</text>
+                <text x="10" y="32" fill="#cbd5e1" font-size="7.5">neo4j-python-driver</text>
+                <text x="10" y="45" fill="#94a3b8" font-size="7.5">Sessions Bolt asynchrones</text>
+                <text x="10" y="58" fill="#38bdf8" font-size="7.5">Port 7687 • &lt;5ms</text>
+                <text x="10" y="70" fill="#34d399" font-size="7">● Écriture nœuds/arêtes</text>
+              </g>
+
+              <!-- Connector 2: PostgreSQL asyncpg -->
+              <g transform="translate(165, 55)">
+                <rect x="0" y="0" width="135" height="75" rx="5" fill="#141a29" stroke="#0ea5e9" stroke-width="1"/>
+                <text x="10" y="18" fill="#0ea5e9" font-size="9.5" font-weight="bold">PostgreSQL Pool</text>
+                <text x="10" y="32" fill="#cbd5e1" font-size="7.5">asyncpg / SQLAlchemy 2.0</text>
+                <text x="10" y="45" fill="#94a3b8" font-size="7.5">Pool 50 connexions réutilisables</text>
+                <text x="10" y="58" fill="#0ea5e9" font-size="7.5">Port 5432 • ACID</text>
+                <text x="10" y="70" fill="#34d399" font-size="7">● Insertion CDRs &amp; Audit</text>
+              </g>
+
+              <!-- Connector 3: Qdrant gRPC -->
+              <g transform="translate(315, 55)">
+                <rect x="0" y="0" width="135" height="75" rx="5" fill="#17122b" stroke="#a855f7" stroke-width="1"/>
+                <text x="10" y="18" fill="#a855f7" font-size="9.5" font-weight="bold">Qdrant Client</text>
+                <text x="10" y="32" fill="#cbd5e1" font-size="7.5">qdrant-client gRPC</text>
+                <text x="10" y="45" fill="#94a3b8" font-size="7.5">Protobuf v3 multiplexé</text>
+                <text x="10" y="58" fill="#a855f7" font-size="7.5">Port 6334 • &lt;8ms</text>
+                <text x="10" y="70" fill="#34d399" font-size="7">● Indexation biométrique</text>
+              </g>
+
+              <!-- Connector 4: MinIO boto3 -->
+              <g transform="translate(465, 55)">
+                <rect x="0" y="0" width="135" height="75" rx="5" fill="#241417" stroke="#f43f5e" stroke-width="1"/>
+                <text x="10" y="18" fill="#f43f5e" font-size="9.5" font-weight="bold">MinIO S3 Client</text>
+                <text x="10" y="32" fill="#cbd5e1" font-size="7.5">boto3 / aioboto3 S3</text>
+                <text x="10" y="45" fill="#94a3b8" font-size="7.5">Object Lock Compliance</text>
+                <text x="10" y="58" fill="#f43f5e" font-size="7.5">Port 9000 • WORM</text>
+                <text x="10" y="70" fill="#34d399" font-size="7">● Dépôt scellés légaux</text>
+              </g>
+
+              <!-- Connector 5: MongoDB Motor -->
+              <g transform="translate(615, 55)">
+                <rect x="0" y="0" width="135" height="75" rx="5" fill="#0d1f17" stroke="#10b981" stroke-width="1"/>
+                <text x="10" y="18" fill="#10b981" font-size="9.5" font-weight="bold">MongoDB Motor</text>
+                <text x="10" y="32" fill="#cbd5e1" font-size="7.5">motor.motor_asyncio</text>
+                <text x="10" y="45" fill="#94a3b8" font-size="7.5">BSON non-bloquant</text>
+                <text x="10" y="58" fill="#10b981" font-size="7.5">Port 27017 • Wire</text>
+                <text x="10" y="70" fill="#34d399" font-size="7">● Dumps scrapers bruts</text>
+              </g>
+
+              <!-- Connector 6: Redis RESP3 -->
+              <g transform="translate(765, 55)">
+                <rect x="0" y="0" width="120" height="75" rx="5" fill="#241014" stroke="#e11d48" stroke-width="1"/>
+                <text x="10" y="18" fill="#f43f5e" font-size="9.5" font-weight="bold">Redis Pool</text>
+                <text x="10" y="32" fill="#cbd5e1" font-size="7.5">redis-py asyncio</text>
+                <text x="10" y="45" fill="#94a3b8" font-size="7.5">Protocole RESP3</text>
+                <text x="10" y="58" fill="#f43f5e" font-size="7.5">Port 6379 • &lt;0.5ms</text>
+                <text x="10" y="70" fill="#34d399" font-size="7">● Pub/Sub &amp; Quotas</text>
+              </g>
+            </g>
+
+            <!-- Inter-block Arrows -->
+            <path d="M 300 135 L 330 135" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arr-l2-cyan)"/>
+            <path d="M 610 135 L 640 135" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arr-l2-cyan)"/>
+            <path d="M 470 255 L 470 275" stroke="#f43f5e" stroke-width="2.5" marker-end="url(#arr-l2-rose)"/>
+          </svg>
+        </div>
+
+        <!-- Technical Deep-Dive Narrative -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin:1.5rem 0 0.6rem;">Architecture Technique &amp; Mécanismes de Traitement du Layer 2</h3>
+        <p style="font-size:0.82rem;color:var(--text-secondary);line-height:1.55;">
+          Layer 2 est le centre opérationnel garantissant la robustesse, la conformité légale et la performance d'exécution de toutes les requêtes :
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;margin-bottom:1.5rem;">
+          <div style="background:#0c1322;border:1px solid #1e293b;border-radius:6px;padding:0.9rem;">
+            <h4 style="color:#0ea5e9;margin:0 0 0.4rem;font-size:0.9rem;">1. Règle d'Accès Direct &amp; Élimination des Hops</h4>
+            <p style="color:#cbd5e1;font-size:0.78rem;line-height:1.45;margin:0;">
+              Contrairement à un pipeline rigide en cascade, Layer 2 gère directement un ensemble de connexions persistantes vers Layer 3. Une requête du magistrat pour afficher les métadonnées d'une affaire s'exécute directement sur PostgreSQL (0.8ms) ; une recherche de co-implication 3-sauts interroge directement Neo4j (4.2ms) via Bolt. Aucun passage par Layer 1 ou Layer 4/5 n'est imposé.
+            </p>
+          </div>
+          <div style="background:#0c1322;border:1px solid #1e293b;border-radius:6px;padding:0.9rem;">
+            <h4 style="color:#38bdf8;margin:0 0 0.4rem;font-size:0.9rem;">2. Algorithme Token-Bucket Distribué</h4>
+            <p style="color:#cbd5e1;font-size:0.78rem;line-height:1.45;margin:0;">
+              Chaque outil d'interrogation externe (ex: API Facebook, recherche inversée Truecaller) dispose d'un bucket de jetons synchronisé sur Redis (script Lua atomique). Lorsqu'un quota est atteint, la tâche Celery est automatiquement suspendue avec un délai de retry exponentiel jitterisé, évitant tout bannissement d'adresses IP judiciaires.
+            </p>
+          </div>
+          <div style="background:#0c1322;border:1px solid #1e293b;border-radius:6px;padding:0.9rem;">
+            <h4 style="color:#10b981;margin:0 0 0.4rem;font-size:0.9rem;">3. Normalisation Pydantic v2 &amp; Standard GFPG</h4>
+            <p style="color:#cbd5e1;font-size:0.78rem;line-height:1.45;margin:0;">
+              Tous les indices bruts sont validés contre 14 modèles canoniques (PERSON, PHONE_NUMBER, BANK_ACCOUNT, etc.). Les numéros de téléphone sont normalisés en E.164 (+213), les comptes BaridiMob sont validés par l'algorithme officiel d'Algérie Poste (RIP 20 chiffres + clé 2 chiffres), et les horodatages sont convertis en ISO-8601 UTC+1.
+            </p>
+          </div>
+        </div>
+
+        <!-- Tech Stack Evaluation Table -->
         <h3 style="color:#f8fafc;font-size:1.05rem;margin-bottom:0.6rem;">Composants Technologiques de Layer 2 (Versions, Rôles, Avantages &amp; Limites)</h3>
         <table class="tech-table">
           <thead>
@@ -621,74 +1090,56 @@
               </td>
             </tr>
             <tr>
-              <td><strong>Celery + Redis 7</strong></td>
-              <td><span class="badge-ver">Celery 5.4 / Redis 7.2</span></td>
-              <td>Distribution asynchrone des tâches d'investigation et files de priorités</td>
+              <td><strong>Celery</strong></td>
+              <td><span class="badge-ver">v5.4.0</span></td>
+              <td>Distribution asynchrone des tâches d'investigation et gestion des files d'attente</td>
               <td>
                 <ul class="pros-list">
-                  <li>Traitement en arrière-plan sans bloquer l'interface de l'enquêteur</li>
-                  <li>Mécanisme de retry automatique avec backoff exponentiel sur panne</li>
-                  <li>Files d'attente prioritaires (Priorité 1: Scellement WORM ; Priorité 3: Scraping passif)</li>
+                  <li>Routage fin des tâches sur des files prioritaires (urgente, standard, batch)</li>
+                  <li>Reprise automatique sur erreur avec politique de backoff exponentiel</li>
+                  <li>Intégration native avec Redis Streams et RabbitMQ</li>
                 </ul>
               </td>
               <td>
                 <ul class="cons-list">
-                  <li>États volatils en cas de coupure de courant si non configuré en AOF</li>
-                  <li>Mitigation : persistance Redis Append-Only File (AOF) chaque seconde</li>
+                  <li>Surveillance complexe de l'état des workers distribués</li>
+                  <li>Mitigation : tableau de bord Flower et sondes Prometheus intégrées</li>
                 </ul>
               </td>
             </tr>
             <tr>
               <td><strong>Temporal.io</strong></td>
               <td><span class="badge-ver">v1.24.x</span></td>
-              <td>Moteur d'orchestration de workflows durables multi-jours</td>
+              <td>Orchestration des workflows d'enquête complexes à longue durée de vie</td>
               <td>
                 <ul class="pros-list">
-                  <li>Survit aux redémarrages serveur et pannes réseaux sans perte d'état</li>
-                  <li>Permet d'attendre l'approbation humaine de l'enquêteur (Human-in-the-Loop)</li>
-                  <li>Historique d'événements immuable (Event Sourcing) conforme à l'audit CPP</li>
+                  <li>Exécution déterministe résiliente aux redémarrages de serveurs</li>
+                  <li>Gestion native des pauses pour validation humaine par l'enquêteur</li>
+                  <li>Historique d'exécution immuable et auditable devant le tribunal</li>
                 </ul>
               </td>
               <td>
                 <ul class="cons-list">
-                  <li>Complexité d'infrastructure supplémentaire</li>
-                  <li>Mitigation : réservé aux workflows critiques (ex: réquisitions et infiltrations)</li>
+                  <li>Courbe d'apprentissage élevée pour les développeurs Python</li>
+                  <li>Mitigation : encapsulation des workflows dans des decorators standardisés</li>
                 </ul>
               </td>
             </tr>
             <tr>
               <td><strong>Pydantic</strong></td>
-              <td><span class="badge-ver">v2.8.x (Rust Core)</span></td>
-              <td>Validation et sérialisation canonique des 14 types d'éléments d'enquête</td>
+              <td><span class="badge-ver">v2.7.x (Core Rust)</span></td>
+              <td>Validation canonique des données et sérialisation haute performance</td>
               <td>
                 <ul class="pros-list">
-                  <li>Validation 15x plus rapide grâce au cœur écrit en Rust</li>
-                  <li>Garantit que tout numéro est converti au format E.164 avant écriture</li>
-                  <li>Empêche l'injection de données corrompues dans les bases de données</li>
+                  <li>Validation 5x à 20x plus rapide grâce au moteur écrit en Rust</li>
+                  <li>Typage strict empêchant l'injection de données corrompues dans Neo4j</li>
+                  <li>Conversion automatique des formats locaux algériens (dates, montants DZD)</li>
                 </ul>
               </td>
               <td>
                 <ul class="cons-list">
-                  <li>Refuse strictement les formats non conformes</li>
-                  <li>Mitigation : modules de prétraitement tolérants aux fautes de frappe</li>
-                </ul>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>ArchiveBox</strong></td>
-              <td><span class="badge-ver">v0.7.2</span></td>
-              <td>Scellement de pages web au format international WARC ISO 28500</td>
-              <td>
-                <ul class="pros-list">
-                  <li>Capture complète du DOM HTML, images, CSS et certificats TLS originaux</li>
-                  <li>Admissibilité internationale incontestable en audience judiciaire</li>
-                  <li>Génère simultanément PDF vectoriel, capture PNG et fichier WARC</li>
-                </ul>
-              </td>
-              <td>
-                <ul class="cons-list">
-                  <li>Taille de fichier conséquente (10 à 50 Mo par page archivée)</li>
-                  <li>Mitigation : déduplication et stockage compressé dans MinIO S3</li>
+                  <li>Rejette impitoyablement les entrées mal formées sans fallback automatique</li>
+                  <li>Mitigation : pipeline de pré-nettoyage Regex tolérant avant validation</li>
                 </ul>
               </td>
             </tr>
@@ -696,236 +1147,334 @@
         </table>
       </section>
     </div>
-
     <!-- ====================================================================
-         TAB 4: LAYER 3 - STOCKAGE POLYGLOTTE SPÉCIALISÉ (6 MOTEURS)
+         TAB 4: LAYER 3 - TIER DE STOCKAGE POLYGLOTTE (6 MOTEURS COMPLÉMENTAIRES)
          ==================================================================== -->
     <div id="panel-arch-layer3" class="arch-tab-panel">
       <section>
-        <h2 class="section-title">4. Layer 3 : Tier de Stockage Polyglotte Spécialisé (6 Moteurs)</h2>
+        <h2 class="section-title">4. Layer 3 : Tier de Stockage Polyglotte Spécialisé (6 Moteurs Complémentaires)</h2>
         <p class="section-subtitle">
-          Séparation rigoureuse des responsabilités de stockage : aucun moteur universel n'existe en forensique numérique. Chaque type de donnée est confié à son moteur mathématique optimal.
+          Architecture de persistance hybride découplée : chaque nature d'indice judiciaire est confiée à son moteur physique optimal pour garantir performance sub-milliseconde et conformité légale CPP.
         </p>
 
-        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(290px, 1fr));gap:1rem;margin-bottom:1.5rem;">
-          <div class="card" style="border-top:3px solid #38bdf8;">
-            <strong style="color:#38bdf8;font-size:0.95rem;">🕸️ 1. Neo4j 5.20+ Enterprise</strong>
-            <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem;">
-              <strong>Rôle :</strong> Graphe de Connaissances Criminelles &amp; Rapprochements Multi-Sauts.<br/>
-              Pointeurs physiques directs en mémoire vive (index-free adjacency) permettant de traverser 8 degrés de complicité en moins de 5ms.
-            </p>
-          </div>
-          <div class="card" style="border-top:3px solid #10b981;">
-            <strong style="color:#10b981;font-size:0.95rem;">📋 2. PostgreSQL 16 + TimescaleDB</strong>
-            <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem;">
-              <strong>Rôle :</strong> État ACID des Dossiers, Bornage Télécom &amp; Ledger Merkle.<br/>
-              Isolation stricte par Wilaya (RLS), hyper-tables partitionnées pour des millions de CDRs télécoms, et chaînage SHA-256 non-répudiable des logs d'audit.
-            </p>
-          </div>
-          <div class="card" style="border-top:3px solid #06b6d4;">
-            <strong style="color:#06b6d4;font-size:0.95rem;">🍃 3. MongoDB 7.0 (WiredTiger)</strong>
-            <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem;">
-              <strong>Rôle :</strong> Dépôt Polymorphe de Scraping Brut &amp; Payloads JSON.<br/>
-              Absorbe les réponses de 76 briques OSINT sans schéma fixe ni migration. Compression Snappy réduisant l'empreinte disque de 70%.
-            </p>
-          </div>
-          <div class="card" style="border-top:3px solid #f59e0b;">
-            <strong style="color:#f59e0b;font-size:0.95rem;">🔒 4. MinIO S3 Enterprise (WORM)</strong>
-            <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem;">
-              <strong>Rôle :</strong> Coffre-Fort Immuable de Scellés Numériques (ISO 27037).<br/>
-              Object Lock en mode COMPLIANCE avec horodatage RFC 3161 : il est mathématiquement impossible de modifier ou supprimer un fichier scellé.
-            </p>
-          </div>
-          <div class="card" style="border-top:3px solid #a855f7;">
-            <strong style="color:#a855f7;font-size:0.95rem;">🎯 5. Qdrant 1.9 (Rust HNSW)</strong>
-            <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem;">
-              <strong>Rôle :</strong> Recherche Vectorielle Sub-8ms Visages &amp; Empreintes Vocales.<br/>
-              Recherche de similarité cosinus avec filtrage par payload (ex: chercher ce visage suspect uniquement dans les dossiers d'Oran en 2026).
-            </p>
-          </div>
-          <div class="card" style="border-top:3px solid #ec4899;">
-            <strong style="color:#ec4899;font-size:0.95rem;">⚡ 6. Redis 7.2 Stack</strong>
-            <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem;">
-              <strong>Rôle :</strong> Bus Événementiel Temps-Réel &amp; Verrous Anti-Ban.<br/>
-              Propagation WebSocket instantanée vers le Studio Enquêteur et algorithme Token-Bucket limitant la cadence de requêtes sur les réseaux sociaux.
-            </p>
-          </div>
+        <div class="card" style="border-left:4px solid #f43f5e;margin-bottom:1.5rem;">
+          <h3 style="color:#f43f5e;margin-bottom:0.5rem;">🎯 Pourquoi un Moteur Unique est une Erreur Fatale en Cyber-Investigation</h3>
+          <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.55;">
+            Une enquête judiciaire manipule simultanément des graphes relationnels complexes à 5 sauts, des milliards d'enregistrements temporels d'antennes 4G (CDRs), des embeddings faciaux à 512 dimensions, des enregistrements vocaux WhatsApp nécessitant une immuabilité légale stricte (WORM), et des dumps HTML volumineux et imprévisibles. Tenter de forcer toutes ces données dans une base relationnelle classique (PostgreSQL ou MySQL) entraîne un effondrement des temps de requête (&gt;15 secondes pour les jointures récursives) ou l'inadmissibilité des preuves devant la cour d'assises par manque de scellement cryptographique WORM. <strong>Layer 3 déploie 6 moteurs complémentaires interconnectés par un identifiant universel d'indice (Universal Evidence UID).</strong>
+          </p>
         </div>
 
-        <!-- Layer 3 Tech Stack Table -->
-        <h3 style="color:#f8fafc;font-size:1.05rem;margin-bottom:0.6rem;">Matrice Comparée des Moteurs de Stockage de Layer 3</h3>
+        <!-- Layer 3 Specific High-Resolution Architecture SVG -->
+        <div style="background:#060a12;border:1px solid #1a2538;border-radius:8px;padding:0.75rem;margin-bottom:1.5rem;overflow-x:auto;">
+          <svg viewBox="0 0 940 450" xmlns="http://www.w3.org/2000/svg" style="min-width:880px;font-family:system-ui,-apple-system,sans-serif;">
+            <defs>
+              <marker id="arr-l3-cyan" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#38bdf8"/>
+              </marker>
+              <marker id="arr-l3-rose" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#f43f5e"/>
+              </marker>
+            </defs>
+
+            <!-- 6 Dedicated Storage Engine Cards -->
+
+            <!-- ENGINE 1: NEO4J -->
+            <g transform="translate(20, 20)">
+              <rect x="0" y="0" width="280" height="190" rx="8" fill="#241424" stroke="#38bdf8" stroke-width="1.8"/>
+              <text x="15" y="24" fill="#38bdf8" font-size="12" font-weight="bold">1. NEO4J 5.20+ ENTERPRISE</text>
+              <text x="15" y="40" fill="#94a3b8" font-size="8.5">Topologie Graphe &amp; Index-Free Adjacency</text>
+              <text x="15" y="60" fill="#cbd5e1" font-size="8">• Pointeurs mémoire doublement chaînés</text>
+              <text x="15" y="75" fill="#cbd5e1" font-size="8">• Traversée de relations en O(k) sub-ms</text>
+              <text x="15" y="90" fill="#cbd5e1" font-size="8">• Optimiseur JIT de requêtes Cypher</text>
+              <text x="15" y="105" fill="#cbd5e1" font-size="8">• Bibliothèque APOC Extended intégrée</text>
+              <text x="15" y="120" fill="#cbd5e1" font-size="8">• Catalog in-memory pour GDS 2.6</text>
+              <rect x="15" y="138" width="250" height="22" rx="4" fill="#141f36"/>
+              <text x="22" y="153" fill="#38bdf8" font-size="8.5" font-family="monospace">Protocole Bolt • Port 7687</text>
+              <text x="15" y="178" fill="#34d399" font-size="8">● Latence sub-milliseconde sur 5 sauts</text>
+            </g>
+
+            <!-- ENGINE 2: POSTGRESQL + TIMESCALEDB -->
+            <g transform="translate(330, 20)">
+              <rect x="0" y="0" width="280" height="190" rx="8" fill="#141a29" stroke="#0ea5e9" stroke-width="1.8"/>
+              <text x="15" y="24" fill="#0ea5e9" font-size="12" font-weight="bold">2. POSTGRESQL 16 + TIMESCALE</text>
+              <text x="15" y="40" fill="#94a3b8" font-size="8.5">Conformité ACID &amp; Séries Temporelles CDRs</text>
+              <text x="15" y="60" fill="#cbd5e1" font-size="8">• Tables relationnelles : dossiers, magistrats</text>
+              <text x="15" y="75" fill="#cbd5e1" font-size="8">• Row-Level Security (RLS) par Wilaya DZ</text>
+              <text x="15" y="90" fill="#cbd5e1" font-size="8">• Hypertables TimescaleDB (milliards de CDRs)</text>
+              <text x="15" y="105" fill="#cbd5e1" font-size="8">• Partitionnement automatique jour / cellule BTS</text>
+              <text x="15" y="120" fill="#cbd5e1" font-size="8">• Arbre de Merkle d'audit cryptographique</text>
+              <rect x="15" y="138" width="250" height="22" rx="4" fill="#0c1929"/>
+              <text x="22" y="153" fill="#0ea5e9" font-size="8.5" font-family="monospace">PostgreSQL Wire • Port 5432</text>
+              <text x="15" y="178" fill="#34d399" font-size="8">● Intégrité référentielle stricte CPP</text>
+            </g>
+
+            <!-- ENGINE 3: QDRANT VECTOR DB -->
+            <g transform="translate(640, 20)">
+              <rect x="0" y="0" width="280" height="190" rx="8" fill="#17122b" stroke="#a855f7" stroke-width="1.8"/>
+              <text x="15" y="24" fill="#a855f7" font-size="12" font-weight="bold">3. QDRANT 1.9 (MOTEUR RUST)</text>
+              <text x="15" y="40" fill="#94a3b8" font-size="8.5">Indexation Vectorielle HNSW &amp; Biométrie</text>
+              <text x="15" y="60" fill="#cbd5e1" font-size="8">• Embeddings faciaux ArcFace (512-d)</text>
+              <text x="15" y="75" fill="#cbd5e1" font-size="8">• Empreintes vocales PyAnnote (192-d)</text>
+              <text x="15" y="90" fill="#cbd5e1" font-size="8">• Distance cosinus / produit scalaire SIMD</text>
+              <text x="15" y="105" fill="#cbd5e1" font-size="8">• Filtrage strict par métadonnées (Affaire/Wilaya)</text>
+              <text x="15" y="120" fill="#cbd5e1" font-size="8">• Quantification scalaire en mémoire vive</text>
+              <rect x="15" y="138" width="250" height="22" rx="4" fill="#24153b"/>
+              <text x="22" y="153" fill="#a855f7" font-size="8.5" font-family="monospace">gRPC Port 6334 • REST Port 6333</text>
+              <text x="15" y="178" fill="#34d399" font-size="8">● Recherche k-NN &lt;8ms sur 2M visages</text>
+            </g>
+
+            <!-- ENGINE 4: MINIO WORM -->
+            <g transform="translate(20, 230)">
+              <rect x="0" y="0" width="280" height="190" rx="8" fill="#241417" stroke="#f43f5e" stroke-width="1.8"/>
+              <text x="15" y="24" fill="#f43f5e" font-size="12" font-weight="bold">4. MINIO S3 ENTERPRISE WORM</text>
+              <text x="15" y="40" fill="#94a3b8" font-size="8.5">Coffre-fort Immuable &amp; Scellés Légaux</text>
+              <text x="15" y="60" fill="#cbd5e1" font-size="8">• S3 Object Lock en mode COMPLIANCE strict</text>
+              <text x="15" y="75" fill="#cbd5e1" font-size="8">• Rétention juridique verrouillée (10 ans)</text>
+              <text x="15" y="90" fill="#cbd5e1" font-size="8">• Scellement SHA-256 + Horodatage RFC 3161</text>
+              <text x="15" y="105" fill="#cbd5e1" font-size="8">• Archives WARC des fausses boutiques web</text>
+              <text x="15" y="120" fill="#cbd5e1" font-size="8">• Enregistrements audio bruts WhatsApp</text>
+              <rect x="15" y="138" width="250" height="22" rx="4" fill="#38131a"/>
+              <text x="22" y="153" fill="#f43f5e" font-size="8.5" font-family="monospace">S3 API Port 9000 • Console 9001</text>
+              <text x="15" y="178" fill="#34d399" font-size="8">● Non-répudiation ISO 27037 garantie</text>
+            </g>
+
+            <!-- ENGINE 5: MONGODB -->
+            <g transform="translate(330, 230)">
+              <rect x="0" y="0" width="280" height="190" rx="8" fill="#0d1f17" stroke="#10b981" stroke-width="1.8"/>
+              <text x="15" y="24" fill="#10b981" font-size="12" font-weight="bold">5. MONGODB 7.0 WIREDTIGER</text>
+              <text x="15" y="40" fill="#94a3b8" font-size="8.5">Dépôt Polymorphe BSON &amp; Scraping Brut</text>
+              <text x="15" y="60" fill="#cbd5e1" font-size="8">• Dépôt sans schéma pour les 76 briques OSINT</text>
+              <text x="15" y="75" fill="#cbd5e1" font-size="8">• Arbres DOM HTML et réponses d'APIs tierces</text>
+              <text x="15" y="90" fill="#cbd5e1" font-size="8">• Compression par bloc Snappy (gain 70% disque)</text>
+              <text x="15" y="105" fill="#cbd5e1" font-size="8">• Ingestion haute vélocité sans migration</text>
+              <text x="15" y="120" fill="#cbd5e1" font-size="8">• Change Streams pour extraction en continu</text>
+              <rect x="15" y="138" width="250" height="22" rx="4" fill="#143323"/>
+              <text x="22" y="153" fill="#10b981" font-size="8.5" font-family="monospace">Mongo Wire Protocol • Port 27017</text>
+              <text x="15" y="178" fill="#34d399" font-size="8">● Ingestion de 35 000 docs BSON / sec</text>
+            </g>
+
+            <!-- ENGINE 6: REDIS STACK -->
+            <g transform="translate(640, 230)">
+              <rect x="0" y="0" width="280" height="190" rx="8" fill="#241014" stroke="#e11d48" stroke-width="1.8"/>
+              <text x="15" y="24" fill="#e11d48" font-size="12" font-weight="bold">6. REDIS 7.2 STACK EN MÉMOIRE</text>
+              <text x="15" y="40" fill="#94a3b8" font-size="8.5">Bus Temps Réel, Cache &amp; Quotas Anti-Ban</text>
+              <text x="15" y="60" fill="#cbd5e1" font-size="8">• Pub/Sub WebSockets vers le Studio NVL (60 FPS)</text>
+              <text x="15" y="75" fill="#cbd5e1" font-size="8">• Redis Streams pour la file de tâches Celery</text>
+              <text x="15" y="90" fill="#cbd5e1" font-size="8">• Token-Bucket anti-ban distribué par script Lua</text>
+              <text x="15" y="105" fill="#cbd5e1" font-size="8">• Verrous distribués Redlock multi-instances</text>
+              <text x="15" y="120" fill="#cbd5e1" font-size="8">• Cache d'expansion de sous-graphe 30s</text>
+              <rect x="15" y="138" width="250" height="22" rx="4" fill="#3b111a"/>
+              <text x="22" y="153" fill="#e11d48" font-size="8.5" font-family="monospace">RESP3 Protocol • Port 6379</text>
+              <text x="15" y="178" fill="#34d399" font-size="8">● Latence d'accès &lt;0.5 milliseconde</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Cross-Engine Evidence Linkage Matrix Table -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin:1.5rem 0 0.6rem;">Matrice de Corrélation d'un Indice Judiciaire à Travers les 6 Moteurs</h3>
+        <p style="font-size:0.82rem;color:var(--text-secondary);line-height:1.55;">
+          Chaque élément de preuve récolté est indexé de manière cohérente à travers un identifiant universel <code>evidence_uid</code> (ex: Note Vocale WhatsApp d'extorsion) :
+        </p>
         <table class="tech-table">
           <thead>
             <tr>
-              <th>Moteur de Base</th>
-              <th>Version</th>
-              <th>Type de Données Traitées</th>
-              <th>Avantages Déterminants (Pros)</th>
-              <th>Inconvénients &amp; Mitigations (Cons)</th>
+              <th>Moteur</th>
+              <th>Donnée Spécifique Stockée</th>
+              <th>Format / Structure</th>
+              <th>Rôle dans l'Instruction Pénale</th>
+              <th>Latence d'Accès SLA</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td><strong>Neo4j Enterprise</strong></td>
-              <td><span class="badge-ver">v5.20.0 (Bolt)</span></td>
-              <td>Graphe d'entités (GFPG), relations de complicité, transferts d'argent</td>
-              <td>
-                <ul class="pros-list">
-                  <li>Index-free adjacency : complexité de traversée O(k) indépendante de N</li>
-                  <li>Cypher expressif et lisible pour les réquisitions judiciaires</li>
-                  <li>Bibliothèque native Graph Data Science (GDS) en mémoire</li>
-                </ul>
-              </td>
-              <td>
-                <ul class="cons-list">
-                  <li>Inadapté au stockage de gros payloads binaires ou documents non structurés</li>
-                  <li>Mitigation : stockage des payloads dans Mongo/S3, seul le pointeur _id est dans Neo4j</li>
-                </ul>
-              </td>
+              <td><strong>Neo4j 5.20+</strong></td>
+              <td>Nœud <code>(:NoteVocale)</code> relié à <code>(:Personne)</code> par <code>[:ENVOYEE_PAR]</code></td>
+              <td>Propriétés Graphe (durée, horodatage, hash)</td>
+              <td>Révélation des liens de causalité et co-implication</td>
+              <td>&lt; 4 ms (Bolt)</td>
             </tr>
             <tr>
-              <td><strong>PostgreSQL + TimescaleDB</strong></td>
-              <td><span class="badge-ver">PG 16.3 / Timescale 2.15</span></td>
-              <td>Identités civiles, infractions CPP, relevés CDRs télécoms, journal d'audit</td>
-              <td>
-                <ul class="pros-list">
-                  <li>Garantie ACID absolue, transactions financières sérialisables</li>
-                  <li>Row-Level Security (RLS) étanche par Wilaya et unité d'enquête</li>
-                  <li>Hyper-tables découpées par temps pour des requêtes CDR en &lt;15ms</li>
-                  <li>Chaînage cryptographique SHA-256 Merkle entre lignes d'audit</li>
-                </ul>
-              </td>
-              <td>
-                <ul class="cons-list">
-                  <li>Requêtes récursives sur graphes profonds (>3 sauts) très lentes</li>
-                  <li>Mitigation : délégation des requêtes de réseau à Neo4j</li>
-                </ul>
-              </td>
+              <td><strong>PostgreSQL 16</strong></td>
+              <td>Métadonnées d'acte de procédure, numéro de procès-verbal et officier saisissant</td>
+              <td>Ligne relationnelle ACID + clé étrangère affaire</td>
+              <td>Traçabilité légale et registre de scellés CPP</td>
+              <td>&lt; 1 ms (SQL)</td>
             </tr>
             <tr>
-              <td><strong>MongoDB</strong></td>
-              <td><span class="badge-ver">v7.0.9 (WiredTiger)</span></td>
-              <td>Dumps bruts HTML/JSON de 76 outils OSINT, cookies, headers HTTP</td>
-              <td>
-                <ul class="pros-list">
-                  <li>Absorbe les variations de schéma brut sans altération de table</li>
-                  <li>Compression Snappy réduisant l'espace disque de 70%</li>
-                  <li>Change Streams permettant le déclenchement réactif des analyseurs</li>
-                </ul>
-              </td>
-              <td>
-                <ul class="cons-list">
-                  <li>Pas de transactions ACID multi-dossiers complexes</li>
-                  <li>Mitigation : cantonné au rôle de zone de staging et d'archives brutes</li>
-                </ul>
-              </td>
+              <td><strong>Qdrant 1.9</strong></td>
+              <td>Vecteur 192-d de l'empreinte acoustique du suspect (PyAnnote 3.1)</td>
+              <td>Point vectoriel HNSW avec payload <code>{case_id: "089"}</code></td>
+              <td>Recoupement biométrique avec d'autres affaires non élucidées</td>
+              <td>&lt; 8 ms (gRPC)</td>
             </tr>
             <tr>
-              <td><strong>MinIO S3</strong></td>
-              <td><span class="badge-ver">RELEASE.2024-05</span></td>
-              <td>Captures d'écran certifiées, notes vocales, APKs saisis, rapports PDF/A</td>
-              <td>
-                <ul class="pros-list">
-                  <li>Mode WORM (Write-Once-Read-Many) conforme ISO 27037</li>
-                  <li>Téléchargement sécurisé via URLs présignées à durée limitée</li>
-                  <li>Calcul et vérification des empreintes SHA-256 à chaque accès</li>
-                </ul>
-              </td>
-              <td>
-                <ul class="cons-list">
-                  <li>Nécessite du stockage disque NVMe pour les accès rapides</li>
-                  <li>Mitigation : tiering automatique vers stockage HDD pour les scellés clos</li>
-                </ul>
-              </td>
+              <td><strong>MinIO S3 WORM</strong></td>
+              <td>Fichier binaire audio original chiffré <code>whatsapp_voice_01.ogg</code></td>
+              <td>Objet S3 avec verrouillage COMPLIANCE et scellé RFC 3161</td>
+              <td>Conservation inviolable de la preuve matérielle originale</td>
+              <td>&lt; 15 ms (Streaming)</td>
             </tr>
             <tr>
-              <td><strong>Qdrant</strong></td>
-              <td><span class="badge-ver">v1.9.2 (Rust)</span></td>
-              <td>Vecteurs d'embeddings faciaux ArcFace (512-d) et x-vectors vocaux</td>
-              <td>
-                <ul class="pros-list">
-                  <li>Recherche de similarité cosinus sub-8ms sur 10M de visages</li>
-                  <li>Filtrage par payload en une seule passe sans surcoût mémoire</li>
-                  <li>Écrit en Rust : empreinte mémoire minimale et zéro GC pause</li>
-                </ul>
-              </td>
-              <td>
-                <ul class="cons-list">
-                  <li>Précision dépendante de la qualité du modèle d'embedding source</li>
-                  <li>Mitigation : double vérification humaine obligatoire sur les scores &lt;0.85</li>
-                </ul>
-              </td>
+              <td><strong>MongoDB 7.0</strong></td>
+              <td>Dump JSON brut des métadonnées de messagerie extraites par Mitmproxy</td>
+              <td>Document BSON non structuré avec logs réseau</td>
+              <td>Reconstitution technique exhaustive en cas de contestation</td>
+              <td>&lt; 2 ms (Wire)</td>
             </tr>
             <tr>
-              <td><strong>Redis Stack</strong></td>
-              <td><span class="badge-ver">v7.2.4</span></td>
-              <td>Sessions utilisateurs, tokens JWT, notifications WebSocket, rate-limiters</td>
-              <td>
-                <ul class="pros-list">
-                  <li>Latence sub-milliseconde en mémoire pure</li>
-                  <li>Algorithme de Token Bucket empêchant le bannissement d'IPs d'enquête</li>
-                  <li>Support natif des flux d'événements Redis Streams</li>
-                </ul>
-              </td>
-              <td>
-                <ul class="cons-list">
-                  <li>Données purement volatiles par défaut</li>
-                  <li>Mitigation : réplication maître-esclave et persistance AOF activée</li>
-                </ul>
-              </td>
+              <td><strong>Redis 7.2</strong></td>
+              <td>Notification d'événement en temps réel <code>clue:discovered:voice_01</code></td>
+              <td>Message Pub/Sub diffusé sur WebSocket NVL</td>
+              <td>Apparition instantanée du nœud sur l'écran de l'enquêteur (60 FPS)</td>
+              <td>&lt; 0.5 ms (RESP3)</td>
             </tr>
           </tbody>
         </table>
       </section>
     </div>
-
     <!-- ====================================================================
-         TAB 5: LAYER 4 - MOTEUR ANALYTICS & GDS GRAPH SCIENCE
+         TAB 5: LAYER 4 - ANALYTICS GDS & ALGORITHMES SNA
          ==================================================================== -->
     <div id="panel-arch-layer4" class="arch-tab-panel">
       <section>
-        <h2 class="section-title">5. Layer 4 : Moteur Algorithmique &amp; Analytics GDS (SNA)</h2>
+        <h2 class="section-title">5. Layer 4 : Moteur Analytics &amp; Graph Data Science (GDS 2.6)</h2>
         <p class="section-subtitle">
-          Le cerveau analytique de la plateforme : détection de cellules criminelles étanches, démasquage des mules financières et classification automatique des rôles criminels via Neo4j Graph Data Science et les modules Python validés de <code>PIC-main</code>.
+          Extraction d'intelligence topologique en mémoire vive : détection mathématique des mules financières, découpage en cellules criminelles hermétiques et prédiction de complicités latentes.
         </p>
 
         <div class="card" style="border-left:4px solid #a855f7;margin-bottom:1.5rem;">
-          <h3 style="color:#a855f7;margin-bottom:0.5rem;">🎯 Fonctions Réseau Spécifiques Utilisées en Investigation</h3>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:0.75rem;font-size:0.82rem;color:var(--text-secondary);line-height:1.5;">
-            <div>
-              <strong style="color:#e9d5ff;">🔗 Prédiction de Liens (Link Prediction) :</strong><br/>
-              Point d'API <code>/api/link_prediction/</code>. Calcule la probabilité de complicité occulte entre deux suspects non connectés directement via les indices d'Adamic-Adar et de Resource Allocation.
-            </div>
-            <div>
-              <strong style="color:#e9d5ff;">🌉 Centralité d'Intermédiarité (Betweenness) :</strong><br/>
-              Fonction <code>calculate_betweenness_centrality</code>. Normalisation Min-Max [0.0, 1.0]. Identifie immédiatement les passeurs d'argent (mules BaridiMob) et téléphones relais faisant le pont entre cellules.
-            </div>
-            <div>
-              <strong style="color:#e9d5ff;">👥 Détection de Communautés (Louvain &amp; Label Propagation) :</strong><br/>
-              Module <code>AnalysisAlgorithms/Community.js</code>. Détecte automatiquement les branches spécialisées (branche fausses annonces, branche faux visas, branche blanchiment) par maximisation de la modularité.
-            </div>
-            <div>
-              <strong style="color:#e9d5ff;">🏷️ Classification des Rôles Criminels (Node_clasification) :</strong><br/>
-              Attribut <code>_class</code> calculé d'après <code>_Lvl_of_Implications</code>. Classe automatiquement chaque individu en : <em>Neutre</em>, <em>Opérationnel</em> (homme de main), <em>Soutien</em> (fournisseur de SIM/cartes), ou <em>Leader</em> (donneur d'ordre).
-            </div>
-            <div>
-              <strong style="color:#e9d5ff;">📍 Profilage Territorial (Secteur_Activite) :</strong><br/>
-              Attributs <code>_wiliya_Activiti</code>, <code>_daira_activiti</code>, <code>_comune_Activite</code>. Calcule le rayon d'action géographique d'un suspect à partir de ses bornages, annonces et retraits GAB.
-            </div>
-            <div>
-              <strong style="color:#e9d5ff;">⏳ Expansion Temporelle Sliced (APOC Filter) :</strong><br/>
-              Point d'API <code>/api/filter_affaire_relations/</code>. Permet à l'enquêteur de déplacer le curseur temporel (<code>BarScroll.js</code>) pour voir le réseau criminel se tisser jour après jour.
-            </div>
-          </div>
+          <h3 style="color:#a855f7;margin-bottom:0.5rem;">🎯 Rôle de l'Intelligence Topologique (Zéro Biais Humain)</h3>
+          <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.55;">
+            Dans les réseaux d'escroquerie sophistiqués (comme l'affaire Candy Wheels), les commanditaires n'apparaissent presque jamais en contact direct avec les victimes. Ils opèrent derrière des couches successives de comptes bancaires "mules" (comptes BaridiMob loués à des étudiants ou des tiers). Les méthodes d'investigation traditionnelles par filtrage SQL échouent à démasquer ces structures. Layer 4 projette le graphe de l'affaire dans un catalogue <strong>Neo4j GDS 2.6 in-memory</strong> et applique des algorithmes SOTA de théorie des graphes (Brandes Betweenness, Louvain Modularity, Adamic-Adar) pour hiérarchiser les suspects en fractions de seconde.
+          </p>
         </div>
 
-        <!-- Layer 4 Tech Stack Table -->
-        <h3 style="color:#f8fafc;font-size:1.05rem;margin-bottom:0.6rem;">Composants Technologiques de Layer 4 (Versions, Rôles, Avantages &amp; Limites)</h3>
+        <!-- Layer 4 Specific High-Resolution Architecture SVG -->
+        <div style="background:#060a12;border:1px solid #1a2538;border-radius:8px;padding:0.75rem;margin-bottom:1.5rem;overflow-x:auto;">
+          <svg viewBox="0 0 940 430" xmlns="http://www.w3.org/2000/svg" style="min-width:880px;font-family:system-ui,-apple-system,sans-serif;">
+            <defs>
+              <marker id="arr-l4-purple" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#a855f7"/>
+              </marker>
+              <marker id="arr-l4-rose" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#f43f5e"/>
+              </marker>
+            </defs>
+
+            <!-- SUB-BLOCK 1: IN-MEMORY GRAPH CATALOG PROJECTION -->
+            <g transform="translate(20, 20)">
+              <rect x="0" y="0" width="280" height="235" rx="8" fill="#171026" stroke="#a855f7" stroke-width="1.8"/>
+              <text x="15" y="24" fill="#a855f7" font-size="11.5" font-weight="bold">1. PROJECTION GDS IN-MEMORY</text>
+              <text x="15" y="40" fill="#d8b4fe" font-size="8.5">• GDS Graph Catalog in-memory (RAM vive)</text>
+              <text x="15" y="58" fill="#cbd5e1" font-size="8">• gds.graph.project('affaire_subgraph')</text>
+              <text x="15" y="74" fill="#cbd5e1" font-size="8">• Filtrage sous-graphe temporel &amp; par Wilaya</text>
+              <text x="15" y="90" fill="#cbd5e1" font-size="8">• Représentation orientée et pondérée (DZD)</text>
+
+              <rect x="15" y="105" width="250" height="42" rx="4" fill="#291a42" stroke="#a855f7" stroke-width="0.8"/>
+              <text x="22" y="122" fill="#e9d5ff" font-size="8.5" font-weight="bold">⚡ Kernel C++ Multi-Threadé</text>
+              <text x="22" y="137" fill="#cbd5e1" font-size="7.5">Parallélisation OpenMP sur 16 cœurs CPU</text>
+
+              <text x="15" y="165" fill="#cbd5e1" font-size="8">• Estimation mémoire préalable (Memory Estimator)</text>
+              <text x="15" y="181" fill="#cbd5e1" font-size="8">• Zéro impact sur les lectures transactionnelles</text>
+              <text x="15" y="197" fill="#cbd5e1" font-size="8">• Libération automatique de la RAM après calcul</text>
+              <rect x="15" y="208" width="250" height="18" rx="3" fill="#211336"/>
+              <text x="22" y="221" fill="#a855f7" font-size="8" font-family="monospace">Neo4j GDS 2.6 • Port Bolt Interne</text>
+            </g>
+
+            <!-- SUB-BLOCK 2: BRANDES CENTRALITY & COMMUNITY DETECTION -->
+            <g transform="translate(330, 20)">
+              <rect x="0" y="0" width="280" height="235" rx="8" fill="#1b122c" stroke="#a855f7" stroke-width="1.8"/>
+              <text x="15" y="24" fill="#a855f7" font-size="11.5" font-weight="bold">2. CENTRALITÉ &amp; COMMUNAUTÉS</text>
+              <text x="15" y="40" fill="#d8b4fe" font-size="8.5">• Algorithme Brandes Betweenness Centrality</text>
+              <text x="15" y="58" fill="#cbd5e1" font-size="8">• Détection des points d'étranglement (mules)</text>
+              <text x="15" y="74" fill="#cbd5e1" font-size="8">• Louvain Modularity (Partitionnement optimal Q)</text>
+              <text x="15" y="90" fill="#cbd5e1" font-size="8">• Label Propagation Algorithm (LPA rapide)</text>
+
+              <rect x="15" y="105" width="250" height="42" rx="4" fill="#291a42" stroke="#a855f7" stroke-width="0.8"/>
+              <text x="22" y="122" fill="#e9d5ff" font-size="8.5" font-weight="bold">👥 Isolation des Cellules Étanches</text>
+              <text x="22" y="137" fill="#cbd5e1" font-size="7.5">Regroupement automatique par réseau criminel</text>
+
+              <text x="15" y="165" fill="#cbd5e1" font-size="8">• Score flottant standardisé [0.0 à 1.0]</text>
+              <text x="15" y="181" fill="#cbd5e1" font-size="8">• Analyse de résilience : suppression de nœud</text>
+              <text x="15" y="197" fill="#cbd5e1" font-size="8">• Détection des structures en étoile (Hub-and-Spoke)</text>
+              <rect x="15" y="208" width="250" height="18" rx="3" fill="#211336"/>
+              <text x="22" y="221" fill="#a855f7" font-size="8" font-family="monospace">Complexité O(V * E) • &lt;80ms sur 50k nœuds</text>
+            </g>
+
+            <!-- SUB-BLOCK 3: LINK PREDICTION & ROLE CLASSIFICATION -->
+            <g transform="translate(640, 20)">
+              <rect x="0" y="0" width="280" height="235" rx="8" fill="#1f1433" stroke="#a855f7" stroke-width="1.8"/>
+              <text x="15" y="24" fill="#a855f7" font-size="11.5" font-weight="bold">3. PRÉDICTION &amp; RÔLES PÉNAUX</text>
+              <text x="15" y="40" fill="#d8b4fe" font-size="8.5">• Indice Adamic-Adar (Co-contacts rares)</text>
+              <text x="15" y="58" fill="#cbd5e1" font-size="8">• Common Neighbors &amp; Resource Allocation</text>
+              <text x="15" y="74" fill="#cbd5e1" font-size="8">• Découverte de relations de complicité cachées</text>
+              <text x="15" y="90" fill="#cbd5e1" font-size="8">• Modèle de classification supervisée (Random Forest)</text>
+
+              <rect x="15" y="105" width="250" height="42" rx="4" fill="#291a42" stroke="#a855f7" stroke-width="0.8"/>
+              <text x="22" y="122" fill="#e9d5ff" font-size="8.5" font-weight="bold">🏷️ 4 Rôles Pénaux Automatiques</text>
+              <text x="22" y="137" fill="#cbd5e1" font-size="7.5">['neutre', 'operationnel', 'soutien', 'leader']</text>
+
+              <text x="15" y="165" fill="#cbd5e1" font-size="8">• Profilage territorial : Secteur_Activite</text>
+              <text x="15" y="181" fill="#cbd5e1" font-size="8">• Calcul d'épicentre Wilaya / Daira / Commune</text>
+              <text x="15" y="197" fill="#cbd5e1" font-size="8">• Score de confiance probatoire attaché à l'arête</text>
+              <rect x="15" y="208" width="250" height="18" rx="3" fill="#211336"/>
+              <text x="22" y="221" fill="#a855f7" font-size="8" font-family="monospace">Attributs Dérivés: _class, _betweenness</text>
+            </g>
+
+            <!-- SUB-BLOCK 4: WRITE-BACK PIPELINE DIRECT TO LAYER 3 -->
+            <g transform="translate(20, 280)">
+              <rect x="0" y="0" width="900" height="135" rx="8" fill="#140d1a" stroke="#f43f5e" stroke-width="2"/>
+              <text x="15" y="25" fill="#f43f5e" font-size="12" font-weight="bold">4. PIPELINE D'ÉCRITURE RETOUR EN PERSISTANCE (WRITE-BACK DIRECT DANS LAYER 3 NEO4J)</text>
+              <text x="15" y="42" fill="#fda4af" font-size="9">Les propriétés calculées par GDS sont écrites directement dans la base Neo4j sans passer par l'API Gateway, puis notifiées au Studio via Redis Pub/Sub.</text>
+
+              <!-- Step 1 -->
+              <g transform="translate(15, 55)">
+                <rect x="0" y="0" width="265" height="65" rx="5" fill="#241424" stroke="#38bdf8" stroke-width="1"/>
+                <text x="12" y="18" fill="#38bdf8" font-size="9" font-weight="bold">1. In-Memory Graph Computation</text>
+                <text x="12" y="32" fill="#cbd5e1" font-size="7.5">Exécution ultra-rapide des algorithmes en C++</text>
+                <text x="12" y="45" fill="#94a3b8" font-size="7.5">Calcul des scores _betweenness &amp; _communityId</text>
+                <text x="12" y="58" fill="#34d399" font-size="7">● Aucune latence I/O disque</text>
+              </g>
+
+              <!-- Arrow -->
+              <path d="M 290 87 L 315 87" stroke="#f43f5e" stroke-width="2" marker-end="url(#arr-l4-rose)"/>
+
+              <!-- Step 2 -->
+              <g transform="translate(325, 55)">
+                <rect x="0" y="0" width="265" height="65" rx="5" fill="#241424" stroke="#f43f5e" stroke-width="1"/>
+                <text x="12" y="18" fill="#f43f5e" font-size="9" font-weight="bold">2. gds.*.write (Écriture Atomique)</text>
+                <text x="12" y="32" fill="#cbd5e1" font-size="7.5">Mutation directe des nœuds Neo4j sur disque</text>
+                <text x="12" y="45" fill="#94a3b8" font-size="7.5">Persistance des attributs d'intelligence criminelle</text>
+                <text x="12" y="58" fill="#34d399" font-size="7">● Écriture par lots (batches de 10 000)</text>
+              </g>
+
+              <!-- Arrow -->
+              <path d="M 600 87 L 625 87" stroke="#38bdf8" stroke-width="2" marker-end="url(#arr-l4-purple)"/>
+
+              <!-- Step 3 -->
+              <g transform="translate(635, 55)">
+                <rect x="0" y="0" width="250" height="65" rx="5" fill="#141a29" stroke="#38bdf8" stroke-width="1"/>
+                <text x="12" y="18" fill="#38bdf8" font-size="9" font-weight="bold">3. Re-render Immédiat Layer 6</text>
+                <text x="12" y="32" fill="#cbd5e1" font-size="7.5">Événement Redis Pub/Sub vers NVL WebGL</text>
+                <text x="12" y="45" fill="#94a3b8" font-size="7.5">Les nœuds pivots grossissent automatiquement</text>
+                <text x="12" y="58" fill="#34d399" font-size="7">● Mise à jour visuelle &lt;16ms</text>
+              </g>
+            </g>
+
+            <!-- Connectors Between Sub-Blocks -->
+            <path d="M 300 135 L 330 135" stroke="#a855f7" stroke-width="2" marker-end="url(#arr-l4-purple)"/>
+            <path d="M 610 135 L 640 135" stroke="#a855f7" stroke-width="2" marker-end="url(#arr-l4-purple)"/>
+            <path d="M 470 255 L 470 280" stroke="#f43f5e" stroke-width="2" marker-end="url(#arr-l4-rose)"/>
+          </svg>
+        </div>
+
+        <!-- Tech Stack Evaluation Table -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin:1.5rem 0 0.6rem;">Composants Technologiques de Layer 4 (Versions, Rôles, Avantages &amp; Limites)</h3>
         <table class="tech-table">
           <thead>
             <tr>
-              <th>Technologie</th>
-              <th>Version</th>
+              <th>Technologie / Algorithme</th>
+              <th>Version / Référence</th>
               <th>Rôle dans l'Architecture</th>
               <th>Avantages (Pros)</th>
               <th>Inconvénients &amp; Mitigations (Cons)</th>
@@ -933,54 +1482,71 @@
           </thead>
           <tbody>
             <tr>
-              <td><strong>Neo4j Graph Data Science (GDS)</strong></td>
-              <td><span class="badge-ver">v2.6.4</span></td>
-              <td>Calcul en mémoire des métriques de centralité, de clustering et de plongements vectoriels</td>
+              <td><strong>Neo4j GDS</strong></td>
+              <td><span class="badge-ver">v2.6 Enterprise</span></td>
+              <td>Bibliothèque d'algorithmes de théorie des graphes optimisée en mémoire vive</td>
               <td>
                 <ul class="pros-list">
-                  <li>Projections en graphe mémoire ultra-rapides sans impacter la base transactionnelle</li>
-                  <li>Algorithme de Brandes pour Betweenness Centrality optimisé multi-threads</li>
-                  <li>FastRP &amp; Node2Vec générant des vecteurs de graphe pour le machine learning</li>
+                  <li>Calculs parallélisés en C++ sans verrouiller le moteur transactionnel</li>
+                  <li>Plus de 65 algorithmes prêts à l'emploi (centralité, clustering, plongements)</li>
+                  <li>Estimation de la RAM préalable pour éviter les pannes OOM (Out Of Memory)</li>
                 </ul>
               </td>
               <td>
                 <ul class="cons-list">
-                  <li>Consommation RAM importante lors de projections sur des millions de nœuds</li>
-                  <li>Mitigation : libération explicite de la mémoire (<code>gds.graph.drop</code>) après chaque calcul</li>
+                  <li>Nécessite une allocation RAM importante sur le serveur de base</li>
+                  <li>Mitigation : déchargement automatique des graphes projetés dès la fin du calcul</li>
                 </ul>
               </td>
             </tr>
             <tr>
-              <td><strong>NetworkX</strong></td>
-              <td><span class="badge-ver">v3.3 (Python)</span></td>
-              <td>Validation hors-ligne, calculs d'isomorphisme de sous-graphes et tests d'intégrité</td>
+              <td><strong>Betweenness Centrality (Brandes)</strong></td>
+              <td><span class="badge-ver">Algorithme de Brandes (2001)</span></td>
+              <td>Détection des intermédiaires obligatoires, passerelles et mules financières</td>
               <td>
                 <ul class="pros-list">
-                  <li>Grande flexibilité pour prototyper de nouveaux indices de complicité</li>
-                  <li>Nombreuses métriques académiques disponibles immédiatement</li>
+                  <li>Met en évidence les comptes bancaires par lesquels transitent tous les fonds</li>
+                  <li>Fonctionne même si le suspect n'a que peu de connexions directes</li>
                 </ul>
               </td>
               <td>
                 <ul class="cons-list">
-                  <li>Monothreadé en Python, lent au-delà de 50 000 sommets</li>
-                  <li>Mitigation : utilisé uniquement sur les sous-graphes filtrés d'un dossier précis</li>
+                  <li>Complexité en O(V * E) prohibitive sur les graphes de plusieurs millions de nœuds</li>
+                  <li>Mitigation : échantillonnage par Betweenness approximée (k-pivot sampling)</li>
                 </ul>
               </td>
             </tr>
             <tr>
-              <td><strong>APOC Core (Awesome Procedures)</strong></td>
-              <td><span class="badge-ver">v5.20.0</span></td>
-              <td>Procédures d'extension Cypher pour l'expansion conditionnelle et temporelle</td>
+              <td><strong>Louvain Modularity</strong></td>
+              <td><span class="badge-ver">Blondel et al. (2008)</span></td>
+              <td>Découpage de l'organisation criminelle en cellules étanches (communautés)</td>
               <td>
                 <ul class="pros-list">
-                  <li>Expansion de chemins avec seuil de confiance et profondeur maximale (<code>apoc.path.expandConfig</code>)</li>
-                  <li>Filtrage par dates et attributs dérivés directement dans la requête Cypher</li>
+                  <li>Découverte non supervisée du nombre optimal de sous-groupes criminels</li>
+                  <li>Révèle les branches régionales (ex: cellule Alger vs cellule Oran)</li>
                 </ul>
               </td>
               <td>
                 <ul class="cons-list">
-                  <li>Requiert des configurations de sécurité strictes pour interdire les accès système non autorisés</li>
-                  <li>Mitigation : liste blanche restreinte aux seules procédures forensiques sûres</li>
+                  <li>Sensible à l'ordre de parcours initial des nœuds</li>
+                  <li>Mitigation : exécution avec 10 itérations et sélection de la modularité Q maximale</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Adamic-Adar Link Prediction</strong></td>
+              <td><span class="badge-ver">Lada Adamic (2003)</span></td>
+              <td>Prédiction de complicité entre deux suspects n'ayant pas de communication directe observée</td>
+              <td>
+                <ul class="pros-list">
+                  <li>Pondère plus fortement les contacts communs discrets que les contacts populaires</li>
+                  <li>Idéal pour relier deux chefs de réseau qui évitent de s'appeler directement</li>
+                </ul>
+              </td>
+              <td>
+                <ul class="cons-list">
+                  <li>Génère des faux positifs si deux personnes partagent un contact public (ex: livreur)</li>
+                  <li>Mitigation : filtrage préalable des nœuds à très haut degré (Degree &gt; 500)</li>
                 </ul>
               </td>
             </tr>
@@ -988,46 +1554,152 @@
         </table>
       </section>
     </div>
-
     <!-- ====================================================================
          TAB 6: LAYER 5 - IA SOUVERAINE & BIOMÉTRIE MULTIMODALE
          ==================================================================== -->
     <div id="panel-arch-layer5" class="arch-tab-panel">
       <section>
-        <h2 class="section-title">6. Layer 5 : IA Souveraine Locale &amp; Biométrie Multimodale</h2>
+        <h2 class="section-title">6. Layer 5 : IA Souveraine Locale, LLM &amp; Biométrie Multimodale</h2>
         <p class="section-subtitle">
-          Intelligence artificielle 100% souveraine et hermétique (air-gapped) : aucune transmission de données judiciaires vers des clouds étrangers. Traitement de la Darija algérienne, reconnaissance biométrique et assistant Text-to-Cypher.
+          Inférence 100% locale sans fuite vers le cloud : transcription phonétique de la Darija algérienne, diarisation multi-locuteurs, reconnaissance faciale ArcFace et génération sécurisée Text-to-Cypher.
         </p>
 
         <div class="card" style="border-left:4px solid #38bdf8;margin-bottom:1.5rem;">
-          <h3 style="color:#38bdf8;margin-bottom:0.5rem;">🎯 Piliers de l'IA Souveraine Judiciaire</h3>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:0.75rem;font-size:0.82rem;color:var(--text-secondary);line-height:1.5;">
-            <div>
-              <strong style="color:#7dd3fc;">💬 Text-to-Cypher Souverain (Chatbot Ollama) :</strong><br/>
-              Modèle local <code>hf.co/DavidLanz/text2cypher-gemma-2-9b</code> intégré dans <code>graph/chatbot/view.py</code>. L'enquêteur pose une question en français ou arabe (« Qui a reçu de l'argent de Karim ? ») ; le modèle génère le Cypher exact avec une boucle d'auto-correction syntaxique (<code>validate_query</code>).
-            </div>
-            <div>
-              <strong style="color:#7dd3fc;">🎙️ Transcription &amp; Diarisation de la Darija Algérienne :</strong><br/>
-              Modèle <code>Faster-Whisper</code> fine-tuné sur les dialectes algériens (arabe, français, berbère). <code>PyAnnote Audio 3.1</code> sépare les locuteurs et surligne automatiquement les montants financiers (DZD) et lieux de rendez-vous.
-            </div>
-            <div>
-              <strong style="color:#7dd3fc;">👤 Rapprochement Biométrique Facial (ArcFace 512-d) :</strong><br/>
-              Génération d'empreintes faciales 512 dimensions invariantes aux angles et à l'éclairage. Permet de certifier si la photo d'un profil Instagram correspond à la photo d'un suspect sur un compte Telegram clandestin.
-            </div>
-            <div>
-              <strong style="color:#7dd3fc;">📑 Synthèse Judiciaire Automatique (&lt;Resume&gt;) :</strong><br/>
-              Génère des résumés d'enquête clairs et chronologiques pour le Procureur de la République sans jargon informatique, structurant les faits de manière opposable en justice.
-            </div>
-          </div>
+          <h3 style="color:#38bdf8;margin-bottom:0.5rem;">🎯 Impératif Absolu de Souveraineté &amp; Secret de l'Instruction</h3>
+          <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.55;">
+            Les enregistrements vocaux interceptés sur WhatsApp, les photographies de suspects et les pièces d'identité saisies relèvent du <strong>secret absolu de l'instruction pénale</strong> (Article 11 du Code de Procédure Pénale algérien). L'envoi de ces données vers des APIs cloud étrangères (OpenAI, Google Cloud, AWS) constitue une infraction pénale grave et compromet l'intégrité de l'enquête d'État. Layer 5 exécute l'ensemble de ses modèles d'IA sur des serveurs GPU physiques sur site (On-Premise), isolés d'Internet (Air-Gapped), avec zéro transmission externe.
+          </p>
         </div>
 
-        <!-- Layer 5 Tech Stack Table -->
-        <h3 style="color:#f8fafc;font-size:1.05rem;margin-bottom:0.6rem;">Composants Technologiques de Layer 5 (Versions, Rôles, Avantages &amp; Limites)</h3>
+        <!-- Layer 5 Specific High-Resolution Architecture SVG -->
+        <div style="background:#060a12;border:1px solid #1a2538;border-radius:8px;padding:0.75rem;margin-bottom:1.5rem;overflow-x:auto;">
+          <svg viewBox="0 0 940 450" xmlns="http://www.w3.org/2000/svg" style="min-width:880px;font-family:system-ui,-apple-system,sans-serif;">
+            <defs>
+              <marker id="arr-l5-cyan" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#38bdf8"/>
+              </marker>
+              <marker id="arr-l5-emerald" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#10b981"/>
+              </marker>
+            </defs>
+
+            <!-- SUB-BLOCK 1: OLLAMA TEXT-TO-CYPHER -->
+            <g transform="translate(20, 20)">
+              <rect x="0" y="0" width="280" height="235" rx="8" fill="#0d1b2a" stroke="#38bdf8" stroke-width="1.8"/>
+              <text x="15" y="24" fill="#38bdf8" font-size="11.5" font-weight="bold">1. COPILOT TEXT-TO-CYPHER</text>
+              <text x="15" y="40" fill="#7dd3fc" font-size="8.5">• Ollama Local Engine (Serveur Port 11434)</text>
+              <text x="15" y="58" fill="#cbd5e1" font-size="8">• Modèle : DavidLanz/text2cypher-gemma-2-9b</text>
+              <text x="15" y="74" fill="#cbd5e1" font-size="8">• Injection dynamique de l'ontologie du graphe</text>
+              <text x="15" y="90" fill="#cbd5e1" font-size="8">• Traduction requêtes françaises/arabes en Cypher</text>
+
+              <rect x="15" y="105" width="250" height="42" rx="4" fill="#162c46" stroke="#38bdf8" stroke-width="0.8"/>
+              <text x="22" y="122" fill="#bae6fd" font-size="8.5" font-weight="bold">🛡️ Boucle de Sécurité validate_query</text>
+              <text x="22" y="137" fill="#cbd5e1" font-size="7.5">Rejet strict des clauses WRITE (DELETE, SET, DROP)</text>
+
+              <text x="15" y="165" fill="#cbd5e1" font-size="8">• Analyse de l'AST (Abstract Syntax Tree) Cypher</text>
+              <text x="15" y="181" fill="#cbd5e1" font-size="8">• Auto-correction en 3 tentatives si erreur syntaxe</text>
+              <text x="15" y="197" fill="#cbd5e1" font-size="8">• Temps d'inférence moyen : &lt;450ms sur RTX 4090</text>
+              <rect x="15" y="208" width="250" height="18" rx="3" fill="#10253d"/>
+              <text x="22" y="221" fill="#38bdf8" font-size="8" font-family="monospace">REST API Port 11434 • 8 Go VRAM</text>
+            </g>
+
+            <!-- SUB-BLOCK 2: FASTER-WHISPER DARIJA -->
+            <g transform="translate(330, 20)">
+              <rect x="0" y="0" width="280" height="235" rx="8" fill="#102422" stroke="#10b981" stroke-width="1.8"/>
+              <text x="15" y="24" fill="#10b981" font-size="11.5" font-weight="bold">2. AUDIO DARIJA ALGÉRIENNE</text>
+              <text x="15" y="40" fill="#a7f3d0" font-size="8.5">• Faster-Whisper Large-v3 (CTranslate2)</text>
+              <text x="15" y="58" fill="#cbd5e1" font-size="8">• Fine-tuning dialecte algérien (ar-DZ-darija)</text>
+              <text x="15" y="74" fill="#cbd5e1" font-size="8">• Gestion du code-switching (Arabe / Français)</text>
+              <text x="15" y="90" fill="#cbd5e1" font-size="8">• Découpage VAD (Voice Activity Detection)</text>
+
+              <rect x="15" y="105" width="250" height="42" rx="4" fill="#173832" stroke="#10b981" stroke-width="0.8"/>
+              <text x="22" y="122" fill="#bbf7d0" font-size="8.5" font-weight="bold">💰 Extraction d'Entités Criminelles (NER)</text>
+              <text x="22" y="137" fill="#cbd5e1" font-size="7.5">Montants DZD (Mlayen, Dourou), RIP, Wilayas</text>
+
+              <text x="15" y="165" fill="#cbd5e1" font-size="8">• PyAnnote Audio 3.1 : Diarisation 2+ locuteurs</text>
+              <text x="15" y="181" fill="#cbd5e1" font-size="8">• Extraction empreinte vocale x-vector 192-d</text>
+              <text x="15" y="197" fill="#cbd5e1" font-size="8">• Détection deepfake vocal &amp; anti-spoofing CQCC</text>
+              <rect x="15" y="208" width="250" height="18" rx="3" fill="#112c27"/>
+              <text x="22" y="221" fill="#10b981" font-size="8" font-family="monospace">CTranslate2 FP16 • 4 Go VRAM</text>
+            </g>
+
+            <!-- SUB-BLOCK 3: ARCFACE FACE RECOGNITION -->
+            <g transform="translate(640, 20)">
+              <rect x="0" y="0" width="280" height="235" rx="8" fill="#17122b" stroke="#a855f7" stroke-width="1.8"/>
+              <text x="15" y="24" fill="#a855f7" font-size="11.5" font-weight="bold">3. BIOMÉTRIE FACIALE ARCFACE</text>
+              <text x="15" y="40" fill="#d8b4fe" font-size="8.5">• ArcFace DeepFace (ResNet-100 Backbone)</text>
+              <text x="15" y="58" fill="#cbd5e1" font-size="8">• Détection et alignement rétinien RetinaFace</text>
+              <text x="15" y="74" fill="#cbd5e1" font-size="8">• Vecteur d'empreinte faciale compacte 512-d</text>
+              <text x="15" y="90" fill="#cbd5e1" font-size="8">• Résistance aux variations d'éclairage et d'angle</text>
+
+              <rect x="15" y="105" width="250" height="42" rx="4" fill="#291a42" stroke="#a855f7" stroke-width="0.8"/>
+              <text x="22" y="122" fill="#e9d5ff" font-size="8.5" font-weight="bold">🎯 Indexation &amp; Rapprochement Qdrant</text>
+              <text x="22" y="137" fill="#cbd5e1" font-size="7.5">Recherche 1-to-N sub-8ms sur 2M visages</text>
+
+              <text x="15" y="165" fill="#cbd5e1" font-size="8">• Seuil de similarité cosinus calibré &gt; 0.68</text>
+              <text x="15" y="181" fill="#cbd5e1" font-size="8">• Taux de faux positifs FAR &lt; 0.001% certifié</text>
+              <text x="15" y="197" fill="#cbd5e1" font-size="8">• Extraction sur flux vidéo WhatsApp / ReDroid</text>
+              <rect x="15" y="208" width="250" height="18" rx="3" fill="#211336"/>
+              <text x="22" y="221" fill="#a855f7" font-size="8" font-family="monospace">PyTorch TensorRT • 2 Go VRAM</text>
+            </g>
+
+            <!-- SUB-BLOCK 4: GPU VRAM ALLOCATION ARCHITECTURE -->
+            <g transform="translate(20, 280)">
+              <rect x="0" y="0" width="900" height="145" rx="8" fill="#0f1929" stroke="#38bdf8" stroke-width="2"/>
+              <text x="15" y="25" fill="#38bdf8" font-size="12" font-weight="bold">4. RÉPARTITION MATÉRIELLE DE LA VRAM SUR SERVEUR GPU LOCAL (NVIDIA RTX 4090 24 GO)</text>
+              <text x="15" y="42" fill="#7dd3fc" font-size="9">Partitionnement étanche de la mémoire vidéo GPU garantissant la cohabitation fluide de tous les modèles sans contention ni crash OOM.</text>
+
+              <!-- Slice 1: Ollama -->
+              <g transform="translate(15, 55)">
+                <rect x="0" y="0" width="210" height="75" rx="5" fill="#162c46" stroke="#38bdf8" stroke-width="1.2"/>
+                <text x="12" y="20" fill="#38bdf8" font-size="10" font-weight="bold">Ollama Copilot (Gemma-2)</text>
+                <text x="12" y="36" fill="#cbd5e1" font-size="8.5">Poids Q4_K_M : 8.2 Go VRAM</text>
+                <text x="12" y="52" fill="#94a3b8" font-size="7.5">Contexte 8k tokens • Text-to-Cypher</text>
+                <text x="12" y="68" fill="#34d399" font-size="7.5">● Réservé en permanence</text>
+              </g>
+
+              <!-- Slice 2: Whisper -->
+              <g transform="translate(240, 55)">
+                <rect x="0" y="0" width="210" height="75" rx="5" fill="#173832" stroke="#10b981" stroke-width="1.2"/>
+                <text x="12" y="20" fill="#10b981" font-size="10" font-weight="bold">Faster-Whisper Large-v3</text>
+                <text x="12" y="36" fill="#cbd5e1" font-size="8.5">Poids FP16 : 4.4 Go VRAM</text>
+                <text x="12" y="52" fill="#94a3b8" font-size="7.5">Acoustique Darija • Chunk 30s</text>
+                <text x="12" y="68" fill="#34d399" font-size="7.5">● Inférence batch streaming</text>
+              </g>
+
+              <!-- Slice 3: PyAnnote -->
+              <g transform="translate(465, 55)">
+                <rect x="0" y="0" width="210" height="75" rx="5" fill="#291a42" stroke="#a855f7" stroke-width="1.2"/>
+                <text x="12" y="20" fill="#a855f7" font-size="10" font-weight="bold">PyAnnote Audio 3.1</text>
+                <text x="12" y="36" fill="#cbd5e1" font-size="8.5">Modèle x-vector : 2.1 Go VRAM</text>
+                <text x="12" y="52" fill="#94a3b8" font-size="7.5">Segmentation locuteurs • VAD</text>
+                <text x="12" y="68" fill="#34d399" font-size="7.5">● Déclenchement sur nouvel audio</text>
+              </g>
+
+              <!-- Slice 4: ArcFace & Marge -->
+              <g transform="translate(690, 55)">
+                <rect x="0" y="0" width="195" height="75" rx="5" fill="#1f1833" stroke="#c084fc" stroke-width="1.2"/>
+                <text x="12" y="20" fill="#c084fc" font-size="10" font-weight="bold">ArcFace &amp; Tampon Sécurité</text>
+                <text x="12" y="36" fill="#cbd5e1" font-size="8.5">DeepFace : 2.0 Go + Marge 7.3 Go</text>
+                <text x="12" y="52" fill="#94a3b8" font-size="7.5">ResNet-100 • Alignement RetinaFace</text>
+                <text x="12" y="68" fill="#34d399" font-size="7.5">● Marge anti-OOM (24 Go total)</text>
+              </g>
+            </g>
+
+            <!-- Inter-block Connectors -->
+            <path d="M 300 135 L 330 135" stroke="#38bdf8" stroke-width="2" marker-end="url(#arr-l5-cyan)"/>
+            <path d="M 610 135 L 640 135" stroke="#10b981" stroke-width="2" marker-end="url(#arr-l5-emerald)"/>
+            <path d="M 470 255 L 470 280" stroke="#38bdf8" stroke-width="2" marker-end="url(#arr-l5-cyan)"/>
+          </svg>
+        </div>
+
+        <!-- Tech Stack Evaluation Table -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin:1.5rem 0 0.6rem;">Composants Technologiques de Layer 5 (Versions, Rôles, Avantages &amp; Limites)</h3>
         <table class="tech-table">
           <thead>
             <tr>
-              <th>Technologie</th>
-              <th>Version</th>
+              <th>Technologie / Modèle</th>
+              <th>Version / Taille</th>
               <th>Rôle dans l'Architecture</th>
               <th>Avantages (Pros)</th>
               <th>Inconvénients &amp; Mitigations (Cons)</th>
@@ -1035,72 +1707,72 @@
           </thead>
           <tbody>
             <tr>
-              <td><strong>Ollama Server</strong></td>
-              <td><span class="badge-ver">v0.3.x (Local)</span></td>
-              <td>Serveur d'inférence LLM souverain hébergé sur station GPU locale</td>
+              <td><strong>Ollama (Text-to-Cypher)</strong></td>
+              <td><span class="badge-ver">DavidLanz/gemma-2-9b (Q4)</span></td>
+              <td>Traduction automatique des questions judiciaires en requêtes Cypher exécutables</td>
               <td>
                 <ul class="pros-list">
-                  <li>Étanchéité réseau totale : aucune donnée ne quitte le réseau de la police</li>
-                  <li>Inférence quantifiée 4-bit (GGUF) tournant sur GPU grand public (RTX 4090 / A5000)</li>
-                  <li>Support du modèle spécialisé DavidLanz/text2cypher-gemma-2-9b</li>
+                  <li>Fine-tuné spécifiquement sur la syntaxe Cypher Neo4j</li>
+                  <li>Fonctionne entièrement en local sans appel API externe</li>
+                  <li>Précision supérieure à 91% sur les requêtes d'investigation complexes</li>
                 </ul>
               </td>
               <td>
                 <ul class="cons-list">
-                  <li>Possibilité d'hallucination de syntaxe Cypher</li>
-                  <li>Mitigation : fonction <code>validate_query</code> testant la syntaxe sur schéma avant exécution</li>
+                  <li>Risque de génération de requêtes supprimant des données (DELETE)</li>
+                  <li>Mitigation : intercepteur AST <code>validate_query</code> rejetant toute écriture</li>
                 </ul>
               </td>
             </tr>
             <tr>
               <td><strong>Faster-Whisper (Darija DZ)</strong></td>
-              <td><span class="badge-ver">v1.0.2 (CTranslate2)</span></td>
-              <td>Transcription hors-ligne des vocaux WhatsApp et écoutes téléphoniques</td>
+              <td><span class="badge-ver">Large-v3 (CTranslate2 FP16)</span></td>
+              <td>Transcription phonétique de vocaux WhatsApp en arabe algérien parlé</td>
               <td>
                 <ul class="pros-list">
-                  <li>4x plus rapide que Whisper vanilla avec 2x moins de VRAM</li>
-                  <li>Entraîné sur le code-switching spécifique arabe dialectal / français / tamazight</li>
-                  <li>Extraction directe des entités nommées (villes DZ, sommes en Dinars)</li>
+                  <li>Vitesse d'inférence 4x plus rapide que l'implémentation standard Whisper</li>
+                  <li>Compréhension des expressions algériennes courantes (flous, barid, mlayen)</li>
+                  <li>Consommation VRAM optimisée (4.4 Go contre 10 Go sur le modèle OpenAI)</li>
                 </ul>
               </td>
               <td>
                 <ul class="cons-list">
-                  <li>Bruit de fond élevé dans les messages vocaux de rue</li>
-                  <li>Mitigation : prétraitement audio par filtre débruiteur (noisereduce / Demucs)</li>
+                  <li>Difficulté sur les vocaux très bruités enregistrés en extérieur</li>
+                  <li>Mitigation : filtre de débruitage spectral RNNoise en amont de la transcription</li>
                 </ul>
               </td>
             </tr>
             <tr>
               <td><strong>PyAnnote Audio</strong></td>
-              <td><span class="badge-ver">v3.1.1</span></td>
-              <td>Diarisation du locuteur (qui parle quand) et extraction d'empreinte vocale</td>
+              <td><span class="badge-ver">v3.1.x (HuggingFace local)</span></td>
+              <td>Séparation des locuteurs (qui a parlé quand) et extraction d'empreinte vocale</td>
               <td>
                 <ul class="pros-list">
-                  <li>Distingue clairement la voix de l'escroc de celle de la victime dans une note vocale</li>
-                  <li>Génère des embeddings x-vectors pour identifier le même suspect sur plusieurs dossiers</li>
+                  <li>Diarisation neuronale de pointe avec taux d'erreur DER &lt; 8%</li>
+                  <li>Extraction d'embeddings vocaux 192-d comparables dans Qdrant</li>
                 </ul>
               </td>
               <td>
                 <ul class="cons-list">
-                  <li>Exigeant en calcul GPU lors de longues conversations</li>
-                  <li>Mitigation : découpage des fichiers audio en tranches de 30 secondes</li>
+                  <li>Sensible aux chevauchements de voix lors de disputes téléphoniques</li>
+                  <li>Mitigation : seuil VAD dynamique et pondération de confiance par segment</li>
                 </ul>
               </td>
             </tr>
             <tr>
-              <td><strong>DeepFace (ArcFace)</strong></td>
-              <td><span class="badge-ver">v0.0.92</span></td>
-              <td>Extraction d'embeddings faciaux 512 dimensions et score de concordance</td>
+              <td><strong>ArcFace (DeepFace)</strong></td>
+              <td><span class="badge-ver">ResNet-100 (512-d)</span></td>
+              <td>Reconnaissance faciale et comparaison biométrique de profils et pièces d'identité</td>
               <td>
                 <ul class="pros-list">
-                  <li>Précision de 99.8% sur le benchmark LFW, robuste aux variations d'angle et de barbe</li>
-                  <li>Indexation directe des vecteurs dans Qdrant pour une recherche instantanée</li>
+                  <li>Marge angulaire additive (ArcFace) offrant la meilleure discrimination faciale SOTA</li>
+                  <li>Tolérance élevée aux poses inclinées, lunettes et mauvaise résolution</li>
                 </ul>
               </td>
               <td>
                 <ul class="cons-list">
-                  <li>Photos de profil fortement compressées ou pixélisées</li>
-                  <li>Mitigation : filtre de qualité d'image amont (détection de flou par laplacien)</li>
+                  <li>Temps de calcul élevé si le visage n'est pas bien cadré</li>
+                  <li>Mitigation : pipeline d'alignement ultra-rapide basé sur RetinaFace MobileNet</li>
                 </ul>
               </td>
             </tr>
@@ -1108,49 +1780,143 @@
         </table>
       </section>
     </div>
-
     <!-- ====================================================================
-         TAB 7: LAYER 6 - PRÉSENTATION NVL DUAL-CANVAS WEBGL
+         TAB 7: LAYER 6 - PRÉSENTATION & STUDIO D'ENQUÊTE DUAL-CANVAS
          ==================================================================== -->
     <div id="panel-arch-layer6" class="arch-tab-panel">
       <section>
-        <h2 class="section-title">7. Layer 6 : Tier de Présentation (Neo4j NVL WebGL + Dual-Canvas)</h2>
+        <h2 class="section-title">7. Layer 6 : Tier Présentation &amp; Studio d'Enquête Dual-Canvas NVL WebGL</h2>
         <p class="section-subtitle">
-          Le poste de travail de l'enquêteur, modernisé selon les composants réels validés de <code>frontend-master</code> : moteur WebGL Neo4j NVL, minimap synchronisée, workers physiques en arrière-plan et sérialisation des états d'enquête.
+          Poste de travail judiciaire haute performance accéléré par GPU : rendu fluide de 50 000+ nœuds à 60 FPS, minimap radar synchronisée, défilement temporel chronologique et export certifié conforme CPP.
         </p>
 
         <div class="card" style="border-left:4px solid #38bdf8;margin-bottom:1.5rem;">
-          <h3 style="color:#38bdf8;margin-bottom:0.5rem;">🎯 Architecture Dual-Canvas &amp; Pipeline Web Workers</h3>
-          <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.55;margin-bottom:0.75rem;">
-            Contrairement aux solutions traditionnelles (Cytoscape.js sur canvas 2D CPU), le Studio Enquêteur s'appuie sur le moteur matériel <strong>Neo4j NVL (@neo4j-nvl/react)</strong> accéléré par WebGL. Cela permet de manipuler 50 000 nœuds et relations avec une fluidité constante de 60 FPS.
+          <h3 style="color:#38bdf8;margin-bottom:0.5rem;">🎯 Conception Orientée Enquêteur Judiciaire (Zéro Jargon Informatique)</h3>
+          <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.55;">
+            L'enquêteur de police judiciaire ou le juge d'instruction ne doit pas avoir à manipuler de requêtes Cypher ou de scripts Python. Layer 6 encapsule toute la complexité des 5 couches inférieures dans une interface visuelle réactive, fluide et intuitive. Grâce au moteur <strong>Neo4j NVL WebGL</strong>, la navigation reste instantanée même sur des dossiers volumineux comportant des dizaines de milliers d'appels et de transactions. Les calculs de disposition physique sont déportés dans des <strong>Web Workers en arrière-plan</strong>, évitant tout gel de l'écran pendant les démonstrations au tribunal.
           </p>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:0.75rem;font-size:0.82rem;color:var(--text-secondary);line-height:1.5;">
-            <div>
-              <strong style="color:#38bdf8;">🖥️ Dual-Canvas Synchronisé :</strong><br/>
-              Intégré dans <code>VisualisationModule/GraphCanvas.js</code> et <code>NvlVisualization.js</code>. L'écran principal affiche la zone de travail détaillée, tandis qu'un second canvas minimap affiche la vue globale macroscopique avec un cadre de vue interactif bidirectionnel.
-            </div>
-            <div>
-              <strong style="color:#38bdf8;">⚙️ Layout-Workers en Web Workers :</strong><br/>
-              Bibliothèque <code>@neo4j-nvl/layout-workers</code>. Les calculs de physique Force-Directed (FDG) et de placement circulaire sont déportés sur un thread Web Worker séparé, garantissant zéro freeze de l'interface lors de la manipulation du graphe.
-            </div>
-            <div>
-              <strong style="color:#38bdf8;">🎨 Style Visuel &amp; Icônes Personnalisées :</strong><br/>
-              Fichier de configuration <code>config_style.json</code> et point d'API <code>/api/node-config/</code>. Permet d'associer dynamiquement à chaque type d'entité sa couleur, son diamètre (90px à 140px) et son icône officielle dans <code>/public/icon/</code>.
-            </div>
-            <div>
-              <strong style="color:#38bdf8;">💾 Persistance d'Affichage &amp; Export :</strong><br/>
-              Point d'API <code>/api/visualizations/</code>. Sauvegarde les coordonnées spatiales exactes, les filtres actifs et les zooms de l'enquêteur pour reprise immédiate de la session d'enquête.
-            </div>
-          </div>
         </div>
 
-        <!-- Layer 6 Tech Stack Table -->
-        <h3 style="color:#f8fafc;font-size:1.05rem;margin-bottom:0.6rem;">Composants Technologiques de Layer 6 (Versions, Rôles, Avantages &amp; Limites)</h3>
+        <!-- Layer 6 Specific High-Resolution Architecture SVG -->
+        <div style="background:#060a12;border:1px solid #1a2538;border-radius:8px;padding:0.75rem;margin-bottom:1.5rem;overflow-x:auto;">
+          <svg viewBox="0 0 940 430" xmlns="http://www.w3.org/2000/svg" style="min-width:880px;font-family:system-ui,-apple-system,sans-serif;">
+            <defs>
+              <marker id="arr-l6-cyan" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#38bdf8"/>
+              </marker>
+              <marker id="arr-l6-blue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0284c7"/>
+              </marker>
+            </defs>
+
+            <!-- SUB-BLOCK 1: NVL WEBGL ENGINE & MINIMAP -->
+            <g transform="translate(20, 20)">
+              <rect x="0" y="0" width="280" height="235" rx="8" fill="#0c1929" stroke="#38bdf8" stroke-width="1.8"/>
+              <text x="15" y="24" fill="#38bdf8" font-size="11.5" font-weight="bold">1. MOTEUR RENDU NVL WEBGL</text>
+              <text x="15" y="40" fill="#7dd3fc" font-size="8.5">• Neo4j NVL WebGL Engine (@neo4j-nvl/react)</text>
+              <text x="15" y="58" fill="#cbd5e1" font-size="8">• Accélération matérielle GPU (Shader WebGL 2.0)</text>
+              <text x="15" y="74" fill="#cbd5e1" font-size="8">• 50 000+ nœuds à 60 FPS sans dégradation</text>
+              <text x="15" y="90" fill="#cbd5e1" font-size="8">• Mise à l'échelle dynamique LOD (Level-of-Detail)</text>
+
+              <rect x="15" y="105" width="250" height="42" rx="4" fill="#132338" stroke="#38bdf8" stroke-width="0.8"/>
+              <text x="22" y="122" fill="#bae6fd" font-size="8.5" font-weight="bold">🗺️ Dual-Canvas Minimap Synchronisée</text>
+              <text x="22" y="137" fill="#cbd5e1" font-size="7.5">Vue radar macroscopique avec viewport interactif</text>
+
+              <text x="15" y="165" fill="#cbd5e1" font-size="8">• Courbure automatique des multi-arêtes parallèles</text>
+              <text x="15" y="181" fill="#cbd5e1" font-size="8">• Billboarding haute netteté des icônes de nœuds</text>
+              <text x="15" y="197" fill="#cbd5e1" font-size="8">• Zoom infini et panoramique par glissement</text>
+              <rect x="15" y="208" width="250" height="18" rx="3" fill="#10253d"/>
+              <text x="22" y="221" fill="#38bdf8" font-size="8" font-family="monospace">Frame Budget : &lt;16ms (60 Hz)</text>
+            </g>
+
+            <!-- SUB-BLOCK 2: ASYNC LAYOUT WORKERS -->
+            <g transform="translate(330, 20)">
+              <rect x="0" y="0" width="280" height="235" rx="8" fill="#0f1f33" stroke="#0ea5e9" stroke-width="1.8"/>
+              <text x="15" y="24" fill="#0ea5e9" font-size="11.5" font-weight="bold">2. WORKERS PHYSIQUES DÉPORTÉS</text>
+              <text x="15" y="40" fill="#7dd3fc" font-size="8.5">• Package @neo4j-nvl/layout-workers</text>
+              <text x="15" y="58" fill="#cbd5e1" font-size="8">• Calcul de disposition physique en Web Worker</text>
+              <text x="15" y="74" fill="#cbd5e1" font-size="8">• Thread principal UI 100% libre et réactif</text>
+              <text x="15" y="90" fill="#cbd5e1" font-size="8">• Algorithme Barnes-Hut (Force-directed O(N log N))</text>
+
+              <rect x="15" y="105" width="250" height="42" rx="4" fill="#132338" stroke="#0ea5e9" stroke-width="0.8"/>
+              <text x="22" y="122" fill="#38bdf8" font-size="8.5" font-weight="bold">⚙️ 4 Modes de Disposition au Choix</text>
+              <text x="22" y="137" fill="#cbd5e1" font-size="7.5">Force-Directed • Hiérarchique • Circulaire • Radial</text>
+
+              <text x="15" y="165" fill="#cbd5e1" font-size="8">• Amortissement inertiel pour stabilisation douce</text>
+              <text x="15" y="181" fill="#cbd5e1" font-size="8">• Épinglage manuel des cibles prioritaires</text>
+              <text x="15" y="197" fill="#cbd5e1" font-size="8">• Transfert mémoire via ArrayBuffer sans copie</text>
+              <rect x="15" y="208" width="250" height="18" rx="3" fill="#10253d"/>
+              <text x="22" y="221" fill="#0ea5e9" font-size="8" font-family="monospace">HTML5 WebWorker • 0 blocage DOM</text>
+            </g>
+
+            <!-- SUB-BLOCK 3: TIMELINE SLIDER & COPILOT -->
+            <g transform="translate(640, 20)">
+              <rect x="0" y="0" width="280" height="235" rx="8" fill="#141a29" stroke="#38bdf8" stroke-width="1.8"/>
+              <text x="15" y="24" fill="#38bdf8" font-size="11.5" font-weight="bold">3. TIME SLIDER &amp; COPILOT</text>
+              <text x="15" y="40" fill="#7dd3fc" font-size="8.5">• Curseur temporel dynamique BarScroll.js</text>
+              <text x="15" y="58" fill="#cbd5e1" font-size="8">• Reconstitution chronologique des infractions</text>
+              <text x="15" y="74" fill="#cbd5e1" font-size="8">• Découpage par fenêtres : jour, semaine, mois</text>
+              <text x="15" y="90" fill="#cbd5e1" font-size="8">• Filtrage instantané des arêtes (_first_seen)</text>
+
+              <rect x="15" y="105" width="250" height="42" rx="4" fill="#162a40" stroke="#38bdf8" stroke-width="0.8"/>
+              <text x="22" y="122" fill="#bae6fd" font-size="8.5" font-weight="bold">💬 Assistant Conversationnel Copilot</text>
+              <text x="22" y="137" fill="#cbd5e1" font-size="7.5">Questions guidées en français / arabe dialectal</text>
+
+              <text x="15" y="165" fill="#cbd5e1" font-size="8">• Menu contextuel de nœud (NodeTypeCibled)</text>
+              <text x="15" y="181" fill="#cbd5e1" font-size="8">• Expansion ciblée : /api/get_possible_relations/</text>
+              <text x="15" y="197" fill="#cbd5e1" font-size="8">• Révélation instantanée du réseau de complicité</text>
+              <rect x="15" y="208" width="250" height="18" rx="3" fill="#10253d"/>
+              <text x="22" y="221" fill="#38bdf8" font-size="8" font-family="monospace">APOC Temporal Filter • WSS Bus</text>
+            </g>
+
+            <!-- SUB-BLOCK 4: LEGAL EVIDENCE EXPORT RFC 3161 -->
+            <g transform="translate(20, 280)">
+              <rect x="0" y="0" width="900" height="135" rx="8" fill="#101726" stroke="#38bdf8" stroke-width="2"/>
+              <text x="15" y="25" fill="#38bdf8" font-size="12" font-weight="bold">4. GÉNÉRATEUR DE PROCÈS-VERBAL LÉGAL &amp; DOSSIER DE PLAIDOIRIE (RFC 3161 / ISO 27037)</text>
+              <text x="15" y="42" fill="#7dd3fc" font-size="9">Exportation en 1 clic d'un dossier judiciaire complet prêt pour la déposition devant le juge d'instruction ou la cour d'assises.</text>
+
+              <!-- Card 1 -->
+              <g transform="translate(15, 55)">
+                <rect x="0" y="0" width="270" height="65" rx="5" fill="#16263b" stroke="#38bdf8" stroke-width="1"/>
+                <text x="12" y="18" fill="#38bdf8" font-size="9" font-weight="bold">📄 Rapport PDF/A-3b Normé CPP</text>
+                <text x="12" y="32" fill="#cbd5e1" font-size="7.5">Synthèse rédigée sans jargon informatique</text>
+                <text x="12" y="45" fill="#94a3b8" font-size="7.5">Chronologie des faits, préjudice total en DZD</text>
+                <text x="12" y="58" fill="#34d399" font-size="7">● Conforme réquisitions judiciaires</text>
+              </g>
+
+              <!-- Card 2 -->
+              <g transform="translate(310, 55)">
+                <rect x="0" y="0" width="270" height="65" rx="5" fill="#16263b" stroke="#10b981" stroke-width="1"/>
+                <text x="12" y="18" fill="#10b981" font-size="9" font-weight="bold">🔏 Racine d'Arbre de Merkle &amp; SHA-256</text>
+                <text x="12" y="32" fill="#cbd5e1" font-size="7.5">Scellement cryptographique de tous les indices</text>
+                <text x="12" y="45" fill="#94a3b8" font-size="7.5">Preuve mathématique d'inviolabilité WORM</text>
+                <text x="12" y="58" fill="#34d399" font-size="7">● Vérifiable par logiciel tiers au tribunal</text>
+              </g>
+
+              <!-- Card 3 -->
+              <g transform="translate(605, 55)">
+                <rect x="0" y="0" width="280" height="65" rx="5" fill="#16263b" stroke="#a855f7" stroke-width="1"/>
+                <text x="12" y="18" fill="#a855f7" font-size="9" font-weight="bold">📸 Export Vectoriel SVG &amp; GraphML</text>
+                <text x="12" y="32" fill="#cbd5e1" font-size="7.5">Impression grand format du schéma de réseau</text>
+                <text x="12" y="45" fill="#94a3b8" font-size="7.5">Fiches individuelles des cibles avec photos</text>
+                <text x="12" y="58" fill="#34d399" font-size="7">● Résolution vectorielle infinie 300 DPI</text>
+              </g>
+            </g>
+
+            <!-- Inter-block Connectors -->
+            <path d="M 300 135 L 330 135" stroke="#38bdf8" stroke-width="2" marker-end="url(#arr-l6-cyan)"/>
+            <path d="M 610 135 L 640 135" stroke="#0ea5e9" stroke-width="2" marker-end="url(#arr-l6-blue)"/>
+            <path d="M 470 255 L 470 280" stroke="#38bdf8" stroke-width="2" marker-end="url(#arr-l6-cyan)"/>
+          </svg>
+        </div>
+
+        <!-- Tech Stack Evaluation Table -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin:1.5rem 0 0.6rem;">Composants Technologiques de Layer 6 (Versions, Rôles, Avantages &amp; Limites)</h3>
         <table class="tech-table">
           <thead>
             <tr>
               <th>Technologie</th>
-              <th>Version</th>
+              <th>Version / Bibliothèque</th>
               <th>Rôle dans l'Architecture</th>
               <th>Avantages (Pros)</th>
               <th>Inconvénients &amp; Mitigations (Cons)</th>
@@ -1158,37 +1924,37 @@
           </thead>
           <tbody>
             <tr>
-              <td><strong>Neo4j NVL React</strong></td>
-              <td><span class="badge-ver">@neo4j-nvl/react v1.1.x</span></td>
-              <td>Moteur de rendu du graphe d'enquête accéléré matériellement par WebGL</td>
+              <td><strong>Neo4j NVL WebGL</strong></td>
+              <td><span class="badge-ver">@neo4j-nvl/react v1.x</span></td>
+              <td>Moteur de rendu graphique accéléré matériellement sur GPU WebGL 2.0</td>
               <td>
                 <ul class="pros-list">
-                  <li>Fluidité 60 FPS jusqu'à 50 000+ sommets et arêtes simultanés</li>
-                  <li>Intégration React native avec hooks d'événements (sélection, survol, drag)</li>
-                  <li>Support direct du format de données Neo4j retourné par le backend Python</li>
+                  <li>Fluidité 60 FPS permanente même avec 50 000 nœuds et 100 000 arêtes</li>
+                  <li>Prise en charge native du style personnalisé (couleurs par label, icônes)</li>
+                  <li>Intégration transparente avec le State Management React 19</li>
                 </ul>
               </td>
               <td>
                 <ul class="cons-list">
-                  <li>Nécessite le support de WebGL 2.0 sur le navigateur de l'enquêteur</li>
-                  <li>Mitigation : fallback automatique sur rendu Canvas standard si GPU absent</li>
+                  <li>Nécessite un matériel client avec support WebGL 2.0 basique</li>
+                  <li>Mitigation : mode dégradé Canvas 2D automatique sur postes bureautiques anciens</li>
                 </ul>
               </td>
             </tr>
             <tr>
-              <td><strong>NVL Layout Workers</strong></td>
+              <td><strong>Layout Workers</strong></td>
               <td><span class="badge-ver">@neo4j-nvl/layout-workers</span></td>
-              <td>Exécution des algorithmes de disposition physique en arrière-plan (Web Workers)</td>
+              <td>Exécution déportée des algorithmes de disposition physique en Web Workers</td>
               <td>
                 <ul class="pros-list">
-                  <li>Aucun ralentissement du curseur ou de la saisie pendant la stabilisation physique</li>
-                  <li>Support des algorithmes Force-Directed, Circulaire et Hiérarchique</li>
+                  <li>Élimine tout freeze de l'interface utilisateur lors de calculs lourds</li>
+                  <li>Calculs multi-cœurs en arrière-plan sans bloquer les clics de l'enquêteur</li>
                 </ul>
               </td>
               <td>
                 <ul class="cons-list">
-                  <li>Temps de sérialisation des messages entre thread principal et worker</li>
-                  <li>Mitigation : transfert par SharedArrayBuffer pour les graphes volumineux</li>
+                  <li>Surcoût de communication de données entre Worker et Thread UI</li>
+                  <li>Mitigation : transfert par SharedArrayBuffer sans sérialisation JSON</li>
                 </ul>
               </td>
             </tr>
@@ -1230,10 +1996,10 @@
         </table>
       </section>
     </div>
-
   </main>
 
   <script src="assets/app.js"></script>
+  <script src="assets/architecture-interactive.js"></script>
   <script>
     function switchArchTab(tabId) {
       document.querySelectorAll('.arch-subnav-btn').forEach(btn => {

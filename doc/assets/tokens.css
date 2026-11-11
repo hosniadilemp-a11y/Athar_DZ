@@ -69,6 +69,10 @@
   --color-layer-2-osint: #06b6d4;      /* Solid border */
   --color-layer-3-infra: #64748b;      /* Solid border */
   --color-layer-4-hypothesis: #a855f7; /* Dashed border + indicator */
+  --color-hypothesis-bg: rgba(168, 85, 247, 0.08);
+  --color-hypothesis-border: rgba(168, 85, 247, 0.35);
+  --color-hypothesis-glow: rgba(168, 85, 247, 0.25);
+  --color-bg-overlay: rgba(0, 0, 0, 0.75);
 
   /* -------------------------------------------------------------------------
    * TYPOGRAPHY SCALE (Minimum 12px, WCAG AA compliant)
@@ -115,12 +119,21 @@
   --radius-full: 9999px; /* Circular avatars, pill badges */
 
   /* -------------------------------------------------------------------------
-   * ELEVATION & SHADOWS
-   * Discrete 1px borders are preferred over heavy blur in dark mode
+   * ELEVATION, PERSPECTIVE & SHADOWS
+   * Discrete multi-layer shadows and perspective depth
    * ------------------------------------------------------------------------- */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.7);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --shadow-md: 0 4px 14px -2px rgba(0, 0, 0, 0.5), 0 2px 6px -1px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --shadow-lg: 0 12px 28px -4px rgba(0, 0, 0, 0.65), 0 4px 12px -2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --shadow-xl: 0 20px 45px -8px rgba(0, 0, 0, 0.75), 0 8px 18px -4px rgba(0, 0, 0, 0.5);
+  --shadow-node: 0 8px 20px -3px rgba(0, 0, 0, 0.6), 0 2px 8px -1px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  --shadow-node-hover: 0 14px 28px -4px rgba(0, 0, 0, 0.75), 0 6px 14px -2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  --shadow-node-selected: 0 0 0 2px var(--color-accent-primary), 0 16px 36px -4px rgba(56, 189, 248, 0.4), 0 6px 14px -2px rgba(0, 0, 0, 0.6);
+  --shadow-panel-left: 4px 0 20px -4px rgba(0, 0, 0, 0.45);
+  --shadow-panel-right: -4px 0 20px -4px rgba(0, 0, 0, 0.45);
+  --shadow-topbar: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --perspective-canvas: 1200px;
 
   /* -------------------------------------------------------------------------
    * ACCESSIBILITY & INTERACTION TARGETS
@@ -210,10 +223,23 @@ body.theme-light {
   --color-layer-2-osint: #0891b2;
   --color-layer-3-infra: #475569;
   --color-layer-4-hypothesis: #7c3aed;
+  --color-hypothesis-bg: rgba(124, 58, 237, 0.06);
+  --color-hypothesis-border: rgba(124, 58, 237, 0.35);
+  --color-hypothesis-glow: rgba(124, 58, 237, 0.15);
+  --color-bg-overlay: rgba(0, 0, 0, 0.45);
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --shadow-md: 0 4px 14px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 12px 28px -4px rgba(0, 0, 0, 0.12), 0 4px 10px -2px rgba(0, 0, 0, 0.06);
+  --shadow-xl: 0 20px 45px -8px rgba(0, 0, 0, 0.15), 0 8px 18px -4px rgba(0, 0, 0, 0.08);
+  --shadow-node: 0 6px 16px -2px rgba(0, 0, 0, 0.1), 0 2px 6px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --shadow-node-hover: 0 12px 24px -3px rgba(0, 0, 0, 0.14), 0 4px 10px -2px rgba(0, 0, 0, 0.08);
+  --shadow-node-selected: 0 0 0 2px var(--color-accent-primary), 0 14px 30px -4px rgba(2, 132, 199, 0.25);
+  --shadow-panel-left: 4px 0 16px -4px rgba(0, 0, 0, 0.06);
+  --shadow-panel-right: -4px 0 16px -4px rgba(0, 0, 0, 0.06);
+  --shadow-topbar: 0 2px 10px rgba(0, 0, 0, 0.06);
+  --perspective-canvas: 1200px;
 }
 
 /* ---------------------------------------------------------------------------

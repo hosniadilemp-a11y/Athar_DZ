@@ -99,58 +99,11 @@
       </div>
     </section>
 
-    <!-- 2. Zero-Jargon Philosophy -->
+    <!-- 2. Interactive Overview Studio Demo -->
     <section>
-      <h2 class="section-title">2. Built for Investigators, Not Computer Scientists (Zero Technical Jargon)</h2>
+      <h2 class="section-title">2. Quick Interactive Preview: The "Facebook Tyre Scam" Case Board (Opération CANDY WHEELS)</h2>
       <p class="section-subtitle">
-        An investigator solving a fraud or criminal case should never have to read computer science terms like <em>"MongoDB ObjectId"</em>, <em>"DOM AST Parser"</em>, <em>"SHA-256 Hash"</em>, or <em>"Regex"</em>. The platform translates every technical discovery into clear, actionable police and investigative language with intuitive visual icons.
-      </p>
-
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>What Happens Under the Hood (Technical)</th>
-              <th>What the Investigator Sees in the App (Simple &amp; Visual)</th>
-              <th>Why This Matters for the Case</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><code>MongoDB ObjectId 672f9a10... Decoder</code></td>
-              <td>🏷️ <strong>Hidden Website Order Code</strong><br/><span style="color:var(--accent-emerald);">Reveals: Listing was created on 01 Nov 2026 at 14:22</span></td>
-              <td>Tells the detective the exact date and minute the scammer set up the fake tyre product page, without needing any database knowledge.</td>
-            </tr>
-            <tr>
-              <td><code>DOM / Meta Pixel #88419203314 Reverse Lookup</code></td>
-              <td>🕸️ <strong>Find Twin Scam Websites</strong><br/><span style="color:var(--accent-cyan);">Found 2 other fake auto-parts websites built by the same person</span></td>
-              <td>Automatically uncovers the scammer's entire network of fake shops with a single click.</td>
-            </tr>
-            <tr>
-              <td><code>ArchiveBox WARC + SHA-256 + RFC 3161 TSA</code></td>
-              <td>📸 <strong>Freeze &amp; Certify Legal Evidence</strong><br/><span style="color:var(--accent-emerald);">Permanent court-ready snapshot saved before deletion</span></td>
-              <td>Even if the scammer deletes their Facebook post 5 minutes later, the investigator has a certified copy ready for court.</td>
-            </tr>
-            <tr>
-              <td><code>PhoneInfoga + Ignorant + Telethon MTProto</code></td>
-              <td>📱 <strong>Find Social Media Accounts for Phone Number</strong><br/><span style="color:var(--accent-cyan);">Found Telegram (@amine_import), WhatsApp &amp; Instagram</span></td>
-              <td>Turns an anonymous prepaid phone number into real social media profiles and photos.</td>
-            </tr>
-            <tr>
-              <td><code>DeepFace 512-d ArcFace Cosine Similarity</code></td>
-              <td>👤 <strong>Compare Faces Across Photos &amp; Profiles</strong><br/><span style="color:var(--accent-purple);">89% Face Match between Telegram &amp; Instagram photos</span></td>
-              <td>Confirms that two different online accounts belong to the exact same person visually.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- 3. Interactive Overview Studio Demo -->
-    <section>
-      <h2 class="section-title">3. Quick Interactive Preview: The "Facebook Tyre Scam" Case Board</h2>
-      <p class="section-subtitle">
-        Click any clue with its icon on the board below, toggle the <strong>Visual Layers</strong> on the left, or switch between <strong>Standard Mode (No AI Needed)</strong> and <strong>Smart AI Assistant Mode</strong>. <em>(For the full-screen application simulation with live scanning, Timeline, Map, and Court Report preview, launch the <a href="maquette.html" style="color:var(--accent-emerald);font-weight:700;">Full-Screen Application Maquette</a>).</em>
+        Plateau tactique d'investigation en temps réel. Naviguez à travers les 4 étapes de l'affaire, filtrez les calques visuels à gauche, et inspectez les scellés cryptographiques dans le volet de droite. <em>(Pour tester le simulateur complet avec barre de menus native, cartographie et export du rapport d'enquête, ouvrez la <a href="maquette.html" style="color:var(--accent-emerald);font-weight:700;">Maquette Interactive Complète</a>).</em>
       </p>
 
       <div class="studio-frame">
@@ -164,33 +117,33 @@
           </div>
           <div style="display:flex;align-items:center;gap:0.5rem;">
             <button class="btn btn-primary" style="font-size:0.75rem;padding:0.35rem 0.65rem;" onclick="openSuspectDossierModal()">
-              👤 Fiche Suspect (Amine B.)
+              👤 Fiche Suspect (Tarek H. / El-Hadj)
             </button>
-            <button class="btn" id="btn-clarity-mode" style="font-size:0.75rem;padding:0.35rem 0.65rem;" onclick="toggleClarityModeStudio()">
-              Curseur: Mode OPJ (Simple)
-            </button>
+            <a href="assets/Rapport_Investigation_ATHAR-2026-SCAM-089.pdf" target="_blank" download="Rapport_Investigation_ATHAR-2026-SCAM-089.pdf" class="btn" style="font-size:0.75rem;padding:0.35rem 0.65rem;text-decoration:none;display:inline-flex;align-items:center;gap:0.3rem;">
+              ⚖️ Télécharger PV Officiel (.PDF)
+            </a>
           </div>
         </div>
 
         <!-- Studio Top Toolbar -->
         <div class="studio-topbar">
           <div class="studio-controls">
-            <span class="badge badge-emerald">📁 CASE #2026-SCAM-089: Fake Tyre Seller</span>
-            <span style="color:var(--text-muted);font-size:0.8rem;">| Investigation Step:</span>
-            <button class="btn" data-stage-btn="1" onclick="setInvestigationStage(1)">1. Initial FB Post</button>
-            <button class="btn" data-stage-btn="2" onclick="setInvestigationStage(2)">2. Link &amp; Phone Found</button>
-            <button class="btn" data-stage-btn="3" onclick="setInvestigationStage(3)">3. Website &amp; Social Accounts</button>
-            <button class="btn active" data-stage-btn="4" onclick="setInvestigationStage(4)">4. Suspect Identified</button>
+            <span class="badge badge-emerald">📁 CASE #2026-SCAM-089: Opération CANDY WHEELS</span>
+            <span style="color:var(--text-muted);font-size:0.8rem;">| Étape d'Enquête :</span>
+            <button class="btn" data-stage-btn="1" onclick="setInvestigationStage(1)">1. Annonce FB &amp; WhatsApp</button>
+            <button class="btn" data-stage-btn="2" onclick="setInvestigationStage(2)">2. APK Décompilé &amp; Note Vocale Darija</button>
+            <button class="btn" data-stage-btn="3" onclick="setInvestigationStage(3)">3. Fuite Discord &amp; Canaux Telegram</button>
+            <button class="btn active" data-stage-btn="4" onclick="setInvestigationStage(4)">4. Cerveau (« El-Hadj ») &amp; TRC-20</button>
           </div>
 
           <div class="studio-controls">
-            <span style="color:var(--text-muted);font-size:0.78rem;">Assistant:</span>
-            <button class="btn active" data-engine-btn="deterministic" onclick="setEngineMode('deterministic')">🧭 Standard Mode (No AI)</button>
-            <button class="btn" data-engine-btn="llm" onclick="setEngineMode('llm')">🤖 Smart AI Assistant</button>
+            <span style="color:var(--text-muted);font-size:0.78rem;">Assistant :</span>
+            <button class="btn active" data-engine-btn="deterministic" onclick="setEngineMode('deterministic')">🧭 Mode Déterministe</button>
+            <button class="btn" data-engine-btn="llm" onclick="setEngineMode('llm')">🤖 Copilot IA Local (Ollama)</button>
 
-            <span style="color:var(--text-muted);font-size:0.78rem;margin-left:0.4rem;">Run Mode:</span>
-            <button class="btn active" data-policy-btn="review" onclick="setRunPolicy('review')">✋ Ask Before Running</button>
-            <button class="btn" data-policy-btn="auto" onclick="setRunPolicy('auto')">⚡ Run Automatically</button>
+            <span style="color:var(--text-muted);font-size:0.78rem;margin-left:0.4rem;">Exécution :</span>
+            <button class="btn active" data-policy-btn="review" onclick="setRunPolicy('review')">✋ Validation OPJ Requise</button>
+            <button class="btn" data-policy-btn="auto" onclick="setRunPolicy('auto')">⚡ Pipeline Auto</button>
           </div>
         </div>
 

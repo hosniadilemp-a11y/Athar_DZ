@@ -471,8 +471,9 @@
         </nav>
 
         <!-- Portal Specifications Link (8 Chapters) -->
-        <a href="index.html" class="btn btn-ghost btn-xs" style="text-decoration:none;color:#38bdf8;font-weight:600;display:inline-flex;align-items:center;gap:0.3rem;" title="Consulter la Spécification &amp; Architecture (8 Chapitres)">
-          <span>📖 Spécifications (8 Chap.)</span>
+        <a href="index.html" class="spec-link-chip" title="Consulter la Spécification &amp; Architecture (8 Chapitres)" aria-label="Spécifications (8 Chapitres)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 2v20"/></svg>
+          <span data-i18n="nav_spec_link">Spécifications (8 Chap.)</span>
         </a>
 
         <!-- Theme Toggle (Light / Dark) -->
@@ -540,37 +541,37 @@
         <!-- Investigation Layers List -->
         <div class="panel-section">
           <div class="layer-list" role="list">
-            <div class="layer-row-item layer-1" role="listitem" onclick="setScreen(2)">
+            <button type="button" class="layer-row-item layer-1" role="listitem" onclick="setScreen(2)" aria-label="Calque 1: Preuves Scellées (2 éléments)">
               <div class="layer-meta">
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 <span data-i18n="layer_1_verified">1. Preuves Scellées</span>
               </div>
               <span class="chip chip-neutral font-mono text-xs">2</span>
-            </div>
+            </button>
 
-            <div class="layer-row-item layer-2" role="listitem" onclick="setScreen(2)">
+            <button type="button" class="layer-row-item layer-2" role="listitem" onclick="setScreen(2)" aria-label="Calque 2: Découvertes OSINT (3 éléments)">
               <div class="layer-meta">
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-info"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                 <span data-i18n="layer_2_osint">2. Découvertes OSINT</span>
               </div>
               <span class="chip chip-neutral font-mono text-xs">3</span>
-            </div>
+            </button>
 
-            <div class="layer-row-item layer-3" role="listitem" onclick="setScreen(2)">
+            <button type="button" class="layer-row-item layer-3" role="listitem" onclick="setScreen(2)" aria-label="Calque 3: Infrastructure et Pivots (2 éléments)">
               <div class="layer-meta">
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>
                 <span data-i18n="layer_3_infra">3. Infrastructure & Pivots</span>
               </div>
               <span class="chip chip-neutral font-mono text-xs">2</span>
-            </div>
+            </button>
 
-            <div class="layer-row-item layer-4" role="listitem" onclick="setScreen(2)">
+            <button type="button" class="layer-row-item layer-4" role="listitem" onclick="setScreen(2)" aria-label="Calque 4: Hypothèses IA (1 élément)">
               <div class="layer-meta">
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-hypothesis"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/></svg>
                 <span data-i18n="layer_4_hypothesis">4. Hypothèses IA</span>
               </div>
               <span class="chip chip-neutral font-mono text-xs">1</span>
-            </div>
+            </button>
           </div>
         </div>
 
@@ -661,7 +662,7 @@
               Enquête pénale diligentée suite à de multiples plaintes pour vente frauduleuse de pneumatiques sur Facebook Marketplace avec paiement BaridiMob non honoré. Traçage multi-sources corrélant données télécoms, DNS, MongoDB et profils Telegram.
             </p>
             <div class="metadata-table">
-              <div class="meta-row"><span class="meta-key">Briques forensiques actives :</span><span class="meta-val font-mono">62 Outils déployés (74% Offline)</span></div>
+              <div class="meta-row"><span class="meta-key">Briques forensiques actives :</span><span class="meta-val font-mono">76 Outils déployés (74% Offline)</span></div>
               <div class="meta-row"><span class="meta-key">Chaîne de garde WORM :</span><span class="meta-val font-mono text-success">MinIO S3 Object Lock Certifié</span></div>
               <div class="meta-row"><span class="meta-key">Enquêteur en charge :</span><span class="meta-val">Insp. Benali (Section Cybercriminalité)</span></div>
             </div>
@@ -689,85 +690,168 @@
 
             </svg>
 
-            <!-- Node 1: Post FB Marketplace (Layer 1 Verified) -->
-            <div class="canvas-node-card layer-1 node-pos-1" id="node-post" onclick="selectNode('node-post')">
-              <div class="node-header-row">
-                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Annonce FB</span>
-                <span class="chip chip-emerald text-xs">Vérifié</span>
-              </div>
-              <div class="node-title-text">Post Marketplace #98124</div>
-              <div class="node-subtitle-text">Liquidation 4 Pneus Michelin</div>
+            <!-- Accessible Screen Reader List / Table Alternative (WCAG 2.2 AA) -->
+            <div class="sr-only">
+              <table aria-label="Inventaire tabulaire des nœuds et connexions du graphe d'enquête">
+                <caption>Dossier #2026-SCAM-089 — Graphe d'enquête judiciaire (8 entités, 6 liaisons)</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">ID Nœud</th>
+                    <th scope="col">Type d'Entité</th>
+                    <th scope="col">Calque Légal</th>
+                    <th scope="col">Valeur / Identifiant</th>
+                    <th scope="col">Degré de Certitude</th>
+                    <th scope="col">Connexions Adjacentes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">node-post</th>
+                    <td>Annonce Réseau Social</td>
+                    <td>1. Preuves Scellées (VERIFIED)</td>
+                    <td>Post Marketplace #98124 (Liquidation 4 Pneus Michelin)</td>
+                    <td>100% Scellé RFC 3161</td>
+                    <td>Relié à : node-phone, node-url</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">node-page</th>
+                    <td>Page Réseau Social</td>
+                    <td>1. Preuves Scellées (VERIFIED)</td>
+                    <td>fb.com/pneus.promo.dz (Admin: Algérie)</td>
+                    <td>100% Scellé RFC 3161</td>
+                    <td>Relié à : node-post</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">node-phone</th>
+                    <td>Numéro Téléphonique</td>
+                    <td>2. Découvertes OSINT (OSINT_RAW)</td>
+                    <td>+213 555 019 283 (Ooredoo DZ)</td>
+                    <td>98% Extraction Authentique</td>
+                    <td>Relié à : node-post, node-telegram, node-suspect</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">node-url</th>
+                    <td>Nom de Domaine / Boutique</td>
+                    <td>2. Découvertes OSINT (OSINT_RAW)</td>
+                    <td>promo-pneus-express.shop (IP: 185.199.108.153)</td>
+                    <td>95% Capture DOM</td>
+                    <td>Relié à : node-post, node-mongoid, node-pixel</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">node-mongoid</th>
+                    <td>Identifiant Base de Données</td>
+                    <td>3. Infrastructure &amp; Pivots (INFRA)</td>
+                    <td>672f9a10c8b4a100129b4412 (Timestamp: 01 Nov 2026 14:22 UTC)</td>
+                    <td>100% Décodage Algorithmique</td>
+                    <td>Relié à : node-url</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">node-pixel</th>
+                    <td>ID Tracker Publicitaire</td>
+                    <td>3. Infrastructure &amp; Pivots (INFRA)</td>
+                    <td>Pixel Meta #88419203314</td>
+                    <td>99% Recoupement Code Source</td>
+                    <td>Relié à : node-url</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">node-telegram</th>
+                    <td>Compte Messagerie Sécurisée</td>
+                    <td>2. Découvertes OSINT (OSINT_RAW)</td>
+                    <td>@amine_import (User ID: 519283741)</td>
+                    <td>92% Résolution API</td>
+                    <td>Relié à : node-phone, node-suspect</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">node-suspect</th>
+                    <td>Sujet Candidat (Identité Physique)</td>
+                    <td>4. Hypothèses &amp; Déductions (HYPOTHESIS)</td>
+                    <td>Amine B. (31 ans, Wilaya d'Alger)</td>
+                    <td>92% Biométrie ArcFace 512-d recoupée avec CDR Ooredoo</td>
+                    <td>Relié à : node-phone, node-telegram</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
+
+            <!-- Node 1: Post FB Marketplace (Layer 1 Verified) -->
+            <button type="button" class="canvas-node-card layer-1 node-pos-1" id="node-post" onclick="selectNode('node-post')" aria-label="Annonce FB: Post Marketplace #98124 - Liquidation 4 Pneus Michelin">
+              <div class="node-header-row">
+                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> <span data-i18n="node_lbl_post">Annonce FB</span></span>
+                <span class="chip chip-emerald text-xs" data-i18n="badge_verified">Vérifié</span>
+              </div>
+              <div class="node-title-text" data-i18n="node_post_title">Post Marketplace #98124</div>
+              <div class="node-subtitle-text" data-i18n="node_post_sub">Liquidation 4 Pneus Michelin</div>
+            </button>
 
             <!-- Node 2: Page Facebook (Layer 1 Verified) -->
-            <div class="canvas-node-card layer-1 node-pos-2" id="node-page" onclick="selectNode('node-page')">
+            <button type="button" class="canvas-node-card layer-1 node-pos-2" id="node-page" onclick="selectNode('node-page')" aria-label="Page FB: fb.com/pneus.promo.dz">
               <div class="node-header-row">
-                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Page FB</span>
-                <span class="chip chip-emerald text-xs">Vérifié</span>
+                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> <span data-i18n="node_lbl_page">Page FB</span></span>
+                <span class="chip chip-emerald text-xs" data-i18n="badge_verified">Vérifié</span>
               </div>
               <div class="node-title-text">fb.com/pneus.promo.dz</div>
-              <div class="node-subtitle-text">Admin: Algérie • 2.4k j'aime</div>
-            </div>
+              <div class="node-subtitle-text" data-i18n="node_page_sub">Admin: Algérie • 2.4k j'aime</div>
+            </button>
 
             <!-- Node 3: Phone Number (Layer 2 OSINT Raw) -->
-            <div class="canvas-node-card layer-2 node-pos-3" id="node-phone" onclick="selectNode('node-phone')">
+            <button type="button" class="canvas-node-card layer-2 node-pos-3" id="node-phone" onclick="selectNode('node-phone')" aria-label="Téléphone: +213 555 019 283">
               <div class="node-header-row">
-                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-info"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> Téléphone</span>
+                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-info"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> <span data-i18n="node_lbl_phone">Téléphone</span></span>
                 <span class="chip chip-cyan text-xs">OSINT</span>
               </div>
-              <div class="node-title-text font-mono">+213 555 019 283</div>
-              <div class="node-subtitle-text">Ooredoo DZ • Actif</div>
-            </div>
+              <div class="node-title-text font-mono" dir="ltr">+213 555 019 283</div>
+              <div class="node-subtitle-text" data-i18n="node_phone_sub">Ooredoo DZ • Actif</div>
+            </button>
 
             <!-- Node 4: Scam Shop URL (Layer 2 OSINT Raw) -->
-            <div class="canvas-node-card layer-2 node-pos-4" id="node-url" onclick="selectNode('node-url')">
+            <button type="button" class="canvas-node-card layer-2 node-pos-4" id="node-url" onclick="selectNode('node-url')" aria-label="URL Boutique: promo-pneus-express.shop">
               <div class="node-header-row">
-                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-info"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> URL Boutique</span>
+                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-info"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> <span data-i18n="node_lbl_url">URL Boutique</span></span>
                 <span class="chip chip-cyan text-xs">OSINT</span>
               </div>
-              <div class="node-title-text font-mono">promo-pneus-express.shop</div>
-              <div class="node-subtitle-text">IP: 185.199.108.153</div>
-            </div>
+              <div class="node-title-text font-mono" dir="ltr">promo-pneus-express.shop</div>
+              <div class="node-subtitle-text" dir="ltr">IP: 185.199.108.153</div>
+            </button>
 
             <!-- Node 5: MongoDB ObjectId (Layer 3 Infra) -->
-            <div class="canvas-node-card layer-3 node-pos-5" id="node-mongoid" onclick="selectNode('node-mongoid')">
+            <button type="button" class="canvas-node-card layer-3 node-pos-5" id="node-mongoid" onclick="selectNode('node-mongoid')" aria-label="MongoDB ID: 672f9a10c8b4a100...">
               <div class="node-header-row">
-                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg> MongoDB ID</span>
-                <span class="chip chip-neutral text-xs">Infra</span>
+                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg> <span data-i18n="node_lbl_mongoid">MongoDB ID</span></span>
+                <span class="chip chip-neutral text-xs" data-i18n="badge_infra">Infra</span>
               </div>
-              <div class="node-title-text font-mono">672f9a10c8b4a100...</div>
-              <div class="node-subtitle-text">UTC: 01 Nov 2026 14:22</div>
-            </div>
+              <div class="node-title-text font-mono" dir="ltr">672f9a10c8b4a100...</div>
+              <div class="node-subtitle-text" dir="ltr">UTC: 01 Nov 2026 14:22</div>
+            </button>
 
             <!-- Node 6: Meta Pixel (Layer 3 Infra) -->
-            <div class="canvas-node-card layer-3 node-pos-6" id="node-pixel" onclick="selectNode('node-pixel')">
+            <button type="button" class="canvas-node-card layer-3 node-pos-6" id="node-pixel" onclick="selectNode('node-pixel')" aria-label="Meta Pixel: Pixel #88419203314">
               <div class="node-header-row">
-                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/></svg> Meta Pixel</span>
-                <span class="chip chip-neutral text-xs">Infra</span>
+                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/></svg> <span data-i18n="node_lbl_pixel">Meta Pixel</span></span>
+                <span class="chip chip-neutral text-xs" data-i18n="badge_infra">Infra</span>
               </div>
-              <div class="node-title-text font-mono">Pixel #88419203314</div>
-              <div class="node-subtitle-text">2 sites jumeaux détectés</div>
-            </div>
+              <div class="node-title-text font-mono" dir="ltr">Pixel #88419203314</div>
+              <div class="node-subtitle-text" data-i18n="node_pixel_sub">2 sites jumeaux détectés</div>
+            </button>
 
             <!-- Node 7: Telegram Account (Layer 2 OSINT Raw) -->
-            <div class="canvas-node-card layer-2 node-pos-7" id="node-telegram" onclick="selectNode('node-telegram')">
+            <button type="button" class="canvas-node-card layer-2 node-pos-7" id="node-telegram" onclick="selectNode('node-telegram')" aria-label="Telegram: @amine_import">
               <div class="node-header-row">
-                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-info"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg> Telegram</span>
+                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-info"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg> <span data-i18n="node_lbl_telegram">Telegram</span></span>
                 <span class="chip chip-cyan text-xs">OSINT</span>
               </div>
-              <div class="node-title-text font-mono">@amine_import</div>
-              <div class="node-subtitle-text">User ID: 519283741</div>
-            </div>
+              <div class="node-title-text font-mono" dir="ltr">@amine_import</div>
+              <div class="node-subtitle-text" dir="ltr">User ID: 519283741</div>
+            </button>
 
             <!-- Node 8: Candidate Subject (Layer 4 Hypothesis - Selected by default) -->
-            <div class="canvas-node-card layer-4 selected node-pos-8" id="node-suspect" onclick="selectNode('node-suspect')">
+            <button type="button" class="canvas-node-card layer-4 selected node-pos-8" id="node-suspect" onclick="selectNode('node-suspect')" aria-label="Sujet Candidat: Amine B. (31 ans) - Hypothèse IA">
               <div class="node-header-row">
-                <span class="node-type-label text-hypothesis"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/></svg> Sujet Candidat</span>
-                <span class="chip chip-purple text-xs">Hypothèse</span>
+                <span class="node-type-label text-hypothesis"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/></svg> <span data-i18n="node_lbl_suspect">Sujet Candidat</span></span>
+                <span class="chip chip-purple text-xs" data-i18n="badge_hypothesis">Hypothèse</span>
               </div>
               <div class="node-title-text">Amine B. (31 ans)</div>
-              <div class="node-subtitle-text">Score IA : 92% • En attente OPJ</div>
-            </div>
+              <div class="node-subtitle-text font-mono" title="Biométrie Faciale ArcFace 512-d (92%) recoupée avec CDR Ooredoo" data-i18n="node_suspect_sub">Biométrie ArcFace (92%) • CDR Ooredoo</div>
+            </button>
 
 
 
@@ -791,7 +875,7 @@
                 <span data-i18n="inbox_title">Boîte d'Arbitrage des Indices</span>
                 <span class="chip chip-warning font-mono" id="inbox-pending-counter">3</span>
               </div>
-              <div class="inbox-clue-card active" onclick="showToast('Indice sélectionné pour arbitrage')">
+              <div class="inbox-clue-card active">
                 <div class="node-header-row">
                   <span class="chip chip-cyan">brick.socmint.ioc_extractor</span>
                   <span class="text-xs text-muted font-mono">10:18 UTC</span>
@@ -799,19 +883,19 @@
                 <div class="text-sm font-semibold text-light">+213 555 019 283 (Numéro E.164)</div>
                 <div class="text-xs text-muted">Détecté dans le corps de l'annonce FB #98124. Confiance: 98%</div>
                 <div class="candidate-actions mt-1">
-                  <button class="btn btn-secondary btn-sm" onclick="showToast(t('toast_clue_added'))"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <span data-i18n="btn_add_graph">Ajouter au Graphe</span></button>
-                  <button class="btn btn-ghost btn-sm text-danger" onclick="showToast(t('toast_clue_dismissed'))"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg> <span data-i18n="btn_dismiss">Écarter</span></button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="showToast(t('toast_clue_added'))"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <span data-i18n="btn_add_graph">Ajouter au Graphe</span></button>
+                  <button type="button" class="btn btn-ghost btn-sm text-danger" onclick="showToast(t('toast_clue_dismissed'))"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg> <span data-i18n="btn_dismiss">Écarter</span></button>
                 </div>
               </div>
 
-              <div class="inbox-clue-card">
+              <button type="button" class="inbox-clue-card" onclick="showToast('Indice sélectionné pour arbitrage')" aria-label="Indice: MongoDB ObjectId">
                 <div class="node-header-row">
                   <span class="chip chip-neutral">brick.web.dom_db_id_extractor</span>
                   <span class="text-xs text-muted font-mono">10:20 UTC</span>
                 </div>
                 <div class="text-sm font-semibold text-light font-mono">672f9a10c8b4a100129b4412</div>
                 <div class="text-xs text-muted">MongoDB ObjectId extrait des scripts de promo-pneus-express.shop</div>
-              </div>
+              </button>
             </div>
 
             <!-- Clue Detail Proof Pane -->
@@ -968,7 +1052,7 @@
       <aside class="panel-right" id="panel-right" aria-label="Inspecteur contextuel et outils recommandés">
         <div class="panel-header">
           <span class="panel-heading-text" data-i18n="inspector_title">Inspecteur d'Entité</span>
-          <span class="chip chip-neutral font-mono text-xs">Node #08</span>
+          <span class="chip chip-neutral font-mono text-xs" id="inspector-node-chip">Node #08</span>
         </div>
 
         <div class="inspector-body">
@@ -985,7 +1069,7 @@
               <!-- Populated dynamically by maquette-i18n.js renderSuggestedTools() -->
             </div>
             <button class="btn btn-ghost btn-sm mt-2 w-full" onclick="openCommandPalette()">
-              <span data-i18n="btn_show_catalog">Ouvrir l'Arsenal Complet (62 Outils) ↗</span>
+              <span data-i18n="btn_show_catalog">Ouvrir l'Arsenal Complet (76 Outils) ↗</span>
             </button>
           </div>
         </div>
@@ -1032,7 +1116,7 @@
       </div>
       <div class="panel-header cmd-modal-footer">
         <span class="text-xs text-muted" data-i18n="cmd_shortcuts_hint">↑↓ pour naviguer • Entrée pour exécuter • Échap pour fermer</span>
-        <span class="chip chip-neutral font-mono text-xs">62 Outils Forensiques</span>
+        <span class="chip chip-neutral font-mono text-xs">76 Outils Forensiques</span>
       </div>
     </div>
   </div>

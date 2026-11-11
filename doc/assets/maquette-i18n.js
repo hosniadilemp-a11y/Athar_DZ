@@ -1,7 +1,7 @@
 /**
  * Athar DZ (أثر) — Forensic OSINT & Judicial Investigation Studio
  * Multilingual Engine & Forensic Workspace Controller.
- * Conforms to SPECIFICATION.md, WCAG 2.2 AA, and Nielsen's Heuristics.
+ * Conforms to SPECIFICATION.md, WCAG 2.2 AA, and .agent/ui-ux-rules.md.
  */
 
 const I18N_TRANSLATIONS = {
@@ -62,7 +62,7 @@ const I18N_TRANSLATIONS = {
     "suggested_tools_title": "Outils Recommandés (Scoring de Capacités)",
     "suggested_tools_desc": "Proposés selon le type d'entité et le profil de l'affaire.",
     "btn_run_brick": "Lancer l'Outil (Review-Run)",
-    "btn_show_catalog": "Ouvrir l'Arsenal Complet (62 Outils) ↗",
+    "btn_show_catalog": "Ouvrir l'Arsenal Complet (76 Outils) ↗",
     "candidate_subject_title": "Sujet Candidat (Hypothèse d'Enquête)",
     "candidate_presumption_notice": "Avertissement : Cette attribution constitue une hypothèse d'enquête soumise à la présomption d'innocence. Elle ne peut être versée comme preuve sans vérification humaine formelle.",
     "candidate_biometrics_label": "Similarité Faciale ArcFace 512-d",
@@ -78,7 +78,7 @@ const I18N_TRANSLATIONS = {
     "status_queue": "File d'attente : 0 tâche",
     "status_sync": "MinIO WORM : Synchronisé",
     "status_ledger": "Registre Forensique : #2026-SCAM-089-LOK",
-    "cmd_title": "Palette de Commandes (62 Outils Forensiques)",
+    "cmd_title": "Palette de Commandes (76 Outils Forensiques)",
     "cmd_placeholder": "Rechercher une brique, une commande ou un type d'indice...",
     "cmd_shortcuts_hint": "↑↓ pour naviguer • Entrée pour exécuter • Échap pour fermer",
     "catalog_title": "Catalogue des 62 Briques Forensiques & OSINT",
@@ -210,7 +210,38 @@ const I18N_TRANSLATIONS = {
     "btn_save_changes": "Enregistrer les Modifications",
     "btn_cancel": "Annuler",
     "btn_insert_confirm": "Ajouter l'Indice au Dossier"
-  },
+  ,
+    "nav_spec_link": "Spécifications (8 Chap.)",
+    "node_lbl_post": "Annonce FB",
+    "node_lbl_page": "Page FB",
+    "node_lbl_phone": "Téléphone",
+    "node_lbl_url": "URL Boutique",
+    "node_lbl_mongoid": "MongoDB ID",
+    "node_lbl_pixel": "Meta Pixel",
+    "node_lbl_telegram": "Telegram",
+    "node_lbl_suspect": "Sujet Candidat",
+    "badge_verified": "Vérifié",
+    "badge_infra": "Infra",
+    "badge_hypothesis": "Hypothèse",
+    "node_post_title": "Post Marketplace #98124",
+    "node_post_sub": "Liquidation 4 Pneus Michelin",
+    "node_page_sub": "Admin: Algérie • 2.4k j'aime",
+    "node_phone_sub": "Ooredoo DZ • Actif",
+    "node_pixel_sub": "2 sites jumeaux détectés",
+    "node_suspect_sub": "Biométrie ArcFace (92%) • CDR Ooredoo",
+    "case_overview_title": "Dossier & Registre d'Enquête",
+    "inbox_pending_title": "Boîte d'Arbitrage des Indices",
+    "btn_add_graph": "Ajouter au Graphe",
+    "btn_dismiss": "Écarter",
+    "th_evidence_num": "Pièce N°",
+    "th_evidence_name": "Désignation de la Preuve",
+    "th_evidence_brick": "Brique / Source OSINT",
+    "th_evidence_hash": "Empreinte SHA-256 Certifiée",
+    "th_evidence_status": "Statut Légal",
+    "report_narrative_text": "Le présent rapport consolide la chaîne de garde cryptographique, les recoupements techniques d'infrastructures, les correspondances biométriques et les réquisitions judiciaires aux opérateurs télécoms (Mobilis, Ooredoo, Djezzy) et à Meta Platforms Inc.",
+    "tools_arsenal_count_badge": "76 Outils Forensiques",
+    "tools_arsenal_btn": "Ouvrir l'Arsenal Complet (76 Outils) ↗"
+},
   "ar": {
     "app_title": "أثر (Athar DZ)",
     "app_subtitle": "استوديو التحقيق الجنائي والأدلة الرقمية مفتوحة المصدر",
@@ -268,7 +299,7 @@ const I18N_TRANSLATIONS = {
     "suggested_tools_title": "الأدوات المقترحة (محرك القدرات الجنائية)",
     "suggested_tools_desc": "مقترحة حصراً وفق طبيعة العنصر ونمط القضية.",
     "btn_run_brick": "تشغيل الأداة (باعتماد بشري)",
-    "btn_show_catalog": "فتح المستودع الكامل (62 أداة) ↗",
+    "btn_show_catalog": "فتح المستودع الكامل (76 أداة) ↗",
     "candidate_subject_title": "المشتبه به المحتمل (فرضية تحقيق)",
     "candidate_presumption_notice": "تنبيه قضائي: هذا الربط يمثل فرضية استدلالية وتخضع لقرينة البراءة. لا يُعتد بها كإدانة دون تحقق إجرائي رسمي.",
     "candidate_biometrics_label": "مطابقة الوجه البيومترية ArcFace 512-d",
@@ -284,10 +315,10 @@ const I18N_TRANSLATIONS = {
     "status_queue": "قائمة المهام: 0 نشطة",
     "status_sync": "تخزين MinIO WORM: مؤمن وموثق",
     "status_ledger": "سجل التدقيق: #2026-SCAM-089-LOK",
-    "cmd_title": "لوحة الأوامر والأدوات الجنائية (62 أداة)",
+    "cmd_title": "لوحة الأوامر والأدوات الجنائية (76 أداة)",
     "cmd_placeholder": "اكتب اسم الأداة أو فئتها أو نوع الدليل المطلوب...",
     "cmd_shortcuts_hint": "↑↓ للتنقل • إدخال للتنفيذ • هروب للإغلاق",
-    "catalog_title": "كتالوج الأدوات الجنائية المفتوحة المصدر (62 أداة)",
+    "catalog_title": "كتالوج الأدوات الجنائية المفتوحة المصدر (76 أداة)",
     "catalog_category_all": "كافة الفئات",
     "req_offline": "حاوية محلية دون اتصال",
     "req_free_key": "مفتاح API مجاني",
@@ -416,7 +447,38 @@ const I18N_TRANSLATIONS = {
     "btn_save_changes": "حفظ التغييرات",
     "btn_cancel": "إلغاء",
     "btn_insert_confirm": "إدراج الدليل في القضية"
-  },
+  ,
+    "nav_spec_link": "المواصفات (8 فصول)",
+    "node_lbl_post": "إعلان فيسبوك",
+    "node_lbl_page": "صفحة فيسبوك",
+    "node_lbl_phone": "هاتف",
+    "node_lbl_url": "رابط المتجر",
+    "node_lbl_mongoid": "معرّف MongoDB",
+    "node_lbl_pixel": "بيكسل ميتا",
+    "node_lbl_telegram": "تيليغرام",
+    "node_lbl_suspect": "المشتبه به المرشح",
+    "badge_verified": "محقّق",
+    "badge_infra": "بنية تحتية",
+    "badge_hypothesis": "فرضية",
+    "node_post_title": "منشور المتجر #98124",
+    "node_post_sub": "تصفية 4 إطارات ميشلان",
+    "node_page_sub": "المسؤول: الجزائر • 2.4 ألف إعجاب",
+    "node_phone_sub": "أوريدو الجزائر • نشط",
+    "node_pixel_sub": "اكتشاف موقعين متطابقين",
+    "node_suspect_sub": "بيومترية ArcFace (92%) • سجلات أوريدو",
+    "case_overview_title": "ملف القضية وسجل التحقيق",
+    "inbox_pending_title": "صندوق تحكيم الأدلة",
+    "btn_add_graph": "إضافة إلى الرسم",
+    "btn_dismiss": "استبعاد",
+    "th_evidence_num": "رقم الدليل",
+    "th_evidence_name": "وصف الدليل",
+    "th_evidence_brick": "أداة / مصدر OSINT",
+    "th_evidence_hash": "بصمة SHA-256 المعتمدة",
+    "th_evidence_status": "الوضع القانوني",
+    "report_narrative_text": "يوثق هذا التقرير سلسلة الحراسة المشفرة، والتقاطعات التقنية للبنية التحتية، والمطابقات البيومترية والأذونات القضائية الموجهة لمتعاملي الهاتف.",
+    "tools_arsenal_count_badge": "76 أداة جنائية",
+    "tools_arsenal_btn": "فتح الترسانة الكاملة (76 أداة) ↗"
+},
   "en": {
     "app_title": "Athar DZ",
     "app_subtitle": "Judicial & Digital Forensics OSINT Studio",
@@ -621,7 +683,37 @@ const I18N_TRANSLATIONS = {
     "modal_import_title": "Import Investigation Files & Data",
     "btn_save_changes": "Save Changes",
     "btn_cancel": "Cancel",
-    "btn_insert_confirm": "Insert Evidence into Case"
+    "btn_insert_confirm": "Insert Evidence into Case",
+    "nav_spec_link": "Architecture Specification",
+    "node_lbl_post": "Marketplace Listing",
+    "node_lbl_page": "Social Media Page",
+    "node_lbl_phone": "Telephone Number",
+    "node_lbl_url": "Shop URL",
+    "node_lbl_mongoid": "MongoDB ObjectId",
+    "node_lbl_pixel": "Meta Pixel Tracker",
+    "node_lbl_telegram": "Telegram Account",
+    "node_lbl_suspect": "Candidate Subject",
+    "badge_verified": "Verified Evidence",
+    "badge_infra": "Technical Infra",
+    "badge_hypothesis": "Hypothesis",
+    "node_post_title": "Marketplace Post #98124",
+    "node_post_sub": "Clearance 4 Michelin Tyres",
+    "node_page_sub": "Admin: Algeria • 2.4k likes",
+    "node_phone_sub": "Ooredoo DZ • Active",
+    "node_pixel_sub": "2 twin sites detected",
+    "node_suspect_sub": "ArcFace Biometrics (92%) • Ooredoo CDR",
+    "case_overview_title": "Investigation Case & Ledger",
+    "inbox_pending_title": "Clue Arbitration Inbox",
+    "btn_add_graph": "Add to Graph",
+    "btn_dismiss": "Dismiss",
+    "th_evidence_num": "Piece No.",
+    "th_evidence_name": "Evidence Designation",
+    "th_evidence_brick": "OSINT Tool / Source",
+    "th_evidence_hash": "Certified SHA-256 Hash",
+    "th_evidence_status": "Legal Status",
+    "report_narrative_text": "This report consolidates cryptographic chain of custody, infrastructure technical correlation, biometric matches, and judicial requisitions to telecom operators (Mobilis, Ooredoo, Djezzy) and Meta Platforms Inc.",
+    "tools_arsenal_count_badge": "76 Forensic Tools",
+    "tools_arsenal_btn": "Open Complete Arsenal (76 Tools) ↗"
   }
 };
 const TOOLS_CATALOG = [
@@ -1276,6 +1368,7 @@ const TOOLS_CATALOG = [
     ]
   }
 ];
+
 const TOOL_SPECS = {
   "tool_ioc_extractor": {
     "id": "tool_ioc_extractor",
@@ -1539,20 +1632,228 @@ const TOOL_SPECS = {
   }
 };
 
-// Application State
-const appState = {
+// ============================================================================
+// ATHAR DZ (أثر) — FORENSIC WORKSPACE CONTROLLER
+// Complies with SPECIFICATION.md, WCAG 2.2 AA, and .agent/ui-ux-rules.md
+// ============================================================================
+
+const ATHAR_CASE_NODES = {
+  'node-post': {
+    id: 'node-post',
+    icon: 'file-text',
+    type: 'SocialPost',
+    typeLabel: 'Annonce Réseau Social',
+    label: 'Post Marketplace #98124',
+    subtitle: 'Liquidation 4 Pneus Michelin',
+    layer: 1,
+    layerName: 'Preuves Scellées (RFC 3161)',
+    hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+    timestamp: '2026-11-01 10:15 UTC',
+    confidence: '100% (Preuve Verrouillée WORM)',
+    method: 'Capture DOM certifiée ArchiveBox ISO 28500 WARC',
+    metadata: {
+      'Plateforme': 'Facebook Marketplace & Annonces DZ',
+      'Auteur Annonce': 'fb.com/pneus.promo.dz',
+      'Contenu Texte': 'Liquidation stock Michelin 205/55R16 - Virement BaridiMob avant expédition',
+      'Emplacement WORM': 's3://aegis-evidence/2026-SCAM-089/fb_post_98124.warc'
+    },
+    suggestedTools: ['tool_whois_dns', 'tool_meta_ad_transparency', 'tool_ioc_extractor']
+  },
+  'node-page': {
+    id: 'node-page',
+    icon: 'globe',
+    type: 'SocialPage',
+    typeLabel: 'Page Réseau Social',
+    label: 'fb.com/pneus.promo.dz',
+    subtitle: "Admin: Algérie • 2.4k j'aime",
+    layer: 1,
+    layerName: 'Preuves Scellées (RFC 3161)',
+    hash: '7d8b2e1a3f5c904e6b12876543210fedcba9876543210fedcba9876543210fed',
+    timestamp: '2026-11-01 10:18 UTC',
+    confidence: '100% (Identifiant Page Meta Scellé)',
+    method: 'Enregistrement de transparence de page et historique des publicités',
+    metadata: {
+      'Nom Affiché': 'Pneus Promo Algérie - Livraison 58 Wilayas',
+      'Date Création': 'Octobre 2026 (Profil Récent)',
+      'Gestionnaires': '1 Administrateur localisé en Algérie (Wilaya d\'Alger)',
+      'Emplacement WORM': 's3://aegis-evidence/2026-SCAM-089/meta_transparency.json'
+    },
+    suggestedTools: ['tool_meta_ad_transparency', 'tool_meta_pixel', 'tool_social_mapper']
+  },
+  'node-phone': {
+    id: 'node-phone',
+    icon: 'phone',
+    type: 'PhoneNumber',
+    typeLabel: 'Numéro Téléphonique',
+    label: '+213 555 019 283',
+    subtitle: 'Ooredoo DZ • Actif',
+    layer: 2,
+    layerName: 'Découvertes OSINT (OSINT_RAW)',
+    hash: '3f7a1b5c904e6b12876543210fedcba9876543210fedcba9876543210fedcba9',
+    timestamp: '2026-11-01 10:20 UTC',
+    confidence: '98% (Format E.164 Valide)',
+    method: 'Regex IOC & Parsing HLR opérateur Ooredoo',
+    metadata: {
+      'Opérateur Télécom': 'Ooredoo Algérie (Wataniya Télécom)',
+      'Format International': '+213 555 019 283 (E.164)',
+      'Statut Ligne': 'Actif • SMS & Messagerie instantanée',
+      'Emplacement WORM': 's3://aegis-evidence/2026-SCAM-089/ioc_phone_extract.json'
+    },
+    suggestedTools: ['tool_whatsapp_inspector', 'tool_telegram_resolver', 'tool_holehe_email']
+  },
+  'node-url': {
+    id: 'node-url',
+    icon: 'globe',
+    type: 'DomainName',
+    typeLabel: 'Nom de Domaine / URL',
+    label: 'promo-pneus-express.shop',
+    subtitle: 'IP: 185.199.108.153',
+    layer: 2,
+    layerName: 'Découvertes OSINT (OSINT_RAW)',
+    hash: '8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b',
+    timestamp: '2026-11-01 10:22 UTC',
+    confidence: '95% (Hébergement Actif)',
+    method: 'Résolution DNS passive et certificat TLS Let\'s Encrypt',
+    metadata: {
+      'Registrar': 'Namecheap Inc.',
+      'Adresse IP': '185.199.108.153 (ASN 13335 Cloudflare CDN)',
+      'Certificat SSL': "Let's Encrypt R3 (Émis 28 Oct 2026)",
+      'Emplacement WORM': 's3://aegis-evidence/2026-SCAM-089/dns_whois_snap.json'
+    },
+    suggestedTools: ['tool_whois_dns', 'tool_shodan_censys', 'tool_meta_pixel']
+  },
+  'node-mongoid': {
+    id: 'node-mongoid',
+    icon: 'database',
+    type: 'DatabaseId',
+    typeLabel: 'Identifiant BSON MongoDB',
+    label: '672f9a10c8b4a100...',
+    subtitle: 'UTC: 01 Nov 2026 14:22',
+    layer: 3,
+    layerName: 'Infrastructure & Pivots (INFRA)',
+    hash: '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+    timestamp: '2026-11-01 14:22 UTC',
+    confidence: '100% (Décodage Déterministe)',
+    method: 'Décodage des 4 premiers octets UNIX epoch de l\'ObjectId',
+    metadata: {
+      'Identifiant Complet': '672f9a10c8b4a100129b4412',
+      'Horodatage Epoch Extrait': '1731164688 -> 2026-11-01 14:22:40 UTC',
+      'Machine Hash': 'c8b4a1',
+      'Emplacement WORM': 's3://aegis-evidence/2026-SCAM-089/mongo_id_analysis.json'
+    },
+    suggestedTools: ['tool_mongodb_decoder', 'tool_ioc_extractor', 'tool_shodan_censys']
+  },
+  'node-pixel': {
+    id: 'node-pixel',
+    icon: 'layers',
+    type: 'TrackerId',
+    typeLabel: 'Identifiant Meta Pixel',
+    label: 'Pixel #88419203314',
+    subtitle: '2 sites jumeaux détectés',
+    layer: 3,
+    layerName: 'Infrastructure & Pivots (INFRA)',
+    hash: 'abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789',
+    timestamp: '2026-11-01 14:30 UTC',
+    confidence: '99% (Code Source Extrait)',
+    method: 'Recherche inversée d\'identifiant de tracking sur PublicWWW',
+    metadata: {
+      'Identifiant Tracker': 'fbq(\'init\', \'88419203314\')',
+      'Sites Partageant ce Pixel': 'promo-pneus-express.shop, discount-auto-alger.dz',
+      'Compte Meta Business Lié': 'BM #49102914102',
+      'Emplacement WORM': 's3://aegis-evidence/2026-SCAM-089/pixel_pivot.json'
+    },
+    suggestedTools: ['tool_meta_pixel', 'tool_google_analytics', 'tool_whois_dns']
+  },
+  'node-telegram': {
+    id: 'node-telegram',
+    icon: 'terminal',
+    type: 'MessagingAccount',
+    typeLabel: 'Compte Telegram',
+    label: '@amine_import',
+    subtitle: 'User ID: 519283741',
+    layer: 2,
+    layerName: 'Découvertes OSINT (OSINT_RAW)',
+    hash: '9876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba',
+    timestamp: '2026-11-01 15:10 UTC',
+    confidence: '92% (Profil Public Accessible)',
+    method: 'Résolution API MTProto via compte pivot d\'enquête',
+    metadata: {
+      'Pseudonyme': '@amine_import',
+      'ID Utilisateur Numérique': '519283741',
+      'Prénom Affiché': 'Amine',
+      'Bio Publique': 'Import-Export pneumatiques gros et détail • Alger Bab Ezzouar',
+      'Emplacement WORM': 's3://aegis-evidence/2026-SCAM-089/tg_profile_519283741.json'
+    },
+    suggestedTools: ['tool_telegram_resolver', 'tool_whatsapp_inspector', 'tool_social_mapper']
+  },
+  'node-suspect': {
+    id: 'node-suspect',
+    icon: 'user',
+    type: 'CandidateSuspect',
+    typeLabel: 'Sujet Candidat (Identité Physique)',
+    label: 'Amine B. (31 ans)',
+    subtitle: 'Biométrie ArcFace (92%) • CDR Ooredoo',
+    layer: 4,
+    layerName: 'Hypothèses & Déductions (HYPOTHESIS)',
+    hash: '555544443333222211110000aaaabbbbccccddddeeeeffff0000111122223333',
+    timestamp: '2026-11-01 16:45 UTC',
+    confidence: 'Score IA : 92% (Hypothèse non certifiée)',
+    method: 'Vecteur facial ArcFace 512-d (distance cosinus 0.18) sur avatar WhatsApp recoupé avec fiche abonné Ooredoo',
+    metadata: {
+      'Nom Présumé': 'Amine B.',
+      'Âge Estimé': '31 ans',
+      'Wilaya de Résidence': 'Alger (Bab Ezzouar)',
+      'Preuve Scientifique': 'Correspondance biométrique faciale 92% confirmée par réquisition opérateur Ooredoo',
+      'Statut Judiciaire': 'En attente de validation et signature OPJ (Art. 68 CPP)'
+    },
+    suggestedTools: ['tool_whatsapp_inspector', 'tool_sna_betweenness', 'tool_dehashed_breach']
+  }
+};
+
+const ATHAR_INBOX_CLUES = [
+  {
+    id: 'inbox-1',
+    sourceTool: 'brick.socmint.ioc_extractor',
+    time: '10:18 UTC',
+    title: '+213 555 019 283 (Numéro E.164)',
+    details: 'Détecté dans le corps de l\'annonce FB #98124. Confiance: 98%',
+    type: 'PhoneNumber',
+    added: false
+  },
+  {
+    id: 'inbox-2',
+    sourceTool: 'brick.web.dom_db_id_extractor',
+    time: '10:20 UTC',
+    title: '672f9a10c8b4a100129b4412',
+    details: 'MongoDB ObjectId extrait des scripts de promo-pneus-express.shop',
+    type: 'DatabaseId',
+    added: false
+  },
+  {
+    id: 'inbox-3',
+    sourceTool: 'brick.web.meta_pixel',
+    time: '10:25 UTC',
+    title: 'Pixel #88419203314 (Tracker Meta)',
+    details: 'Partagé entre promo-pneus-express.shop et discount-auto-alger.dz',
+    type: 'TrackerId',
+    added: false
+  }
+];
+
+let appState = {
   lang: 'fr',
-  theme: 'dark',
-  mode: 'analyze', // 'collect' | 'analyze' | 'report'
-  canvasView: 'graph', // 'graph' | 'timeline' | 'map'
-  activeScreen: 2, // 1 to 5
+  mode: 'analyze',
   stealth: true,
+  theme: 'dark',
+  activeCanvasView: 'graph',
+  activeScreen: 2,
   selectedNodeId: 'node-suspect',
+  menubarActive: false,
+  openMenuId: null,
   leftPanelCollapsed: false,
   rightPanelCollapsed: false,
   activeLayerFilter: 'all',
   activeTypeFilter: 'all',
-  openMenuId: null,
   propertiesModalOpen: false,
   insertModalOpen: false,
   llmModalOpen: false,
@@ -1563,7 +1864,6 @@ const appState = {
   activeModalToolId: null
 };
 
-// Lucide SVG Icons Library (Zero Emojis)
 function getLucideSvg(name, size = 16, className = '') {
   const s = size;
   const c = className ? `class="${className}"` : '';
@@ -1585,147 +1885,119 @@ function getLucideSvg(name, size = 16, className = '') {
     'eye-off': `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${c}><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>`,
     'sun': `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${c}><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`,
     'moon': `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${c}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`,
-    'history': `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${c}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>`,
-    'sparkles': `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${c}><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/></svg>`,
+    'user': `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${c}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+    'phone': `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${c}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,
+    'globe': `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${c}><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
     'database': `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${c}><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>`,
-    'credit-card': `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${c}><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>`,
-    'plus': `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${c}><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>`,
-    'chevron-down': `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${c}><polyline points="6 9 12 15 18 9"/></svg>`,
-    'sliders': `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${c}><line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="1" x2="7" y1="14" y2="14"/><line x1="9" x2="15" y1="8" y2="8"/><line x1="17" x2="23" y1="16" y2="16"/></svg>`,
-    'cpu': `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${c}><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" x2="9" y1="1" y2="4"/><line x1="15" x2="15" y1="1" y2="4"/><line x1="9" x2="9" y1="20" y2="23"/><line x1="15" x2="15" y1="20" y2="23"/><line x1="20" x2="23" y1="9" y2="9"/><line x1="20" x2="23" y1="14" y2="14"/><line x1="1" x2="4" y1="9" y2="9"/><line x1="1" x2="4" y1="14" y2="14"/></svg>`
+    'folder': `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${c}><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>`,
+    'chevron-down': `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${c}><polyline points="6 9 12 15 18 9"/></svg>`
   };
   return icons[name] || icons['shield'];
 }
 
-// Helper for i18n lookup
 function t(key) {
-  const dict = I18N_TRANSLATIONS[appState.lang] || I18N_TRANSLATIONS['fr'];
-  return dict[key] || key;
+  const lang = appState.lang;
+  if (I18N_TRANSLATIONS[lang] && I18N_TRANSLATIONS[lang][key]) {
+    return I18N_TRANSLATIONS[lang][key];
+  }
+  return (I18N_TRANSLATIONS['fr'] && I18N_TRANSLATIONS['fr'][key]) ? I18N_TRANSLATIONS['fr'][key] : key;
 }
 
-// Language Switcher with RTL / LTR direction handler
 function setLanguage(lang) {
   if (!['fr', 'ar', 'en'].includes(lang)) return;
   appState.lang = lang;
-
-  const html = document.getElementById('app-root');
-  if (html) {
-    html.setAttribute('lang', lang);
-    html.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+  const root = document.getElementById('app-root');
+  if (root) {
+    root.setAttribute('lang', lang);
+    root.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
   }
-
   applyI18n();
-  renderInspector();
-  renderSuggestedTools();
-  showToast(lang === 'ar' ? 'تم تغيير اللغة إلى العربية' : (lang === 'en' ? 'Language set to English' : 'Langue changée en Français'));
+  showToast(lang === 'ar' ? 'تم تفعيل اللغة العربية' : lang === 'en' ? 'Switched to English' : 'Langue : Français');
 }
 
-// Apply i18n data bindings across the document
 function applyI18n() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    const val = t(key);
-    if (val) {
-      el.textContent = val;
+    const translated = t(key);
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+      if (el.hasAttribute('placeholder')) el.placeholder = translated;
+    } else {
+      el.textContent = translated;
     }
   });
-
-  document.querySelectorAll('[data-i18n-title]').forEach(el => {
-    const key = el.getAttribute('data-i18n-title');
-    const val = t(key);
-    if (val) el.setAttribute('title', val);
-  });
-
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-    const key = el.getAttribute('data-i18n-placeholder');
-    const val = t(key);
-    if (val) el.setAttribute('placeholder', val);
-  });
-}
-
-// Global Mode Switcher (Collect | Analyze | Report)
-function setAppMode(mode) {
-  appState.mode = mode;
-  document.querySelectorAll('.mode-tab-btn').forEach(btn => {
-    const isActive = btn.getAttribute('data-mode') === mode;
-    btn.classList.toggle('active', isActive);
-    btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
-  });
-
-  if (mode === 'collect') {
-    setScreen(3); // Review Queue / Inbox
-    showToast(t('mode_collect') + ' : ' + t('inbox_title'));
-  } else if (mode === 'analyze') {
-    setScreen(2); // Graph Canvas with suggested tools
-    showToast(t('mode_analyze') + ' : ' + t('canvas_graph_title'));
-  } else if (mode === 'report') {
-    setScreen(5); // Certified Report
-    showToast(t('mode_report') + ' : ' + t('screen_5_title'));
+  if (appState.selectedNodeId) {
+    renderNodeInspector(appState.selectedNodeId);
+  } else {
+    renderEmptyRightPanel();
   }
 }
 
-// Canvas View Switcher (Graph | Timeline | Map)
-function setCanvasView(view) {
-  appState.canvasView = view;
-  document.querySelectorAll('.view-tab-btn').forEach(btn => {
-    const isActive = btn.getAttribute('data-view') === view;
-    btn.classList.toggle('active', isActive);
-    btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+function setAppMode(mode) {
+  if (!['collect', 'analyze', 'report'].includes(mode)) return;
+  appState.mode = mode;
+  document.querySelectorAll('.mode-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
   });
-
-  if (view === 'graph') setScreen(2);
-  else if (view === 'timeline' || view === 'map') setScreen(4);
+  if (mode === 'report') {
+    setScreen(5);
+  } else if (mode === 'collect') {
+    setScreen(3);
+  } else {
+    setScreen(2);
+  }
 }
 
-// Screen Switcher (1 to 5)
+function setCanvasView(view) {
+  if (!['graph', 'timeline', 'map'].includes(view)) return;
+  appState.activeCanvasView = view;
+  document.querySelectorAll('.canvas-segmented-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-view') === view);
+    btn.setAttribute('aria-selected', btn.getAttribute('data-view') === view ? 'true' : 'false');
+  });
+  if (view === 'graph') {
+    setScreen(2);
+  } else {
+    setScreen(4);
+  }
+}
+
 function setScreen(num) {
   appState.activeScreen = num;
-  const viewMap = {
+  document.querySelectorAll('.screen-view-pane').forEach(p => p.classList.add('is-hidden'));
+  document.querySelectorAll('.screen-pill-btn').forEach(b => b.classList.remove('active'));
+
+  const paneMap = {
     1: 'view-overview',
     2: 'view-graph-canvas',
     3: 'view-inbox-review',
     4: 'view-timeline-map',
     5: 'view-report-export'
   };
-  for (let i = 1; i <= 5; i++) {
-    const el = document.getElementById(viewMap[i]) || document.getElementById(`screen-${i}`);
-    if (el) {
-      if (i === num) {
-        el.classList.remove('is-hidden');
-        el.classList.add('active-screen');
-      } else {
-        el.classList.add('is-hidden');
-        el.classList.remove('active-screen');
-      }
+
+  const targetPane = document.getElementById(paneMap[num]);
+  if (targetPane) targetPane.classList.remove('is-hidden');
+
+  const targetBtn = document.querySelector(`.screen-pill-btn[data-screen="${num}"]`);
+  if (targetBtn) targetBtn.classList.add('active');
+
+  if (num === 2) {
+    if (appState.selectedNodeId) {
+      renderNodeInspector(appState.selectedNodeId);
+    } else {
+      renderEmptyRightPanel();
     }
   }
-
-  // Update Canvas view tabs
-  const viewTabs = document.querySelectorAll('.view-tab-btn');
-  viewTabs.forEach(b => b.classList.remove('active'));
-  if (num === 2) {
-    const b = document.querySelector('.view-tab-btn[data-view="graph"]');
-    if (b) b.classList.add('active');
-  } else if (num === 4) {
-    const b = document.querySelector('.view-tab-btn[data-view="timeline"]');
-    if (b) b.classList.add('active');
-  }
-
-  renderInspector();
-  renderSuggestedTools();
 }
 
-// Stealth Mode Toggle
 function toggleStealth() {
   appState.stealth = !appState.stealth;
-  const alertBadge = document.getElementById('stealth-warning-badge');
-  if (alertBadge) {
-    alertBadge.style.display = appState.stealth ? 'none' : 'inline-flex';
+  const badge = document.getElementById('stealth-warning-badge');
+  if (badge) {
+    badge.style.display = appState.stealth ? 'none' : 'inline-flex';
   }
-  showToast(appState.stealth ? t('stealth_badge_on') : t('stealth_badge_off'));
+  showToast(appState.stealth ? t('stealth_active') : t('stealth_warning'));
 }
 
-// Theme Toggle (Dark / Light)
 function toggleTheme() {
   appState.theme = appState.theme === 'dark' ? 'light' : 'dark';
   const html = document.getElementById('app-root');
@@ -1733,22 +2005,35 @@ function toggleTheme() {
   showToast(appState.theme === 'dark' ? 'Thème Sombre Activé' : "Thème Clair Activé (Mode Salle d'Audience)");
 }
 
-// Menubar Dropdown Logic
+// ============================================================================
+// MENUBAR CONTROLLER (Native Desktop Paradigm with Hover Switching & Keyboard Nav)
+// ============================================================================
+
 function toggleMenu(menuId) {
   const dropdown = document.getElementById(menuId);
   if (!dropdown) return;
-
   const isOpen = dropdown.classList.contains('is-open');
-  closeAllMenus();
 
-  if (!isOpen) {
-    dropdown.classList.add('is-open');
-    appState.openMenuId = menuId;
-    const btn = document.getElementById(`btn-${menuId}`);
-    if (btn) {
-      btn.classList.add('active');
-      btn.setAttribute('aria-expanded', 'true');
-    }
+  if (isOpen) {
+    closeAllMenus();
+  } else {
+    openMenu(menuId);
+  }
+}
+
+function openMenu(menuId) {
+  closeAllMenus();
+  const dropdown = document.getElementById(menuId);
+  if (!dropdown) return;
+
+  dropdown.classList.add('is-open');
+  appState.openMenuId = menuId;
+  appState.menubarActive = true;
+
+  const btn = document.getElementById(`btn-${menuId}`);
+  if (btn) {
+    btn.classList.add('active');
+    btn.setAttribute('aria-expanded', 'true');
   }
 }
 
@@ -1759,9 +2044,99 @@ function closeAllMenus() {
     b.setAttribute('aria-expanded', 'false');
   });
   appState.openMenuId = null;
+  appState.menubarActive = false;
 }
 
-// Generic Menu Actions Trigger
+function initMenubarEvents() {
+  const menubarItems = document.querySelectorAll('.menubar-item');
+  const menubarButtons = Array.from(document.querySelectorAll('.menubar-btn'));
+
+  menubarItems.forEach((item, index) => {
+    const btn = item.querySelector('.menubar-btn');
+    const dropdown = item.querySelector('.menu-dropdown');
+    if (!btn || !dropdown) return;
+
+    // Hover-switch when menubar is active
+    btn.addEventListener('mouseenter', () => {
+      if (appState.menubarActive && appState.openMenuId !== dropdown.id) {
+        openMenu(dropdown.id);
+      }
+    });
+
+    // Menubar button keyboard navigation
+    btn.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        const nextIndex = (index + 1) % menubarButtons.length;
+        const nextBtn = menubarButtons[nextIndex];
+        nextBtn.focus();
+        if (appState.menubarActive) {
+          const nextDropdown = nextBtn.closest('.menubar-item').querySelector('.menu-dropdown');
+          if (nextDropdown) openMenu(nextDropdown.id);
+        }
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const prevIndex = (index - 1 + menubarButtons.length) % menubarButtons.length;
+        const prevBtn = menubarButtons[prevIndex];
+        prevBtn.focus();
+        if (appState.menubarActive) {
+          const prevDropdown = prevBtn.closest('.menubar-item').querySelector('.menu-dropdown');
+          if (prevDropdown) openMenu(prevDropdown.id);
+        }
+      } else if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openMenu(dropdown.id);
+        const firstItem = dropdown.querySelector('.menu-dropdown-item');
+        if (firstItem) firstItem.focus();
+      } else if (e.key === 'Escape') {
+        closeAllMenus();
+      }
+    });
+
+    // Dropdown items keyboard navigation
+    const items = Array.from(dropdown.querySelectorAll('.menu-dropdown-item'));
+    items.forEach((menuItem, itemIdx) => {
+      menuItem.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          const next = items[(itemIdx + 1) % items.length];
+          if (next) next.focus();
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (itemIdx === 0) {
+            btn.focus();
+          } else {
+            items[itemIdx - 1].focus();
+          }
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          const nextIndex = (index + 1) % menubarButtons.length;
+          const nextBtn = menubarButtons[nextIndex];
+          const nextDropdown = nextBtn.closest('.menubar-item').querySelector('.menu-dropdown');
+          if (nextDropdown) {
+            openMenu(nextDropdown.id);
+            const first = nextDropdown.querySelector('.menu-dropdown-item');
+            if (first) first.focus();
+          }
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          const prevIndex = (index - 1 + menubarButtons.length) % menubarButtons.length;
+          const prevBtn = menubarButtons[prevIndex];
+          const prevDropdown = prevBtn.closest('.menubar-item').querySelector('.menu-dropdown');
+          if (prevDropdown) {
+            openMenu(prevDropdown.id);
+            const first = prevDropdown.querySelector('.menu-dropdown-item');
+            if (first) first.focus();
+          }
+        } else if (e.key === 'Escape') {
+          closeAllMenus();
+          btn.focus();
+        }
+      });
+    });
+  });
+}
+
 function triggerMenuAction(action) {
   closeAllMenus();
   if (action === 'new_case' || action === 'case_props') {
@@ -1799,283 +2174,300 @@ function triggerMenuAction(action) {
   }
 }
 
-// Modals Controller
+// ============================================================================
+// CONTEXT-DRIVEN RIGHT PANEL CONTROLLER
+// No selection = Case Overview + Inbox. Node selected = Inspector + Suggested Tools.
+// ============================================================================
+
+function selectNode(nodeId) {
+  appState.selectedNodeId = nodeId;
+  document.querySelectorAll('.canvas-node-card').forEach(c => {
+    c.classList.toggle('selected', c.id === nodeId);
+  });
+  renderNodeInspector(nodeId);
+}
+
+function clearSelection() {
+  appState.selectedNodeId = null;
+  document.querySelectorAll('.canvas-node-card').forEach(c => {
+    c.classList.remove('selected');
+  });
+  renderEmptyRightPanel();
+}
+
+function renderNodeInspector(nodeId) {
+  const node = ATHAR_CASE_NODES[nodeId];
+  const container = document.getElementById('inspector-content-pane');
+  const chipEl = document.getElementById('inspector-node-chip');
+  if (!container || !node) return;
+
+  if (chipEl) chipEl.textContent = `Node #${nodeId.replace('node-', '')}`;
+
+  let metaRows = '';
+  if (node.metadata) {
+    for (const [k, v] of Object.entries(node.metadata)) {
+      metaRows += `<div class="meta-row"><span class="meta-key">${k} :</span><span class="meta-val font-mono">${v}</span></div>`;
+    }
+  }
+
+  let layerBadgeClass = 'chip-emerald';
+  if (node.layer === 2) layerBadgeClass = 'chip-cyan';
+  else if (node.layer === 3) layerBadgeClass = 'chip-neutral';
+  else if (node.layer === 4) layerBadgeClass = 'chip-purple';
+
+  let actionButtonsHtml = '';
+  if (node.layer === 4) {
+    actionButtonsHtml = `
+      <div class="mt-2">
+        <button type="button" class="btn btn-secondary w-full" onclick="openAuditModal('promote')">
+          ${getLucideSvg('check', 14)} <span>Promouvoir en Preuve Certifiée (Art. 68 CPP)</span>
+        </button>
+      </div>
+    `;
+  } else {
+    actionButtonsHtml = `
+      <div class="mt-2">
+        <button type="button" class="btn btn-secondary btn-sm w-full" onclick="showToast('Empreinte SHA-256 scellée et enregistrée')">
+          ${getLucideSvg('lock', 12)} <span>Certifier l'Empreinte (SHA-256 RFC 3161)</span>
+        </button>
+      </div>
+    `;
+  }
+
+  container.innerHTML = `
+    <div class="inspector-card candidate-hypothesis-card">
+      <div class="candidate-header">
+        <span class="hypothesis-badge">${getLucideSvg(node.icon, 14)} ${node.typeLabel}</span>
+        <span class="chip ${layerBadgeClass} text-xs">${node.layerName}</span>
+      </div>
+      <h3 class="text-md font-bold text-light mt-1">${node.label}</h3>
+      <p class="text-xs text-muted mt-0-5">${node.subtitle}</p>
+      
+      <div class="metadata-table mt-2">
+        <div class="meta-row"><span class="meta-key">Empreinte SHA-256 :</span><span class="meta-val font-mono">${node.hash.substring(0, 18)}...</span></div>
+        <div class="meta-row"><span class="meta-key">Horodatage :</span><span class="meta-val font-mono">${node.timestamp}</span></div>
+        <div class="meta-row"><span class="meta-key">Méthode de calcul :</span><span class="meta-val">${node.method}</span></div>
+        ${metaRows}
+      </div>
+
+      ${actionButtonsHtml}
+    </div>
+  `;
+
+  renderSuggestedTools(node.suggestedTools);
+}
+
+function renderEmptyRightPanel() {
+  const container = document.getElementById('inspector-content-pane');
+  const chipEl = document.getElementById('inspector-node-chip');
+  if (!container) return;
+
+  if (chipEl) chipEl.textContent = 'Vue d\'ensemble';
+
+  let cluesListHtml = ATHAR_INBOX_CLUES.map(c => `
+    <div class="inbox-clue-card active mt-1">
+      <div class="node-header-row">
+        <span class="chip chip-cyan font-mono text-xs">${c.sourceTool}</span>
+        <span class="text-xs text-muted font-mono">${c.time}</span>
+      </div>
+      <div class="text-sm font-semibold text-light">${c.title}</div>
+      <div class="text-xs text-muted">${c.details}</div>
+      <div class="candidate-actions mt-1">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="showToast(t('toast_clue_added'))">
+          ${getLucideSvg('check', 12)} <span>${t('btn_add_graph')}</span>
+        </button>
+        <button type="button" class="btn btn-ghost btn-sm text-danger" onclick="showToast(t('toast_clue_dismissed'))">
+          ${getLucideSvg('x', 12)} <span>${t('btn_dismiss')}</span>
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+  container.innerHTML = `
+    <div class="case-overview-panel-widget">
+      <div class="candidate-header">
+        <span class="chip chip-emerald text-xs">${t('case_id')}</span>
+        <span class="chip chip-neutral font-mono text-xs">Section Recherches</span>
+      </div>
+      <h3 class="text-md font-bold text-light mt-1">${t('case_name')}</h3>
+      <p class="text-xs text-muted mt-0-5">${t('case_profile')}</p>
+
+      <div class="metadata-table mt-2">
+        <div class="meta-row"><span class="meta-key">Préjudice Déclaré :</span><span class="meta-val font-mono font-bold text-warning">1 450 000 DZD</span></div>
+        <div class="meta-row"><span class="meta-key">Victimes Directes :</span><span class="meta-val font-mono">6 (Alger, Oran, Blida)</span></div>
+        <div class="meta-row"><span class="meta-key">Preuves Scellées :</span><span class="meta-val font-mono text-success">12 Éléments (100% WORM)</span></div>
+        <div class="meta-row"><span class="meta-key">Taux de Rapprochement :</span><span class="meta-val font-mono text-info">94%</span></div>
+      </div>
+
+      <div class="panel-section-title mt-3">
+        <span>${t('inbox_pending_title')}</span>
+        <span class="chip chip-warning font-mono text-xs">3 en attente</span>
+      </div>
+
+      <div class="inbox-items-scroll mt-1">
+        ${cluesListHtml}
+      </div>
+    </div>
+  `;
+
+  renderSuggestedTools(['tool_ioc_extractor', 'tool_whois_dns', 'tool_telegram_resolver']);
+}
+
+function renderSuggestedTools(toolKeys = []) {
+  const container = document.getElementById('suggested-tools-container');
+  if (!container) return;
+
+  const defaultKeys = ['tool_whois_dns', 'tool_meta_pixel', 'tool_whatsapp_inspector'];
+  const keysToRender = (toolKeys && toolKeys.length > 0) ? toolKeys : defaultKeys;
+
+  let html = '';
+  keysToRender.forEach(k => {
+    const spec = TOOL_SPECS[k];
+    if (spec) {
+      html += `
+        <div class="suggested-tool-item" onclick="showToolInfo('${k}')">
+          <div class="suggested-tool-header">
+            <span class="suggested-tool-title">${spec.name}</span>
+            <span class="chip chip-cyan font-mono text-xs">${spec.score || '98%'}</span>
+          </div>
+          <div class="suggested-tool-reason">${spec.reason}</div>
+          <div class="suggested-tool-footer">
+            <span class="suggested-tool-req">${getLucideSvg('terminal', 12)} ${spec.category}</span>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="event.stopPropagation();runSimulatedTool('${spec.name}')">
+              ${getLucideSvg('play', 12)} <span>Exécuter</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+  });
+
+  container.innerHTML = html;
+}
+
+// ============================================================================
+// MODALS & ACTIONS CONTROLLERS
+// ============================================================================
+
 function openPropertiesModal() {
-  appState.propertiesModalOpen = true;
   const modal = document.getElementById('properties-modal');
   if (modal) modal.style.display = 'flex';
 }
-
 function closePropertiesModal() {
-  appState.propertiesModalOpen = false;
   const modal = document.getElementById('properties-modal');
   if (modal) modal.style.display = 'none';
 }
 
 function openInsertModal() {
-  appState.insertModalOpen = true;
   const modal = document.getElementById('insert-modal');
   if (modal) modal.style.display = 'flex';
 }
-
 function closeInsertModal() {
-  appState.insertModalOpen = false;
   const modal = document.getElementById('insert-modal');
   if (modal) modal.style.display = 'none';
 }
 
 function openLLMSettingsModal() {
-  appState.llmModalOpen = true;
   const modal = document.getElementById('llm-settings-modal');
   if (modal) modal.style.display = 'flex';
 }
-
 function closeLLMSettingsModal() {
-  appState.llmModalOpen = false;
   const modal = document.getElementById('llm-settings-modal');
   if (modal) modal.style.display = 'none';
 }
 
 function openImportModal() {
-  appState.importModalOpen = true;
   const modal = document.getElementById('import-modal');
   if (modal) modal.style.display = 'flex';
 }
-
 function closeImportModal() {
-  appState.importModalOpen = false;
   const modal = document.getElementById('import-modal');
   if (modal) modal.style.display = 'none';
 }
 
-// Tool Information Modal
 function showToolInfo(toolId) {
-  closeAllMenus();
-  const tool = TOOL_SPECS[toolId] || TOOLS_CATALOG.find(t => t.id === toolId || t.name === toolId) || {
-    name: toolId,
-    cat: t('menu_osint'),
-    badge: 'P1 • Déterministe',
-    mode: 'Review-Run (Validation Requise)',
-    desc: 'Outil d\'investigation judiciaire et forensique spécialisé.',
-    inputs: 'Indice sélectionné (Texte, URL ou Fichier)',
-    outputs: 'Nouveaux nœuds et arêtes créés dans le graphe d\'enquête',
-    storage: 'Neo4j 5.x & MinIO S3 (Chaîne de garde WORM)',
-    resources: 'Processus local sécurisé • Zéro fuite réseau',
-    compliance: 'ISO 27037 / RFC 3161'
-  };
+  const spec = TOOL_SPECS[toolId];
+  if (!spec) return;
 
-  appState.activeModalToolId = toolId;
-  appState.toolInfoModalOpen = true;
-
-  const nameEl = document.getElementById('tool-info-name');
-  if (nameEl) nameEl.textContent = tool.name;
+  const titleEl = document.getElementById('tool-info-name');
   const catEl = document.getElementById('tool-info-cat');
-  if (catEl) catEl.textContent = tool.cat;
-  const badgeEl = document.getElementById('tool-info-badge');
-  if (badgeEl) badgeEl.textContent = tool.badge;
   const modeEl = document.getElementById('tool-info-mode');
-  if (modeEl) modeEl.textContent = tool.mode;
   const descEl = document.getElementById('tool-info-desc');
-  if (descEl) descEl.textContent = tool.desc;
   const inputsEl = document.getElementById('tool-info-inputs-val');
-  if (inputsEl) inputsEl.textContent = tool.inputs;
   const outputsEl = document.getElementById('tool-info-outputs-val');
-  if (outputsEl) outputsEl.textContent = tool.outputs;
   const storageEl = document.getElementById('tool-info-storage-val');
-  if (storageEl) storageEl.textContent = tool.storage;
   const resourcesEl = document.getElementById('tool-info-resources-val');
-  if (resourcesEl) resourcesEl.textContent = tool.resources;
   const complianceEl = document.getElementById('tool-info-compliance-val');
-  if (complianceEl) complianceEl.textContent = tool.compliance;
+
+  if (titleEl) titleEl.textContent = spec.name;
+  if (catEl) catEl.textContent = spec.category;
+  if (modeEl) modeEl.textContent = spec.mode;
+  if (descEl) descEl.textContent = spec.reason;
+  if (inputsEl) inputsEl.textContent = spec.inputs;
+  if (outputsEl) outputsEl.textContent = spec.outputs;
+  if (storageEl) storageEl.textContent = spec.storage;
+  if (resourcesEl) resourcesEl.textContent = spec.resources;
+  if (complianceEl) complianceEl.textContent = spec.compliance;
 
   const modal = document.getElementById('tool-info-modal');
   if (modal) modal.style.display = 'flex';
 }
 
 function closeToolInfoModal() {
-  appState.toolInfoModalOpen = false;
-  appState.activeModalToolId = null;
   const modal = document.getElementById('tool-info-modal');
   if (modal) modal.style.display = 'none';
 }
 
 function runToolFromModal() {
-  const toolId = appState.activeModalToolId;
+  const titleEl = document.getElementById('tool-info-name');
+  const name = titleEl ? titleEl.textContent : 'Outil';
   closeToolInfoModal();
-  if (toolId) {
-    const tool = TOOL_SPECS[toolId];
-    const name = tool ? tool.name : toolId;
-    runSimulatedTool(name);
-  }
+  runSimulatedTool(name);
 }
 
 function addToolToPlaybook() {
   closeToolInfoModal();
-  showToast(t('tool_info_playbook_btn') + ' : ' + (appState.activeModalToolId || 'Outil'));
+  showToast('Brique intégrée au Playbook d\'enquête DAG');
 }
 
-// Left Panel Collapse Toggle
 function toggleLeftPanel() {
   appState.leftPanelCollapsed = !appState.leftPanelCollapsed;
   const panel = document.getElementById('panel-left');
-  if (panel) panel.classList.toggle('collapsed', appState.leftPanelCollapsed);
-}
-
-// Node Selection Handler
-function selectNode(nodeId) {
-  appState.selectedNodeId = nodeId;
-  document.querySelectorAll('.graph-node').forEach(n => {
-    n.classList.toggle('selected', n.id === nodeId);
-  });
-  renderInspector();
-  renderSuggestedTools();
-}
-
-// Inspector Rendering Logic
-function renderInspector() {
-  const container = document.getElementById('inspector-content-container');
-  if (!container) return;
-
-  if (appState.selectedNodeId === 'node-suspect') {
-    container.innerHTML = `
-      <div class="candidate-subject-card">
-        <div class="candidate-subject-badge">
-          <span class="chip chip-purple">${getLucideSvg('sparkles', 13)} ${t('candidate_subject_title')}</span>
-          <span class="chip chip-neutral font-mono text-xs">${t('candidate_status_hypothesis')}</span>
-        </div>
-        <div class="judicial-warning-box">
-          ${getLucideSvg('shield', 14)}
-          <span class="judicial-warning-text">${t('judicial_safety_notice')}</span>
-        </div>
-        <div class="metric-score-breakdown">
-          <div class="metric-row">
-            <span class="metric-name">${t('candidate_biometrics_label')}</span>
-            <span class="metric-value font-mono">89%</span>
-          </div>
-          <div class="metric-row">
-            <span class="metric-name">${t('candidate_voice_label')}</span>
-            <span class="metric-value font-mono">94%</span>
-          </div>
-          <div class="metric-row">
-            <span class="metric-name">${t('candidate_centrality_label')}</span>
-            <span class="metric-value font-mono">0.89</span>
-          </div>
-        </div>
-        <div class="metadata-table">
-          <div class="meta-row"><span class="meta-key">${t('prop_identifier')}</span><span class="meta-val font-mono">Amine B. (31 ans, Oran)</span></div>
-          <div class="meta-row"><span class="meta-key">${t('prop_layer')}</span><span class="meta-val chip chip-purple">Calque 4 (Hypothèse)</span></div>
-          <div class="meta-row"><span class="meta-key">${t('prop_hash')}</span><span class="meta-val font-mono">3b4f...a891</span></div>
-          <div class="meta-row"><span class="meta-key">${t('prop_source')}</span><span class="meta-val">Entity Resolution Engine</span></div>
-        </div>
-        <div class="candidate-actions">
-          <button class="btn btn-secondary" onclick="openAuditModal('promote')">${getLucideSvg('check', 14)} ${t('btn_promote_verified')}</button>
-          <button class="btn btn-ghost text-danger" onclick="openAuditModal('discard')">${getLucideSvg('x', 14)} ${t('btn_discard_hypothesis')}</button>
-        </div>
-      </div>
-    `;
-  } else if (appState.selectedNodeId === 'node-phone') {
-    container.innerHTML = `
-      <div class="inspector-card">
-        <div class="inspector-header">
-          <span class="chip chip-cyan">${getLucideSvg('phone', 14)} Téléphone E.164</span>
-          <span class="font-mono text-muted">Node #03</span>
-        </div>
-        <h4 class="inspector-entity-title font-mono">+213 555 019 283</h4>
-        <div class="metadata-table">
-          <div class="meta-row"><span class="meta-key">${t('prop_entity_type')}</span><span class="meta-val">Ligne Mobile (Ooredoo Algérie)</span></div>
-          <div class="meta-row"><span class="meta-key">${t('prop_layer')}</span><span class="meta-val chip chip-cyan">Calque 2 (OSINT Brut)</span></div>
-          <div class="meta-row"><span class="meta-key">${t('prop_hash')}</span><span class="meta-val font-mono">7f1a...c209</span></div>
-          <div class="meta-row"><span class="meta-key">${t('prop_timestamp')}</span><span class="meta-val">10 Nov 2026 • 10:18 UTC</span></div>
-          <div class="meta-row"><span class="meta-key">${t('prop_confidence')}</span><span class="meta-val chip chip-success">98% (Vérifié)</span></div>
-        </div>
-      </div>
-    `;
-  } else {
-    container.innerHTML = `
-      <div class="inspector-card">
-        <div class="inspector-header">
-          <span class="chip chip-emerald">${getLucideSvg('lock', 14)} Annonce Marché</span>
-          <span class="font-mono text-muted">Node #01</span>
-        </div>
-        <h4 class="inspector-entity-title">Annonce FB Marketplace #98124</h4>
-        <div class="metadata-table">
-          <div class="meta-row"><span class="meta-key">${t('prop_layer')}</span><span class="meta-val chip chip-emerald">Calque 1 (Preuve Scellée)</span></div>
-          <div class="meta-row"><span class="meta-key">${t('prop_hash')}</span><span class="meta-val font-mono">e3b0...b855 (RFC 3161)</span></div>
-          <div class="meta-row"><span class="meta-key">${t('prop_timestamp')}</span><span class="meta-val">10 Nov 2026 • 10:15 UTC</span></div>
-        </div>
-      </div>
-    `;
+  if (panel) {
+    panel.style.width = appState.leftPanelCollapsed ? '0px' : 'var(--panel-left-width)';
+    panel.style.padding = appState.leftPanelCollapsed ? '0' : '';
   }
 }
 
-// Render Suggested Tools based on selected node
-function renderSuggestedTools() {
-  const container = document.getElementById('suggested-tools-container');
-  if (!container) return;
-
-  let compatibleTools = [];
-  if (appState.selectedNodeId === 'node-phone') {
-    compatibleTools = TOOLS_CATALOG.filter(t => t.inputs.includes('PhoneNumber')).slice(0, 4);
-  } else if (appState.selectedNodeId === 'node-suspect') {
-    compatibleTools = TOOLS_CATALOG.filter(t => t.inputs.includes('CandidateSubject')).slice(0, 4);
-  } else {
-    compatibleTools = TOOLS_CATALOG.filter(t => t.inputs.includes('SocialPost') || t.inputs.includes('URL')).slice(0, 4);
-  }
-
-  container.innerHTML = compatibleTools.map(tool => `
-    <div class="suggested-tool-item">
-      <div class="tool-item-info">
-        <div class="tool-title-row">
-          <span class="tool-name">${tool.name}</span>
-          <span class="chip chip-neutral">${tool.req === 'offline' ? 'Docker Local' : (tool.req === 'free_key' ? 'Clé API' : 'Session Infiltrée')}</span>
-        </div>
-        <p class="tool-desc">${tool.desc}</p>
-      </div>
-      <button class="btn btn-secondary btn-sm" onclick="runSimulatedTool('${tool.name}')">
-        ${getLucideSvg('play', 12)} ${t('btn_run_brick')}
-      </button>
-    </div>
-  `).join('');
-}
-
-// Run simulated tool and dispatch to arbitration inbox
 function runSimulatedTool(toolName) {
-  showToast(`${t('toast_tool_success')} (${toolName})`);
-  const badge = document.getElementById('inbox-pending-counter');
-  if (badge) badge.textContent = '4';
+  showToast(`Exécution de [${toolName}] en cours... Découvertes envoyées à la boîte d'arbitrage`);
 }
 
-// Toast helper
 function showToast(msg) {
   const toast = document.getElementById('app-toast');
   if (!toast) return;
   toast.textContent = msg;
-  toast.classList.add('visible');
-  setTimeout(() => toast.classList.remove('visible'), 3200);
+  toast.classList.add('is-visible');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => {
+    toast.classList.remove('is-visible');
+  }, 2800);
 }
 
-// Audit modal (Promote / Discard)
 function openAuditModal(action) {
-  appState.auditModalOpen = true;
   const modal = document.getElementById('audit-modal');
   if (modal) modal.style.display = 'flex';
 }
-
 function closeAuditModal() {
-  appState.auditModalOpen = false;
   const modal = document.getElementById('audit-modal');
   if (modal) modal.style.display = 'none';
 }
-
 function confirmAuditAction() {
   closeAuditModal();
-  showToast(t('toast_clue_added'));
-  setScreen(5);
+  showToast('Action validée et inscrite au registre forensique inaltérable');
 }
 
-// Command Palette
 function openCommandPalette() {
-  appState.commandPaletteOpen = true;
   const modal = document.getElementById('command-palette-modal');
   if (modal) {
     modal.style.display = 'flex';
@@ -2087,27 +2479,25 @@ function openCommandPalette() {
     }
   }
 }
-
 function closeCommandPalette() {
-  appState.commandPaletteOpen = false;
   const modal = document.getElementById('command-palette-modal');
   if (modal) modal.style.display = 'none';
 }
 
 function filterCommandPalette(query) {
-  const container = document.getElementById('cmd-results-list');
-  if (!container) return;
-  const q = query.toLowerCase().trim();
-  const filtered = TOOLS_CATALOG.filter(t => t.name.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q) || t.cat.includes(q));
+  const list = document.getElementById('cmd-results-list');
+  if (!list) return;
+  const q = (query || '').toLowerCase().trim();
 
-  container.innerHTML = filtered.slice(0, 8).map(tool => `
-    <div class="cmd-result-item" onclick="selectCommandTool('${tool.name}')">
-      <div class="cmd-icon-box">${getLucideSvg('terminal', 16)}</div>
-      <div class="cmd-text-box">
-        <div class="cmd-name">${tool.name}</div>
-        <div class="cmd-desc">${tool.desc}</div>
-      </div>
-      <span class="chip chip-neutral font-mono text-xs">${tool.req}</span>
+  const entries = Object.entries(TOOL_SPECS);
+  const filtered = entries.filter(([k, v]) => {
+    return v.name.toLowerCase().includes(q) || v.category.toLowerCase().includes(q) || v.reason.toLowerCase().includes(q);
+  });
+
+  list.innerHTML = filtered.map(([k, v]) => `
+    <div class="cmd-result-item" onclick="selectCommandTool('${v.name}')">
+      <div class="cmd-result-title">${v.name}</div>
+      <div class="cmd-result-desc">${v.category} • ${v.reason}</div>
     </div>
   `).join('');
 }
@@ -2133,354 +2523,14 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// Keyboard Shortcuts Listener
-document.addEventListener('keydown', (e) => {
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-    e.preventDefault();
-    openCommandPalette();
-  } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
-    e.preventDefault();
-    openPropertiesModal();
-  } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-    e.preventDefault();
-    showToast(t('m_save') + ' : ' + t('case_id'));
-  } else if (e.key === 'Escape') {
-    closeAllMenus();
-    closeCommandPalette();
-    closeAuditModal();
-    closePropertiesModal();
-    closeInsertModal();
-    closeLLMSettingsModal();
-    closeImportModal();
-    closeToolInfoModal();
-  }
-});
-
-// Initialize app on DOM ready
+// Initialize on DOM Ready
 document.addEventListener('DOMContentLoaded', () => {
   applyI18n();
+  initMenubarEvents();
   setScreen(2);
-});
-
-// ============================================================================
-// 100-NODE FORENSIC GRAPH CONTROLLER FOR ATHAR DZ (CASE #2026-SCAM-089)
-// ============================================================================
-
-let graph100State = {
-  selectedNodeId: 'suspect_boss_tarek',
-  searchQuery: '',
-  activeBranch: 'all', // all | pneus | visas | electro | audio | finance
-  layerFilters: {
-    1: true, // Preuves & Victimes
-    2: true, // OSINT Brut
-    3: true, // Infrastructure & Code
-    4: true  // Réseau Criminel
-  }
-};
-
-function init100NodeCanvas() {
-  const container = document.getElementById('canvas-svg-container');
-  if (!container || !window.CASE_CANDY_WHEELS) return;
-
-  const graph = window.CASE_CANDY_WHEELS.graph_representation;
-  if (!graph || !graph.nodes) return;
-
-  // Build the Filter Toolbar Header
-  const filterToolbarHtml = `
-    <div class="graph-100-toolbar" style="position:sticky;top:0;left:0;right:0;z-index:30;background:rgba(15,23,42,0.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--border-color);padding:0.45rem 0.8rem;display:flex;align-items:center;justify-content:space-between;gap:0.6rem;flex-wrap:wrap;">
-      <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;">
-        <span class="chip chip-warning font-mono" id="graph-node-counter" style="font-weight:700;">100 / 100 Nœuds Visibles</span>
-        <div class="btn-group" role="group" aria-label="Filtres Calques">
-          <button class="btn btn-sm btn-layer-1" id="btn-layer-1" onclick="toggleLayer100(1)" style="font-size:0.72rem;padding:0.25rem 0.5rem;background:rgba(16,185,129,0.15);color:#10b981;border:1px solid #10b981;">✓ Calque 1 : Preuves (25)</button>
-          <button class="btn btn-sm btn-layer-2" id="btn-layer-2" onclick="toggleLayer100(2)" style="font-size:0.72rem;padding:0.25rem 0.5rem;background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid #38bdf8;">✓ Calque 2 : OSINT (30)</button>
-          <button class="btn btn-sm btn-layer-3" id="btn-layer-3" onclick="toggleLayer100(3)" style="font-size:0.72rem;padding:0.25rem 0.5rem;background:rgba(148,163,184,0.15);color:#cbd5e1;border:1px solid #64748b;">✓ Calque 3 : Infra (25)</button>
-          <button class="btn btn-sm btn-layer-4" id="btn-layer-4" onclick="toggleLayer100(4)" style="font-size:0.72rem;padding:0.25rem 0.5rem;background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid #a855f7;">✓ Calque 4 : Réseau (20)</button>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;">
-        <div style="display:flex;gap:0.25rem;">
-          <button class="btn btn-ghost btn-sm" onclick="setBranch100('all')" style="font-size:0.7rem;padding:0.2rem 0.45rem;">Tous</button>
-          <button class="btn btn-ghost btn-sm" onclick="setBranch100('pneus')" style="font-size:0.7rem;padding:0.2rem 0.45rem;">🚗 Pneus</button>
-          <button class="btn btn-ghost btn-sm" onclick="setBranch100('visas')" style="font-size:0.7rem;padding:0.2rem 0.45rem;">🇪🇺 Visas</button>
-          <button class="btn btn-ghost btn-sm" onclick="setBranch100('electro')" style="font-size:0.7rem;padding:0.2rem 0.45rem;">📱 Électro</button>
-          <button class="btn btn-ghost btn-sm" onclick="setBranch100('audio')" style="font-size:0.7rem;padding:0.2rem 0.45rem;">🎙️ Vocaux</button>
-          <button class="btn btn-ghost btn-sm" onclick="setBranch100('finance')" style="font-size:0.7rem;padding:0.2rem 0.45rem;">🪙 Finances</button>
-        </div>
-        <input type="text" id="graph-search-100" placeholder="🔍 Filtrer les 100 nœuds..." oninput="handleSearch100(this.value)" style="background:#0f172a;border:1px solid var(--border-color);color:#f8fafc;padding:0.25rem 0.55rem;border-radius:4px;font-size:0.74rem;width:170px;" />
-      </div>
-    </div>
-  `;
-
-  // Render SVG Canvas wrapper
-  let svgContent = `<svg id="svg-edges-100" class="canvas-edges-layer" style="min-width:2350px;min-height:2000px;position:absolute;top:0;left:0;pointer-events:none;z-index:5;" aria-hidden="true">`;
-  
-  // Build lookup map for coordinates
-  const nodeMap = {};
-  graph.nodes.forEach(n => { nodeMap[n.id] = n; });
-
-  // Render Lines
-  graph.edges.forEach(e => {
-    const fromN = nodeMap[e.from];
-    const toN = nodeMap[e.to];
-    if (fromN && toN) {
-      const x1 = fromN.x + 115;
-      const y1 = fromN.y + 40;
-      const x2 = toN.x + 115;
-      const y2 = toN.y + 40;
-      const isDashed = (fromN.layer === 4 || toN.layer === 4) ? 'stroke-dasharray="4,4"' : '';
-      const color = fromN.layer === 1 ? '#10b981' : fromN.layer === 2 ? '#38bdf8' : fromN.layer === 3 ? '#64748b' : '#a855f7';
-      svgContent += `<line id="edge-${e.from}-${e.to}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="1.6" opacity="0.45" ${isDashed} class="edge-line-100" data-from="${e.from}" data-to="${e.to}" />`;
-    }
-  });
-  svgContent += `</svg>`;
-
-  // Render 100 Node Cards
-  let nodesHtml = `<div id="nodes-layer-100" style="position:relative;min-width:2350px;min-height:2000px;z-index:10;padding-top:40px;">`;
-  
-  graph.nodes.forEach(n => {
-    const layerClass = n.layer === 1 ? 'layer-1' : n.layer === 2 ? 'layer-2' : n.layer === 3 ? 'layer-3' : 'layer-4';
-    const chipColor = n.layer === 1 ? 'chip-emerald' : n.layer === 2 ? 'chip-cyan' : n.layer === 3 ? 'chip-neutral' : 'chip-purple';
-    const layerName = n.layer === 1 ? 'Preuve Scellée' : n.layer === 2 ? 'OSINT' : n.layer === 3 ? 'Infra/Code' : 'Hypothèse';
-    
-    nodesHtml += `
-      <div class="canvas-node-card ${layerClass} node-card-100"
-           id="node-100-${n.id}"
-           data-id="${n.id}"
-           data-layer="${n.layer}"
-           data-label="${n.label.toLowerCase()}"
-           data-subtitle="${n.subtitle.toLowerCase()}"
-           style="position:absolute;left:${n.x}px;top:${n.y + 45}px;width:230px;cursor:pointer;transition:transform 0.15s, box-shadow 0.15s;"
-           onclick="select100Node('${n.id}')">
-        <div class="node-header-row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">
-          <span class="node-type-label" style="font-size:0.7rem;display:flex;align-items:center;gap:0.3rem;">
-            <span>${n.icon}</span> <span>${n.type}</span>
-          </span>
-          <span class="chip ${chipColor} text-xs font-mono" style="padding:1px 4px;font-size:0.65rem;">${layerName}</span>
-        </div>
-        <div class="node-title-text" style="font-weight:700;font-size:0.78rem;color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-          ${n.label}
-        </div>
-        <div class="node-subtitle-text" style="font-size:0.68rem;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">
-          ${n.subtitle}
-        </div>
-      </div>
-    `;
-  });
-  nodesHtml += `</div>`;
-
-  container.innerHTML = filterToolbarHtml + svgContent + nodesHtml;
-
-  // Auto-select Kingpin Boss by default
-  select100Node('suspect_boss_tarek');
-}
-
-function select100Node(nid) {
-  graph100State.selectedNodeId = nid;
-
-  // Highlight selected node
-  document.querySelectorAll('.node-card-100').forEach(c => {
-    const isSelected = c.getAttribute('data-id') === nid;
-    c.classList.toggle('selected', isSelected);
-    c.style.borderColor = isSelected ? '#f59e0b' : '';
-    c.style.transform = isSelected ? 'scale(1.04)' : 'scale(1)';
-    c.style.zIndex = isSelected ? '25' : '10';
-  });
-
-  // Highlight connected edges
-  document.querySelectorAll('.edge-line-100').forEach(l => {
-    const from = l.getAttribute('data-from');
-    const to = l.getAttribute('data-to');
-    if (from === nid || to === nid) {
-      l.setAttribute('stroke-width', '3.2');
-      l.setAttribute('opacity', '1');
-      l.setAttribute('stroke', '#f59e0b');
-    } else {
-      l.setAttribute('stroke-width', '1.4');
-      l.setAttribute('opacity', '0.25');
-    }
-  });
-
-  render100Inspector(nid);
-}
-
-function render100Inspector(nid) {
-  const container = document.getElementById('inspector-content-pane') || document.getElementById('inspector-content-container');
-  if (!container || !window.CASE_CANDY_WHEELS) return;
-
-  const graph = window.CASE_CANDY_WHEELS.graph_representation;
-  const node = graph.nodes.find(n => n.id === nid);
-  if (!node) return;
-
-  const layerBadge = node.layer === 1 
-    ? '<span class="chip chip-emerald">Calque 1 • Preuve Scellée RFC 3161</span>' 
-    : node.layer === 2 
-    ? '<span class="chip chip-cyan">Calque 2 • Découverte OSINT Brute</span>' 
-    : node.layer === 3 
-    ? '<span class="chip chip-neutral">Calque 3 • Infrastructure & Télécoms</span>' 
-    : '<span class="chip chip-danger">Calque 4 • Hypothèse Judiciaire</span>';
-
-  let metaRows = '';
-  Object.entries(node.meta).forEach(([k, v]) => {
-    metaRows += `<div class="meta-row"><span class="meta-key">${k} :</span><span class="meta-val font-mono">${v}</span></div>`;
-  });
-
-  // Action buttons tailored to entity type
-  let actionButtonsHtml = '';
-  if (node.type === 'AUDIO_RECORDING') {
-    actionButtonsHtml = `
-      <div style="background:rgba(16,185,129,0.1);border:1px solid #10b981;border-radius:6px;padding:0.6rem;margin-top:0.6rem;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.3rem;">
-          <span style="font-size:0.74rem;font-weight:700;color:#10b981;">▶ Lecteur Forensique Audio Darija</span>
-          <span class="font-mono text-xs">Biométrie: 96%</span>
-        </div>
-        <div style="font-size:0.72rem;color:#cbd5e1;font-style:italic;margin-bottom:0.4rem;">
-          "Khouya Karim, salam alaykoum. Les 4 pneus Michelin rahoum réservés..."
-        </div>
-        <button class="btn btn-secondary btn-sm w-full" onclick="showToast('Lecture en cours de la note vocale scellée...')">
-          🔊 Réécouter l'Enregistrement Original
-        </button>
-      </div>
-    `;
-  } else if (node.type === 'KINGPIN' || node.type === 'LIEUTENANT') {
-    actionButtonsHtml = `
-      <div style="margin-top:0.6rem;display:flex;flex-direction:column;gap:0.35rem;">
-        <button class="btn btn-primary btn-sm w-full" onclick="showToast('Mandat d\\'arrêt international généré pour le parquet')">
-          ⚖️ Délivrer Mandat d'Arrêt & Dépôt
-        </button>
-        <button class="btn btn-secondary btn-sm w-full" onclick="showToast('Réquisition transmise à Binance et Cellule FIU')">
-          🪙 Ordonner Gel Compte & Portefeuille USDT
-        </button>
-      </div>
-    `;
-  } else if (node.type === 'BANK_ACCOUNT' || node.type === 'MULE') {
-    actionButtonsHtml = `
-      <div style="margin-top:0.6rem;">
-        <button class="btn btn-primary btn-sm w-full" onclick="showToast('Réquisition transmise à Algérie Poste BaridiMob')">
-          🚫 Bloquer Compte BaridiMob & Saisie Solde
-        </button>
-      </div>
-    `;
-  } else if (node.type === 'MALWARE_APK' || node.type === 'CODE_REPO') {
-    actionButtonsHtml = `
-      <div style="margin-top:0.6rem;">
-        <button class="btn btn-secondary btn-sm w-full" onclick="showToast('Décompilation binaire & rapport de signatures extrait')">
-          🔍 Inspecter Code Décompilé (JADX-GUI)
-        </button>
-      </div>
-    `;
+  if (appState.selectedNodeId) {
+    renderNodeInspector(appState.selectedNodeId);
   } else {
-    actionButtonsHtml = `
-      <div style="margin-top:0.6rem;">
-        <button class="btn btn-secondary btn-sm w-full" onclick="showToast('Entité versée au registre des scellés')">
-          🔒 Figer et Certifier l'Empreinte (SHA-256)
-        </button>
-      </div>
-    `;
+    renderEmptyRightPanel();
   }
-
-  container.innerHTML = `
-    <div class="inspector-card candidate-hypothesis-card" style="padding:0.75rem;">
-      <div class="candidate-header" style="margin-bottom:0.5rem;">
-        <span class="hypothesis-badge">${node.icon} ${node.type}</span>
-        ${layerBadge}
-      </div>
-      <h3 style="font-size:0.95rem;font-weight:800;color:#f8fafc;margin:0 0 0.2rem 0;">${node.label}</h3>
-      <p style="font-size:0.75rem;color:#94a3b8;margin:0 0 0.6rem 0;">${node.subtitle}</p>
-      
-      <div class="metadata-table">
-        <div class="meta-row"><span class="meta-key">Identifiant Nœud :</span><span class="meta-val font-mono">${node.id}</span></div>
-        <div class="meta-row"><span class="meta-key">Position Canvas :</span><span class="meta-val font-mono">X: ${node.x}px • Y: ${node.y}px</span></div>
-        ${metaRows}
-      </div>
-
-      ${actionButtonsHtml}
-    </div>
-  `;
-}
-
-function toggleLayer100(layerNum) {
-  graph100State.layerFilters[layerNum] = !graph100State.layerFilters[layerNum];
-  const btn = document.getElementById(`btn-layer-${layerNum}`);
-  if (btn) {
-    btn.style.opacity = graph100State.layerFilters[layerNum] ? '1' : '0.4';
-  }
-  applyFilters100();
-}
-
-function setBranch100(branch) {
-  graph100State.activeBranch = branch;
-  applyFilters100();
-  showToast(`Filtre activé : ${branch.toUpperCase()}`);
-}
-
-function handleSearch100(val) {
-  graph100State.searchQuery = (val || '').toLowerCase().trim();
-  applyFilters100();
-}
-
-function applyFilters100() {
-  let visibleCount = 0;
-  const q = graph100State.searchQuery;
-  const br = graph100State.activeBranch;
-
-  document.querySelectorAll('.node-card-100').forEach(c => {
-    const l = parseInt(c.getAttribute('data-layer'), 10);
-    const lbl = c.getAttribute('data-label') || '';
-    const sub = c.getAttribute('data-subtitle') || '';
-    const nid = c.getAttribute('data-id') || '';
-
-    // Layer check
-    let passLayer = graph100State.layerFilters[l];
-
-    // Branch check
-    let passBranch = true;
-    if (br === 'pneus') passBranch = lbl.includes('pneu') || sub.includes('pneu') || nid.includes('pneu') || nid.includes('amine') || nid.includes('youcef');
-    else if (br === 'visas') passBranch = lbl.includes('visa') || sub.includes('visa') || nid.includes('visa') || nid.includes('nadia') || nid.includes('tls');
-    else if (br === 'electro') passBranch = lbl.includes('electro') || lbl.includes('tv') || lbl.includes('iphone') || nid.includes('farid') || nid.includes('gold');
-    else if (br === 'audio') passBranch = nid.includes('audio') || lbl.includes('vocal');
-    else if (br === 'finance') passBranch = nid.includes('rip') || nid.includes('baridimob') || nid.includes('wallet') || nid.includes('binance') || nid.includes('cashier');
-
-    // Search query check
-    let passQuery = true;
-    if (q) {
-      passQuery = lbl.includes(q) || sub.includes(q) || nid.includes(q);
-    }
-
-    const show = passLayer && passBranch && passQuery;
-    c.style.display = show ? 'block' : 'none';
-    if (show) visibleCount++;
-  });
-
-  // Update edges visibility
-  document.querySelectorAll('.edge-line-100').forEach(l => {
-    const from = l.getAttribute('data-from');
-    const to = l.getAttribute('data-to');
-    const fromEl = document.getElementById(`node-100-${from}`);
-    const toEl = document.getElementById(`node-100-${to}`);
-    const showEdge = fromEl && toEl && fromEl.style.display !== 'none' && toEl.style.display !== 'none';
-    l.style.display = showEdge ? 'block' : 'none';
-  });
-
-  const counterEl = document.getElementById('graph-node-counter');
-  if (counterEl) {
-    counterEl.textContent = `${visibleCount} / 100 Nœuds Visibles`;
-  }
-}
-
-// Hook into maquette screen switcher
-const originalSetScreen = window.setScreen;
-window.setScreen = function(num) {
-  if (typeof originalSetScreen === 'function') {
-    originalSetScreen(num);
-  }
-  if (num === 2) {
-    setTimeout(init100NodeCanvas, 50);
-  }
-};
-
-// Also trigger on load if screen 2 is active
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    init100NodeCanvas();
-  }, 120);
 });
