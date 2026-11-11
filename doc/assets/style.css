@@ -1035,3 +1035,54 @@ pre code {
   pointer-events: none;
 }
 
+/* ==========================================================================
+   MAIN SECTION TABS (OSINT, FORENSICS, SNA / SNS)
+   ========================================================================== */
+.main-tabs-nav {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid #1e293b;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.main-tab-btn {
+  background: #0f172a;
+  border: 1px solid #23344d;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px 8px 0 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.main-tab-btn:hover {
+  background: #172540;
+  color: #f1f5f9;
+  border-color: #38bdf8;
+}
+
+.main-tab-btn.active {
+  background: #141f36;
+  color: #38bdf8;
+  border-color: #38bdf8 #38bdf8 #141f36;
+  border-bottom: 2px solid #38bdf8;
+  margin-bottom: -2px;
+}
+
+.tab-content-panel {
+  display: none;
+}
+
+.tab-content-panel.active {
+  display: block;
+}
+
+

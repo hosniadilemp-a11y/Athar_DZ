@@ -1027,6 +1027,458 @@ const FULL_TOOLS_INVENTORY = [
   }
 ];
 
+// =========================================================================
+// SECTION 2 : OUTILS DE POLICE JUDICIAIRE & FORENSICS (DFIR / SCIENTIFIQUE) - 12 Outils
+// =========================================================================
+const FORENSIC_INVESTIGATION_TOOLS = [
+  {
+    id: 'forensic_autopsy',
+    name: 'Autopsy & The Sleuth Kit (TSK)',
+    discipline: 'Disques & Systèmes de Fichiers',
+    github: 'https://github.com/sleuthkit/autopsy',
+    resources: '4 Cores CPU • 16 Go RAM • Disque NVMe rapide',
+    inputs: 'Images disques brutes (.dd, .raw), EnCase (.E01), Disques virtuels (.vmdk, .vhd)',
+    outputs: 'Fichiers supprimés restaurés, Historiques navigateurs, Registres Windows, MFT NTFS',
+    storage: 'MinIO S3 (Preuves .E01 scellées WORM) & Neo4j (Relations fichiers-suspect)',
+    priority: 'P0 (Indispensable)',
+    desc: 'La plateforme de référence mondiale pour l\'analyse forensique de disques durs, ordinateurs et clés USB saisis.'
+  },
+  {
+    id: 'forensic_volatility',
+    name: 'Volatility 3 — Forensic Mémoire Vive (RAM)',
+    discipline: 'Mémoire Vive & Processus Cachés',
+    github: 'https://github.com/volatilityfoundation/volatility3',
+    resources: '2-4 Cores CPU • 8-16 Go RAM',
+    inputs: 'Dumps mémoire physique (.raw, .dmp, .vmem, crash dumps)',
+    outputs: 'Arbre des processus cachés (pstree), Connexions réseau actives (netscan), Clés cryptographiques, Mots de passe LSA',
+    storage: 'PostgreSQL 16 (Tables processus/sockets) & Neo4j (Graphe d\'infection)',
+    priority: 'P0 (Indispensable)',
+    desc: 'Cadre forensique avancé pour extraire les preuves volatiles avant extinction du terminal suspect.'
+  },
+  {
+    id: 'forensic_plaso',
+    name: 'Plaso (log2timeline) — Super-Chronologie Forensique',
+    discipline: 'Chronologie Temporelle Unifiée',
+    github: 'https://github.com/log2timeline/plaso',
+    resources: '4-8 Cores CPU • 16 Go RAM',
+    inputs: 'Journaux système, Event Logs Windows (.evtx), Syslog, Prefetch, Historiques Web, MFT',
+    outputs: 'Super-chronologie globale à la microseconde (format L2T CSV, Timesketch)',
+    storage: 'TimescaleDB (Hyper-table partitionnée par milliseconde) & MinIO S3',
+    priority: 'P1 (Haute Priorité)',
+    desc: 'Fusionne des millions d\'événements disparates en une seule frise chronologique judiciaire unifiée.'
+  },
+  {
+    id: 'forensic_wireshark',
+    name: 'Wireshark, TShark & Zeek — Analyse Réseau & Paquets',
+    discipline: 'Forensique Réseau & Protocoles',
+    github: 'https://github.com/wireshark/wireshark',
+    resources: '2-4 Cores CPU • 8 Go RAM',
+    inputs: 'Captures de paquets réseau brutes (.pcap, .pcapng)',
+    outputs: 'Flux TCP/TLS reconstitués, Requêtes DNS résolues, Certificats échangés, Fichiers HTTP extraits',
+    storage: 'MongoDB 7.x (Flux sessions BSON) & MinIO S3 (PCAPs originaux) & Neo4j',
+    priority: 'P1 (Haute Priorité)',
+    desc: 'Inspection approfondie des paquets (DPI) pour décortiquer les communications des escrocs sur le réseau.'
+  },
+  {
+    id: 'forensic_bulk_extractor',
+    name: 'Bulk_Extractor — Scanner Binaire Ultra-Rapide',
+    discipline: 'Extraction Brute sans Système de Fichiers',
+    github: 'https://github.com/simsong/bulk_extractor',
+    resources: '4 Cores CPU • 4 Go RAM • Lecture disque séquentielle',
+    inputs: 'Fichiers binaires bruts, Espace disque non alloué, Fichiers de swap, Dumps RAM',
+    outputs: 'Histogrammes d\'adresses e-mails, URLs, numéros de cartes bancaires, téléphones et fragments JPEG',
+    storage: 'Neo4j 5.x (Nouveaux nœuds d\'indices) & PostgreSQL 16 (Rapports)',
+    priority: 'P1 (Haute Priorité)',
+    desc: 'Scanne l\'espace disque non-alloué pour récupérer les téléphones et coordonnées sans dépendre du système de fichiers.'
+  },
+  {
+    id: 'forensic_exiftool',
+    name: 'ExifTool (Phil Harvey) — Métadonnées Médias Forensiques',
+    discipline: 'Métadonnées d\'Images, Vidéos & Documents',
+    github: 'https://github.com/exiftool/exiftool',
+    resources: '0.2 CPU • 64 Mo RAM (Ultra-léger)',
+    inputs: 'Photos (JPEG, PNG, HEIC), Vidéos (MP4, MOV), Fichiers PDF/Office',
+    outputs: 'Coordonnées GPS précises (Latitude/Longitude), Horodatage boîtier, Numéro de série d\'appareil, Logiciel d\'édition',
+    storage: 'Neo4j 5.x (Nœuds Appareil & GPS) & MapLibre GL (Point SIG) & MinIO',
+    priority: 'P0 (Indispensable)',
+    desc: 'La norme mondiale pour prouver l\'origine d\'une photo de faux stock de pneus et localiser l\'appareil de prise de vue.'
+  },
+  {
+    id: 'forensic_sherloq',
+    name: 'Sherloq — Détecteur de Falsification d\'Images (ELA)',
+    discipline: 'Authentification d\'Images & Détection de Retouche',
+    github: 'https://github.com/GuidoBartoli/sherloq',
+    resources: '1-2 Cores CPU • 4 Go RAM',
+    inputs: 'Reçus de virement BaridiMob, Factures suspectes, Photos d\'identités falsifiées',
+    outputs: 'Cartes thermiques ELA (Error Level Analysis), Détection de clonage (Copy-Move), Gradient de luminance',
+    storage: 'MinIO S3 (Masques d\'analyse scellés) & PostgreSQL (Score d\'authenticité)',
+    priority: 'P1 (Haute Priorité)',
+    desc: 'Prouve scientifiquement devant le tribunal qu\'un reçu de virement bancaire a été altéré sous logiciel graphique.'
+  },
+  {
+    id: 'forensic_hashdb',
+    name: 'PhotoDNA & Hashdb (NSRL) — Base de Hachages de Contrebande',
+    discipline: 'Contrebande, Pédopornographie & Hachage Perceptuel',
+    github: 'https://github.com/threatstream/hashdb',
+    resources: '2 Cores CPU • 4 Go RAM • SSD',
+    inputs: 'Fichiers multimédias suspects, Fichiers exécutables malveillants',
+    outputs: 'Score de correspondance exacte (SHA-256) ou perceptuelle contre les référentiels d\'Interpol et du NIST',
+    storage: 'Qdrant (Vecteurs pHash) & Redis 7 (Cache rapide en mémoire) & PostgreSQL',
+    priority: 'P0 (Indispensable)',
+    desc: 'Identifie instantanément les fichiers illicites connus sans nécessiter de visualisation humaine éprouvante par l\'enquêteur.'
+  },
+  {
+    id: 'forensic_guymager',
+    name: 'Guymager & FTK Imager CLI — Saisie d\'Images Disques Bit-à-Bit',
+    discipline: 'Acquisition Matérielle Conforme ISO 27037',
+    github: 'https://github.com/dewim/guymager',
+    resources: '2 Cores CPU • 4 Go RAM • Bloqueur d\'écriture matériel',
+    inputs: 'Disques durs physiques, Clés USB saisies, Cartes SIM, Téléphones',
+    outputs: 'Image conforme Expert Witness (.E01) avec sommes de contrôle MD5 et SHA-256 certifiées',
+    storage: 'MinIO S3 (Coffre-fort WORM avec verrouillage juridique 10 ans)',
+    priority: 'P0 (Indispensable)',
+    desc: 'Copie conforme au bit près d\'un support scellé, garantissant qu\'aucune modification n\'est apportée à la pièce à conviction.'
+  },
+  {
+    id: 'forensic_trocr',
+    name: 'TrOCR & Tesseract 5 — OCR de Dépositions & Reçus Manuscrits',
+    discipline: 'Reconnaissance Optique Neuronale (Manuscrit & Imprimé)',
+    github: 'https://github.com/microsoft/unilm/tree/master/trocr',
+    resources: '2 Cores CPU ou 1 GPU CUDA • 4 Go RAM',
+    inputs: 'Plaintes manuscrites scannées, Bordereaux de versement CCP/BaridiMob sur papier',
+    outputs: 'Texte UTF-8 indexable, Montants en dinars (DZD) extraits, Numéros de comptes postaux identifiés',
+    storage: 'MongoDB 7.x (BSON textuel) & Neo4j (Entités extraites) & MinIO S3',
+    priority: 'P1 (Haute Priorité)',
+    desc: 'Numérise et transforme les plaintes papier des commissariats en entités exploitables sur le graphe.'
+  },
+  {
+    id: 'forensic_alpr_dz',
+    name: 'YOLOv8 + EasyOCR LAPI — Lecture Automatique de Plaques DZ',
+    discipline: 'Immatriculations Automobiles Algériennes',
+    github: 'https://github.com/JaidedAI/EasyOCR',
+    resources: '1 GPU CUDA ou 4 Cores CPU • 4 Go RAM',
+    inputs: 'Photos de véhicules suspects, Captures de vidéosurveillance urbaine',
+    outputs: 'Matricule normalisé (ex: 04829-116-16), Code Wilaya (16 = Alger), Type de véhicule',
+    storage: 'Neo4j 5.x (Nœud Véhicule lié au suspect) & PostgreSQL & MapLibre GL',
+    priority: 'P1 (Haute Priorité)',
+    desc: 'Détecte les immatriculations algériennes sur les photos de faux entrepôts de pneus et les relie aux suspects.'
+  },
+  {
+    id: 'forensic_lynis',
+    name: 'Lynis & YASAT — Audit Forensique de Serveurs Compromis',
+    discipline: 'Audit Système UNIX/Linux & Détection d\'Intrusions',
+    github: 'https://github.com/CISOfy/lynis',
+    resources: '1 Core CPU • 512 Mo RAM',
+    inputs: 'Systèmes de fichiers de serveurs d\'hébergement saisis, Conteneurs suspects',
+    outputs: 'Indicateurs de compromission (IoCs), Portes dérobées (Backdoors), Tâches cron cachées',
+    storage: 'MongoDB 7.x (Rapports d\'audit) & PostgreSQL 16',
+    priority: 'P2 (Moyenne)',
+    desc: 'Vérifie si le serveur hébergeant le site d\'arnaque a été administré par le suspect ou piraté par un tiers.'
+  }
+];
+
+// =========================================================================
+// SECTION 3 : OUTILS SOTA D'ANALYSE DE RÉSEAUX SOCIAUX (SNA / SNS) - 14 Outils
+// =========================================================================
+const SNA_SNS_TOOLS = [
+  {
+    id: 'sna_graphistry',
+    name: 'Graphistry — Visualisation de Graphes Massifs sur GPU',
+    algoType: 'Visualisation WebGL & Graphes 10M+ arêtes',
+    github: 'https://github.com/graphistry/pygraphistry',
+    resources: 'NVIDIA GPU (CUDA 8Go+ VRAM) • 16 Go RAM',
+    inputs: 'Grands listings CDR télécoms, Graphes de transactions bancaires, Données de followers',
+    outputs: 'Rendu graphique fluide à 60 FPS, Détection visuelle de clusters denses, Pivots interactifs',
+    storage: 'Moteur de rendu WebGL Client • Persistance Neo4j 5.x Bolt',
+    priority: 'P0 (Vital pour grands réseaux)',
+    desc: 'Permet aux enquêteurs d\'explorer visuellement des réseaux de 10 millions d\'arêtes sans aucun ralentissement.'
+  },
+  {
+    id: 'sna_gephi_toolkit',
+    name: 'Gephi Toolkit — Moteur d\'Algorithmes de Réseaux en Java',
+    algoType: 'Spatialisation ForceAtlas2 & Centralités',
+    github: 'https://github.com/gephi/gephi-toolkit',
+    resources: '2-4 Cores CPU • 8 Go RAM (Machine Virtuelle Java)',
+    inputs: 'Matrices d\'adjacence de relations suspectes, Fichiers GraphML/GEXF',
+    outputs: 'Coordonnées spatiales ForceAtlas2, Scores de Betweenness, Closeness, Diamètre du réseau',
+    storage: 'Neo4j 5.x (Mise à jour des propriétés sur les nœuds) & Redis 7 (Cache de layout)',
+    priority: 'P1 (Haute Priorité)',
+    desc: 'Moteur headless pour organiser automatiquement les nœuds de façon à faire ressortir visuellement les cliques criminelles.'
+  },
+  {
+    id: 'sna_networkx_igraph',
+    name: 'NetworkX & python-igraph — Théorie des Graphes Forensique',
+    algoType: 'Graphes Bipartites & Plus Courts Chemins',
+    github: 'https://github.com/networkx/networkx',
+    resources: '2 Cores CPU • 4 Go RAM',
+    inputs: 'Réseaux de transferts financiers BaridiMob, Appels téléphoniques croisés',
+    outputs: 'Plus courts chemins (Dijkstra), Points d\'articulation (ponts vitaux), Cœurs de graphes (k-core)',
+    storage: 'Exécution en mémoire Python • Résultats stockés dans Neo4j 5.x et PostgreSQL',
+    priority: 'P0 (Vital pour calculs rapides)',
+    desc: 'Bibliothèque standard pour calculer le chemin le plus court entre un compte d\'escroc et une mule financière.'
+  },
+  {
+    id: 'sna_stanford_snap',
+    name: 'Stanford SNAP — Analyse de Réseaux à Très Grande Échelle (C++)',
+    algoType: 'Graph Mining & Prédiction de Liens',
+    github: 'https://github.com/snap-stanford/snap',
+    resources: '8 Cores CPU • 32 Go RAM • Bus mémoire rapide',
+    inputs: 'Graphes nationaux de millions d\'abonnés télécoms et transactions postales',
+    outputs: 'Probabilités de connexion future entre suspects, Détection d\'anomalies structurelles',
+    storage: 'PostgreSQL 16 & Neo4j 5.x',
+    priority: 'P1 (Haute Priorité)',
+    desc: 'Moteur C++ ultra-performant pour fouiller dans des bases de données criminelles massives à l\'échelle d\'un pays.'
+  },
+  {
+    id: 'sna_social_mapper',
+    name: 'SocialMapper — Corrélation Faciale Multi-Réseaux Sociaux',
+    algoType: 'Reconnaissance Faciale & OSINT Automatisé',
+    github: 'https://github.com/SpiderLabs/social_mapper',
+    resources: '2 Cores CPU • 4 Go RAM • Pool de navigateurs headless',
+    inputs: 'Nom du suspect et photo de profil d\'origine (.jpg, .png)',
+    outputs: 'Profils correspondants sur Facebook, Instagram, LinkedIn, Twitter, VK, Douban',
+    storage: 'Neo4j 5.x (Nœuds SocialAccount reliés) & MinIO S3 (Photos) & Qdrant (Vecteurs)',
+    priority: 'P0 (Vital pour pivot initial)',
+    desc: 'Retrouve automatiquement tous les comptes d\'un individu à partir d\'une simple photo et d\'un nom.'
+  },
+  {
+    id: 'sna_maigret',
+    name: 'Maigret — Énumération d\'Identifiants sur 3 000+ Plateformes',
+    algoType: 'Dossier OSINT Récursif & Détection d\'Alias',
+    github: 'https://github.com/soxoj/maigret',
+    resources: '1-2 Cores CPU • 2 Go RAM • Proxys résidentiels',
+    inputs: 'Pseudonyme du suspect (ex: amine_import_dz)',
+    outputs: 'Profils confirmés, URLs directes, Extraits de bio, Photos d\'avatars, Pays détecté',
+    storage: 'MongoDB 7.x (Réponses JSON brutes) & Neo4j 5.x (Nœuds de comptes)',
+    priority: 'P0 (Vital)',
+    desc: 'Balaye plus de 3 000 sites web mondiaux et algériens pour voir où un pseudonyme criminel est enregistré.'
+  },
+  {
+    id: 'sna_toutatis',
+    name: 'Toutatis — Révélateur d\'Identité Masquée Instagram',
+    algoType: 'Extraction de Données de Récupération de Compte',
+    github: 'https://github.com/megadose/toutatis',
+    resources: '0.5 Core CPU • 256 Mo RAM • Compte Instagram dédié',
+    inputs: 'Nom d\'utilisateur Instagram suspect (ex: auto_pieces_pro)',
+    outputs: 'Numéro de téléphone masqué (+213 ••• •• 92 83), Adresse e-mail masquée, ID numérique',
+    storage: 'Neo4j 5.x (Arête de liaison entre compte Instagram et candidat téléphone)',
+    priority: 'P0 (Vital)',
+    desc: 'Lève le voile sur le numéro de téléphone utilisé par l\'escroc pour créer son compte Instagram commercial.'
+  },
+  {
+    id: 'sna_telethon',
+    name: 'Telethon / Telegram-Tracker — Infiltration de Canaux Fermés',
+    algoType: 'Client MTProto & Analyse de Groupes Criminels',
+    github: 'https://github.com/LonamiWebs/Telethon',
+    resources: '1 Core CPU • 1 Go RAM • Compte Telegram d\'enquête',
+    inputs: 'Lien de canal ou groupe Telegram fermé, Numéro de téléphone',
+    outputs: 'Liste des membres avec IDs numériques fixes, Historique complet des messages, Transferts de messages',
+    storage: 'MongoDB 7.x (Historique des messages BSON) & MinIO S3 (Médias) & Neo4j',
+    priority: 'P0 (Vital)',
+    desc: 'Infiltre silencieusement les canaux de revente illégale pour extraire la liste complète des membres et administrateurs.'
+  },
+  {
+    id: 'sna_instaloader',
+    name: 'Instaloader — Moissonneur de Publications & Géomarques',
+    algoType: 'Scraping Structuré Instagram & Métadonnées',
+    github: 'https://github.com/instaloader/instaloader',
+    resources: '1 Core CPU • 1 Go RAM',
+    inputs: 'Profil Instagram ou Hashtag',
+    outputs: 'Publications en haute résolution, Stories archivées, Utilisateurs tagués, Coordonnées géomarquées',
+    storage: 'MinIO S3 (Images & Stories WORM) & MongoDB 7.x & Neo4j (Liaisons de co-tagging)',
+    priority: 'P1 (Haute Priorité)',
+    desc: 'Télécharge tout le contenu d\'un profil Instagram pour analyser où le suspect prend ses photos.'
+  },
+  {
+    id: 'sna_bellingcat_archiver',
+    name: 'Bellingcat Auto-Archiver — Préservation Légale Réseaux Sociaux',
+    algoType: 'Archivage Multimédia Automatique & Préservation',
+    github: 'https://github.com/bellingcat/auto-archiver',
+    resources: '2 Cores CPU • 4 Go RAM • Playwright / yt-dlp',
+    inputs: 'URL d\'un post, vidéo ou story sur Facebook, TikTok, YouTube, Telegram',
+    outputs: 'Vidéos et photos originales, Captures d\'écran complètes, Archives Wayback Machine et S3',
+    storage: 'MinIO S3 (Format WARC scellé ISO 28500) & PostgreSQL (Registre d\'audit)',
+    priority: 'P0 (Vital pour préservation d\'urgence)',
+    desc: 'Sauvegarde instantanément une vidéo ou un post incriminant avant que l\'escroc ne le supprime.'
+  },
+  {
+    id: 'sna_louvain_leiden',
+    name: 'Louvain & Leiden Modularity (Neo4j GDS)',
+    algoType: 'Détection de Communautés Criminelles & Gangs',
+    github: 'https://neo4j.com/docs/graph-data-science/current/algorithms/louvain/',
+    resources: 'Projection en mémoire Neo4j GDS (4-8 Go RAM)',
+    inputs: 'Graphe relationnel complet des suspects, téléphones, comptes BaridiMob et adresses',
+    outputs: 'Affectation d\'un ID de communauté à chaque nœud, Score de modularité (Q > 0.6 = bande organisée)',
+    storage: 'Neo4j 5.x (Propriété community_id sur les nœuds) & Vue couleur sur le plateau',
+    priority: 'P0 (Vital pour démantèlement de réseaux)',
+    desc: 'Découpe automatiquement un immense réseau criminel en sous-groupes opérationnels distincts (cellule financière, logistique).'
+  },
+  {
+    id: 'sna_pagerank',
+    name: 'PageRank & Personalized PageRank (Neo4j GDS)',
+    algoType: 'Centralité d\'Influence & Détection de Chefs',
+    github: 'https://neo4j.com/docs/graph-data-science/current/algorithms/page-rank/',
+    resources: 'Projection en mémoire Neo4j GDS (2-4 Go RAM)',
+    inputs: 'Graphe transactionnel financier et appels téléphoniques',
+    outputs: 'Score d\'influence PageRank (0.0 à 1.0) classant les suspects par importance hiérarchique',
+    storage: 'Neo4j 5.x (Propriété pagerank_score) & Mise à l\'échelle de la taille des nœuds sur le plateau',
+    priority: 'P0 (Vital pour cibler le chef d\'orchestre)',
+    desc: 'Distingue immédiatement le donneur d\'ordres de ses sous-fifres et petites mains.'
+  },
+  {
+    id: 'sna_betweenness',
+    name: 'Betweenness Centrality (Neo4j GDS)',
+    algoType: 'Détection de Goulots d\'Étranglement & Mules Financières',
+    github: 'https://neo4j.com/docs/graph-data-science/current/algorithms/betweenness-centrality/',
+    resources: 'Projection en mémoire Neo4j GDS',
+    inputs: 'Graphe des transferts BaridiMob et des téléphones de liaison',
+    outputs: 'Score d\'intermédiarité identifiant les mules financières indispensables au transit des fonds',
+    storage: 'Neo4j 5.x (Propriété betweenness_centrality) & Anneaux d\'alerte rouges sur le plateau',
+    priority: 'P0 (Vital pour bloquer les flux d\'argent)',
+    desc: 'Trouve les individus par lesquels l\'argent transite obligatoirement pour geler leurs comptes bancaires en priorité.'
+  },
+  {
+    id: 'sna_link_prediction',
+    name: 'Link Prediction via Adamic-Adar & Jaccard (Neo4j GDS)',
+    algoType: 'Prédiction de Liens Cachés & Futures Connexions',
+    github: 'https://neo4j.com/docs/graph-data-science/current/algorithms/linkprediction/',
+    resources: 'Projection en mémoire Neo4j GDS',
+    inputs: 'Graphe d\'enquête incomplet',
+    outputs: 'Arêtes candidates proposées sur le Calque 4 (HYPOTHÈSES) avec score de probabilité',
+    storage: 'Neo4j 5.x (Arêtes en pointillés sur le Calque 4)',
+    priority: 'P1 (Haute Priorité pour orienter l\'enquête)',
+    desc: 'Suggère à l\'enquêteur des complices non encore interrogés en fonction des personnes qu\'ils ont en commun.'
+  }
+];
+
+function getToolStorageDestination(tool) {
+  if (tool.storage) return tool.storage;
+  const cat = tool.category;
+  if (cat === 'socmint' || cat === 'github_osint') return 'Neo4j (Graphe) & MinIO S3 (Preuves WORM) & MongoDB (DOM)';
+  if (cat === 'phone_id') return 'Neo4j (Nœud Téléphone) & PostgreSQL 16 (Liaisons)';
+  if (cat === 'web_infra') return 'MongoDB 7.x (DOM BSON) & Neo4j (Infrastructure) & MinIO (WARC)';
+  if (cat === 'media_geoint' || cat === 'photo_geo') return 'MinIO S3 (Images/Audio WORM) & Qdrant (Vecteurs ArcFace/Voice)';
+  if (cat === 'police_forensics') return 'PostgreSQL + TimescaleDB (Hyper-tables CDR) & Neo4j';
+  if (cat === 'finance_crypto') return 'PostgreSQL 16 (Transactions) & Neo4j (Graphe Financier BaridiMob)';
+  if (cat === 'sna') return 'Neo4j 5.x GDS (Communautés & Centralités) & Redis 7 (Cache)';
+  return 'Neo4j 5.x & MinIO S3 WORM';
+}
+
+function switchToolsMainTab(tabKey) {
+  document.querySelectorAll('.main-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.id === `tab-btn-${tabKey}`);
+  });
+  document.querySelectorAll('.tab-content-panel').forEach(panel => {
+    panel.classList.toggle('active', panel.id === `tab-panel-${tabKey}`);
+  });
+
+  if (tabKey === 'forensics') {
+    renderForensicToolsTable();
+  } else if (tabKey === 'sna') {
+    renderSnaToolsTable();
+  }
+}
+
+function renderForensicToolsTable() {
+  const tbody = document.getElementById('forensics-tbody');
+  if (!tbody) return;
+
+  const searchEl = document.getElementById('forensics-search-input');
+  const q = (searchEl && searchEl.value ? searchEl.value : '').toLowerCase().trim();
+
+  const filtered = FORENSIC_INVESTIGATION_TOOLS.filter(t => {
+    const corpus = `${t.name} ${t.discipline} ${t.inputs} ${t.outputs} ${t.desc} ${t.storage}`.toLowerCase();
+    return !q || corpus.includes(q);
+  });
+
+  let html = '';
+  filtered.forEach(t => {
+    const prioColor = t.priority.startsWith('P0') ? 'var(--accent-rose)' : 'var(--accent-amber)';
+    html += `
+      <tr>
+        <td>
+          <strong style="color:#f1f5f9;font-size:0.92rem;display:block;margin-bottom:0.25rem;">${t.name}</strong>
+          <span class="badge badge-purple" style="font-size:0.68rem;">${t.discipline}</span>
+          <p style="font-size:0.78rem;color:var(--text-secondary);margin:0.35rem 0 0;line-height:1.4;">${t.desc}</p>
+        </td>
+        <td>
+          <a href="${t.github}" target="_blank" rel="noopener noreferrer" style="color:var(--accent-cyan);font-family:var(--font-mono);font-size:0.75rem;text-decoration:none;word-break:break-all;">
+            📦 ${t.github.replace('https://github.com/', '')} ↗
+          </a>
+          <div style="font-size:0.72rem;color:#94a3b8;margin-top:0.35rem;"><strong>Ressources :</strong> ${t.resources}</div>
+        </td>
+        <td style="font-size:0.8rem;">
+          <div style="color:var(--accent-cyan);margin-bottom:0.3rem;"><strong>📥 Entrée :</strong> ${t.inputs}</div>
+          <div style="color:var(--accent-emerald);"><strong>📤 Sortie :</strong> ${t.outputs}</div>
+        </td>
+        <td style="font-size:0.78rem;color:#cbd5e1;">
+          <div style="background:#090d16;padding:0.4rem 0.6rem;border-radius:4px;border:1px solid #1e293b;">
+            🗄️ ${t.storage}
+          </div>
+        </td>
+        <td style="text-align:center;">
+          <span class="badge" style="background:rgba(236,72,153,0.15);color:${prioColor};border:1px solid ${prioColor};font-size:0.72rem;font-weight:700;">
+            ${t.priority}
+          </span>
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+}
+
+function renderSnaToolsTable() {
+  const tbody = document.getElementById('sna-tbody');
+  if (!tbody) return;
+
+  const searchEl = document.getElementById('sna-search-input');
+  const q = (searchEl && searchEl.value ? searchEl.value : '').toLowerCase().trim();
+
+  const filtered = SNA_SNS_TOOLS.filter(t => {
+    const corpus = `${t.name} ${t.algoType} ${t.inputs} ${t.outputs} ${t.desc} ${t.storage}`.toLowerCase();
+    return !q || corpus.includes(q);
+  });
+
+  let html = '';
+  filtered.forEach(t => {
+    const prioColor = t.priority.startsWith('P0') ? 'var(--accent-rose)' : 'var(--accent-amber)';
+    const githubHtml = t.github.startsWith('https://github.com')
+      ? `<a href="${t.github}" target="_blank" rel="noopener noreferrer" style="color:var(--accent-cyan);font-family:var(--font-mono);font-size:0.75rem;text-decoration:none;word-break:break-all;">📦 ${t.github.replace('https://github.com/', '')} ↗</a>`
+      : `<span style="color:var(--accent-purple);font-family:var(--font-mono);font-size:0.75rem;">📚 Algorithme GDS Officiel</span>`;
+
+    html += `
+      <tr>
+        <td>
+          <strong style="color:#f1f5f9;font-size:0.92rem;display:block;margin-bottom:0.25rem;">${t.name}</strong>
+          <span class="badge badge-cyan" style="font-size:0.68rem;">${t.algoType}</span>
+          <p style="font-size:0.78rem;color:var(--text-secondary);margin:0.35rem 0 0;line-height:1.4;">${t.desc}</p>
+        </td>
+        <td>
+          ${githubHtml}
+          <div style="font-size:0.72rem;color:#94a3b8;margin-top:0.35rem;"><strong>Ressources :</strong> ${t.resources}</div>
+        </td>
+        <td style="font-size:0.8rem;">
+          <div style="color:var(--accent-cyan);margin-bottom:0.3rem;"><strong>📥 Entrée :</strong> ${t.inputs}</div>
+          <div style="color:var(--accent-emerald);"><strong>📤 Sortie :</strong> ${t.outputs}</div>
+        </td>
+        <td style="font-size:0.78rem;color:#cbd5e1;">
+          <div style="background:#090d16;padding:0.4rem 0.6rem;border-radius:4px;border:1px solid #1e293b;">
+            🗄️ ${t.storage}
+          </div>
+        </td>
+        <td style="text-align:center;">
+          <span class="badge" style="background:rgba(236,72,153,0.15);color:${prioColor};border:1px solid ${prioColor};font-size:0.72rem;font-weight:700;">
+            ${t.priority}
+          </span>
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+}
+
 let activeCategoryFilter = 'all';
 
 function renderToolsInventory() {

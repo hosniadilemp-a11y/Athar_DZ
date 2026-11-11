@@ -166,6 +166,208 @@
       </div>
     </section>
 
+    <!-- 3. Structure des Données & Matrice de Persistance Polyglotte (14 Types d'Éléments) -->
+    <section>
+      <h2 class="section-title">3. Structure des Données &amp; Matrice de Persistance Polyglotte (Les 14 Types d'Éléments)</h2>
+      <p class="section-subtitle">
+        En criminalistique numérique moderne, une base de données unique est incapable de répondre à tous les besoins. Athar DZ utilise une <strong>architecture de persistance polyglotte</strong> où chaque indice est routé vers le moteur le plus adapté à sa nature géométrique, relationnelle, vectorielle ou légale.
+      </p>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Type d'Élément (14 Types)</th>
+              <th>Format Canonique &amp; Validation</th>
+              <th>Rôle dans l'Enquête Criminelle</th>
+              <th>Base de Données Principale</th>
+              <th>Index &amp; Projections Secondaires</th>
+              <th>Protocole &amp; Format de Stockage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>👤 <strong>1. Personne / Suspect</strong><br/><code>PERSON</code></td>
+              <td>Nom canonique, Alias, NIN (Numéro d'Identification Nationale), Date de naissance</td>
+              <td>Entité centrale suspectée, victime, témoin ou prête-nom (mule financière).</td>
+              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
+              <td><span class="badge badge-emerald">PostgreSQL 16 (Table <code>persons</code>)</span></td>
+              <td>Bolt v5 Cypher &bull; JSON relationnel ACID avec RLS par wilaya</td>
+            </tr>
+            <tr>
+              <td>📱 <strong>2. Ligne Téléphonique</strong><br/><code>PHONE_NUMBER</code></td>
+              <td>Format E.164 strict (ex: <code>+213555019283</code>), MCC-MNC opérateur (Mobilis, Djezzy, Ooredoo)</td>
+              <td>Vecteur de communication et d'authentification 2FA sur les réseaux sociaux et banques.</td>
+              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
+              <td><span class="badge badge-cyan">Redis 7 (Token-Bucket)</span> &bull; <span class="badge badge-emerald">PostgreSQL</span></td>
+              <td>Bolt v5 &bull; Chaîne normalisée indexée en mémoire B-Tree pour dédoublonnage instantané</td>
+            </tr>
+            <tr>
+              <td>💬 <strong>3. Compte de Réseau Social</strong><br/><code>SOCIAL_ACCOUNT</code></td>
+              <td>Identifiant numérique permanent (ex: Telegram ID <code>519283741</code>, Facebook UID), Handle, Plateforme</td>
+              <td>Profil d'escroc ou canal de diffusion d'annonces frauduleuses.</td>
+              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
+              <td><span class="badge badge-cyan">MongoDB 7.x (Dépotoir Profil BSON)</span></td>
+              <td>Bolt v5 &bull; Document BSON Snappy contenant l'historique brut des bios et followers</td>
+            </tr>
+            <tr>
+              <td>📢 <strong>4. Publication / Annonce</strong><br/><code>SOCIAL_POST</code></td>
+              <td>URL pérenne, ID de publication, Horodatage de publication ISO 8601</td>
+              <td>L'acte d'escroquerie initial (ex: vente de pneus Michelin fictifs à -60%).</td>
+              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
+              <td><span class="badge badge-amber">MinIO S3 (Capture WORM)</span> &bull; <span class="badge badge-cyan">MongoDB (DOM)</span></td>
+              <td>S3 Multipart API (WARC + PNG scellé) &bull; Document BSON pour l'arbre syntaxique du texte</td>
+            </tr>
+            <tr>
+              <td>📧 <strong>5. Adresse E-mail</strong><br/><code>EMAIL_ADDRESS</code></td>
+              <td>RFC 5322 normalisé en minuscules, domaine MX vérifié</td>
+              <td>Adresse de contact, récupération de mot de passe ou compte d'administration de site.</td>
+              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
+              <td><span class="badge badge-emerald">PostgreSQL (Table <code>breaches</code>)</span></td>
+              <td>Bolt v5 &bull; Table relationnelle liant l'e-mail aux fuites de données (DeHashed/HaveIBeenPwned)</td>
+            </tr>
+            <tr>
+              <td>🌐 <strong>6. Site Web &amp; Domaine</strong><br/><code>WEB_DOMAIN / URL</code></td>
+              <td>FQDN canonique, URL complète normalisée, IP résolue, Certificat TLS JARM</td>
+              <td>Boutique en ligne frauduleuse servant au paiement ou à l'hameçonnage.</td>
+              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
+              <td><span class="badge badge-cyan">MongoDB 7.x (DOM brut)</span> &bull; <span class="badge badge-amber">MinIO (WARC ISO 28500)</span></td>
+              <td>Bolt v5 &bull; BSON Wire Protocol pour les en-têtes HTTP bruts et scripts JavaScript</td>
+            </tr>
+            <tr>
+              <td>🏷️ <strong>7. Identifiant d'Infrastructure</strong><br/><code>INFRASTRUCTURE_ID</code></td>
+              <td>Meta Pixel (<code>88419203314</code>), Google Tag Manager, MongoDB ObjectId, Supabase Project ID</td>
+              <td>Empreinte invisible partagée par plusieurs sites créés par le même cybercriminel.</td>
+              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
+              <td><span class="badge badge-cyan">MongoDB 7.x (Index d'attributs)</span></td>
+              <td>Bolt v5 &bull; Recherche inversée instantanée dans le graphe pour relier les sites jumeaux</td>
+            </tr>
+            <tr>
+              <td>💳 <strong>8. Compte Bancaire &amp; BaridiMob</strong><br/><code>BANK_ACCOUNT / CCP</code></td>
+              <td>RIP Algérie Poste (20 chiffres canoniques), Numéro CCP, Clé, Code Banque</td>
+              <td>Destination des virements extorqués aux victimes via l'application BaridiMob.</td>
+              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
+              <td><span class="badge badge-emerald">PostgreSQL 16 (Table <code>financial_transactions</code>)</span></td>
+              <td>Bolt v5 &bull; Table financière ACID avec horodatage des flux monétaires en Dinars (DZD)</td>
+            </tr>
+            <tr>
+              <td>🪙 <strong>9. Portefeuille Crypto</strong><br/><code>CRYPTO_WALLET</code></td>
+              <td>Adresse publique base58/hexadécimale (BTC, ETH, TRC-20 USDT, Binance Pay ID)</td>
+              <td>Blanchiment de fonds volés par conversion en stablecoin USDT.</td>
+              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
+              <td><span class="badge badge-emerald">PostgreSQL (Livre de comptes de transactions)</span></td>
+              <td>Bolt v5 &bull; Graphe bipartite des transferts blockchain avec montants et horodatages</td>
+            </tr>
+            <tr>
+              <td>🚗 <strong>10. Véhicule &amp; Immatriculation</strong><br/><code>VEHICLE</code></td>
+              <td>Matricule algérien format officiel (ex: <code>04829-116-16</code>), Numéro de châssis VIN</td>
+              <td>Véhicule utilisé pour la livraison de marchandise frauduleuse ou repéré sur vidéosurveillance.</td>
+              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
+              <td><span class="badge badge-emerald">PostgreSQL 16 (Table <code>vehicles</code>)</span></td>
+              <td>Bolt v5 &bull; Modèle relationnel connecté au fichier national des cartes grises</td>
+            </tr>
+            <tr>
+              <td>🎙️ <strong>11. Enregistrement Vocal</strong><br/><code>AUDIO_RECORDING</code></td>
+              <td>Fichier binaire OPUS / WAV, Durée, Empreinte SHA-256, Langue détectée (<code>ar-DZ-darija</code>)</td>
+              <td>Notes vocales WhatsApp contenant les instructions d'arnaque et rendez-vous en Darija.</td>
+              <td><span class="badge badge-amber">MinIO S3 (Fichier WORM)</span></td>
+              <td><span class="badge badge-purple">Qdrant (Empreinte x-vector 192-d)</span> &bull; <span class="badge badge-blue">Neo4j</span></td>
+              <td>S3 REST API WORM &bull; Vecteur d'empreinte acoustique PyAnnote 3.1 &bull; Transcription textuelle dans le nœud Neo4j</td>
+            </tr>
+            <tr>
+              <td>🖼️ <strong>12. Élément Multimédia / Photo</strong><br/><code>IMAGE_ARTIFACT</code></td>
+              <td>Fichier image PNG/JPEG, Hachage cryptographique SHA-256, Hachage perceptuel pHash</td>
+              <td>Photos de profil, captures de reçus de paiement BaridiMob ou photos de faux stocks.</td>
+              <td><span class="badge badge-amber">MinIO S3 (Fichier WORM)</span></td>
+              <td><span class="badge badge-purple">Qdrant (Vecteur ArcFace 512-d)</span> &bull; <span class="badge badge-blue">Neo4j</span></td>
+              <td>S3 REST API scellé &bull; HNSW Cosine Similarity pour la biométrie faciale &bull; Nœud métadonnées EXIF dans Neo4j</td>
+            </tr>
+            <tr>
+              <td>📶 <strong>13. Bornage Télécom (CDR)</strong><br/><code>TELECOM_CDR</code></td>
+              <td>Ligne appelante/appelée, ID Antenne Relais (BTS), Azimut (0-360°), Durée, Timestamp précis</td>
+              <td>Données judiciaires réquisitionnées auprès de Mobilis, Djezzy et Ooredoo pour vérification d'alibis.</td>
+              <td><span class="badge badge-emerald">TimescaleDB / PostgreSQL (Hyper-Table)</span></td>
+              <td><span class="badge badge-blue">Neo4j (Liaisons de co-déplacement)</span></td>
+              <td>SQL Hypertables partitionnées par tranches de 24h &bull; Calculs géospatiaux PostGIS en &lt;15ms</td>
+            </tr>
+            <tr>
+              <td>⚖️ <strong>14. Document Judiciaire</strong><br/><code>LEGAL_DOCUMENT</code></td>
+              <td>Référence PV, Réquisition, Plainte, Sceau d'horodatage RFC 3161, Racine d'arbre de Merkle</td>
+              <td>Dossier officiel remis au procureur de la République ou au juge d'instruction.</td>
+              <td><span class="badge badge-amber">MinIO S3 (PDF/A-3b WORM)</span></td>
+              <td><span class="badge badge-emerald">PostgreSQL 16 (Registre d'audit chaîné)</span></td>
+              <td>S3 WORM légalement inaltérable &bull; Chaînage de hachages cryptographiques (Merkle Proof)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 4. Attributs de la Base Graphe (Neo4j) & Modèle Universel Généralisé (GFPG) -->
+    <section>
+      <h2 class="section-title">4. Attributs de la Base Graphe (Neo4j) &amp; Modèle Universel Généralisé (GFPG)</h2>
+      <p class="section-subtitle">
+        Comment structurer les nœuds et arêtes dans Neo4j, et comment garantir que le schéma est <strong>entièrement généralisable</strong> sans jamais nécessiter de restructuration de la base lorsqu'un nouveau type de cybercriminalité apparaît ?
+      </p>
+
+      <div class="grid-2">
+        <!-- 4.1 Attributs Communs à Tous les Nœuds -->
+        <div class="card" style="border-top:4px solid var(--accent-blue);">
+          <div class="card-title"><span>🧬</span> 4.1 Attributs Communs de Nœuds (Méta-Modèle Universel)</div>
+          <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.5;margin-bottom:0.75rem;">
+            Chaque entité du graphe, qu'il s'agisse d'un numéro de téléphone, d'un compte Instagram ou d'un suspect, implémente obligatoirement les 10 attributs pivots suivants :
+          </p>
+          <ul style="font-size:0.8rem;color:#cbd5e1;line-height:1.6;padding-left:1.2rem;margin:0;">
+            <li><code>uuid</code> : Identifiant unique universel (RFC 4122 v4) immuable.</li>
+            <li><code>canonical_value</code> : Représentation textuelle nettoyée et normalisée (ex: <code>+213555019283</code> pour un téléphone, minuscule pour un e-mail). Indexé en contrainte d'unicité.</li>
+            <li><code>entity_type</code> : Type parmi les 14 catégories (<code>PHONE</code>, <code>PERSON</code>, <code>WEBSITE</code>...).</li>
+            <li><code>layer</code> : Calque d'enquête assigné (<code>1:VERIFIED</code>, <code>2:OSINT_RAW</code>, <code>3:INFRA</code>, <code>4:HYPOTHESIS</code>).</li>
+            <li><code>confidence_score</code> : Score de certitude judiciaire (Float entre <code>0.00</code> et <code>1.00</code>).</li>
+            <li><code>source_tool</code> : Identifiant de la brique ayant découvert l'indice (ex: <code>tool.identity.phoneinfoga</code>).</li>
+            <li><code>source_artifact_sha256</code> : Empreinte de la preuve physique scellée dans MinIO S3 garantissant la chaîne de garde.</li>
+            <li><code>case_ids</code> : Tableau des numéros de dossiers liés (<code>["2026-SCAM-089", "2025-FRAUD-012"]</code>) permettant la découverte automatique de réseaux criminels multi-juridictions.</li>
+            <li><code>first_seen_at</code> / <code>last_seen_at</code> : Intervalles temporels d'activité forensique.</li>
+            <li><code>status</code> : État du cycle de vie (<code>ACTIVE</code>, <code>ARCHIVED</code>, <code>DISCARDED_FALSE_POSITIVE</code>).</li>
+          </ul>
+        </div>
+
+        <!-- 4.2 Attributs des Arêtes (Relations Typées) -->
+        <div class="card" style="border-top:4px solid var(--accent-purple);">
+          <div class="card-title"><span>🔗</span> 4.2 Attributs des Arêtes &amp; Relations Typées</div>
+          <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.5;margin-bottom:0.75rem;">
+            Les liens entre entités ne sont pas de simples traits ; ce sont des relations sémantiques riches portant leurs propres preuves juridiques :
+          </p>
+          <ul style="font-size:0.8rem;color:#cbd5e1;line-height:1.6;padding-left:1.2rem;margin:0;">
+            <li><code>type</code> : Verbe d'action orienté (<code>USES_PHONE</code>, <code>TRANSFERS_FUNDS</code>, <code>REGISTERED_ON</code>, <code>COMMUNICATES_WITH</code>, <code>CO_LOCATED_WITH</code>, <code>SUSPECTED_ALIAS_OF</code>).</li>
+            <li><code>weight</code> : Poids numérique proportionnel à l'intensité de la liaison (montant total en DZD transféré, nombre d'appels passés ou score de similarité faciale).</li>
+            <li><code>confidence</code> : Certitude de la relation (ex: <code>0.89</code> pour une correspondance faciale ArcFace, <code>1.00</code> pour un compte bancaire au nom du suspect).</li>
+            <li><code>valid_from</code> / <code>valid_to</code> : Fenêtre de validité temporelle (ex: période pendant laquelle la ligne téléphonique appartenait au suspect).</li>
+            <li><code>evidence_warc_ref</code> : Pointeur direct vers l'archive web ou le listing d'appels certifiant ce lien.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 4.3 Peut-on Généraliser le Modèle ? -->
+      <div class="card" style="margin-top:1.25rem;border-left:4px solid var(--accent-emerald);">
+        <div class="card-title"><span>💡</span> 4.3 Peut-on Généraliser le Modèle ? (Le Modèle GFPG — Generalized Forensic Property Graph)</div>
+        <p style="font-size:0.84rem;color:var(--text-secondary);line-height:1.6;margin-bottom:0.75rem;">
+          <strong>Réponse formelle : OUI, le modèle est 100% généralisable.</strong><br/>
+          Dans les outils d'enquête traditionnels, l'apparition d'un nouveau type de délit (ex: arnaque aux cryptomonnaies ou fraude aux colis de livraison) exigeait de réécrire les schémas SQL, de créer de nouvelles tables et de recompiler l'application. Athar DZ résout définitivement ce problème grâce au patron de conception <strong>Generalized Forensic Property Graph (GFPG)</strong> :
+        </p>
+        
+        <div style="background:#090d16;padding:1rem;border-radius:8px;font-size:0.8rem;color:#cbd5e1;line-height:1.55;margin-bottom:0.75rem;">
+          <strong style="color:#10b981;">Comment fonctionne la généralisation sans rupture de schéma :</strong>
+          <ol style="margin:0.5rem 0 0 1.25rem;padding:0;">
+            <li><strong>Méta-Modèle Polymorphe à Propriétés Flexibles :</strong> Le moteur Neo4j stocke le cœur indexé universel (identifiant canonique, confiance, calque, dossiers liés) et encapsule les attributs spécifiques à chaque nouveau vecteur sous forme de propriétés dynamiques sans schéma rigide.</li>
+            <li><strong>Déclaration par Manifestes YAML :</strong> L'ajout d'une nouvelle entité (ex: <code>Drone_Telemetry</code> ou <code>Telegram_Bot_Token</code>) s'effectue par un simple fichier de configuration <code>brick.yaml</code> spécifiant <code>input_entities</code> et <code>output_entities</code>. Le moteur déterministe ingère le nouveau type automatiquement.</li>
+            <li><strong>Requêtage Cypher Transversal :</strong> Les algorithmes de parcours de graphe (recherche de plus court chemin, communautés de Louvain, détection de prête-noms) fonctionnent sur la topologie du graphe indépendamment du type d'entité, permettant de trouver des chemins comme :<br/>
+              <code style="color:#38bdf8;">(Suspect)-[:COMMUNICATES_WITH]->(Vocal)-[:MENTIONS]->(BaridiMob)-[:LINKED_TO]->(Autre_Dossier)</code>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
     <!-- 2. "Photoshop for Investigations" Direct Feature Specification -->
     <section>
       <h2 class="section-title">2. "Photoshop for Investigations": Detailed Interface Specification</h2>
@@ -220,6 +422,208 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </section>
+
+    <!-- 3. Structure des Données & Matrice de Persistance Polyglotte (14 Types d'Éléments) -->
+    <section>
+      <h2 class="section-title">3. Structure des Données &amp; Matrice de Persistance Polyglotte (Les 14 Types d'Éléments)</h2>
+      <p class="section-subtitle">
+        En criminalistique numérique moderne, une base de données unique est incapable de répondre à tous les besoins. Athar DZ utilise une <strong>architecture de persistance polyglotte</strong> où chaque indice est routé vers le moteur le plus adapté à sa nature géométrique, relationnelle, vectorielle ou légale.
+      </p>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Type d'Élément (14 Types)</th>
+              <th>Format Canonique &amp; Validation</th>
+              <th>Rôle dans l'Enquête Criminelle</th>
+              <th>Base de Données Principale</th>
+              <th>Index &amp; Projections Secondaires</th>
+              <th>Protocole &amp; Format de Stockage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>👤 <strong>1. Personne / Suspect</strong><br/><code>PERSON</code></td>
+              <td>Nom canonique, Alias, NIN (Numéro d'Identification Nationale), Date de naissance</td>
+              <td>Entité centrale suspectée, victime, témoin ou prête-nom (mule financière).</td>
+              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
+              <td><span class="badge badge-emerald">PostgreSQL 16 (Table <code>persons</code>)</span></td>
+              <td>Bolt v5 Cypher &bull; JSON relationnel ACID avec RLS par wilaya</td>
+            </tr>
+            <tr>
+              <td>📱 <strong>2. Ligne Téléphonique</strong><br/><code>PHONE_NUMBER</code></td>
+              <td>Format E.164 strict (ex: <code>+213555019283</code>), MCC-MNC opérateur (Mobilis, Djezzy, Ooredoo)</td>
+              <td>Vecteur de communication et d'authentification 2FA sur les réseaux sociaux et banques.</td>
+              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
+              <td><span class="badge badge-cyan">Redis 7 (Token-Bucket)</span> &bull; <span class="badge badge-emerald">PostgreSQL</span></td>
+              <td>Bolt v5 &bull; Chaîne normalisée indexée en mémoire B-Tree pour dédoublonnage instantané</td>
+            </tr>
+            <tr>
+              <td>💬 <strong>3. Compte de Réseau Social</strong><br/><code>SOCIAL_ACCOUNT</code></td>
+              <td>Identifiant numérique permanent (ex: Telegram ID <code>519283741</code>, Facebook UID), Handle, Plateforme</td>
+              <td>Profil d'escroc ou canal de diffusion d'annonces frauduleuses.</td>
+              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
+              <td><span class="badge badge-cyan">MongoDB 7.x (Dépotoir Profil BSON)</span></td>
+              <td>Bolt v5 &bull; Document BSON Snappy contenant l'historique brut des bios et followers</td>
+            </tr>
+            <tr>
+              <td>📢 <strong>4. Publication / Annonce</strong><br/><code>SOCIAL_POST</code></td>
+              <td>URL pérenne, ID de publication, Horodatage de publication ISO 8601</td>
+              <td>L'acte d'escroquerie initial (ex: vente de pneus Michelin fictifs à -60%).</td>
+              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
+              <td><span class="badge badge-amber">MinIO S3 (Capture WORM)</span> &bull; <span class="badge badge-cyan">MongoDB (DOM)</span></td>
+              <td>S3 Multipart API (WARC + PNG scellé) &bull; Document BSON pour l'arbre syntaxique du texte</td>
+            </tr>
+            <tr>
+              <td>📧 <strong>5. Adresse E-mail</strong><br/><code>EMAIL_ADDRESS</code></td>
+              <td>RFC 5322 normalisé en minuscules, domaine MX vérifié</td>
+              <td>Adresse de contact, récupération de mot de passe ou compte d'administration de site.</td>
+              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
+              <td><span class="badge badge-emerald">PostgreSQL (Table <code>breaches</code>)</span></td>
+              <td>Bolt v5 &bull; Table relationnelle liant l'e-mail aux fuites de données (DeHashed/HaveIBeenPwned)</td>
+            </tr>
+            <tr>
+              <td>🌐 <strong>6. Site Web &amp; Domaine</strong><br/><code>WEB_DOMAIN / URL</code></td>
+              <td>FQDN canonique, URL complète normalisée, IP résolue, Certificat TLS JARM</td>
+              <td>Boutique en ligne frauduleuse servant au paiement ou à l'hameçonnage.</td>
+              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
+              <td><span class="badge badge-cyan">MongoDB 7.x (DOM brut)</span> &bull; <span class="badge badge-amber">MinIO (WARC ISO 28500)</span></td>
+              <td>Bolt v5 &bull; BSON Wire Protocol pour les en-têtes HTTP bruts et scripts JavaScript</td>
+            </tr>
+            <tr>
+              <td>🏷️ <strong>7. Identifiant d'Infrastructure</strong><br/><code>INFRASTRUCTURE_ID</code></td>
+              <td>Meta Pixel (<code>88419203314</code>), Google Tag Manager, MongoDB ObjectId, Supabase Project ID</td>
+              <td>Empreinte invisible partagée par plusieurs sites créés par le même cybercriminel.</td>
+              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
+              <td><span class="badge badge-cyan">MongoDB 7.x (Index d'attributs)</span></td>
+              <td>Bolt v5 &bull; Recherche inversée instantanée dans le graphe pour relier les sites jumeaux</td>
+            </tr>
+            <tr>
+              <td>💳 <strong>8. Compte Bancaire &amp; BaridiMob</strong><br/><code>BANK_ACCOUNT / CCP</code></td>
+              <td>RIP Algérie Poste (20 chiffres canoniques), Numéro CCP, Clé, Code Banque</td>
+              <td>Destination des virements extorqués aux victimes via l'application BaridiMob.</td>
+              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
+              <td><span class="badge badge-emerald">PostgreSQL 16 (Table <code>financial_transactions</code>)</span></td>
+              <td>Bolt v5 &bull; Table financière ACID avec horodatage des flux monétaires en Dinars (DZD)</td>
+            </tr>
+            <tr>
+              <td>🪙 <strong>9. Portefeuille Crypto</strong><br/><code>CRYPTO_WALLET</code></td>
+              <td>Adresse publique base58/hexadécimale (BTC, ETH, TRC-20 USDT, Binance Pay ID)</td>
+              <td>Blanchiment de fonds volés par conversion en stablecoin USDT.</td>
+              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
+              <td><span class="badge badge-emerald">PostgreSQL (Livre de comptes de transactions)</span></td>
+              <td>Bolt v5 &bull; Graphe bipartite des transferts blockchain avec montants et horodatages</td>
+            </tr>
+            <tr>
+              <td>🚗 <strong>10. Véhicule &amp; Immatriculation</strong><br/><code>VEHICLE</code></td>
+              <td>Matricule algérien format officiel (ex: <code>04829-116-16</code>), Numéro de châssis VIN</td>
+              <td>Véhicule utilisé pour la livraison de marchandise frauduleuse ou repéré sur vidéosurveillance.</td>
+              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
+              <td><span class="badge badge-emerald">PostgreSQL 16 (Table <code>vehicles</code>)</span></td>
+              <td>Bolt v5 &bull; Modèle relationnel connecté au fichier national des cartes grises</td>
+            </tr>
+            <tr>
+              <td>🎙️ <strong>11. Enregistrement Vocal</strong><br/><code>AUDIO_RECORDING</code></td>
+              <td>Fichier binaire OPUS / WAV, Durée, Empreinte SHA-256, Langue détectée (<code>ar-DZ-darija</code>)</td>
+              <td>Notes vocales WhatsApp contenant les instructions d'arnaque et rendez-vous en Darija.</td>
+              <td><span class="badge badge-amber">MinIO S3 (Fichier WORM)</span></td>
+              <td><span class="badge badge-purple">Qdrant (Empreinte x-vector 192-d)</span> &bull; <span class="badge badge-blue">Neo4j</span></td>
+              <td>S3 REST API WORM &bull; Vecteur d'empreinte acoustique PyAnnote 3.1 &bull; Transcription textuelle dans le nœud Neo4j</td>
+            </tr>
+            <tr>
+              <td>🖼️ <strong>12. Élément Multimédia / Photo</strong><br/><code>IMAGE_ARTIFACT</code></td>
+              <td>Fichier image PNG/JPEG, Hachage cryptographique SHA-256, Hachage perceptuel pHash</td>
+              <td>Photos de profil, captures de reçus de paiement BaridiMob ou photos de faux stocks.</td>
+              <td><span class="badge badge-amber">MinIO S3 (Fichier WORM)</span></td>
+              <td><span class="badge badge-purple">Qdrant (Vecteur ArcFace 512-d)</span> &bull; <span class="badge badge-blue">Neo4j</span></td>
+              <td>S3 REST API scellé &bull; HNSW Cosine Similarity pour la biométrie faciale &bull; Nœud métadonnées EXIF dans Neo4j</td>
+            </tr>
+            <tr>
+              <td>📶 <strong>13. Bornage Télécom (CDR)</strong><br/><code>TELECOM_CDR</code></td>
+              <td>Ligne appelante/appelée, ID Antenne Relais (BTS), Azimut (0-360°), Durée, Timestamp précis</td>
+              <td>Données judiciaires réquisitionnées auprès de Mobilis, Djezzy et Ooredoo pour vérification d'alibis.</td>
+              <td><span class="badge badge-emerald">TimescaleDB / PostgreSQL (Hyper-Table)</span></td>
+              <td><span class="badge badge-blue">Neo4j (Liaisons de co-déplacement)</span></td>
+              <td>SQL Hypertables partitionnées par tranches de 24h &bull; Calculs géospatiaux PostGIS en &lt;15ms</td>
+            </tr>
+            <tr>
+              <td>⚖️ <strong>14. Document Judiciaire</strong><br/><code>LEGAL_DOCUMENT</code></td>
+              <td>Référence PV, Réquisition, Plainte, Sceau d'horodatage RFC 3161, Racine d'arbre de Merkle</td>
+              <td>Dossier officiel remis au procureur de la République ou au juge d'instruction.</td>
+              <td><span class="badge badge-amber">MinIO S3 (PDF/A-3b WORM)</span></td>
+              <td><span class="badge badge-emerald">PostgreSQL 16 (Registre d'audit chaîné)</span></td>
+              <td>S3 WORM légalement inaltérable &bull; Chaînage de hachages cryptographiques (Merkle Proof)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 4. Attributs de la Base Graphe (Neo4j) & Modèle Universel Généralisé (GFPG) -->
+    <section>
+      <h2 class="section-title">4. Attributs de la Base Graphe (Neo4j) &amp; Modèle Universel Généralisé (GFPG)</h2>
+      <p class="section-subtitle">
+        Comment structurer les nœuds et arêtes dans Neo4j, et comment garantir que le schéma est <strong>entièrement généralisable</strong> sans jamais nécessiter de restructuration de la base lorsqu'un nouveau type de cybercriminalité apparaît ?
+      </p>
+
+      <div class="grid-2">
+        <!-- 4.1 Attributs Communs à Tous les Nœuds -->
+        <div class="card" style="border-top:4px solid var(--accent-blue);">
+          <div class="card-title"><span>🧬</span> 4.1 Attributs Communs de Nœuds (Méta-Modèle Universel)</div>
+          <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.5;margin-bottom:0.75rem;">
+            Chaque entité du graphe, qu'il s'agisse d'un numéro de téléphone, d'un compte Instagram ou d'un suspect, implémente obligatoirement les 10 attributs pivots suivants :
+          </p>
+          <ul style="font-size:0.8rem;color:#cbd5e1;line-height:1.6;padding-left:1.2rem;margin:0;">
+            <li><code>uuid</code> : Identifiant unique universel (RFC 4122 v4) immuable.</li>
+            <li><code>canonical_value</code> : Représentation textuelle nettoyée et normalisée (ex: <code>+213555019283</code> pour un téléphone, minuscule pour un e-mail). Indexé en contrainte d'unicité.</li>
+            <li><code>entity_type</code> : Type parmi les 14 catégories (<code>PHONE</code>, <code>PERSON</code>, <code>WEBSITE</code>...).</li>
+            <li><code>layer</code> : Calque d'enquête assigné (<code>1:VERIFIED</code>, <code>2:OSINT_RAW</code>, <code>3:INFRA</code>, <code>4:HYPOTHESIS</code>).</li>
+            <li><code>confidence_score</code> : Score de certitude judiciaire (Float entre <code>0.00</code> et <code>1.00</code>).</li>
+            <li><code>source_tool</code> : Identifiant de la brique ayant découvert l'indice (ex: <code>tool.identity.phoneinfoga</code>).</li>
+            <li><code>source_artifact_sha256</code> : Empreinte de la preuve physique scellée dans MinIO S3 garantissant la chaîne de garde.</li>
+            <li><code>case_ids</code> : Tableau des numéros de dossiers liés (<code>["2026-SCAM-089", "2025-FRAUD-012"]</code>) permettant la découverte automatique de réseaux criminels multi-juridictions.</li>
+            <li><code>first_seen_at</code> / <code>last_seen_at</code> : Intervalles temporels d'activité forensique.</li>
+            <li><code>status</code> : État du cycle de vie (<code>ACTIVE</code>, <code>ARCHIVED</code>, <code>DISCARDED_FALSE_POSITIVE</code>).</li>
+          </ul>
+        </div>
+
+        <!-- 4.2 Attributs des Arêtes (Relations Typées) -->
+        <div class="card" style="border-top:4px solid var(--accent-purple);">
+          <div class="card-title"><span>🔗</span> 4.2 Attributs des Arêtes &amp; Relations Typées</div>
+          <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.5;margin-bottom:0.75rem;">
+            Les liens entre entités ne sont pas de simples traits ; ce sont des relations sémantiques riches portant leurs propres preuves juridiques :
+          </p>
+          <ul style="font-size:0.8rem;color:#cbd5e1;line-height:1.6;padding-left:1.2rem;margin:0;">
+            <li><code>type</code> : Verbe d'action orienté (<code>USES_PHONE</code>, <code>TRANSFERS_FUNDS</code>, <code>REGISTERED_ON</code>, <code>COMMUNICATES_WITH</code>, <code>CO_LOCATED_WITH</code>, <code>SUSPECTED_ALIAS_OF</code>).</li>
+            <li><code>weight</code> : Poids numérique proportionnel à l'intensité de la liaison (montant total en DZD transféré, nombre d'appels passés ou score de similarité faciale).</li>
+            <li><code>confidence</code> : Certitude de la relation (ex: <code>0.89</code> pour une correspondance faciale ArcFace, <code>1.00</code> pour un compte bancaire au nom du suspect).</li>
+            <li><code>valid_from</code> / <code>valid_to</code> : Fenêtre de validité temporelle (ex: période pendant laquelle la ligne téléphonique appartenait au suspect).</li>
+            <li><code>evidence_warc_ref</code> : Pointeur direct vers l'archive web ou le listing d'appels certifiant ce lien.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 4.3 Peut-on Généraliser le Modèle ? -->
+      <div class="card" style="margin-top:1.25rem;border-left:4px solid var(--accent-emerald);">
+        <div class="card-title"><span>💡</span> 4.3 Peut-on Généraliser le Modèle ? (Le Modèle GFPG — Generalized Forensic Property Graph)</div>
+        <p style="font-size:0.84rem;color:var(--text-secondary);line-height:1.6;margin-bottom:0.75rem;">
+          <strong>Réponse formelle : OUI, le modèle est 100% généralisable.</strong><br/>
+          Dans les outils d'enquête traditionnels, l'apparition d'un nouveau type de délit (ex: arnaque aux cryptomonnaies ou fraude aux colis de livraison) exigeait de réécrire les schémas SQL, de créer de nouvelles tables et de recompiler l'application. Athar DZ résout définitivement ce problème grâce au patron de conception <strong>Generalized Forensic Property Graph (GFPG)</strong> :
+        </p>
+        
+        <div style="background:#090d16;padding:1rem;border-radius:8px;font-size:0.8rem;color:#cbd5e1;line-height:1.55;margin-bottom:0.75rem;">
+          <strong style="color:#10b981;">Comment fonctionne la généralisation sans rupture de schéma :</strong>
+          <ol style="margin:0.5rem 0 0 1.25rem;padding:0;">
+            <li><strong>Méta-Modèle Polymorphe à Propriétés Flexibles :</strong> Le moteur Neo4j stocke le cœur indexé universel (identifiant canonique, confiance, calque, dossiers liés) et encapsule les attributs spécifiques à chaque nouveau vecteur sous forme de propriétés dynamiques sans schéma rigide.</li>
+            <li><strong>Déclaration par Manifestes YAML :</strong> L'ajout d'une nouvelle entité (ex: <code>Drone_Telemetry</code> ou <code>Telegram_Bot_Token</code>) s'effectue par un simple fichier de configuration <code>brick.yaml</code> spécifiant <code>input_entities</code> et <code>output_entities</code>. Le moteur déterministe ingère le nouveau type automatiquement.</li>
+            <li><strong>Requêtage Cypher Transversal :</strong> Les algorithmes de parcours de graphe (recherche de plus court chemin, communautés de Louvain, détection de prête-noms) fonctionnent sur la topologie du graphe indépendamment du type d'entité, permettant de trouver des chemins comme :<br/>
+              <code style="color:#38bdf8;">(Suspect)-[:COMMUNICATES_WITH]->(Vocal)-[:MENTIONS]->(BaridiMob)-[:LINKED_TO]->(Autre_Dossier)</code>
+            </li>
+          </ol>
+        </div>
       </div>
     </section>
 

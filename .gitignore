@@ -57,3 +57,17 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# Heavy Forensic Artifacts & Large Archives
+*.zip
+*.tar.gz
+*.tgz
+*.iso
+*.e01
+*.raw
+*.dmp
+*.vmdk
+
+# Thesis and Academic Reports directory
+Rapport/
+

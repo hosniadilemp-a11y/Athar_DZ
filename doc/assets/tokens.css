@@ -138,6 +138,8 @@
    * APPLICATION CHROME DIMENSIONS (Target <= 100px vertical chrome)
    * Top bar (48px) + Status bar (24px) = 72px total vertical chrome
    * ------------------------------------------------------------------------- */
+  --menubar-height: 32px;
+  --subbar-height: 44px;
   --topbar-height: 48px;
   --statusbar-height: 24px;
   --panel-left-width: 240px;
