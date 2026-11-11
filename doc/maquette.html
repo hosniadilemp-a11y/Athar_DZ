@@ -765,17 +765,17 @@
           <div class="report-view-container">
             <div class="report-header-banner">
               <div>
-                <span class="chip chip-neutral" data-i18n="report_court_ref">Tribunal d'Oran • Pôle Pénal Spécialisé Cybercriminalité</span>
-                <h2 class="text-lg font-bold text-light mt-1" data-i18n="report_title">Procès-Verbal de Synthèse Forensique</h2>
+                <span class="chip chip-neutral" data-i18n="report_court_ref">Pôle Pénal Spécialisé TIC • Cour d'Alger / Oran / Blida</span>
+                <h2 class="text-lg font-bold text-light mt-1" data-i18n="report_title">Procès-Verbal de Synthèse Forensique — Opération CANDY WHEELS</h2>
               </div>
-              <button class="btn btn-primary" onclick="showToast('Téléchargement du dossier PDF scellé en cours...')">
+              <a href="assets/Rapport_Investigation_ATHAR-2026-SCAM-089.pdf" target="_blank" download="Rapport_Investigation_ATHAR-2026-SCAM-089.pdf" class="btn btn-primary" style="text-decoration:none;display:inline-flex;align-items:center;gap:0.4rem;" onclick="showToast('Ouverture et téléchargement du rapport officiel scellé (PDF)...')">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-                <span data-i18n="report_generate_pdf">Exporter Dossier Conforme CPP (PDF)</span>
-              </button>
+                <span data-i18n="report_generate_pdf">Télécharger Rapport Conforme CPP (PDF)</span>
+              </a>
             </div>
 
             <p class="text-sm text-muted">
-              Le présent rapport consolide la chaîne de garde cryptographique, les recoupements techniques d'infrastructures, les correspondances biométriques et les réquisitions judiciaires aux opérateurs télécoms (Mobilis, Ooredoo, Djezzy) et à Meta Platforms Inc.
+              Le présent rapport consolide la chaîne de garde cryptographique, les recoupements techniques 100% OSINT (fuite Git, dépôt GitHub, serveurs Discord et canaux Telegram clandestins infiltrés), les correspondances biométriques vocales et les réquisitions de gel financier.
             </p>
 
             <table class="report-evidence-table">
@@ -783,9 +783,9 @@
                 <tr>
                   <th>Pièce N°</th>
                   <th>Désignation de la Preuve</th>
-                  <th>Brique d'Extraction</th>
+                  <th>Brique / Source OSINT</th>
                   <th>Empreinte SHA-256 Certifiée</th>
-                  <th>Statut</th>
+                  <th>Statut Légal</th>
                 </tr>
               </thead>
               <tbody>
@@ -798,17 +798,59 @@
                 </tr>
                 <tr>
                   <td class="font-mono">P-02</td>
-                  <td>Extraction du Numéro +213 555 019 283</td>
+                  <td>Extraction Ligne Pivot WhatsApp +213 555 019 283</td>
                   <td>brick.socmint.ioc_extractor</td>
                   <td class="font-mono">7f1a3b8c9d0e1f2a3b4c5d6e7f8a9b0c</td>
                   <td><span class="chip chip-emerald">Scellé RFC 3161</span></td>
                 </tr>
                 <tr>
                   <td class="font-mono">P-03</td>
-                  <td>Rapprochement Biométrique ArcFace (89%)</td>
-                  <td>brick.media.deepface_biometrics</td>
-                  <td class="font-mono">3b4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b</td>
-                  <td><span class="chip chip-purple">Hypothèse Validée</span></td>
+                  <td>Binaire APK AutoPneusDZ & Signature Développeur</td>
+                  <td>brick.mobile.apk_decompiler</td>
+                  <td class="font-mono">4a7c8e9b01d2e3f4a5b6c7d8e9f0a1b2</td>
+                  <td><span class="chip chip-emerald">Scellé RFC 3161</span></td>
+                </tr>
+                <tr>
+                  <td class="font-mono">P-04</td>
+                  <td>Note Vocale WhatsApp A-01 (Amine B. -> Karim Zerrouki)</td>
+                  <td>brick.audio.biometric_matcher (96%)</td>
+                  <td class="font-mono">a9f3b7c841e2d93e15f40192b0c39a8e</td>
+                  <td><span class="chip chip-emerald">Preuve Vocale Darija</span></td>
+                </tr>
+                <tr>
+                  <td class="font-mono">P-05</td>
+                  <td>Directive Telegram T-01 (Youcef R. -> Opérateurs Pneus)</td>
+                  <td>brick.socmint.telegram_scraper</td>
+                  <td class="font-mono">3c7b91f0e21a8d94c1b2e3f4a5b6c7d8</td>
+                  <td><span class="chip chip-emerald">Ordre de Blocage & GAB</span></td>
+                </tr>
+                <tr>
+                  <td class="font-mono">P-06</td>
+                  <td>Note Vocale Telegram A-02 (Le Boss El-Hadj -> Youcef R.)</td>
+                  <td>brick.audio.speaker_diarization</td>
+                  <td class="font-mono">5d829fa18c0e2274b123985fe612ab74</td>
+                  <td><span class="chip chip-purple">Ordre Blanchiment USDT</span></td>
+                </tr>
+                <tr>
+                  <td class="font-mono">P-07</td>
+                  <td>Journal Discord D-01 (Développeur Sofiane K. <-> Le Boss)</td>
+                  <td>brick.network.discord_parser</td>
+                  <td class="font-mono">1f8e2a3b4c5d6e7f8a9b0c1d2e3f4a5b</td>
+                  <td><span class="chip chip-emerald">Livraison Clones APK</span></td>
+                </tr>
+                <tr>
+                  <td class="font-mono">P-08</td>
+                  <td>Note Vocale Telegram A-03 (Lieutenante Nadia -> Le Boss)</td>
+                  <td>brick.audio.biometric_matcher</td>
+                  <td class="font-mono">98e4c194b15672d1f90081c7e92384a8</td>
+                  <td><span class="chip chip-purple">Rapport Visas 2.4M DZD</span></td>
+                </tr>
+                <tr>
+                  <td class="font-mono">P-09</td>
+                  <td>Relevé Mules BaridiMob & Portefeuille Binance USDT</td>
+                  <td>brick.crypto.trc20_tracer</td>
+                  <td class="font-mono">c4f8209e86a117d3b5b9e02c9147d332</td>
+                  <td><span class="chip chip-emerald">Traçage 33.5M DZD</span></td>
                 </tr>
               </tbody>
             </table>
@@ -1083,6 +1125,7 @@
   <div class="app-toast" id="app-toast" role="status" aria-live="polite"></div>
 
   <!-- Application Controller Scripts -->
+  <script src="assets/mock-case-candy-wheels.js"></script>
   <script src="assets/maquette-i18n.js"></script>
 </body>
 </html>
