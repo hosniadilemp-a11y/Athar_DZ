@@ -1,0 +1,585 @@
+{
+  "case_id": "ATHAR-2026-SCAM-089",
+  "case_code": "CANDY-WHEELS-DZ",
+  "case_name": "Opération CANDY WHEELS — Réseau Multi-Scam Cybercriminalité",
+  "case_profile": "Cyber-Escroquerie Commerciale en Bande Organisée & Blanchiment Crypto",
+  "jurisdiction": "Pôle Pénal Spécialisé TIC • Alger / Oran / Blida",
+  "status": "CHARGES_FILED_WARRANTS_ISSUED",
+  "opened_at": "2026-11-10T10:15:00Z",
+  "sealed_ledger_hash": "c4f8209e86a117d3b5b9e02c9147d3328e340a1b89efbc99304a298f24419aa7",
+  "kpis": {
+    "loss_initial_dzd": 232000,
+    "loss_total_dzd": 33500000,
+    "loss_usdt_estimate": 140000,
+    "victims_count_direct": 3,
+    "victims_count_total_c2": 285,
+    "wilayas_impacted": [
+      "Alger",
+      "Oran",
+      "Blida",
+      "Constantine",
+      "Sétif",
+      "Annaba"
+    ],
+    "sealed_evidence_count": 12,
+    "evidence_integrity_rate": "100% RFC 3161 Certified"
+  },
+  "victims": [
+    {
+      "id": "vic_01",
+      "name": "Karim Zerrouki",
+      "age": 38,
+      "profession": "Chauffeur VTC / Taxi",
+      "phone": "+213 661 44 12 89",
+      "operator": "Mobilis",
+      "wilaya": "Alger (Bab Ezzouar)",
+      "loss_dzd": 64000,
+      "product": "4 Pneus Michelin Primacy 4 205/55 R16",
+      "payment_method": "BaridiMob",
+      "rip_recipient": "00799999002148593214",
+      "txn_id": "TXN-20261108-994102",
+      "complaint_date": "2026-11-10T10:15:00Z",
+      "evidence_provided": [
+        "Screenshot conversation WhatsApp",
+        "Note vocale Darija promettant livraison Yalidine",
+        "Reçu officiel BaridiMob débité"
+      ]
+    },
+    {
+      "id": "vic_02",
+      "name": "Meriem Benali",
+      "age": 29,
+      "profession": "Enseignante de lycée",
+      "phone": "+213 770 82 91 30",
+      "operator": "Djezzy",
+      "wilaya": "Oran (Bir El Djir)",
+      "loss_dzd": 48000,
+      "product": "Acompte 50% sur 4 Pneus Michelin Energy Saver",
+      "payment_method": "BaridiMob",
+      "rip_recipient": "00799999002148593214",
+      "txn_id": "TXN-20261108-994145",
+      "complaint_date": "2026-11-10T11:30:00Z",
+      "evidence_provided": [
+        "Faux bon de commande PDF 'SARL Ouest Pneumatiques'",
+        "Captures d'écran profil Facebook 'Pneus Promo Algérie'",
+        "Reçu BaridiMob de 48 000 DZD"
+      ]
+    },
+    {
+      "id": "vic_03",
+      "name": "Djamel Eddine Mansouri",
+      "age": 52,
+      "profession": "Gérant de flotte de camionnettes",
+      "phone": "+213 550 19 63 74",
+      "operator": "Ooredoo",
+      "wilaya": "Blida (Ouled Yaïch)",
+      "loss_dzd": 120000,
+      "product": "8 Pneus utilitaires Michelin Agilis",
+      "payment_method": "Application Android AutoPneusDZ (2 débits de 60k)",
+      "rip_recipient": "00799999002148593214 & 00799999008812450192",
+      "txn_id": "TXN-20261109-110294 / 110295",
+      "complaint_date": "2026-11-10T14:00:00Z",
+      "evidence_provided": [
+        "Fichier APK AutoPneusDZ téléchargé",
+        "Double notification de débit BaridiMob",
+        "Historique SMS de contact avec lien de tracking"
+      ]
+    }
+  ],
+  "starting_evidence": {
+    "facebook_pages": [
+      {
+        "name": "Pneus Promo Algérie",
+        "url": "fb.com/pneus.promo.dz",
+        "created": "2026-10-12",
+        "likes": 2400
+      },
+      {
+        "name": "Pneus Express Discount DZ",
+        "url": "fb.com/michelin.express.livraison",
+        "created": "2026-10-24"
+      },
+      {
+        "name": "Auto Déstockage Pneumatiques",
+        "url": "fb.com/auto.destockage.blida",
+        "created": "2026-11-02"
+      }
+    ],
+    "facebook_posts": [
+      {
+        "id": "post_98124",
+        "text": "Vente Flash 4 Pneus Michelin -60% Déstockage Douane",
+        "reach": 18400
+      },
+      {
+        "id": "post_98177",
+        "text": "Liquidation Stock Tourisme et Utilitaire - Livraison 58 Wilayas"
+      },
+      {
+        "id": "post_98205",
+        "text": "Offre Spéciale Flottes et Artisans - Acompte requis"
+      }
+    ],
+    "scammer_phone": {
+      "number": "+213 555 019 283",
+      "operator": "Ooredoo DZ",
+      "whatsapp_name": "Service Commercial Pneus DZ",
+      "cell_tower": "Es Senia (Oran)"
+    },
+    "scam_links": [
+      "https://promo-pneus-express.shop/order",
+      "https://destockage-auto-dz.online/",
+      "https://cdn.dz-services-cloud.com/apps/AutoPneusDZ.apk"
+    ]
+  },
+  "osint_discoveries": {
+    "developer_leak": {
+      "origin": "promo-pneus-express.shop/.git/config",
+      "git_author": "Sofiane K. <sofiane.devbox99@gmail.com>",
+      "github_profile": "github.com/soficoder-alger",
+      "apk_keystore_fingerprint": "CN=Sofiane K., OU=DevAlger, O=FreelanceDZ",
+      "shared_meta_pixel": "88419203314"
+    },
+    "discord_hub": {
+      "server_name": "DZ-Dev & Ops Hub",
+      "guild_id": "119830129480192840",
+      "discovery_vector": "Leaked Discord webhook in GitHub commit 7a8f1b2c",
+      "members": [
+        {
+          "handle": "ElHadj_99#0001",
+          "role": "Owner / Le Boss (Tarek H.)"
+        },
+        {
+          "handle": "SofianeDev#4401",
+          "role": "Developer (Sofiane K.)"
+        },
+        {
+          "handle": "Jo_Blida#1982",
+          "role": "Lieutenant Pneus (Youcef R.)"
+        },
+        {
+          "handle": "Dina_Consult#3310",
+          "role": "Lieutenante Visas (Nadia M.)"
+        },
+        {
+          "handle": "Kika_Annaba#7721",
+          "role": "Lieutenant Électro (Farid T.)"
+        }
+      ]
+    },
+    "telegram_network": {
+      "channels": [
+        {
+          "name": "Comité Direction C2 (VIP)",
+          "invite": "t.me/+Hd99_Management_C2",
+          "members": [
+            "El-Hadj (Boss)",
+            "Sofiane (Dev)",
+            "Youcef (LT)",
+            "Nadia (LT)",
+            "Farid (LT)"
+          ],
+          "purpose": "Consolidation financière & blanchiment USDT"
+        },
+        {
+          "name": "Pneus DZ — Équipe Vente",
+          "invite": "t.me/+Ab91k_PneuOps",
+          "leader": "Youcef R. (@jo_pneus)",
+          "operators": [
+            "Amine B. (@amine_import)",
+            "Bilel S.",
+            "Hamza K."
+          ],
+          "purpose": "Gestion des faux bons de commande et blocage des victimes"
+        },
+        {
+          "name": "Visa Schengen Express — Traitement",
+          "invite": "t.me/+Vz82k_VisaOps",
+          "leader": "Nadia M. (@dina_visas)",
+          "operators": [
+            "Fares K.",
+            "Sarah T.",
+            "2 automated bot leads"
+          ],
+          "purpose": "Fausses réservations TLSContact et faux contrats de travail"
+        },
+        {
+          "name": "Électro & Gold Liquidation",
+          "invite": "t.me/+Lx44k_ElectroOps",
+          "leader": "Farid T. (@kika_electro)",
+          "operators": [
+            "Mourad Z.",
+            "Lyès B.",
+            "Riad M."
+          ],
+          "purpose": "Faux déstockages multimédia & TV"
+        }
+      ]
+    }
+  },
+  "evidentiary_recordings_and_texts": [
+    {
+      "id": "EVID-A01",
+      "type": "AUDIO_RECORDING",
+      "label": "Vocal WhatsApp Amine B. à Karim Zerrouki",
+      "file": "AUDIO_EVID_WA_20261108_AMINE_KARIM.ogg",
+      "sha256": "a9f3b7c841e2d93e15f40192b0c39a8e23f18b27091283c01928419203910283",
+      "speaker": "Amine B. (+213 555 019 283)",
+      "acoustic_match_rate": 0.96,
+      "language": "Darija algéroise",
+      "transcript_original": "Khouya Karim, salam alaykoum. Les quatre pneus Michelin rahoum réservés b'smitek fel dépôt taâ Boufarik. Bessah la promo hadhi fiha demande kbira. Versi les 64 000 da f'had le compte BaridiMob li b'ath'toulak, w b'athli le reçu f'WhatsApp...",
+      "judicial_translation": "Frère Karim, salam alaykoum. Les quatre pneus Michelin sont réservés à ton nom au dépôt de Boufarik. Mais cette promo a une forte demande. Verse les 64 000 DZD sur le compte BaridiMob communiqué et transmets le reçu sur WhatsApp..."
+    },
+    {
+      "id": "EVID-T01",
+      "type": "CHAT_LOG",
+      "label": "Directive Telegram Youcef R. (Lieutenant Pneus)",
+      "file": "TELEGRAM_LOG_PNEU_20261108.json",
+      "sha256": "3c7b91f0e21a8d94c1b2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4",
+      "channel": "t.me/+Ab91k_PneuOps",
+      "timestamp": "2026-11-08T20:05:00Z",
+      "speaker": "Youcef R. (@jo_pneus)",
+      "transcript_original": "@amine_import @bilel Yaâtikoum essaheha el-youm. Amine, le client taxi taâ Bab Ezzouar li b'ath 64k w bent Oran li b'athet 48k, bloquihoum men WhatsApp direct. Ma t'jawbouhoumch fel téléphone...",
+      "judicial_translation": "Bravo pour aujourd'hui. Amine, le chauffeur de taxi de Bab Ezzouar qui a versé 64k et la fille d'Oran qui a versé 48k, bloque-les directement sur WhatsApp. Ne leur réponds plus au téléphone..."
+    },
+    {
+      "id": "EVID-A02",
+      "type": "AUDIO_RECORDING",
+      "label": "Vocal Telegram Le Boss 'El-Hadj' à Youcef R.",
+      "file": "AUDIO_EVID_TG_BOSS_TO_YOUCEF.ogg",
+      "sha256": "5d829fa18c0e2274b123985fe612ab7451908234109283419028341902834190",
+      "speaker": "Tarek H. ('El-Hadj')",
+      "channel": "t.me/+Hd99_Management_C2",
+      "timestamp": "2026-11-09T23:30:00Z",
+      "transcript_original": "Youcef, smaâni mlih. La cellule pneus rahi t'dirlna 600 000 da par jour had la semaine, c’est bien bessah les plaintes b'daw y'kethrou f'Facebook. Ghleq les trois pages ghedwa s'bah, w khéli Sofiane y'lansi les trois nouveaux sites...",
+      "judicial_translation": "Youcef, écoute-moi bien. La cellule pneus nous fait 600 000 DZD par jour cette semaine, c'est bien mais les plaintes s'accumulent sur Facebook. Ferme les 3 pages demain matin et laisse Sofiane lancer les 3 nouveaux sites..."
+    },
+    {
+      "id": "EVID-D01",
+      "type": "CHAT_LOG",
+      "label": "Logs Discord Développeur Sofiane K. <-> Boss ElHadj",
+      "file": "DISCORD_SCRAPED_CHANNEL_DEV_C2.txt",
+      "sha256": "1f8e2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f",
+      "channel": "DZ-Dev & Ops Hub (#commandes-scripts)",
+      "transcript_original": "[SofianeDev] @ElHadj_99 C'est bon, script PHP mis à jour... [ElHadj_99] Parfait. Et le clone TLSContact pour la cellule de Nadia ? [SofianeDev] Build terminé : https://cdn.dz-services-cloud.com/apps/VisaExpressDZ.apk...",
+      "judicial_translation": "Échange technique certifiant la livraison continue d'applications de phishing par Sofiane K. pour le compte du syndicat criminel."
+    },
+    {
+      "id": "EVID-A03",
+      "type": "AUDIO_RECORDING",
+      "label": "Vocal Telegram Lieutenante Nadia (Cellule Visas)",
+      "file": "AUDIO_EVID_TG_NADIA_REPORT.ogg",
+      "sha256": "98e4c194b15672d1f90081c7e92384a801928341902834190283419028341902",
+      "speaker": "Nadia M. (@dina_visas)",
+      "channel": "t.me/+Hd99_Management_C2",
+      "timestamp": "2026-11-10T11:15:00Z",
+      "transcript_original": "Boss, el-hamdullah le nouveau script taâ Sofiane pour les rendez-vous TLS rah yemchi 10/10. Les opérateurs diali f'Constantine jawbou plus de 80 clients had sbeh. Derna 2,4 millions de dinars d'acomptes...",
+      "judicial_translation": "Boss, le nouveau script de Sofiane pour les rendez-vous TLS fonctionne à 100%. Mes opérateurs à Constantine ont traité plus de 80 dossiers ce matin. Nous avons cumulé 2,4 millions de dinars d'acomptes..."
+    }
+  ],
+  "syndicate_hierarchy": {
+    "boss": {
+      "name": "Tarek H.",
+      "alias": "El-Hadj / Scorpion",
+      "age": 44,
+      "residence": "Hydra (Alger) / Alicante (Espagne)",
+      "role": "Commanditaire en Chef, Recruteur des Lieutenants, Blanchisseur USDT",
+      "crypto_wallet_trc20": "TJv89XbM42wLkK3e9Q7pNrTzC1mKq92",
+      "binance_account": "Binance P2P Merchant #DZ-VIP-99"
+    },
+    "developer": {
+      "name": "Sofiane K.",
+      "alias": "Sofi-Dev",
+      "age": 28,
+      "residence": "Bab Ezzouar (Alger)",
+      "role": "Architecte Technique (APKs Android, Sites clones, Scripts C2, Bots)",
+      "github": "@soficoder-alger",
+      "email": "sofiane.devbox99@gmail.com",
+      "commission": "15% sur chaque encaissement"
+    },
+    "cashier_mules": {
+      "name": "Kamel V.",
+      "alias": "Le Caissier",
+      "age": 36,
+      "role": "Recruteur de mules BaridiMob et gestionnaire des retraits physiques aux GAB",
+      "cards_seized": 18
+    },
+    "lieutenants": [
+      {
+        "name": "Youcef R.",
+        "alias": "Jo_Blida",
+        "cell": "Cellule Pneus & Pièces Auto",
+        "wilaya": "Blida",
+        "operators": [
+          "Amine B. (+213 555 019 283)",
+          "Bilel S.",
+          "Hamza K."
+        ],
+        "turnover_dzd": 4500000
+      },
+      {
+        "name": "Nadia M.",
+        "alias": "Dina_Consult",
+        "cell": "Cellule Visas Schengen & Contrats Espagne",
+        "wilaya": "Constantine",
+        "operators": [
+          "Fares K.",
+          "Sarah T.",
+          "2 opérateurs supplémentaires"
+        ],
+        "turnover_dzd": 18000000
+      },
+      {
+        "name": "Farid T.",
+        "alias": "Kika_Annaba",
+        "cell": "Cellule Électroménager & Or Déstockage",
+        "wilaya": "Sétif / Annaba",
+        "operators": [
+          "Mourad Z.",
+          "Lyès B.",
+          "Riad M."
+        ],
+        "turnover_dzd": 11000000
+      }
+    ]
+  },
+  "graph_representation": {
+    "nodes": [
+      {
+        "id": "vic_karim",
+        "type": "VICTIM",
+        "layer": 1,
+        "label": "Karim Zerrouki (Alger)",
+        "loss": 64000
+      },
+      {
+        "id": "vic_meriem",
+        "type": "VICTIM",
+        "layer": 1,
+        "label": "Meriem Benali (Oran)",
+        "loss": 48000
+      },
+      {
+        "id": "vic_djamel",
+        "type": "VICTIM",
+        "layer": 1,
+        "label": "Djamel Mansouri (Blida)",
+        "loss": 120000
+      },
+      {
+        "id": "post_fb_98124",
+        "type": "FB_POST",
+        "layer": 1,
+        "label": "Post FB #98124 (Michelin -60%)"
+      },
+      {
+        "id": "page_fb_pneus",
+        "type": "FB_PAGE",
+        "layer": 1,
+        "label": "fb.com/pneus.promo.dz"
+      },
+      {
+        "id": "phone_scammer_front",
+        "type": "PHONE",
+        "layer": 2,
+        "label": "+213 555 019 283 (Ooredoo)"
+      },
+      {
+        "id": "apk_autopneus",
+        "type": "MALWARE_APK",
+        "layer": 2,
+        "label": "AutoPneusDZ.apk"
+      },
+      {
+        "id": "github_dev_leak",
+        "type": "CODE_REPO",
+        "layer": 2,
+        "label": "github.com/soficoder-alger"
+      },
+      {
+        "id": "dev_sofiane",
+        "type": "DEVELOPER",
+        "layer": 3,
+        "label": "Sofiane K. (Sofi-Dev)"
+      },
+      {
+        "id": "discord_server_ops",
+        "type": "DISCORD_SERVER",
+        "layer": 3,
+        "label": "Discord « DZ-Dev & Ops Hub »"
+      },
+      {
+        "id": "tg_management",
+        "type": "TELEGRAM_GROUP",
+        "layer": 3,
+        "label": "TG VIP « Comité Direction C2 »"
+      },
+      {
+        "id": "tg_cell_pneus",
+        "type": "TELEGRAM_GROUP",
+        "layer": 3,
+        "label": "TG « Pneus DZ — Ventes »"
+      },
+      {
+        "id": "tg_cell_visas",
+        "type": "TELEGRAM_GROUP",
+        "layer": 3,
+        "label": "TG « Visas Express DZ »"
+      },
+      {
+        "id": "tg_cell_electro",
+        "type": "TELEGRAM_GROUP",
+        "layer": 3,
+        "label": "TG « Électro & Or DZ »"
+      },
+      {
+        "id": "operator_amine",
+        "type": "SUSPECT",
+        "layer": 3,
+        "label": "Amine B. (@amine_import)"
+      },
+      {
+        "id": "lt_youcef",
+        "type": "LIEUTENANT",
+        "layer": 4,
+        "label": "Youcef R. (Chef Pneus)"
+      },
+      {
+        "id": "lt_nadia",
+        "type": "LIEUTENANT",
+        "layer": 4,
+        "label": "Nadia M. (Chef Visas)"
+      },
+      {
+        "id": "lt_farid",
+        "type": "LIEUTENANT",
+        "layer": 4,
+        "label": "Farid T. (Chef Électro)"
+      },
+      {
+        "id": "boss_tarek",
+        "type": "KINGPIN",
+        "layer": 4,
+        "label": "Tarek H. (« El-Hadj » / Le Boss)"
+      },
+      {
+        "id": "wallet_usdt_boss",
+        "type": "CRYPTO_WALLET",
+        "layer": 4,
+        "label": "USDT TRC-20: TJv89X...Kq92"
+      }
+    ],
+    "edges": [
+      {
+        "source": "vic_karim",
+        "target": "post_fb_98124",
+        "label": "CLICKED_AD"
+      },
+      {
+        "source": "vic_meriem",
+        "target": "page_fb_pneus",
+        "label": "CONTACTED_PAGE"
+      },
+      {
+        "source": "vic_djamel",
+        "target": "apk_autopneus",
+        "label": "DOWNLOADED_APP"
+      },
+      {
+        "source": "post_fb_98124",
+        "target": "phone_scammer_front",
+        "label": "ROUTES_TO_WHATSAPP"
+      },
+      {
+        "source": "operator_amine",
+        "target": "phone_scammer_front",
+        "label": "OPERATES_LINE"
+      },
+      {
+        "source": "page_fb_pneus",
+        "target": "github_dev_leak",
+        "label": "EXPOSED_GIT_ORIGIN"
+      },
+      {
+        "source": "apk_autopneus",
+        "target": "dev_sofiane",
+        "label": "SIGNED_BY_KEYSTORE"
+      },
+      {
+        "source": "github_dev_leak",
+        "target": "discord_server_ops",
+        "label": "LEAKED_WEBHOOK"
+      },
+      {
+        "source": "dev_sofiane",
+        "target": "discord_server_ops",
+        "label": "DEPLOYS_TO_DISCORD"
+      },
+      {
+        "source": "discord_server_ops",
+        "target": "tg_management",
+        "label": "SHARED_INVITE_VIP"
+      },
+      {
+        "source": "discord_server_ops",
+        "target": "tg_cell_pneus",
+        "label": "SHARED_INVITE_PNEUS"
+      },
+      {
+        "source": "discord_server_ops",
+        "target": "tg_cell_visas",
+        "label": "SHARED_INVITE_VISAS"
+      },
+      {
+        "source": "discord_server_ops",
+        "target": "tg_cell_electro",
+        "label": "SHARED_INVITE_ELECTRO"
+      },
+      {
+        "source": "operator_amine",
+        "target": "tg_cell_pneus",
+        "label": "MEMBER_OF_CELL"
+      },
+      {
+        "source": "lt_youcef",
+        "target": "tg_cell_pneus",
+        "label": "MANAGES_CELL"
+      },
+      {
+        "source": "lt_nadia",
+        "target": "tg_cell_visas",
+        "label": "MANAGES_CELL"
+      },
+      {
+        "source": "lt_farid",
+        "target": "tg_cell_electro",
+        "label": "MANAGES_CELL"
+      },
+      {
+        "source": "lt_youcef",
+        "target": "tg_management",
+        "label": "REPORTS_TO_BOSS"
+      },
+      {
+        "source": "lt_nadia",
+        "target": "tg_management",
+        "label": "REPORTS_TO_BOSS"
+      },
+      {
+        "source": "lt_farid",
+        "target": "tg_management",
+        "label": "REPORTS_TO_BOSS"
+      },
+      {
+        "source": "boss_tarek",
+        "target": "tg_management",
+        "label": "COMMANDS_SYNDICATE"
+      },
+      {
+        "source": "boss_tarek",
+        "target": "wallet_usdt_boss",
+        "label": "LAUNDERS_FUNDS_TO_CRYPTO"
+      }
+    ]
+  }
+}
