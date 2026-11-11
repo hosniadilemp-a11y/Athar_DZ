@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>03. Interfaces to be Implemented &amp; User Roles — Athar DZ / AegisInvestigate</title>
+  <link rel="stylesheet" href="assets/style.css" />
+  <style>
+    .role-subnav-tabs {
+      display: flex;
+      gap: 0.4rem;
+      border-bottom: 2px solid #1e293b;
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.25rem;
+    }
+    .role-subnav-btn {
+      background: #0f172a;
+      border: 1px solid #23344d;
+      color: #94a3b8;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.6rem 1.1rem;
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+    .role-subnav-btn:hover {
+      background: #172540;
+      color: #f1f5f9;
+      border-color: #38bdf8;
+    }
+    .role-subnav-btn.active {
+      background: #141f36;
+      color: #38bdf8;
+      border-color: #38bdf8 #38bdf8 #141f36;
+      border-bottom: 2px solid #38bdf8;
+      margin-bottom: -2px;
+    }
+    .role-tab-panel {
+      display: none;
+    }
+    .role-tab-panel.active {
+      display: block;
+      animation: fadeIn 0.25s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .rbac-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      margin: 1rem 0;
+      background: #0d1524;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #1e293b;
+    }
+    .rbac-table th {
+      background: #111d33;
+      color: #e2e8f0;
+      padding: 0.65rem 0.85rem;
+      text-align: left;
+      font-weight: 700;
+      border-bottom: 1px solid #23344d;
+    }
+    .rbac-table td {
+      padding: 0.65rem 0.85rem;
+      border-bottom: 1px solid #172540;
+      color: #cbd5e1;
+      vertical-align: middle;
+    }
+    .rbac-table tr:hover {
+      background: rgba(56, 189, 248, 0.04);
+    }
+    .perm-yes { color: #10b981; font-weight: bold; }
+    .perm-no { color: #64748b; }
+    .perm-cond { color: #f59e0b; font-weight: 600; font-size: 0.78rem; }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">Æ</div>
+      <div class="brand-text">
+        <h1>AegisInvestigate</h1>
+        <span>Visual Investigation Studio</span>
+      </div>
+    </div>
+
+    <div class="nav-section">Specification Portal</div>
+    <ul class="nav-links">
+      <li><a href="index.html"><span>🏠 01. Framework Summary &amp; Objective</span><span class="nav-badge">Overview</span></a></li>
+      <li><a href="architecture.html"><span>🏗️ 02. Six-Layer Visual Architecture</span><span class="nav-badge">6 Layers</span></a></li>
+      <li><a href="interfaces-roles.html" class="active"><span>👥 03. Interfaces &amp; Roles</span><span class="nav-badge">4 Views</span></a></li>
+      <li><a href="data-model.html"><span>🕸️ 04. Data Model &amp; Metadata Graph</span><span class="nav-badge">Ontology</span></a></li>
+      <li><a href="osint-arsenal.html"><span>🧰 05. OSINT Investigation Arsenal</span><span class="nav-badge">76 Tools</span></a></li>
+      <li><a href="forensics-sna.html"><span>🚔 06. Forensics (DFIR) &amp; SNA Functions</span><span class="nav-badge">SOTA Funcs</span></a></li>
+      <li><a href="roadmap-phases.html"><span>🚀 07. Incremental Development Phases</span><span class="nav-badge">6 Releases</span></a></li>
+      <li><a href="maquette.html" class="maquette-cta"><span>🖥️ 08. Interactive Application Mock</span><span class="nav-badge">Live Studio</span></a></li>
+    </ul>
+
+    <div class="nav-section">Markdown Reference</div>
+    <ul class="nav-links">
+      <li><a href="SPECIFICATION.md"><span>📄 Full Technical Spec (.md)</span></a></li>
+      <li><a href="GITHUB_AUDIT.md"><span>📄 GitHub Starter Audit (.md)</span></a></li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div><strong>Designed For:</strong> Investigators (Zero CS Jargon)</div>
+      <div><strong>Proof Standard:</strong> Automatic Legal Snapshots</div>
+      <div><strong>Intelligence:</strong> Standard Rules + Optional AI</div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="page-header">
+      <div class="page-eyebrow">Chapter 03 &bull; Workstations Specification &amp; User Profiles</div>
+      <h1>Interfaces to be Implemented &amp; User Roles (RBAC)</h1>
+      <p>
+        Specification of the <strong>Four Dedicated Operational Interfaces</strong> tailored to each actor of the judicial police workflow: the <strong>Investigation Studio</strong> for field detectives, the <strong>Security &amp; User Administration App</strong>, the <strong>Executive Multi-Case Dashboard</strong> for prosecution magistrates and brigade chiefs, and the <strong>Technical CD Console</strong> for phone farm and AI automation.
+      </p>
+    </header>
+
+    <!-- Navigation Tabs for the 4 Roles -->
+    <div class="role-subnav-tabs">
+      <button class="role-subnav-btn active" data-tab="investigator" onclick="switchRoleTab('investigator')">
+        <span>🔍</span> 1. Studio Enquêteur (Field &amp; Analyst)
+      </button>
+      <button class="role-subnav-btn" data-tab="admin" onclick="switchRoleTab('admin')">
+        <span>🛡️</span> 2. Administration &amp; Rôles RBAC
+      </button>
+      <button class="role-subnav-btn" data-tab="head" onclick="switchRoleTab('head')">
+        <span>📊</span> 3. Dashboard Chef de Brigade &amp; Procureur
+      </button>
+      <button class="role-subnav-btn" data-tab="technical" onclick="switchRoleTab('technical')">
+        <span>💻</span> 4. Enquêteur Technique &amp; Phone Farm
+      </button>
+    </div>
+
+    <!-- ====================================================================
+         PANEL 1: INVESTIGATION STUDIO
+         ==================================================================== -->
+    <div id="panel-role-investigator" class="role-tab-panel active">
+      <section>
+        <h2 class="section-title">1. Studio Enquêteur : Poste de Travail Tactique (Zero CS Jargon)</h2>
+        <p class="section-subtitle">
+          L'interface centrale manipulée quotidiennement par les Officiers de Police Judiciaire (OPJ) et analystes criminels pour conduire les investigations, cartographier les réseaux et instruire les scellés.
+        </p>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(290px, 1fr));gap:1rem;margin-bottom:1.5rem;">
+          <div class="card" style="border-left:4px solid #38bdf8;">
+            <strong style="color:#38bdf8;">🖥️ Moteur Graphique WebGL Neo4j NVL &amp; Dual-Canvas</strong>
+            <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem;">
+              Canvas interactif haute performance capable de manipuler 50 000 nœuds à 60 FPS sans latence. Couplé à une <strong>Minimap synchronisée</strong> pour la navigation macroscopique dans les grands syndicats criminels.
+            </p>
+          </div>
+          <div class="card" style="border-left:4px solid #10b981;">
+            <strong style="color:#10b981;">💬 Copilot IA Local Text-to-Cypher (DavidLanz)</strong>
+            <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem;">
+              L'enquêteur interroge le dossier en français ou arabe dialectal (« Affiche tous les virements BaridiMob versés à Karim »). Le modèle génère le Cypher exact avec auto-correction syntaxique (<code>validate_query</code>).
+            </p>
+          </div>
+          <div class="card" style="border-left:4px solid #f59e0b;">
+            <strong style="color:#f59e0b;">⏳ Curseur Temporel Sliced APOC (TimelineBar)</strong>
+            <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem;">
+              Barre de défilement chronologique permettant de reconstituer la genèse du réseau criminel : glissez le curseur pour voir les nœuds et contacts apparaître au jour le jour.
+            </p>
+          </div>
+          <div class="card" style="border-left:4px solid #a855f7;">
+            <strong style="color:#a855f7;">👤 Fiche Suspect Express &amp; Récit Procureur</strong>
+            <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem;">
+              En 1 clic, un volet latéral coulissant synthétise l'individu : photo vérifiée ArcFace, téléphones, comptes BaridiMob, rôle calculé (Opérationnel, Soutien, Leader) et extrait un récit chronologique pour le PV.
+            </p>
+          </div>
+        </div>
+
+        <!-- Visual Mockup of the Investigation Studio -->
+        <div style="background:#090d16;border:1px solid #1e293b;border-radius:8px;padding:1rem;margin-bottom:1.5rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b;padding-bottom:0.5rem;margin-bottom:0.75rem;">
+            <div style="font-size:0.85rem;font-weight:700;color:#f8fafc;display:flex;align-items:center;gap:0.5rem;">
+              <span class="badge badge-emerald">📁 Dossier #2026-SCAM-089</span>
+              <span>Plateau d'Enquête Virtuel — « Réseau Candy Wheels DZ »</span>
+            </div>
+            <div style="display:flex;gap:0.4rem;">
+              <span class="badge badge-blue">Mode: Expert OPJ</span>
+              <span class="badge badge-purple">Moteur: NVL WebGL</span>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:220px 1fr 280px;gap:0.75rem;min-height:360px;">
+            <!-- Left Panel: Layers & Toolbox -->
+            <div style="background:#0d1524;border:1px solid #172540;border-radius:6px;padding:0.75rem;font-size:0.78rem;">
+              <div style="font-weight:700;color:#94a3b8;margin-bottom:0.5rem;">CALQUES VISUELS</div>
+              <label style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.4rem;color:#86efac;">
+                <input type="checkbox" checked /> ✅ Faits Vérifiés (Plaintes)
+              </label>
+              <label style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.4rem;color:#7dd3fc;">
+                <input type="checkbox" checked /> 📱 Puces SIM &amp; Vocaux
+              </label>
+              <label style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.4rem;color:#fcd34d;">
+                <input type="checkbox" checked /> 💳 Flux BaridiMob &amp; Mules
+              </label>
+              <label style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.6rem;color:#d8b4fe;">
+                <input type="checkbox" checked /> 💡 Hypothèses d'Enquête
+              </label>
+
+              <div style="font-weight:700;color:#94a3b8;margin-top:0.8rem;margin-bottom:0.5rem;">QUESTIONS JUDICIAIRES</div>
+              <div style="display:flex;flex-direction:column;gap:0.35rem;">
+                <button class="btn" style="font-size:0.7rem;text-align:left;padding:0.3rem 0.5rem;">❓ Qui encaisse l'argent ?</button>
+                <button class="btn" style="font-size:0.7rem;text-align:left;padding:0.3rem 0.5rem;">❓ Téléphones communs ?</button>
+                <button class="btn" style="font-size:0.7rem;text-align:left;padding:0.3rem 0.5rem;">❓ Bornages suspects Oran ?</button>
+              </div>
+            </div>
+
+            <!-- Center Stage: NVL Graph Canvas Simulation -->
+            <div style="background:#060a12;border:1px solid #1a2538;border-radius:6px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;">
+              <svg viewBox="0 0 500 280" style="width:100%;height:100%;">
+                <!-- Edges -->
+                <line x1="120" y1="80" x2="250" y2="140" stroke="#0284c7" stroke-width="2" stroke-dasharray="3"/>
+                <line x1="250" y1="140" x2="380" y2="70" stroke="#10b981" stroke-width="2.5"/>
+                <line x1="250" y1="140" x2="380" y2="200" stroke="#f59e0b" stroke-width="2.5"/>
+                <line x1="380" y1="70" x2="440" y2="140" stroke="#a855f7" stroke-width="2"/>
+
+                <!-- Nodes -->
+                <circle cx="120" cy="80" r="22" fill="#0c1929" stroke="#38bdf8" stroke-width="2"/>
+                <text x="120" y="84" fill="#38bdf8" font-size="9" font-weight="bold" text-anchor="middle">Victime</text>
+
+                <circle cx="250" cy="140" r="28" fill="#140f0a" stroke="#f97316" stroke-width="2.5"/>
+                <text x="250" y="144" fill="#f97316" font-size="10" font-weight="bold" text-anchor="middle">SIM Pivot</text>
+
+                <circle cx="380" cy="70" r="26" fill="#1c1228" stroke="#a855f7" stroke-width="2.5"/>
+                <text x="380" y="74" fill="#a855f7" font-size="10" font-weight="bold" text-anchor="middle">Amine B.</text>
+
+                <circle cx="380" cy="200" r="24" fill="#141408" stroke="#eab308" stroke-width="2"/>
+                <text x="380" y="204" fill="#eab308" font-size="9" font-weight="bold" text-anchor="middle">BaridiMob</text>
+
+                <circle cx="440" cy="140" r="24" fill="#1f1118" stroke="#f43f5e" stroke-width="2"/>
+                <text x="440" y="144" fill="#f43f5e" font-size="9" font-weight="bold" text-anchor="middle">El-Hadj</text>
+              </svg>
+
+              <!-- Minimap Box (Bottom-Right) -->
+              <div style="position:absolute;bottom:8px;right:8px;width:95px;height:65px;background:#0d1524;border:1px solid #38bdf8;border-radius:4px;display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:0.65rem;color:#38bdf8;font-family:monospace;">🗺️ Minimap</span>
+              </div>
+            </div>
+
+            <!-- Right Panel: Suspect Inspector & Action Buttons -->
+            <div style="background:#0d1524;border:1px solid #172540;border-radius:6px;padding:0.75rem;font-size:0.78rem;">
+              <div style="font-weight:700;color:#38bdf8;margin-bottom:0.4rem;">👤 SUSPECT CIBLÉ</div>
+              <div style="background:#132338;padding:0.5rem;border-radius:4px;margin-bottom:0.6rem;">
+                <div style="font-weight:700;color:#f8fafc;">Amine B. (@amine_import)</div>
+                <div style="color:#94a3b8;font-size:0.72rem;">Rôle Criminel : <span style="color:#f59e0b;font-weight:700;">Opérationnel</span></div>
+                <div style="color:#94a3b8;font-size:0.72rem;">Zone d'Activité : <span style="color:#e2e8f0;">Oran / Alger</span></div>
+                <div style="color:#94a3b8;font-size:0.72rem;">Similarité Faciale : <span style="color:#10b981;font-weight:700;">89% (ArcFace)</span></div>
+              </div>
+
+              <div style="font-weight:700;color:#94a3b8;margin-bottom:0.4rem;">ACTIONS RECOMMANDÉES</div>
+              <div style="display:flex;flex-direction:column;gap:0.35rem;">
+                <button class="btn btn-primary" style="font-size:0.7rem;padding:0.35rem;">🔍 Lancer Vérif. BaridiMob</button>
+                <button class="btn" style="font-size:0.7rem;padding:0.35rem;">📍 Réquisition Bornage DGSN</button>
+                <button class="btn" style="font-size:0.7rem;padding:0.35rem;">⚖️ Générer PV Synthèse (PDF)</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ====================================================================
+         PANEL 2: ADMIN APP & RBAC
+         ==================================================================== -->
+    <div id="panel-role-admin" class="role-tab-panel">
+      <section>
+        <h2 class="section-title">2. Administration &amp; Gestion des Rôles (RBAC &amp; Clés d'API)</h2>
+        <p class="section-subtitle">
+          Console réservée aux administrateurs de sécurité et officiers habilités pour gérer les utilisateurs, affecter les permissions par corps de métier et surveiller le registre d'audit cryptographique.
+        </p>
+
+        <!-- RBAC Matrix Table -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-bottom:0.6rem;">Matrice des Permissions par Rôle Judiciaire (RBAC)</h3>
+        <table class="rbac-table">
+          <thead>
+            <tr>
+              <th>Fonctionnalité / Habilitation</th>
+              <th>Opérateur Saisie</th>
+              <th>Enquêteur OPJ</th>
+              <th>Analyste Criminel</th>
+              <th>Chef de Brigade</th>
+              <th>Magistrat Instructeur</th>
+              <th>Ingénieur Cyber (CD)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Consultation du Dossier &amp; Graphe</strong></td>
+              <td class="perm-cond">Dossier assigné</td>
+              <td class="perm-yes">✔ Oui</td>
+              <td class="perm-yes">✔ Oui</td>
+              <td class="perm-yes">✔ Toute l'unité</td>
+              <td class="perm-yes">✔ Juridiction</td>
+              <td class="perm-cond">Sur réquisition</td>
+            </tr>
+            <tr>
+              <td><strong>Ajout d'Indices &amp; Scellement WORM</strong></td>
+              <td class="perm-yes">✔ Oui</td>
+              <td class="perm-yes">✔ Oui</td>
+              <td class="perm-yes">✔ Oui</td>
+              <td class="perm-yes">✔ Oui</td>
+              <td class="perm-no">Lecture seule</td>
+              <td class="perm-yes">✔ Automatisé</td>
+            </tr>
+            <tr>
+              <td><strong>Exécution d'Outils OSINT Actifs</strong></td>
+              <td class="perm-no">✖ Non</td>
+              <td class="perm-yes">✔ Oui</td>
+              <td class="perm-yes">✔ Oui</td>
+              <td class="perm-yes">✔ Oui</td>
+              <td class="perm-no">✖ Non</td>
+              <td class="perm-yes">✔ Oui</td>
+            </tr>
+            <tr>
+              <td><strong>Pilotage Phone Farm &amp; SMS DZ</strong></td>
+              <td class="perm-no">✖ Non</td>
+              <td class="perm-cond">Via interface</td>
+              <td class="perm-no">✖ Non</td>
+              <td class="perm-yes">✔ Autorise</td>
+              <td class="perm-no">✖ Non</td>
+              <td class="perm-yes">✔ Accès complet</td>
+            </tr>
+            <tr>
+              <td><strong>Calculs GDS (Louvain, Betweenness)</strong></td>
+              <td class="perm-no">✖ Non</td>
+              <td class="perm-yes">✔ 1 clic</td>
+              <td class="perm-yes">✔ Avancé</td>
+              <td class="perm-yes">✔ Synthèse</td>
+              <td class="perm-yes">✔ Synthèse</td>
+              <td class="perm-yes">✔ Tuning algo</td>
+            </tr>
+            <tr>
+              <td><strong>Levée d'Anonymat &amp; Réquisitions Télécom</strong></td>
+              <td class="perm-no">✖ Non</td>
+              <td class="perm-cond">Rédige projet</td>
+              <td class="perm-no">✖ Non</td>
+              <td class="perm-yes">✔ Signe OPJ</td>
+              <td class="perm-yes">✔ Ordonne</td>
+              <td class="perm-no">✖ Non</td>
+            </tr>
+            <tr>
+              <td><strong>Clôture de Dossier &amp; Export PV CPP</strong></td>
+              <td class="perm-no">✖ Non</td>
+              <td class="perm-cond">Rédige projet</td>
+              <td class="perm-no">✖ Non</td>
+              <td class="perm-yes">✔ Valide &amp; signe</td>
+              <td class="perm-yes">✔ Rendu audience</td>
+              <td class="perm-no">✖ Non</td>
+            </tr>
+            <tr>
+              <td><strong>Gestion des Clés d'API &amp; Audit Log</strong></td>
+              <td class="perm-no">✖ Non</td>
+              <td class="perm-no">✖ Non</td>
+              <td class="perm-no">✖ Non</td>
+              <td class="perm-cond">Audit lecture</td>
+              <td class="perm-cond">Audit lecture</td>
+              <td class="perm-yes">✔ Configuration</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Security Features -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;margin-top:1.5rem;">
+          <div class="card" style="border-left:4px solid #10b981;">
+            <strong style="color:#10b981;">📜 Registre d'Audit Immuable (Merkle SHA-256)</strong>
+            <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem;">
+              Chaque clic, consultation de fiche suspect, export ou requête OSINT génère un enregistrement horodaté lié cryptographiquement au précédent (<code>hash_n = SHA-256(hash_{n-1} || payload)</code>). Aucune suppression possible, même par l'administrateur root.
+            </p>
+          </div>
+          <div class="card" style="border-left:4px solid #f59e0b;">
+            <strong style="color:#f59e0b;">🔑 Coffre-Fort Sécurisé des Clés d'API</strong>
+            <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem;">
+              Chiffrement au repos (AES-256-GCM) des tokens d'API sensibles (Shodan, VirusTotal, Meta Developer, Telegram API IDs). Quotas stricts par brigade pour éviter les dépassements de coûts ou suspensions de compte.
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ====================================================================
+         PANEL 3: HEAD INVESTIGATOR DASHBOARD
+         ==================================================================== -->
+    <div id="panel-role-head" class="role-tab-panel">
+      <section>
+        <h2 class="section-title">3. Tableau de Bord Exécutif : Chef de Brigade &amp; Magistrat Instructeur</h2>
+        <p class="section-subtitle">
+          Supervision transversale de l'ensemble des affaires en cours d'instruction, détection proactive des recoupements inter-dossiers et pilotage des indicateurs de performance judiciaire.
+        </p>
+
+        <!-- KPI Strip -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:0.75rem;margin-bottom:1.5rem;">
+          <div class="card" style="border-top:3px solid #f59e0b;padding:0.75rem;">
+            <div style="font-size:0.75rem;color:var(--text-muted);">PRÉJUDICE TOTAL RECENSÉ</div>
+            <div style="font-size:1.4rem;font-weight:800;color:#f59e0b;margin-top:0.2rem;">33 500 000 DZD</div>
+            <div style="font-size:0.72rem;color:#10b981;">↑ +4.2M DZD cette semaine</div>
+          </div>
+          <div class="card" style="border-top:3px solid #38bdf8;padding:0.75rem;">
+            <div style="font-size:0.75rem;color:var(--text-muted);">ENQUÊTES EN COURS</div>
+            <div style="font-size:1.4rem;font-weight:800;color:#38bdf8;margin-top:0.2rem;">28 Dossiers</div>
+            <div style="font-size:0.72rem;color:#cbd5e1;">Alger (14), Oran (8), Blida (6)</div>
+          </div>
+          <div class="card" style="border-top:3px solid #10b981;padding:0.75rem;">
+            <div style="font-size:0.75rem;color:var(--text-muted);">SUSPECTS IDENTIFIÉS</div>
+            <div style="font-size:1.4rem;font-weight:800;color:#10b981;margin-top:0.2rem;">42 Individus</div>
+            <div style="font-size:0.72rem;color:#10b981;">18 Mandats de dépôt requis</div>
+          </div>
+          <div class="card" style="border-top:3px solid #ec4899;padding:0.75rem;">
+            <div style="font-size:0.75rem;color:var(--text-muted);">FONDS FRAUDULEUX GELÉS</div>
+            <div style="font-size:1.4rem;font-weight:800;color:#ec4899;margin-top:0.2rem;">19 800 000 DZD</div>
+            <div style="font-size:0.72rem;color:#10b981;">59% du préjudice sécurisé</div>
+          </div>
+        </div>
+
+        <!-- Cross-Case Alert Section -->
+        <div class="card" style="border-left:4px solid #ef4444;margin-bottom:1.5rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
+            <h3 style="color:#f87171;margin:0;font-size:0.95rem;">🚨 Alertes de Recoupement Transversal (Cross-Case Syndicate Matches)</h3>
+            <span class="badge badge-rose">Priorité Haute</span>
+          </div>
+          <p style="font-size:0.82rem;color:var(--text-secondary);line-height:1.5;margin-bottom:0.75rem;">
+            Le moteur Neo4j GDS a détecté que des identifiants identiques apparaissent simultanément dans des plaintes déposées auprès de brigades différentes :
+          </p>
+          <div style="display:flex;flex-direction:column;gap:0.5rem;font-size:0.8rem;">
+            <div style="background:#17111c;border:1px solid #7f1d1d;padding:0.6rem;border-radius:4px;display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <strong style="color:#fca5a5;">Compte BaridiMob RIP #00799999002847192831 :</strong>
+                <span style="color:#cbd5e1;">Apparaît dans le Dossier #2026-089 (Alger) et le Dossier #2026-041 (Oran)</span>
+              </div>
+              <button class="btn btn-primary" style="font-size:0.72rem;padding:0.25rem 0.55rem;">Fusionner les Instructions</button>
+            </div>
+            <div style="background:#17111c;border:1px solid #7f1d1d;padding:0.6rem;border-radius:4px;display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <strong style="color:#fca5a5;">Empreinte Vocale Darija (x-vector 96% match) :</strong>
+                <span style="color:#cbd5e1;">Même locuteur donneur d'ordre (« El-Hadj ») identifié sur 3 dossiers d'escroquerie aux faux visas</span>
+              </div>
+              <button class="btn btn-primary" style="font-size:0.72rem;padding:0.25rem 0.55rem;">Ouvrir Dossier Syndicat</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ====================================================================
+         PANEL 4: TECHNICAL CD INVESTIGATOR
+         ==================================================================== -->
+    <div id="panel-role-technical" class="role-tab-panel">
+      <section>
+        <h2 class="section-title">4. Enquêteur Cyber &amp; Ingénieur R&amp;D (Phone Farm &amp; IA Console)</h2>
+        <p class="section-subtitle">
+          Console technique de pilotage des infrastructures de collecte matérielle, supervision des modèles de Deep Learning locaux et instrumentation forensique avancée.
+        </p>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;margin-bottom:1.5rem;">
+          <div class="card" style="border-top:3px solid #f97316;">
+            <strong style="color:#f97316;font-size:0.95rem;">📱 Phone Farm Automation Console</strong>
+            <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem;">
+              Monitoring de l'état des appareils physiques et conteneurs ReDroid : connectivité ADB over TCP, santé des modems SIM 4G (Mobilis, Djezzy, Ooredoo), niveau de batterie, température et bande passante WebRTC Scrcpy.
+            </p>
+          </div>
+          <div class="card" style="border-top:3px solid #38bdf8;">
+            <strong style="color:#38bdf8;font-size:0.95rem;">🤖 Supervision GPU des Modèles IA Locaux</strong>
+            <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem;">
+              Contrôle de l'allocation VRAM sur le serveur Ollama (modèle Text-to-Cypher DavidLanz), débit de transcription Faster-Whisper Darija (secondes audio traitées/sec) et santé de l'index vectoriel Qdrant.
+            </p>
+          </div>
+          <div class="card" style="border-top:3px solid #10b981;">
+            <strong style="color:#10b981;font-size:0.95rem;">🛡️ Régie des Proxies &amp; Profils Couverture</strong>
+            <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem;">
+              Gestion des pools d'adresses IP résidentielles algériennes 4G. Détection proactive de blocage (Cloudflare Captcha, ban Telegram) et basculement automatique sans interruption de session.
+            </p>
+          </div>
+          <div class="card" style="border-top:3px solid #a855f7;">
+            <strong style="color:#a855f7;font-size:0.95rem;">🔬 Laboratoire de Rétro-Ingénierie DFIR</strong>
+            <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem;">
+              Décompilation automatique des APK frauduleuses saisies (AutoPneusDZ.apk) via Jadx-GUI et Ghidra. Extraction du certificat développeur (Keystore SHA-256) pour identifier tous les autres clones créés par le même auteur.
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <script src="assets/app.js"></script>
+  <script>
+    function switchRoleTab(tabId) {
+      document.querySelectorAll('.role-subnav-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-tab') === tabId);
+      });
+      document.querySelectorAll('.role-tab-panel').forEach(panel => {
+        panel.classList.toggle('active', panel.id === 'panel-role-' + tabId);
+      });
+    }
+  </script>
+</body>
+</html>

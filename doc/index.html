@@ -20,13 +20,14 @@
 
     <div class="nav-section">Specification Portal</div>
     <ul class="nav-links">
-      <li><a href="index.html" class="active"><span>🏠 01. Executive Summary</span><span class="nav-badge">Overview</span></a></li>
-      <li><a href="architecture.html"><span>🏗️ 02. Visual Architecture</span><span class="nav-badge">6 Layers</span></a></li>
-      <li><a href="bricks-and-automation.html"><span>🧰 03. Investigation Tools Menu</span><span class="nav-badge">60+ Tools</span></a></li>
-      <li><a href="data-model.html"><span>🕸️ 04. Visual Graph & UI Spec</span><span class="nav-badge">Ontology</span></a></li>
-      <li><a href="roadmap-phases.html"><span>🚀 05. Development Phases</span><span class="nav-badge">6 Releases</span></a></li>
-      <li><a href="github-repos-audit.html"><span>📦 06. GitHub Repos Audit</span><span class="nav-badge">48 Repos</span></a></li>
-      <li><a href="maquette.html" class="maquette-cta"><span>🖥️ Launch App Maquette</span><span class="nav-badge">Live Sim</span></a></li>
+      <li><a href="index.html" class="active"><span>🏠 01. Framework Summary &amp; Objective</span><span class="nav-badge">Overview</span></a></li>
+      <li><a href="architecture.html"><span>🏗️ 02. Six-Layer Visual Architecture</span><span class="nav-badge">6 Layers</span></a></li>
+      <li><a href="interfaces-roles.html"><span>👥 03. Interfaces &amp; Roles</span><span class="nav-badge">4 Views</span></a></li>
+      <li><a href="data-model.html"><span>🕸️ 04. Data Model &amp; Metadata Graph</span><span class="nav-badge">Ontology</span></a></li>
+      <li><a href="osint-arsenal.html"><span>🧰 05. OSINT Investigation Arsenal</span><span class="nav-badge">76 Tools</span></a></li>
+      <li><a href="forensics-sna.html"><span>🚔 06. Forensics (DFIR) &amp; SNA Functions</span><span class="nav-badge">SOTA Funcs</span></a></li>
+      <li><a href="roadmap-phases.html"><span>🚀 07. Incremental Development Phases</span><span class="nav-badge">6 Releases</span></a></li>
+      <li><a href="maquette.html" class="maquette-cta"><span>🖥️ 08. Interactive Application Mock</span><span class="nav-badge">Live Studio</span></a></li>
     </ul>
 
     <div class="nav-section">Markdown Reference</div>
@@ -45,27 +46,62 @@
   <!-- Main Content -->
   <main class="main-content">
     <header class="page-header">
-      <div class="page-eyebrow">Executive Summary &amp; Extended Specification Suite v2.0</div>
-      <h1>AegisInvestigate: "Photoshop for Criminal Investigations"</h1>
+      <div class="page-eyebrow">Chapter 01 &bull; Framework Summary &amp; Judicial Objective v2.0</div>
+      <h1>AegisInvestigate / Athar DZ: Visual Intelligence &amp; Forensic Studio</h1>
       <p>
-        Designed specifically for <strong>investigators, detectives, magistrates, and analysts—not computer scientists</strong>. Every clue, connection, and online search tool is presented with clear icons and plain investigative language, while powerful automation works quietly behind the scenes.
+        A sovereign, end-to-end cybercrime investigation suite tailored specifically for <strong>judicial police officers (OPJ), detectives, examining magistrates (Magistrats Instructeurs), and cybercrime analysts</strong>. Built to eliminate computer science friction through intuitive visual icons, automated forensic chain-of-custody, and multi-hop graph intelligence.
       </p>
       <div style="margin-top:1.15rem;display:flex;gap:0.85rem;flex-wrap:wrap;">
         <a href="maquette.html" class="btn btn-primary" style="padding:0.65rem 1.2rem;font-size:0.9rem;">
-          🖥️ Open Full-Screen Interactive Application Maquette →
+          🖥️ Launch Interactive Application Studio (Live Mock) →
         </a>
-        <a href="bricks-and-automation.html" class="btn" style="padding:0.65rem 1.2rem;font-size:0.9rem;">
-          🧰 Explore the Interactive Investigation Tools Menu →
+        <a href="architecture.html" class="btn" style="padding:0.65rem 1.2rem;font-size:0.9rem;">
+          🏗️ Six-Layer System Architecture &amp; Tech Stack →
         </a>
-        <a href="roadmap-phases.html" class="btn" style="padding:0.65rem 1.2rem;font-size:0.9rem;">
-          🚀 View Incremental Development Phases (Runnable Apps) →
+        <a href="interfaces-roles.html" class="btn" style="padding:0.65rem 1.2rem;font-size:0.9rem;">
+          👥 User Roles &amp; Workstations Spec →
         </a>
       </div>
     </header>
 
-    <!-- 1. Zero-Jargon Philosophy -->
+    <!-- 1. Framework Summary & Strategic Objectives -->
     <section>
-      <h2 class="section-title">1. Built for Investigators, Not Computer Scientists (Zero Technical Jargon)</h2>
+      <h2 class="section-title">1. Framework Summary &amp; Core Judicial Objectives</h2>
+      <p class="section-subtitle">
+        Athar DZ (AegisInvestigate) addresses the exponential rise of cyber fraud, social engineering scams, and transnational cybercrime across Algerian territory (Algiers, Oran, Blida, Constantine, Sétif).
+      </p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;margin-bottom:1.5rem;">
+        <div class="card" style="border-left:4px solid var(--accent-blue);">
+          <h3 style="font-size:0.95rem;color:var(--accent-blue);margin-bottom:0.4rem;">🎯 1. Mission &amp; Operational Purpose</h3>
+          <p style="font-size:0.82rem;color:var(--text-secondary);line-height:1.5;">
+            Serve as the central operational cockpit for investigative brigades, unifying complaint intake, OSINT footprinting, mobile phone farm covert engagement, telecom CDR cross-referencing, and bank mule tracing into a single collaborative graph.
+          </p>
+        </div>
+        <div class="card" style="border-left:4px solid var(--accent-emerald);">
+          <h3 style="font-size:0.95rem;color:var(--accent-emerald);margin-bottom:0.4rem;">⚖️ 2. Absolute Judicial Admissibility (CPP Algérien)</h3>
+          <p style="font-size:0.82rem;color:var(--text-secondary);line-height:1.5;">
+            Every captured clue (Facebook post, WhatsApp vocal note, APK keystore) is immediately sealed in an ISO 28500 WARC container, hashed via SHA-256, and stamped with RFC 3161 PKI timestamps to guarantee total chain-of-custody in court.
+          </p>
+        </div>
+        <div class="card" style="border-left:4px solid var(--accent-amber);">
+          <h3 style="font-size:0.95rem;color:var(--accent-amber);margin-bottom:0.4rem;">🇩🇿 3. National Sovereignty &amp; Zero Cloud Leaks</h3>
+          <p style="font-size:0.82rem;color:var(--text-secondary);line-height:1.5;">
+            100% on-premise deployment. Zero third-party cloud API dependencies for sensitive data. Local LLMs (Ollama Text-to-Cypher), local speech transcription (Faster-Whisper fine-tuned on Algerian Darija), and sovereign biometric vectors.
+          </p>
+        </div>
+        <div class="card" style="border-left:4px solid var(--accent-purple);">
+          <h3 style="font-size:0.95rem;color:var(--accent-purple);margin-bottom:0.4rem;">🧩 4. Bridging Technical &amp; Field Enquirers</h3>
+          <p style="font-size:0.82rem;color:var(--text-secondary);line-height:1.5;">
+            Eliminating technical barriers: Non-technical detectives manipulate visual property graphs and click action buttons ("Vérifier BaridiMob", "Localiser l'IP"), while background daemons manage proxies, headless browsers, and Neo4j GDS algorithms.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Zero-Jargon Philosophy -->
+    <section>
+      <h2 class="section-title">2. Built for Investigators, Not Computer Scientists (Zero Technical Jargon)</h2>
       <p class="section-subtitle">
         An investigator solving a fraud or criminal case should never have to read computer science terms like <em>"MongoDB ObjectId"</em>, <em>"DOM AST Parser"</em>, <em>"SHA-256 Hash"</em>, or <em>"Regex"</em>. The platform translates every technical discovery into clear, actionable police and investigative language with intuitive visual icons.
       </p>
@@ -110,9 +146,9 @@
       </div>
     </section>
 
-    <!-- 2. Interactive Overview Studio Demo -->
+    <!-- 3. Interactive Overview Studio Demo -->
     <section>
-      <h2 class="section-title">2. Quick Interactive Preview: The "Facebook Tyre Scam" Case Board</h2>
+      <h2 class="section-title">3. Quick Interactive Preview: The "Facebook Tyre Scam" Case Board</h2>
       <p class="section-subtitle">
         Click any clue with its icon on the board below, toggle the <strong>Visual Layers</strong> on the left, or switch between <strong>Standard Mode (No AI Needed)</strong> and <strong>Smart AI Assistant Mode</strong>. <em>(For the full-screen application simulation with live scanning, Timeline, Map, and Court Report preview, launch the <a href="maquette.html" style="color:var(--accent-emerald);font-weight:700;">Full-Screen Application Maquette</a>).</em>
       </p>

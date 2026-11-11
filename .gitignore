@@ -15,6 +15,7 @@ Desktop.ini
 *.bak
 .idea/
 .vscode/
+.agent/
 
 # Logs & Runtime Artifacts
 *.log
