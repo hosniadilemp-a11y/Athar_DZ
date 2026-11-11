@@ -284,6 +284,42 @@ const STUDIO_CANDIDATE_CLUES = [
     details: 'Connexion admin sur promo-pneus-express.shop à 14:22',
     confidence: '91%',
     added: false
+  },
+  {
+    id: 'cand_git_dev',
+    icon: '💻',
+    title: 'Fuite .git & Compte GitHub Développeur',
+    source: 'promo-pneus-express.shop/.git/config',
+    details: 'Auteur: Sofiane K. (sofiane.devbox99@gmail.com) • Repo: soficoder-alger/dz-shop-template',
+    confidence: '99%',
+    added: true
+  },
+  {
+    id: 'cand_discord_c2',
+    icon: '💬',
+    title: 'Serveur Discord Clandestin « DZ-Dev & Ops Hub »',
+    source: 'Webhook fuité dans commit GitHub',
+    details: 'Salon #commandes-scripts : SofianeDev, ElHadj_99 et 3 Lieutenants',
+    confidence: '98%',
+    added: true
+  },
+  {
+    id: 'cand_audio_boss',
+    icon: '🎙️',
+    title: 'Vocal Telegram VIP du Boss « El-Hadj »',
+    source: 'Canal t.me/+Hd99_Management_C2',
+    details: 'Ordre de fermer les 3 pages de pneus et blanchir 4M DZD en USDT P2P',
+    confidence: '96%',
+    added: true
+  },
+  {
+    id: 'cand_multi_scams',
+    icon: '🌐',
+    title: 'Preuve Multi-Scams (Visas Schengen & Électro DZ)',
+    source: 'Rapports audio Lieutenants Nadia & Farid',
+    details: 'Préjudice total consolidé: 33 500 000 DZD (~140 000 USDT Tron)',
+    confidence: '97%',
+    added: true
   }
 ];
 

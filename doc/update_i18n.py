@@ -1,19 +1,40 @@
-import json
+# Complete multilingual dictionary additions for Menubar, Tool Modals, Categories, and Topbar
+# Supports French (FR), Arabic RTL (AR), and English (EN) with 100% parity
 
-with open('doc/generate_i18n.py', 'r', encoding='utf-8') as f:
-    code = f.read()
-
-# Let's inspect what dictionary keys we need to add to fr, ar, en
 menu_keys_fr = {
-    # Menu Headers
+    # Brand & Headers
+    "app_title": "Athar DZ",
     "menu_investigation": "Dossier",
     "menu_edit": "Édition",
     "menu_insert": "Insérer",
     "menu_osint": "Outils OSINT",
-    "menu_osns": "Réseaux Sociaux",
+    "menu_osns": "Réseaux Sociaux (OSNA)",
     "menu_police": "Police Judiciaire",
     "menu_view": "Affichage",
     "menu_ai": "Assistant IA",
+
+    # Categories
+    "cat_web_infra": "Web & Infrastructure Réseau",
+    "cat_tech_metadata": "Métadonnées & Analyse Technique",
+    "cat_ad_tracking": "Pivots Publicitaires & Traçage",
+    "cat_breach_identity": "Fuites de Données & Identifiants",
+    "cat_socmint": "Profilage Plateformes Sociales (SOCMINT)",
+    "cat_sna": "Analyse de Réseau Social (Graph SNA)",
+
+    # Topbar & Search
+    "topbar_search_placeholder": "Rechercher un indice, numéro, suspect ou lancer un outil... (Ctrl+K)",
+    "info_chip": "Détails",
+
+    # Tool Info Modal Labels
+    "tool_info_title": "Fiche Technique & Spécification Forensique",
+    "tool_info_inputs": "Données d'Entrée (Inputs)",
+    "tool_info_outputs": "Données de Sortie (Outputs & Nœuds)",
+    "tool_info_storage": "Persistance & Stockage Judiciaire",
+    "tool_info_resources": "Ressources & Mode d'Exécution",
+    "tool_info_compliance": "Chaîne de Garde & Traçabilité WORM",
+    "tool_info_run_btn": "Exécuter sur l'Indice Actif",
+    "tool_info_playbook_btn": "Ajouter au Playbook DAG",
+    "tool_info_close_btn": "Fermer",
 
     # Investigation Menu Items
     "m_new_case": "Nouveau Dossier d'Enquête...",
@@ -42,25 +63,36 @@ menu_keys_fr = {
     "m_insert_gps": "Coordonnées GPS / Point de Bornage...",
     "m_insert_suspect": "Profil / Compte Suspect Cible...",
 
-    # OSINT Tools Menu Items
-    "m_tool_ioc": "Extracteur d'Indices Textuels (IOC Regex)",
+    # OSINT Tools
+    "m_tool_ioc": "Extracteur d'IOCs & Entités Forensiques",
     "m_tool_objectid": "Décodeur MongoDB ObjectId & Timestamp",
-    "m_tool_pixel": "Recherche Inversée Meta Pixel & Google Analytics",
+    "m_tool_mongo": "Décodeur MongoDB ObjectId & Timestamp",
+    "m_tool_pixel": "Pivot Inverse Meta Pixel & ID Tracker",
     "m_tool_whois": "Historique WHOIS & Enregistrements DNS",
-    "m_tool_shodan": "Reconnaissance Hôtes & Certificats (Shodan)",
-    "m_tool_breach": "Recherche dans les Fuites & Stealers (DeHashed)",
-    "m_tool_all_osint": "Consulter les Briques Web & Infra (12 Outils) ↗",
+    "m_tool_shodan": "Scanner de Ports Shodan & Censys",
+    "m_tool_breach": "Recherche de Fuites d'Identifiants (DeHashed)",
+    "m_tool_ssl": "Certificats SSL & Certificate Transparency (crt.sh)",
+    "m_tool_exif": "Analyseur ExifTool (GPS & Métadonnées Médias)",
+    "m_tool_google_analytics": "Traçage Reverse Google Analytics / AdSense",
+    "m_tool_holehe": "Vérificateur d'Email sur 120+ Services (Holehe)",
+    "m_tool_all_osint": "Consulter les 16 Briques OSINT du Catalogue ↗",
 
-    # Social Networks (OSNS) Menu Items
-    "m_tool_telegram": "Résolveur de Comptes & Canaux Telegram",
-    "m_tool_whatsapp": "Inspecteur Profils WhatsApp Business",
-    "m_tool_fb_page": "Transparence de Page Facebook & Pays",
-    "m_tool_meta_ads": "Inspecteur Campagnes Meta Ad Library",
-    "m_tool_instagram": "Analyseur Profils Instagram & Toutatis",
-    "m_tool_ouedkniss": "Recherche Marchés d'Occasion Ouedkniss",
-    "m_tool_all_socmint": "Consulter les Briques Réseaux Sociaux (10 Outils) ↗",
+    # Social Networks (OSNA) Tools
+    "m_tool_telegram": "Résolveur & Pivot Telegram (UID fixe, canaux)",
+    "m_tool_whatsapp": "Inspecteur WhatsApp Business & VCard",
+    "m_tool_meta_ad": "Transparence Pages Facebook & Meta Ad Library",
+    "m_tool_fb_page": "Transparence Pages Facebook & Meta Ad Library",
+    "m_tool_meta_ads": "Transparence Pages Facebook & Meta Ad Library",
+    "m_tool_instagram": "Analyseur Profils Instagram / Toutatis",
+    "m_tool_ouedkniss": "Scraper d'Annonces Algériennes Ouedkniss",
+    "m_tool_social_mapper": "Corrélateur Visuel Multi-Plateformes (Social Mapper)",
+    "m_tool_sna_betweenness": "Centralité d'Intermédiarité (Betweenness Centrality)",
+    "m_tool_sna_louvain": "Détection de Communautés (Algorithme de Louvain)",
+    "m_tool_sna_pagerank": "Détection de Prête-Noms & Mules (PageRank Bipartite)",
+    "m_tool_sna_link_pred": "Prédiction de Liens Cachés (Adamic-Adar / Jaccard)",
+    "m_tool_all_socmint": "Consulter les 12 Outils de Réseaux Sociaux & SNA ↗",
 
-    # Police & Criminal Investigation Menu Items
+    # Police & Telecom Tools
     "m_tool_cdr": "Analyseur de Relevés Télécoms (CDR Excel)",
     "m_tool_cell_triang": "Bornage & Azimuts BTS Relais (OpenCellID)",
     "m_tool_cotravel": "Détecteur de Téléphones Jumeaux (Co-Déplacement)",
@@ -81,7 +113,7 @@ menu_keys_fr = {
     "m_view_refresh": "Réorganiser la Disposition Automatique",
 
     # AI & LLM Menu Items
-    "m_ai_mode_deterministic": "Mode Déterministe Strict (100% Sans LLM - Actif)",
+    "m_ai_mode_deterministic": "Mode Déterministe Strict (Sans LLM - Actif)",
     "m_ai_mode_local_ollama": "Activer Copilot IA Local (Ollama / Qwen-2.5)",
     "m_ai_mode_cloud": "Passerelle Cloud Sécurisée (LiteLLM)",
     "m_ai_suggest_playbook": "Proposer un Scénario d'Enquête Automatique",
@@ -89,119 +121,178 @@ menu_keys_fr = {
     "m_ai_settings": "Configuration LLM & Paramètres d'Inférence...",
 
     # Modals
-    "modal_properties_title": "Propriétés de l'Affaire Judiciaire",
+    "modal_properties_title": "Propriétés du Dossier d'Investigation",
     "modal_insert_title": "Insérer un Nouvel Indice / Preuve",
-    "modal_llm_title": "Configuration du Moteur IA & Copilot LLM",
-    "modal_import_title": "Importer des Données & Fichiers d'Enquête",
+    "modal_llm_title": "Configuration du Copilot IA & Moteur LLM",
+    "modal_import_title": "Importer des Fichiers & Preuves Forensiques",
     "btn_save_changes": "Enregistrer les Modifications",
     "btn_cancel": "Annuler",
-    "btn_insert_confirm": "Insérer au Dossier d'Enquête"
+    "btn_insert_confirm": "Ajouter l'Indice au Dossier"
 }
 
 menu_keys_ar = {
-    # Menu Headers
-    "menu_investigation": "ملف القضية",
+    # Brand & Headers
+    "app_title": "أثر (Athar DZ)",
+    "menu_investigation": "الملف",
     "menu_edit": "تعديل",
     "menu_insert": "إدراج",
     "menu_osint": "أدوات OSINT",
-    "menu_osns": "شبكات التواصل",
+    "menu_osns": "الشبكات الاجتماعية (OSNA)",
     "menu_police": "الشرطة القضائية",
     "menu_view": "عرض",
-    "menu_ai": "المساعد الذكي",
+    "menu_ai": "مساعد الذكاء الاصطناعي",
+
+    # Categories
+    "cat_web_infra": "الويب والبنية التحتية",
+    "cat_tech_metadata": "البيانات الوصفية والتحليل التقني",
+    "cat_ad_tracking": "التتبع والإعلانات الرقمية",
+    "cat_breach_identity": "تسريبات البيانات والهويات",
+    "cat_socmint": "استخبارات المنصات الاجتماعية (SOCMINT)",
+    "cat_sna": "تحليل الشبكات الاجتماعية (Graph SNA)",
+
+    # Topbar & Search
+    "topbar_search_placeholder": "بحث عن دليل، رقم هاتف، مشتبه به أو تشغيل أداة... (Ctrl+K)",
+    "info_chip": "بطاقة تقنية",
+
+    # Tool Info Modal Labels
+    "tool_info_title": "البطاقة التقنية والمواصفات الجنائية",
+    "tool_info_inputs": "بيانات الدخل (Inputs)",
+    "tool_info_outputs": "بيانات الخرج والعقد المنشأة (Outputs)",
+    "tool_info_storage": "التخزين والحفظ القضائي",
+    "tool_info_resources": "الموارد ونمط التشغيل",
+    "tool_info_compliance": "سلسلة الحراسة والتتبع القانوني WORM",
+    "tool_info_run_btn": "تشغيل على الدليل المحدد",
+    "tool_info_playbook_btn": "إضافة إلى سيناريو التحقيق DAG",
+    "tool_info_close_btn": "إغلاق",
 
     # Investigation Menu Items
-    "m_new_case": "إنشاء قضية جديدة...",
-    "m_open_case": "فتح قضية...",
+    "m_new_case": "ملف تحقيق جديد...",
+    "m_open_case": "فتح ملف تحقيق...",
     "m_save": "حفظ",
     "m_save_as": "حفظ باسم...",
-    "m_import_clues": "استيراد أدلة ورسائل (CDR)...",
-    "m_case_properties": "خصائص ومعلومات القضية...",
-    "m_export_report": "تصدير المحضر القضائي (PDF)...",
+    "m_import_clues": "استيراد أدلة (سجلات هاتف، صور)...",
+    "m_case_properties": "خصائص القضية...",
+    "m_export_report": "تصدير تقرير قضائي (PDF)...",
 
     # Edit Menu Items
     "m_undo": "تراجع عن آخر إجراء",
-    "m_redo": "إعادة الإجراء",
+    "m_redo": "إعادة",
     "m_cut": "قص",
     "m_copy": "نسخ",
     "m_paste": "لصق",
-    "m_merge_clues": "دمج قرينتين متطابقتين",
-    "m_select_all": "تحديد كامل المخطط",
+    "m_merge_clues": "دمج دليلين متطابقين",
+    "m_select_all": "تحديد كل الرسم البياني",
     "m_delete_node": "حذف الدليل المحدد",
 
     # Insert Menu Items
-    "m_insert_clue": "إدراج دليل يدوي جديد...",
-    "m_insert_seized": "إدراج حرز قضائي مختوم...",
-    "m_insert_witness": "محضر سماع أقوال أو شهادة...",
-    "m_insert_web_snap": "توثيق لقطة ويب معتمدة (RFC 3161)...",
-    "m_insert_gps": "إحداثيات جغرافية GPS...",
-    "m_insert_suspect": "حساب أو هوية مستهدفة...",
+    "m_insert_clue": "دليل يدوي جديد...",
+    "m_insert_seized": "حريزة رقمية مشفرة (WORM)...",
+    "m_insert_witness": "محضر سماع شاهد / إفادة...",
+    "m_insert_web_snap": "توثيق ويب موثوق (RFC 3161)...",
+    "m_insert_gps": "إحداثيات جغرافية / نقطة تموضع...",
+    "m_insert_suspect": "حساب / هوية المشتبه به المستهدف...",
 
-    # OSINT Tools Menu Items
-    "m_tool_ioc": "مستخرج المؤشرات والأرقام (IOC Regex)",
-    "m_tool_objectid": "مفكك شفرات MongoDB ObjectId وتاريخ الإنشاء",
-    "m_tool_pixel": "البحث العكسي عن بكسل ميتا وحسابات التتبع",
-    "m_tool_whois": "سجل WHOIS وتاريخ ملكية النطاق",
-    "m_tool_shodan": "فحص الخوادم والشهادات الرقمية (Shodan)",
-    "m_tool_breach": "البحث في قواعد البيانات المسربة (DeHashed)",
-    "m_tool_all_osint": "عرض أدوات الويب والبنية التحتية (12 أداة) ↗",
+    # OSINT Tools
+    "m_tool_ioc": "مستخرج مؤشرات الاختراق والكيانات",
+    "m_tool_objectid": "مفكك طوابع وقت معرفات مونغو",
+    "m_tool_mongo": "مفكك طوابع وقت معرفات مونغو",
+    "m_tool_pixel": "التتبع العكسي لبيكسل ميتا ومعرفات التتبع",
+    "m_tool_whois": "سجل أسماء النطاقات وبيانات WHOIS",
+    "m_tool_shodan": "ماسح المنافذ شودان وسنسيس",
+    "m_tool_breach": "البحث في تسريبات الحسابات (DeHashed)",
+    "m_tool_ssl": "شهادات التشفير وسجلات الشفافية (crt.sh)",
+    "m_tool_exif": "محلل البيانات الوصفية للصور وإحداثيات GPS",
+    "m_tool_google_analytics": "تتبع معرفات غوغل أناليتكس وأدسنس",
+    "m_tool_holehe": "فاحص البريد الإلكتروني عبر أكثر من 120 موقع",
+    "m_tool_all_osint": "استعراض 16 أداة OSINT في الفهرس ↗",
 
-    # Social Networks (OSNS) Menu Items
-    "m_tool_telegram": "محلل حسابات وقنوات تيليغرام",
-    "m_tool_whatsapp": "فاحص حسابات وكتالوجات واتساب للأعمال",
-    "m_tool_fb_page": "شفافية صفحة فيسبوك وبلد الإدارة",
-    "m_tool_meta_ads": "مكتبة إعلانات ميتا الممولة",
-    "m_tool_instagram": "محلل حسابات إنستغرام والتسجيل",
-    "m_tool_ouedkniss": "البحث في إعلانات واد كنيس السابقة",
-    "m_tool_all_socmint": "عرض أدوات شبكات التواصل (10 أدوات) ↗",
+    # Social Networks (OSNA) Tools
+    "m_tool_telegram": "كاشف حسابات وقنوات تيليغرام (UID)",
+    "m_tool_whatsapp": "فاحص حسابات واتساب للأعمال والبطاقات",
+    "m_tool_meta_ad": "شفافية صفحات فيسبوك ومكتبة الإعلانات",
+    "m_tool_fb_page": "شفافية صفحات فيسبوك ومكتبة الإعلانات",
+    "m_tool_meta_ads": "شفافية صفحات فيسبوك ومكتبة الإعلانات",
+    "m_tool_instagram": "محلل ملفات إنستغرام عبر توتاتيس",
+    "m_tool_ouedkniss": "كاشط إعلانات واد كنيس الجزائرية",
+    "m_tool_social_mapper": "المطابق البصري عبر المنصات الاجتماعية",
+    "m_tool_sna_betweenness": "مركزية الوساطة لتحديد المنسقين",
+    "m_tool_sna_louvain": "كشف المجتمعات وخلايا الجريمة (لوفان)",
+    "m_tool_sna_pagerank": "كشف واجهات الأموال والحسابات الوهمية",
+    "m_tool_sna_link_pred": "التنبؤ بالروابط والعلاقات الخفية",
+    "m_tool_all_socmint": "استعراض 12 أداة للشبكات الاجتماعية و SNA ↗",
 
-    # Police & Criminal Investigation Menu Items
-    "m_tool_cdr": "محلل كشوف الاتصالات (CDR Excel)",
-    "m_tool_cell_triang": "تحديد نطاق وهوائيات التغطية (BTS)",
-    "m_tool_cotravel": "كاشف الهواتف المتلازمة بالتنقل",
-    "m_tool_alibi": "كاشف تناقضات ادعاءات المشتبه به",
-    "m_tool_alpr": "قراءة لوحات الترقيم الوطنية (LAPI)",
-    "m_tool_ccp_mules": "فاحص الحسابات البريدية والحسابات الوسيطة",
-    "m_tool_requisitions": "محرر أوامر التسخير القضائي (CPP)",
-    "m_tool_all_police": "عرض أدوات التحقيق الجنائي (9 أدوات) ↗",
+    # Police & Telecom Tools
+    "m_tool_cdr": "محلل سجلات المكالمات الهاتفية (CDR)",
+    "m_tool_cell_triang": "تحديد المواقع وزوايا الأبراج (OpenCellID)",
+    "m_tool_cotravel": "كاشف الهواتف المرافقة (التنقل المتزامن)",
+    "m_tool_alibi": "التحقق من تناقضات حجة الغياب",
+    "m_tool_alpr": "التعرف الآلي على لوحات السيارات (LAPI الجزائر)",
+    "m_tool_ccp_mules": "مدقق حسابات بريدي موب والواجهات المالية",
+    "m_tool_requisitions": "منشئ الإنابات والأوامر القضائية (ق.إ.ج)",
+    "m_tool_all_police": "استعراض أدوات التحقيق الجنائي والاتصالات (9 أدوات) ↗",
 
     # View Menu Items
-    "m_view_graph": "مخطط الصلات والقرائن الجنائية",
-    "m_view_timeline": "التسلسل الزمني للأحداث",
-    "m_view_map": "الخريطة الجغرافية والمسارات",
-    "m_view_vault": "خزينة الأحراز الرقمية المشفرة (WORM)",
-    "m_view_reset_zoom": "إعادة ضبط التكبير وتوسيط المخطط",
-    "m_view_toggle_layers": "إظهار أو إخفاء لوحة الطبقات",
+    "m_view_graph": "لوحة الأدلة (الرسم البياني المرئي)",
+    "m_view_timeline": "المخطط الزمني الجنائي",
+    "m_view_map": "خريطة المواقع الجغرافية والأبراج",
+    "m_view_vault": "خزينة الأدلة الرقمية المشفرة (WORM)",
+    "m_view_reset_zoom": "إعادة ضبط التكبير وتوسيط العرض",
+    "m_view_toggle_layers": "إظهار / إخفاء لوحة الطبقات",
     "m_view_toggle_fullscreen": "ملء الشاشة (F11)",
-    "m_view_refresh": "إعادة ترتيب وتوزيع العقد آلياً",
+    "m_view_refresh": "إعادة تنظيم التوزيع الآلي",
 
     # AI & LLM Menu Items
-    "m_ai_mode_deterministic": "الوضع الحتمي الصارم (دون ذكاء توليدي - نشط)",
-    "m_ai_mode_local_ollama": "تفعيل المساعد المحلي المغلق (Ollama / Qwen-2.5)",
-    "m_ai_mode_cloud": "بوابة النماذج السحابية المؤمنة (LiteLLM)",
-    "m_ai_suggest_playbook": "اقتراح مسار تحقيق استدلالي آلي",
-    "m_ai_summarize": "صياغة التقرير التركيبي للقضية",
-    "m_ai_settings": "إعدادات نماذج الذكاء الاصطناعي...",
+    "m_ai_mode_deterministic": "النمط القطعي الصارم (بدون LLM - نشط)",
+    "m_ai_mode_local_ollama": "تفعيل المساعد الذكي المحلي (Ollama / Qwen-2.5)",
+    "m_ai_mode_cloud": "البوابة السحابية المؤمنة (LiteLLM)",
+    "m_ai_suggest_playbook": "اقتراح سيناريو تحقيق آلي (Playbook DAG)",
+    "m_ai_summarize": "صياغة خلاصة كرونولوجية للقضية",
+    "m_ai_settings": "إعدادات نماذج الذكاء الاصطناعي والاستدلال...",
 
     # Modals
-    "modal_properties_title": "خصائص وبيانات ملف القضية",
-    "modal_insert_title": "إدراج دليل أو قرينة جديدة",
-    "modal_llm_title": "إعدادات الذكاء الاصطناعي والمساعد الآلي",
-    "modal_import_title": "استيراد ملفات ومعطيات التحقيق",
+    "modal_properties_title": "خصائص ملف التحقيق القضائي",
+    "modal_insert_title": "إدراج دليل أو حريزة جديدة",
+    "modal_llm_title": "إعدادات المساعد الذكي ومحرك النماذج اللغوية",
+    "modal_import_title": "استيراد ملفات وأدلة جنائية",
     "btn_save_changes": "حفظ التغييرات",
     "btn_cancel": "إلغاء",
-    "btn_insert_confirm": "تثبيت الدليل في ملف القضية"
+    "btn_insert_confirm": "إدراج الدليل في القضية"
 }
 
 menu_keys_en = {
-    # Menu Headers
-    "menu_investigation": "Investigation",
+    # Brand & Headers
+    "app_title": "Athar DZ",
+    "menu_investigation": "Case",
     "menu_edit": "Edit",
     "menu_insert": "Insert",
     "menu_osint": "OSINT Tools",
-    "menu_osns": "Social Networks",
-    "menu_police": "Criminal Police",
+    "menu_osns": "Social Networks (OSNA)",
+    "menu_police": "Criminal Investigation",
     "menu_view": "View",
-    "menu_ai": "AI Copilot",
+    "menu_ai": "AI Assistant",
+
+    # Categories
+    "cat_web_infra": "Web & Infrastructure",
+    "cat_tech_metadata": "Technical Metadata & IOCs",
+    "cat_ad_tracking": "Ad Tracking & ID Pivots",
+    "cat_breach_identity": "Data Breaches & Credentials",
+    "cat_socmint": "Social Platform Intelligence (SOCMINT)",
+    "cat_sna": "Social Network Analysis (Graph SNA)",
+
+    # Topbar & Search
+    "topbar_search_placeholder": "Search clue, phone, suspect or launch tool... (Ctrl+K)",
+    "info_chip": "Spec Info",
+
+    # Tool Info Modal Labels
+    "tool_info_title": "Forensic Tool Technical Specification",
+    "tool_info_inputs": "Input Data (Inputs)",
+    "tool_info_outputs": "Output Data & Created Nodes (Outputs)",
+    "tool_info_storage": "Forensic Storage & Legal Custody",
+    "tool_info_resources": "Resources & Execution Footprint",
+    "tool_info_compliance": "Chain of Custody & WORM Compliance",
+    "tool_info_run_btn": "Run on Selected Clue",
+    "tool_info_playbook_btn": "Add to Playbook DAG",
+    "tool_info_close_btn": "Close",
 
     # Investigation Menu Items
     "m_new_case": "New Investigation Case...",
@@ -230,25 +321,36 @@ menu_keys_en = {
     "m_insert_gps": "GPS Coordinates / Location Point...",
     "m_insert_suspect": "Suspect Target Profile / Handle...",
 
-    # OSINT Tools Menu Items
-    "m_tool_ioc": "Text Clue Extractor (IOC Regex)",
+    # OSINT Tools
+    "m_tool_ioc": "IOC & Entity Forensic Extractor",
     "m_tool_objectid": "MongoDB ObjectId & Timestamp Decoder",
-    "m_tool_pixel": "Meta Pixel & Analytics Reverse Pivot",
+    "m_tool_mongo": "MongoDB ObjectId & Timestamp Decoder",
+    "m_tool_pixel": "Reverse Meta Pixel & ID Tracker Hunter",
     "m_tool_whois": "WHOIS History & DNS Records",
-    "m_tool_shodan": "Host & Port Reconnaissance (Shodan)",
-    "m_tool_breach": "Breach & Stealer Hunter (DeHashed)",
-    "m_tool_all_osint": "Browse All Web & Infra Tools (12 Tools) ↗",
+    "m_tool_shodan": "Shodan & Censys Port Scanner",
+    "m_tool_breach": "Credential Leak Search (DeHashed)",
+    "m_tool_ssl": "SSL Certificates & Transparency (crt.sh)",
+    "m_tool_exif": "ExifTool Media & GPS Metadata Analyzer",
+    "m_tool_google_analytics": "Reverse Google Analytics / AdSense Tracker",
+    "m_tool_holehe": "Email Account Checker on 120+ Services",
+    "m_tool_all_osint": "Explore All 16 OSINT Catalog Tools ↗",
 
-    # Social Networks (OSNS) Menu Items
-    "m_tool_telegram": "Telegram Account & Channel Resolver",
-    "m_tool_whatsapp": "WhatsApp Business Catalog Inspector",
-    "m_tool_fb_page": "Facebook Page Transparency & Country",
-    "m_tool_meta_ads": "Meta Ad Library Campaign Inspector",
-    "m_tool_instagram": "Instagram OSINT & Account Prober",
-    "m_tool_ouedkniss": "Ouedkniss & Classifieds Historical Search",
-    "m_tool_all_socmint": "Browse All Social Media Tools (10 Tools) ↗",
+    # Social Networks (OSNA) Tools
+    "m_tool_telegram": "Telegram Resolver & Channel Pivot (UID)",
+    "m_tool_whatsapp": "WhatsApp Business Profile & VCard Inspector",
+    "m_tool_meta_ad": "Facebook Page Transparency & Meta Ad Library",
+    "m_tool_fb_page": "Facebook Page Transparency & Meta Ad Library",
+    "m_tool_meta_ads": "Facebook Page Transparency & Meta Ad Library",
+    "m_tool_instagram": "Instagram Profile Analyzer / Toutatis",
+    "m_tool_ouedkniss": "Ouedkniss Algerian Marketplace Scraper",
+    "m_tool_social_mapper": "Cross-Platform Visual Correlator (Social Mapper)",
+    "m_tool_sna_betweenness": "Betweenness Centrality (Coordinator Detection)",
+    "m_tool_sna_louvain": "Community Detection (Louvain Algorithm)",
+    "m_tool_sna_pagerank": "Money Mule Detection (Bipartite PageRank)",
+    "m_tool_sna_link_pred": "Hidden Link Prediction (Adamic-Adar / Jaccard)",
+    "m_tool_all_socmint": "Explore All 12 Social Networks & SNA Tools ↗",
 
-    # Police & Criminal Investigation Menu Items
+    # Police & Telecom Tools
     "m_tool_cdr": "Telecom CDR Excel Parser",
     "m_tool_cell_triang": "Cell Tower Triangulation & Azimuths",
     "m_tool_cotravel": "Co-Traveler Twin Phone Detector",

@@ -1,4 +1,4 @@
-// Athar DZ Mock Case Data — Candy Wheels Multi-Scam
+// Athar DZ Mock Case Data — 100 Forensic Nodes
 window.CASE_CANDY_WHEELS = {
   "case_id": "ATHAR-2026-SCAM-089",
   "case_code": "CANDY-WHEELS-DZ",
@@ -345,241 +345,2025 @@ window.CASE_CANDY_WHEELS = {
     ]
   },
   "graph_representation": {
+    "total_nodes": 100,
+    "total_edges": 129,
     "nodes": [
       {
-        "id": "vic_karim",
+        "id": "vic_01_karim",
+        "label": "Karim Zerrouki (64k DZD)",
         "type": "VICTIM",
         "layer": 1,
-        "label": "Karim Zerrouki (Alger)",
-        "loss": 64000
+        "x": 60,
+        "y": 60,
+        "icon": "👤",
+        "subtitle": "Chauffeur Taxi • Bab Ezzouar",
+        "meta": {
+          "phone": "+213 661 44 12 89",
+          "loss": 64000,
+          "item": "4 Pneus Michelin",
+          "wilaya": "Alger"
+        }
       },
       {
-        "id": "vic_meriem",
+        "id": "vic_02_meriem",
+        "label": "Meriem Benali (48k DZD)",
         "type": "VICTIM",
         "layer": 1,
-        "label": "Meriem Benali (Oran)",
-        "loss": 48000
+        "x": 60,
+        "y": 150,
+        "icon": "👤",
+        "subtitle": "Enseignante • Bir El Djir",
+        "meta": {
+          "phone": "+213 770 82 91 30",
+          "loss": 48000,
+          "item": "4 Pneus Michelin Energy",
+          "wilaya": "Oran"
+        }
       },
       {
-        "id": "vic_djamel",
+        "id": "vic_03_djamel",
+        "label": "Djamel E. Mansouri (120k DZD)",
         "type": "VICTIM",
         "layer": 1,
-        "label": "Djamel Mansouri (Blida)",
-        "loss": 120000
+        "x": 60,
+        "y": 240,
+        "icon": "👤",
+        "subtitle": "Flotte Utilitaires • Ouled Yaïch",
+        "meta": {
+          "phone": "+213 550 19 63 74",
+          "loss": 120000,
+          "item": "8 Pneus Agilis",
+          "wilaya": "Blida"
+        }
       },
       {
-        "id": "post_fb_98124",
-        "type": "FB_POST",
+        "id": "vic_04_salim",
+        "label": "Salim Kheddam (150k DZD)",
+        "type": "VICTIM",
         "layer": 1,
-        "label": "Post FB #98124 (Michelin -60%)"
+        "x": 60,
+        "y": 330,
+        "icon": "👤",
+        "subtitle": "Commerçant • Constantine",
+        "meta": {
+          "phone": "+213 662 11 90 45",
+          "loss": 150000,
+          "item": "Faux Visa Espagne",
+          "wilaya": "Constantine"
+        }
       },
       {
-        "id": "page_fb_pneus",
-        "type": "FB_PAGE",
+        "id": "vic_05_amina",
+        "label": "Amina Taleb (85k DZD)",
+        "type": "VICTIM",
         "layer": 1,
-        "label": "fb.com/pneus.promo.dz"
+        "x": 60,
+        "y": 420,
+        "icon": "👤",
+        "subtitle": "Cadre Banque • Kouba",
+        "meta": {
+          "phone": "+213 774 29 80 11",
+          "loss": 85000,
+          "item": "RDV TLSContact France",
+          "wilaya": "Alger"
+        }
       },
       {
-        "id": "phone_scammer_front",
-        "type": "PHONE",
-        "layer": 2,
-        "label": "+213 555 019 283 (Ooredoo)"
+        "id": "vic_06_rachid",
+        "label": "Rachid Bouzid (190k DZD)",
+        "type": "VICTIM",
+        "layer": 1,
+        "x": 60,
+        "y": 510,
+        "icon": "👤",
+        "subtitle": "Artisan • Sétif",
+        "meta": {
+          "phone": "+213 551 77 40 22",
+          "loss": 190000,
+          "item": "iPhone 16 Pro Max",
+          "wilaya": "Sétif"
+        }
       },
       {
-        "id": "apk_autopneus",
+        "id": "vic_07_tahar",
+        "label": "Tahar Mebarki (220k DZD)",
+        "type": "VICTIM",
+        "layer": 1,
+        "x": 60,
+        "y": 600,
+        "icon": "👤",
+        "subtitle": "Entrepreneur • Annaba",
+        "meta": {
+          "phone": "+213 668 55 12 30",
+          "loss": 220000,
+          "item": "Pack TV 4K Déstockage",
+          "wilaya": "Annaba"
+        }
+      },
+      {
+        "id": "vic_08_mourad",
+        "label": "Mourad Belhadj (75k DZD)",
+        "type": "VICTIM",
+        "layer": 1,
+        "x": 60,
+        "y": 690,
+        "icon": "👤",
+        "subtitle": "Agriculteur • Sig",
+        "meta": {
+          "phone": "+213 770 14 55 90",
+          "loss": 75000,
+          "item": "Pneus Tracteur/Van",
+          "wilaya": "Mascara/Oran"
+        }
+      },
+      {
+        "id": "vic_09_fatima",
+        "label": "Fatima Z. Cherif (110k DZD)",
+        "type": "VICTIM",
+        "layer": 1,
+        "x": 60,
+        "y": 780,
+        "icon": "👤",
+        "subtitle": "Infirmière • Tlemcen",
+        "meta": {
+          "phone": "+213 558 90 23 44",
+          "loss": 110000,
+          "item": "Contrat Saisonnier",
+          "wilaya": "Tlemcen"
+        }
+      },
+      {
+        "id": "vic_10_omar",
+        "label": "Omar Latreche (95k DZD)",
+        "type": "VICTIM",
+        "layer": 1,
+        "x": 60,
+        "y": 870,
+        "icon": "👤",
+        "subtitle": "Retraité • Batna",
+        "meta": {
+          "phone": "+213 661 80 44 19",
+          "loss": 95000,
+          "item": "Lingotin Or Déstockage",
+          "wilaya": "Batna"
+        }
+      },
+      {
+        "id": "proc_pv_alger",
+        "label": "PV Plainte Alger #089-A",
+        "type": "PROC_VERBAL",
+        "layer": 1,
+        "x": 60,
+        "y": 960,
+        "icon": "⚖️",
+        "subtitle": "Saisine Parquet Alger TIC",
+        "meta": {
+          "date": "2026-11-10",
+          "opj": "Insp. Benali"
+        }
+      },
+      {
+        "id": "proc_pv_oran",
+        "label": "PV Plainte Oran #089-B",
+        "type": "PROC_VERBAL",
+        "layer": 1,
+        "x": 60,
+        "y": 1050,
+        "icon": "⚖️",
+        "subtitle": "Section Recherches Oran",
+        "meta": {
+          "date": "2026-11-10",
+          "opj": "Capitaine Belkacem"
+        }
+      },
+      {
+        "id": "proc_pv_blida",
+        "label": "PV Plainte Blida #089-C",
+        "type": "PROC_VERBAL",
+        "layer": 1,
+        "x": 60,
+        "y": 1140,
+        "icon": "⚖️",
+        "subtitle": "Brigade Cyb Blida",
+        "meta": {
+          "date": "2026-11-10",
+          "opj": "Lt. Meziane"
+        }
+      },
+      {
+        "id": "proc_pv_const",
+        "label": "PV Plainte Const #089-D",
+        "type": "PROC_VERBAL",
+        "layer": 1,
+        "x": 60,
+        "y": 1230,
+        "icon": "⚖️",
+        "subtitle": "Section Recherches Est",
+        "meta": {
+          "date": "2026-11-10",
+          "opj": "Lt. Hamdi"
+        }
+      },
+      {
+        "id": "proc_pv_setif",
+        "label": "PV Plainte Sétif #089-E",
+        "type": "PROC_VERBAL",
+        "layer": 1,
+        "x": 60,
+        "y": 1320,
+        "icon": "⚖️",
+        "subtitle": "Brigade Financière Sétif",
+        "meta": {
+          "date": "2026-11-10",
+          "opj": "Insp. Saadi"
+        }
+      },
+      {
+        "id": "evid_audio_a01",
+        "label": "Pièce A-01 (Vocal WhatsApp)",
+        "type": "AUDIO_RECORDING",
+        "layer": 1,
+        "x": 360,
+        "y": 60,
+        "icon": "🎙️",
+        "subtitle": "Amine -> Karim (96% voix)",
+        "meta": {
+          "sha256": "a9f3b7c841e2d93e15f40192b0c39a8e",
+          "lang": "Darija",
+          "sec": 42
+        }
+      },
+      {
+        "id": "evid_audio_a02",
+        "label": "Pièce A-02 (Vocal Telegram)",
+        "type": "AUDIO_RECORDING",
+        "layer": 1,
+        "x": 360,
+        "y": 150,
+        "icon": "🎙️",
+        "subtitle": "Boss El-Hadj -> Youcef",
+        "meta": {
+          "sha256": "5d829fa18c0e2274b123985fe612ab74",
+          "lang": "Darija",
+          "sec": 58
+        }
+      },
+      {
+        "id": "evid_audio_a03",
+        "label": "Pièce A-03 (Vocal Telegram)",
+        "type": "AUDIO_RECORDING",
+        "layer": 1,
+        "x": 360,
+        "y": 240,
+        "icon": "🎙️",
+        "subtitle": "Nadia -> Boss (Faux Visas)",
+        "meta": {
+          "sha256": "98e4c194b15672d1f90081c7e92384a8",
+          "lang": "Darija",
+          "sec": 35
+        }
+      },
+      {
+        "id": "evid_audio_a04",
+        "label": "Pièce A-04 (Vocal Telegram)",
+        "type": "AUDIO_RECORDING",
+        "layer": 1,
+        "x": 360,
+        "y": 330,
+        "icon": "🎙️",
+        "subtitle": "Farid -> Boss (Électro)",
+        "meta": {
+          "sha256": "b1e9c8a74102938475618293a4b5c6d7",
+          "lang": "Darija",
+          "sec": 48
+        }
+      },
+      {
+        "id": "evid_text_t01",
+        "label": "Pièce T-01 (Chat Telegram)",
+        "type": "CHAT_LOG",
+        "layer": 1,
+        "x": 360,
+        "y": 420,
+        "icon": "💬",
+        "subtitle": "Directive Youcef (Blocage)",
+        "meta": {
+          "sha256": "3c7b91f0e21a8d94c1b2e3f4a5b6c7d8",
+          "channel": "t.me/+Ab91k_PneuOps"
+        }
+      },
+      {
+        "id": "evid_text_d01",
+        "label": "Pièce D-01 (Log Discord)",
+        "type": "CHAT_LOG",
+        "layer": 1,
+        "x": 360,
+        "y": 510,
+        "icon": "💬",
+        "subtitle": "Commandes APK Sofiane/Boss",
+        "meta": {
+          "sha256": "1f8e2a3b4c5d6e7f8a9b0c1d2e3f4a5b",
+          "channel": "DZ-Dev #commandes"
+        }
+      },
+      {
+        "id": "evid_apk_pneu",
+        "label": "AutoPneusDZ.apk (Binaire)",
         "type": "MALWARE_APK",
+        "layer": 1,
+        "x": 360,
+        "y": 600,
+        "icon": "📦",
+        "subtitle": "Package Trojan BaridiMob",
+        "meta": {
+          "sha256": "4a7c8e9b01d2e3f4a5b6c7d8e9f0a1b2",
+          "pkg": "com.devstudio.dz.autopneus"
+        }
+      },
+      {
+        "id": "evid_apk_visa",
+        "label": "VisaExpressDZ.apk (Binaire)",
+        "type": "MALWARE_APK",
+        "layer": 1,
+        "x": 360,
+        "y": 690,
+        "icon": "📦",
+        "subtitle": "Clone Phishing TLSContact",
+        "meta": {
+          "sha256": "7c8e9b01d2e3f4a5b6c7d8e9f0a1b2c3",
+          "pkg": "com.devstudio.dz.visaexpress"
+        }
+      },
+      {
+        "id": "evid_bon_commande_pdf",
+        "label": "Faux Bon Commande PDF",
+        "type": "DOCUMENT",
+        "layer": 1,
+        "x": 360,
+        "y": 780,
+        "icon": "📄",
+        "subtitle": "SARL Ouest Pneumatiques",
+        "meta": {
+          "sha256": "d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3",
+          "source": "WhatsApp Meriem"
+        }
+      },
+      {
+        "id": "evid_baridimob_slip",
+        "label": "Récépissé BaridiMob TXN",
+        "type": "BANK_RECORD",
+        "layer": 1,
+        "x": 360,
+        "y": 870,
+        "icon": "🧾",
+        "subtitle": "TXN-20261108-994102",
+        "meta": {
+          "amount": 64000,
+          "rip": "00799999002148593214"
+        }
+      },
+      {
+        "id": "fb_page_pneus_promo",
+        "label": "fb.com/pneus.promo.dz",
+        "type": "FB_PAGE",
         "layer": 2,
-        "label": "AutoPneusDZ.apk"
+        "x": 680,
+        "y": 60,
+        "icon": "📢",
+        "subtitle": "Pneus Promo DZ (2.4k j'aime)",
+        "meta": {
+          "admin": "Algérie",
+          "created": "2026-10-12"
+        }
       },
       {
-        "id": "github_dev_leak",
-        "type": "CODE_REPO",
+        "id": "fb_page_michelin_exp",
+        "label": "fb.com/michelin.express",
+        "type": "FB_PAGE",
         "layer": 2,
-        "label": "github.com/soficoder-alger"
+        "x": 680,
+        "y": 150,
+        "icon": "📢",
+        "subtitle": "Pneus Express Livraison",
+        "meta": {
+          "created": "2026-10-24"
+        }
       },
       {
-        "id": "dev_sofiane",
-        "type": "DEVELOPER",
-        "layer": 3,
-        "label": "Sofiane K. (Sofi-Dev)"
+        "id": "fb_page_destock_blida",
+        "label": "fb.com/auto.destock.blida",
+        "type": "FB_PAGE",
+        "layer": 2,
+        "x": 680,
+        "y": 240,
+        "icon": "📢",
+        "subtitle": "Auto Déstockage Pneumatiques",
+        "meta": {
+          "created": "2026-11-02"
+        }
       },
       {
-        "id": "discord_server_ops",
+        "id": "fb_page_visas_express",
+        "label": "fb.com/visa.schengen.exp",
+        "type": "FB_PAGE",
+        "layer": 2,
+        "x": 680,
+        "y": 330,
+        "icon": "📢",
+        "subtitle": "Visa Schengen Express DZ",
+        "meta": {
+          "followers": 5800
+        }
+      },
+      {
+        "id": "fb_page_tls_appointments",
+        "label": "fb.com/rdv.consulat.dz",
+        "type": "FB_PAGE",
+        "layer": 2,
+        "x": 680,
+        "y": 420,
+        "icon": "📢",
+        "subtitle": "Créneaux TLS/VFS Garantis",
+        "meta": {
+          "followers": 3200
+        }
+      },
+      {
+        "id": "fb_page_destock_electro",
+        "label": "fb.com/destock.electro.dz",
+        "type": "FB_PAGE",
+        "layer": 2,
+        "x": 680,
+        "y": 510,
+        "icon": "📢",
+        "subtitle": "Déstockage Électroménager",
+        "meta": {
+          "followers": 4100
+        }
+      },
+      {
+        "id": "fb_page_gold_algerie",
+        "label": "fb.com/or.douane.liquidation",
+        "type": "FB_PAGE",
+        "layer": 2,
+        "x": 680,
+        "y": 600,
+        "icon": "📢",
+        "subtitle": "Or & Bijoux Saisie Douane",
+        "meta": {
+          "followers": 1900
+        }
+      },
+      {
+        "id": "ig_auto_pieces_pro",
+        "label": "@auto_pieces_pro (IG)",
+        "type": "INSTAGRAM",
+        "layer": 2,
+        "x": 680,
+        "y": 690,
+        "icon": "📷",
+        "subtitle": "Instagram relié à +213555...",
+        "meta": {
+          "posts": 34
+        }
+      },
+      {
+        "id": "ig_visa_dz_officiel",
+        "label": "@visa_espagne_dz (IG)",
+        "type": "INSTAGRAM",
+        "layer": 2,
+        "x": 680,
+        "y": 780,
+        "icon": "📷",
+        "subtitle": "Instagram fausses offres visa",
+        "meta": {
+          "posts": 51
+        }
+      },
+      {
+        "id": "ouedkniss_amine_2025",
+        "label": "Ouedkniss 'Amine Pièces'",
+        "type": "CLASSIFIED_AD",
+        "layer": 2,
+        "x": 680,
+        "y": 870,
+        "icon": "🛒",
+        "subtitle": "Compte vendeur Ouedkniss 2025",
+        "meta": {
+          "last_active": "2025-12"
+        }
+      },
+      {
+        "id": "fb_post_pneus_98124",
+        "label": "Post FB #98124 (Michelin)",
+        "type": "FB_POST",
+        "layer": 2,
+        "x": 680,
+        "y": 960,
+        "icon": "📰",
+        "subtitle": "Michelin -60% Déstockage",
+        "meta": {
+          "reach": 18400,
+          "date": "08 Nov"
+        }
+      },
+      {
+        "id": "fb_post_pneus_98177",
+        "label": "Post FB #98177 (Saisie Douane)",
+        "type": "FB_POST",
+        "layer": 2,
+        "x": 680,
+        "y": 1050,
+        "icon": "📰",
+        "subtitle": "Liquidation Pneus Tourisme",
+        "meta": {
+          "reach": 9200
+        }
+      },
+      {
+        "id": "fb_post_visa_44102",
+        "label": "Post FB #44102 (RDV TLS)",
+        "type": "FB_POST",
+        "layer": 2,
+        "x": 680,
+        "y": 1140,
+        "icon": "📰",
+        "subtitle": "Rendez-vous Espagne 48h",
+        "meta": {
+          "reach": 24000
+        }
+      },
+      {
+        "id": "fb_post_visa_44189",
+        "label": "Post FB #44189 (Contrat Esp)",
+        "type": "FB_POST",
+        "layer": 2,
+        "x": 680,
+        "y": 1230,
+        "icon": "📰",
+        "subtitle": "Contrat Agricole Murcie",
+        "meta": {
+          "reach": 31000
+        }
+      },
+      {
+        "id": "fb_post_electro_7712",
+        "label": "Post FB #7712 (iPhone 16)",
+        "type": "FB_POST",
+        "layer": 2,
+        "x": 680,
+        "y": 1320,
+        "icon": "📰",
+        "subtitle": "iPhone 16 Pro 115k DZD",
+        "meta": {
+          "reach": 15600
+        }
+      },
+      {
+        "id": "fb_post_tv_7745",
+        "label": "Post FB #7745 (TV Samsung 4K)",
+        "type": "FB_POST",
+        "layer": 2,
+        "x": 680,
+        "y": 1410,
+        "icon": "📰",
+        "subtitle": "Pack Smart TV 65 pouces",
+        "meta": {
+          "reach": 12800
+        }
+      },
+      {
+        "id": "phone_front_amine",
+        "label": "+213 555 019 283",
+        "type": "PHONE_NUMBER",
+        "layer": 2,
+        "x": 1000,
+        "y": 60,
+        "icon": "📱",
+        "subtitle": "Ooredoo • Opérateur Amine",
+        "meta": {
+          "cell": "Es Senia (Oran)",
+          "active": true
+        }
+      },
+      {
+        "id": "phone_front_bilel",
+        "label": "+213 551 88 42 10",
+        "type": "PHONE_NUMBER",
+        "layer": 2,
+        "x": 1000,
+        "y": 150,
+        "icon": "📱",
+        "subtitle": "Ooredoo • Opérateur Bilel",
+        "meta": {
+          "cell": "Blida Centre",
+          "active": true
+        }
+      },
+      {
+        "id": "phone_front_fares",
+        "label": "+213 772 10 33 99",
+        "type": "PHONE_NUMBER",
+        "layer": 2,
+        "x": 1000,
+        "y": 240,
+        "icon": "📱",
+        "subtitle": "Djezzy • Opérateur Fares",
+        "meta": {
+          "cell": "Constantine",
+          "active": true
+        }
+      },
+      {
+        "id": "phone_front_sarah",
+        "label": "+213 779 55 12 04",
+        "type": "PHONE_NUMBER",
+        "layer": 2,
+        "x": 1000,
+        "y": 330,
+        "icon": "📱",
+        "subtitle": "Djezzy • Opératrice Sarah",
+        "meta": {
+          "cell": "Bab Ezzouar",
+          "active": true
+        }
+      },
+      {
+        "id": "phone_front_mourad",
+        "label": "+213 663 90 14 77",
+        "type": "PHONE_NUMBER",
+        "layer": 2,
+        "x": 1000,
+        "y": 420,
+        "icon": "📱",
+        "subtitle": "Mobilis • Opérateur Mourad",
+        "meta": {
+          "cell": "Sétif",
+          "active": true
+        }
+      },
+      {
+        "id": "phone_lt_youcef",
+        "label": "+213 550 44 91 22",
+        "type": "PHONE_NUMBER",
+        "layer": 2,
+        "x": 1000,
+        "y": 510,
+        "icon": "📱",
+        "subtitle": "Ooredoo • Lt. Youcef R.",
+        "meta": {
+          "role": "Chef Cellule Pneus"
+        }
+      },
+      {
+        "id": "phone_lt_nadia",
+        "label": "+213 771 88 50 16",
+        "type": "PHONE_NUMBER",
+        "layer": 2,
+        "x": 1000,
+        "y": 600,
+        "icon": "📱",
+        "subtitle": "Djezzy • Lt. Nadia M.",
+        "meta": {
+          "role": "Chef Cellule Visas"
+        }
+      },
+      {
+        "id": "phone_lt_farid",
+        "label": "+213 660 12 34 88",
+        "type": "PHONE_NUMBER",
+        "layer": 2,
+        "x": 1000,
+        "y": 690,
+        "icon": "📱",
+        "subtitle": "Mobilis • Lt. Farid T.",
+        "meta": {
+          "role": "Chef Cellule Électro"
+        }
+      },
+      {
+        "id": "discord_guild_c2",
+        "label": "DZ-Dev & Ops Hub",
         "type": "DISCORD_SERVER",
-        "layer": 3,
-        "label": "Discord « DZ-Dev & Ops Hub »"
+        "layer": 2,
+        "x": 1000,
+        "y": 780,
+        "icon": "💬",
+        "subtitle": "Discord ID 119830129480192840",
+        "meta": {
+          "members": 6,
+          "auth": "Webhook Leak"
+        }
       },
       {
-        "id": "tg_management",
+        "id": "discord_ch_commandes",
+        "label": "Discord #commandes-scripts",
+        "type": "DISCORD_CHANNEL",
+        "layer": 2,
+        "x": 1000,
+        "y": 870,
+        "icon": "💬",
+        "subtitle": "Salon Livraison Clones APK",
+        "meta": {
+          "proof": "Pièce D-01"
+        }
+      },
+      {
+        "id": "tg_group_c2_vip",
+        "label": "t.me/+Hd99_Management_C2",
         "type": "TELEGRAM_GROUP",
-        "layer": 3,
-        "label": "TG VIP « Comité Direction C2 »"
+        "layer": 2,
+        "x": 1000,
+        "y": 960,
+        "icon": "💬",
+        "subtitle": "VIP Direction C2 (Le Boss)",
+        "meta": {
+          "members": 5,
+          "proof": "Pièce A-02/A-03"
+        }
       },
       {
-        "id": "tg_cell_pneus",
+        "id": "tg_group_pneus_ops",
+        "label": "t.me/+Ab91k_PneuOps",
         "type": "TELEGRAM_GROUP",
-        "layer": 3,
-        "label": "TG « Pneus DZ — Ventes »"
+        "layer": 2,
+        "x": 1000,
+        "y": 1050,
+        "icon": "💬",
+        "subtitle": "Pneus DZ Équipe Ventes",
+        "meta": {
+          "members": 6,
+          "leader": "Youcef R."
+        }
       },
       {
-        "id": "tg_cell_visas",
+        "id": "tg_group_visas_ops",
+        "label": "t.me/+Vz82k_VisaOps",
         "type": "TELEGRAM_GROUP",
-        "layer": 3,
-        "label": "TG « Visas Express DZ »"
+        "layer": 2,
+        "x": 1000,
+        "y": 1140,
+        "icon": "💬",
+        "subtitle": "Visas Schengen Traitement",
+        "meta": {
+          "members": 7,
+          "leader": "Nadia M."
+        }
       },
       {
-        "id": "tg_cell_electro",
+        "id": "tg_group_electro_ops",
+        "label": "t.me/+Lx44k_ElectroOps",
         "type": "TELEGRAM_GROUP",
+        "layer": 2,
+        "x": 1000,
+        "y": 1230,
+        "icon": "💬",
+        "subtitle": "Électro & Or Liquidation",
+        "meta": {
+          "members": 5,
+          "leader": "Farid T."
+        }
+      },
+      {
+        "id": "domain_pneus_express",
+        "label": "promo-pneus-express.shop",
+        "type": "WEBSITE",
         "layer": 3,
-        "label": "TG « Électro & Or DZ »"
+        "x": 1340,
+        "y": 60,
+        "icon": "🌐",
+        "subtitle": "Boutique Phishing Pneus",
+        "meta": {
+          "ip": "185.199.108.153"
+        }
       },
       {
-        "id": "operator_amine",
-        "type": "SUSPECT",
+        "id": "domain_destock_auto",
+        "label": "destockage-auto-dz.online",
+        "type": "WEBSITE",
         "layer": 3,
-        "label": "Amine B. (@amine_import)"
+        "x": 1340,
+        "y": 150,
+        "icon": "🌐",
+        "subtitle": "Site Miroir Pneus",
+        "meta": {
+          "ip": "185.199.108.153"
+        }
       },
       {
-        "id": "lt_youcef",
-        "type": "LIEUTENANT",
-        "layer": 4,
-        "label": "Youcef R. (Chef Pneus)"
+        "id": "domain_pneus_rapide",
+        "label": "livraison-pneus-dz.com",
+        "type": "WEBSITE",
+        "layer": 3,
+        "x": 1340,
+        "y": 240,
+        "icon": "🌐",
+        "subtitle": "Domaine de Réserve Pneus",
+        "meta": {
+          "created": "2026-11-01"
+        }
       },
       {
-        "id": "lt_nadia",
-        "type": "LIEUTENANT",
-        "layer": 4,
-        "label": "Nadia M. (Chef Visas)"
+        "id": "domain_visa_schengen",
+        "label": "tls-appointment-booking-dz.com",
+        "type": "WEBSITE",
+        "layer": 3,
+        "x": 1340,
+        "y": 330,
+        "icon": "🌐",
+        "subtitle": "Faux Portail TLSContact",
+        "meta": {
+          "ip": "194.26.29.84"
+        }
       },
       {
-        "id": "lt_farid",
-        "type": "LIEUTENANT",
-        "layer": 4,
-        "label": "Farid T. (Chef Électro)"
+        "id": "domain_visa_espana",
+        "label": "contrat-travail-espagne.site",
+        "type": "WEBSITE",
+        "layer": 3,
+        "x": 1340,
+        "y": 420,
+        "icon": "🌐",
+        "subtitle": "Faux Contrats Consulaires",
+        "meta": {
+          "ip": "194.26.29.84"
+        }
       },
       {
-        "id": "boss_tarek",
+        "id": "domain_destock_electro",
+        "label": "flash-electro-algerie.shop",
+        "type": "WEBSITE",
+        "layer": 3,
+        "x": 1340,
+        "y": 510,
+        "icon": "🌐",
+        "subtitle": "Fausse Boutique Électro",
+        "meta": {
+          "ip": "185.199.108.153"
+        }
+      },
+      {
+        "id": "domain_gold_express",
+        "label": "or-douane-liquidation.online",
+        "type": "WEBSITE",
+        "layer": 3,
+        "x": 1340,
+        "y": 600,
+        "icon": "🌐",
+        "subtitle": "Fausse Vente Or/Bijoux",
+        "meta": {
+          "ip": "185.199.108.153"
+        }
+      },
+      {
+        "id": "cdn_apps_server",
+        "label": "cdn.dz-services-cloud.com",
+        "type": "WEBSITE",
+        "layer": 3,
+        "x": 1340,
+        "y": 690,
+        "icon": "🌐",
+        "subtitle": "CDN Hébergement APKs",
+        "meta": {
+          "ssl": "Let's Encrypt"
+        }
+      },
+      {
+        "id": "ip_server_web_1",
+        "label": "185.199.108.153 (Nginx)",
+        "type": "HOSTING_IP",
+        "layer": 3,
+        "x": 1340,
+        "y": 780,
+        "icon": "🖥️",
+        "subtitle": "Serveur Web Pneus & Électro",
+        "meta": {
+          "asn": "AS49505"
+        }
+      },
+      {
+        "id": "ip_server_web_2",
+        "label": "194.26.29.84 (Apache)",
+        "type": "HOSTING_IP",
+        "layer": 3,
+        "x": 1340,
+        "y": 870,
+        "icon": "🖥️",
+        "subtitle": "Serveur Web Faux Visas",
+        "meta": {
+          "asn": "AS200019"
+        }
+      },
+      {
+        "id": "ip_server_c2_api",
+        "label": "api.gateway-central-dz.xyz",
+        "type": "C2_SERVER",
+        "layer": 3,
+        "x": 1340,
+        "y": 960,
+        "icon": "⚙️",
+        "subtitle": "API Backend C2 & Webhooks",
+        "meta": {
+          "role": "Centraliseur Leads"
+        }
+      },
+      {
+        "id": "mongodb_cluster",
+        "label": "MongoDB 672f9a10c8b...",
+        "type": "DATABASE",
+        "layer": 3,
+        "x": 1340,
+        "y": 1050,
+        "icon": "🗄️",
+        "subtitle": "BSON Leads Multi-Tenant",
+        "meta": {
+          "time": "01 Nov 14:22"
+        }
+      },
+      {
+        "id": "meta_pixel_tracker",
+        "label": "Meta Pixel #88419203314",
+        "type": "AD_TRACKER",
+        "layer": 3,
+        "x": 1340,
+        "y": 1140,
+        "icon": "📊",
+        "subtitle": "Tracker commun 3 boutiques",
+        "meta": {
+          "matches": 3
+        }
+      },
+      {
+        "id": "bts_oran_senia",
+        "label": "BTS Ooredoo Es Senia (48921)",
+        "type": "TELECOM_CELL",
+        "layer": 3,
+        "x": 1340,
+        "y": 1230,
+        "icon": "📡",
+        "subtitle": "Azimut 120° • Oran",
+        "meta": {
+          "msisdn": "+213555019283"
+        }
+      },
+      {
+        "id": "bts_alger_kouba",
+        "label": "BTS Mobilis Kouba (12044)",
+        "type": "TELECOM_CELL",
+        "layer": 3,
+        "x": 1340,
+        "y": 1320,
+        "icon": "📡",
+        "subtitle": "Azimut 240° • Alger",
+        "meta": {
+          "suspect": "Amine B."
+        }
+      },
+      {
+        "id": "bts_blida_centre",
+        "label": "BTS Ooredoo Blida (33819)",
+        "type": "TELECOM_CELL",
+        "layer": 3,
+        "x": 1340,
+        "y": 1410,
+        "icon": "📡",
+        "subtitle": "Azimut 090° • Blida",
+        "meta": {
+          "suspect": "Youcef R."
+        }
+      },
+      {
+        "id": "bts_const_univ",
+        "label": "BTS Djezzy Univ Const (61092)",
+        "type": "TELECOM_CELL",
+        "layer": 3,
+        "x": 1340,
+        "y": 1500,
+        "icon": "📡",
+        "subtitle": "Azimut 180° • Constantine",
+        "meta": {
+          "suspect": "Nadia M."
+        }
+      },
+      {
+        "id": "git_repo_public",
+        "label": "github/soficoder-alger",
+        "type": "CODE_REPO",
+        "layer": 3,
+        "x": 1680,
+        "y": 60,
+        "icon": "💻",
+        "subtitle": "Dépôt dz-shop-template",
+        "meta": {
+          "author": "Sofiane K."
+        }
+      },
+      {
+        "id": "git_commit_webhook",
+        "label": "Commit Git #7a8f1b2c",
+        "type": "CODE_COMMIT",
+        "layer": 3,
+        "x": 1680,
+        "y": 150,
+        "icon": "🔍",
+        "subtitle": "Fuite Webhook Discord",
+        "meta": {
+          "author_email": "sofiane.devbox99@gmail.com"
+        }
+      },
+      {
+        "id": "keystore_apk_signature",
+        "label": "Keystore CN=Sofiane K.",
+        "type": "CERTIFICATE",
+        "layer": 3,
+        "x": 1680,
+        "y": 240,
+        "icon": "🔐",
+        "subtitle": "Signature binaire APKs",
+        "meta": {
+          "ou": "DevAlger"
+        }
+      },
+      {
+        "id": "bot_telegram_leads",
+        "label": "@syndicate_leads_bot",
+        "type": "BOT_API",
+        "layer": 3,
+        "x": 1680,
+        "y": 330,
+        "icon": "🤖",
+        "subtitle": "Bot Exfiltration Paiements",
+        "meta": {
+          "token": "7418920194:AAF..."
+        }
+      },
+      {
+        "id": "rip_baridimob_mule1",
+        "label": "RIP 00799999002148593214",
+        "type": "BANK_ACCOUNT",
+        "layer": 3,
+        "x": 1680,
+        "y": 420,
+        "icon": "💳",
+        "subtitle": "Compte BaridiMob Mule #1",
+        "meta": {
+          "titulaire": "Akram L. (Alger)"
+        }
+      },
+      {
+        "id": "rip_baridimob_mule2",
+        "label": "RIP 00799999008812450192",
+        "type": "BANK_ACCOUNT",
+        "layer": 3,
+        "x": 1680,
+        "y": 510,
+        "icon": "💳",
+        "subtitle": "Compte BaridiMob Mule #2",
+        "meta": {
+          "titulaire": "Walid M. (Oran)"
+        }
+      },
+      {
+        "id": "rip_baridimob_mule3",
+        "label": "RIP 00799999005541908233",
+        "type": "BANK_ACCOUNT",
+        "layer": 3,
+        "x": 1680,
+        "y": 600,
+        "icon": "💳",
+        "subtitle": "Compte BaridiMob Mule #3",
+        "meta": {
+          "titulaire": "Samir B. (Blida)"
+        }
+      },
+      {
+        "id": "crypto_wallet_trc20",
+        "label": "Wallet USDT: TJv89XbM...Kq92",
+        "type": "CRYPTO_WALLET",
+        "layer": 3,
+        "x": 1680,
+        "y": 690,
+        "icon": "🪙",
+        "subtitle": "USDT TRC-20 Tron",
+        "meta": {
+          "balance_usdt": 140000,
+          "owner": "Tarek H."
+        }
+      },
+      {
+        "id": "suspect_boss_tarek",
+        "label": "Tarek H. « El-Hadj » (Boss)",
         "type": "KINGPIN",
         "layer": 4,
-        "label": "Tarek H. (« El-Hadj » / Le Boss)"
+        "x": 2020,
+        "y": 60,
+        "icon": "👑",
+        "subtitle": "44 ans • Hydra / Dubaï",
+        "meta": {
+          "role": "Commanditaire en chef & Blanchisseur USDT",
+          "charges": "Association malfaiteurs, escroquerie, blanchiment"
+        }
       },
       {
-        "id": "wallet_usdt_boss",
-        "type": "CRYPTO_WALLET",
+        "id": "suspect_dev_sofiane",
+        "label": "Sofiane K. « Sofi-Dev »",
+        "type": "DEVELOPER",
         "layer": 4,
-        "label": "USDT TRC-20: TJv89X...Kq92"
+        "x": 2020,
+        "y": 160,
+        "icon": "💻",
+        "subtitle": "28 ans • Bab Ezzouar (Alger)",
+        "meta": {
+          "role": "Développeur Logiciel & Webmaster (15%)",
+          "email": "sofiane.devbox99@gmail.com"
+        }
+      },
+      {
+        "id": "suspect_cashier_kamel",
+        "label": "Kamel V. « Le Caissier »",
+        "type": "SUSPECT",
+        "layer": 4,
+        "x": 2020,
+        "y": 260,
+        "icon": "💼",
+        "subtitle": "36 ans • Alger Centre",
+        "meta": {
+          "role": "Gestionnaire 18 Mules & Retraits GAB",
+          "seizures": "18 cartes Edahabia"
+        }
+      },
+      {
+        "id": "suspect_lt_youcef",
+        "label": "Youcef R. « Jo_Blida » (LT Pneus)",
+        "type": "LIEUTENANT",
+        "layer": 4,
+        "x": 2020,
+        "y": 360,
+        "icon": "⭐",
+        "subtitle": "34 ans • Blida",
+        "meta": {
+          "cell": "Pneumatiques",
+          "turnover": 4500000
+        }
+      },
+      {
+        "id": "suspect_lt_nadia",
+        "label": "Nadia M. « Dina » (LT Visas)",
+        "type": "LIEUTENANT",
+        "layer": 4,
+        "x": 2020,
+        "y": 460,
+        "icon": "⭐",
+        "subtitle": "31 ans • Constantine",
+        "meta": {
+          "cell": "Visas Schengen & Contrats",
+          "turnover": 18000000
+        }
+      },
+      {
+        "id": "suspect_lt_farid",
+        "label": "Farid T. « Kika » (LT Électro)",
+        "type": "LIEUTENANT",
+        "layer": 4,
+        "x": 2020,
+        "y": 560,
+        "icon": "⭐",
+        "subtitle": "36 ans • Sétif / Annaba",
+        "meta": {
+          "cell": "Électro & Or",
+          "turnover": 11000000
+        }
+      },
+      {
+        "id": "suspect_op_amine",
+        "label": "Amine B. « Amine Import »",
+        "type": "OPERATOR",
+        "layer": 4,
+        "x": 2020,
+        "y": 660,
+        "icon": "🎯",
+        "subtitle": "24 ans • Oran (Es Senia)",
+        "meta": {
+          "role": "Opérateur Pneus WhatsApp",
+          "voice_match": 0.96
+        }
+      },
+      {
+        "id": "suspect_op_bilel",
+        "label": "Bilel S. (Opérateur Pneus)",
+        "type": "OPERATOR",
+        "layer": 4,
+        "x": 2020,
+        "y": 750,
+        "icon": "🎯",
+        "subtitle": "22 ans • Blida",
+        "meta": {
+          "role": "Opérateur Pneus Messenger"
+        }
+      },
+      {
+        "id": "suspect_op_fares",
+        "label": "Fares K. (Opérateur Visas)",
+        "type": "OPERATOR",
+        "layer": 4,
+        "x": 2020,
+        "y": 840,
+        "icon": "🎯",
+        "subtitle": "26 ans • Constantine",
+        "meta": {
+          "role": "Opérateur Faux RDV TLS"
+        }
+      },
+      {
+        "id": "suspect_op_sarah",
+        "label": "Sarah T. (Opératrice Visas)",
+        "type": "OPERATOR",
+        "layer": 4,
+        "x": 2020,
+        "y": 930,
+        "icon": "🎯",
+        "subtitle": "25 ans • Alger",
+        "meta": {
+          "role": "Opératrice Faux Contrats Espagne"
+        }
+      },
+      {
+        "id": "suspect_op_mourad",
+        "label": "Mourad Z. (Opérateur Électro)",
+        "type": "OPERATOR",
+        "layer": 4,
+        "x": 2020,
+        "y": 1020,
+        "icon": "🎯",
+        "subtitle": "27 ans • Sétif",
+        "meta": {
+          "role": "Opérateur iPhones Déstockés"
+        }
+      },
+      {
+        "id": "suspect_op_lyes",
+        "label": "Lyès B. (Opérateur Or)",
+        "type": "OPERATOR",
+        "layer": 4,
+        "x": 2020,
+        "y": 1110,
+        "icon": "🎯",
+        "subtitle": "29 ans • Annaba",
+        "meta": {
+          "role": "Opérateur Faux Lingotins"
+        }
+      },
+      {
+        "id": "mule_etudiant_1",
+        "label": "Akram L. (Mule BaridiMob)",
+        "type": "MULE",
+        "layer": 4,
+        "x": 2020,
+        "y": 1200,
+        "icon": "👤",
+        "subtitle": "Étudiant USTHB Alger (15k/mois)",
+        "meta": {
+          "rip": "00799999002148593214"
+        }
+      },
+      {
+        "id": "mule_etudiant_2",
+        "label": "Walid M. (Mule BaridiMob)",
+        "type": "MULE",
+        "layer": 4,
+        "x": 2020,
+        "y": 1290,
+        "icon": "👤",
+        "subtitle": "Étudiant USTO Oran (15k/mois)",
+        "meta": {
+          "rip": "00799999008812450192"
+        }
+      },
+      {
+        "id": "mule_interimaire",
+        "label": "Samir B. (Mule BaridiMob)",
+        "type": "MULE",
+        "layer": 4,
+        "x": 2020,
+        "y": 1380,
+        "icon": "👤",
+        "subtitle": "Intérimaire Blida (15k/mois)",
+        "meta": {
+          "rip": "00799999005541908233"
+        }
+      },
+      {
+        "id": "mule_etudiante_3",
+        "label": "Yasmine D. (Mule BaridiMob)",
+        "type": "MULE",
+        "layer": 4,
+        "x": 2020,
+        "y": 1470,
+        "icon": "👤",
+        "subtitle": "Étudiante Constantine",
+        "meta": {
+          "role": "Compte récepteur Visas"
+        }
+      },
+      {
+        "id": "shell_societe_ouest",
+        "label": "SARL Ouest Pneumatiques (Écran)",
+        "type": "SHELL_COMPANY",
+        "layer": 4,
+        "x": 2020,
+        "y": 1560,
+        "icon": "🏢",
+        "subtitle": "Société Fictive (Registre Faux)",
+        "meta": {
+          "used_by": "Cellule Pneus"
+        }
+      },
+      {
+        "id": "shell_agence_voyage",
+        "label": "Horizon Visas Consulting (Écran)",
+        "type": "SHELL_COMPANY",
+        "layer": 4,
+        "x": 2020,
+        "y": 1650,
+        "icon": "🏢",
+        "subtitle": "Agence Voyage Fictive",
+        "meta": {
+          "used_by": "Cellule Visas"
+        }
+      },
+      {
+        "id": "binance_p2p_account",
+        "label": "Binance P2P #DZ-VIP-99",
+        "type": "CRYPTO_EXCHANGE",
+        "layer": 4,
+        "x": 2020,
+        "y": 1740,
+        "icon": "🔄",
+        "subtitle": "Comptoir Achat USDT Clandestin",
+        "meta": {
+          "volume_monthly": "25 000 USDT"
+        }
+      },
+      {
+        "id": "syndicate_entity_global",
+        "label": "SYNDICAT CANDY WHEELS (33.5M DZD)",
+        "type": "ORGANIZATION",
+        "layer": 4,
+        "x": 2020,
+        "y": 1830,
+        "icon": "🚨",
+        "subtitle": "Réseau Cybercriminalité National",
+        "meta": {
+          "total_damage": 33500000,
+          "status": "DÉMANTELÉ"
+        }
       }
     ],
     "edges": [
       {
-        "source": "vic_karim",
-        "target": "post_fb_98124",
+        "from": "vic_01_karim",
+        "to": "fb_post_pneus_98124",
         "label": "CLICKED_AD"
       },
       {
-        "source": "vic_meriem",
-        "target": "page_fb_pneus",
+        "from": "vic_02_meriem",
+        "to": "fb_page_pneus_promo",
         "label": "CONTACTED_PAGE"
       },
       {
-        "source": "vic_djamel",
-        "target": "apk_autopneus",
-        "label": "DOWNLOADED_APP"
+        "from": "vic_03_djamel",
+        "to": "evid_apk_pneu",
+        "label": "INSTALLED_APK"
       },
       {
-        "source": "post_fb_98124",
-        "target": "phone_scammer_front",
-        "label": "ROUTES_TO_WHATSAPP"
+        "from": "vic_04_salim",
+        "to": "fb_post_visa_44102",
+        "label": "ORDERED_VISA"
       },
       {
-        "source": "operator_amine",
-        "target": "phone_scammer_front",
-        "label": "OPERATES_LINE"
+        "from": "vic_05_amina",
+        "to": "fb_page_tls_appointments",
+        "label": "PAID_SLOT"
       },
       {
-        "source": "page_fb_pneus",
-        "target": "github_dev_leak",
-        "label": "EXPOSED_GIT_ORIGIN"
+        "from": "vic_06_rachid",
+        "to": "fb_post_electro_7712",
+        "label": "ORDERED_PHONE"
       },
       {
-        "source": "apk_autopneus",
-        "target": "dev_sofiane",
-        "label": "SIGNED_BY_KEYSTORE"
+        "from": "vic_07_tahar",
+        "to": "fb_post_tv_7745",
+        "label": "ORDERED_TV"
       },
       {
-        "source": "github_dev_leak",
-        "target": "discord_server_ops",
-        "label": "LEAKED_WEBHOOK"
+        "from": "vic_08_mourad",
+        "to": "fb_post_pneus_98177",
+        "label": "ORDERED_TYRES"
       },
       {
-        "source": "dev_sofiane",
-        "target": "discord_server_ops",
-        "label": "DEPLOYS_TO_DISCORD"
+        "from": "vic_09_fatima",
+        "to": "fb_post_visa_44189",
+        "label": "ORDERED_CONTRACT"
       },
       {
-        "source": "discord_server_ops",
-        "target": "tg_management",
-        "label": "SHARED_INVITE_VIP"
+        "from": "vic_10_omar",
+        "to": "fb_page_gold_algerie",
+        "label": "ORDERED_GOLD"
       },
       {
-        "source": "discord_server_ops",
-        "target": "tg_cell_pneus",
-        "label": "SHARED_INVITE_PNEUS"
+        "from": "vic_01_karim",
+        "to": "proc_pv_alger",
+        "label": "FILED_COMPLAINT"
       },
       {
-        "source": "discord_server_ops",
-        "target": "tg_cell_visas",
-        "label": "SHARED_INVITE_VISAS"
+        "from": "vic_02_meriem",
+        "to": "proc_pv_oran",
+        "label": "FILED_COMPLAINT"
       },
       {
-        "source": "discord_server_ops",
-        "target": "tg_cell_electro",
-        "label": "SHARED_INVITE_ELECTRO"
+        "from": "vic_03_djamel",
+        "to": "proc_pv_blida",
+        "label": "FILED_COMPLAINT"
       },
       {
-        "source": "operator_amine",
-        "target": "tg_cell_pneus",
-        "label": "MEMBER_OF_CELL"
+        "from": "vic_04_salim",
+        "to": "proc_pv_const",
+        "label": "FILED_COMPLAINT"
       },
       {
-        "source": "lt_youcef",
-        "target": "tg_cell_pneus",
-        "label": "MANAGES_CELL"
+        "from": "vic_05_amina",
+        "to": "proc_pv_alger",
+        "label": "FILED_COMPLAINT"
       },
       {
-        "source": "lt_nadia",
-        "target": "tg_cell_visas",
-        "label": "MANAGES_CELL"
+        "from": "vic_06_rachid",
+        "to": "proc_pv_setif",
+        "label": "FILED_COMPLAINT"
       },
       {
-        "source": "lt_farid",
-        "target": "tg_cell_electro",
-        "label": "MANAGES_CELL"
+        "from": "vic_07_tahar",
+        "to": "proc_pv_const",
+        "label": "FILED_COMPLAINT"
       },
       {
-        "source": "lt_youcef",
-        "target": "tg_management",
+        "from": "vic_08_mourad",
+        "to": "proc_pv_oran",
+        "label": "FILED_COMPLAINT"
+      },
+      {
+        "from": "vic_09_fatima",
+        "to": "proc_pv_oran",
+        "label": "FILED_COMPLAINT"
+      },
+      {
+        "from": "vic_10_omar",
+        "to": "proc_pv_setif",
+        "label": "FILED_COMPLAINT"
+      },
+      {
+        "from": "vic_01_karim",
+        "to": "evid_audio_a01",
+        "label": "RECEIVED_VOICE"
+      },
+      {
+        "from": "vic_01_karim",
+        "to": "evid_baridimob_slip",
+        "label": "PRODUCED_RECEIPT"
+      },
+      {
+        "from": "vic_02_meriem",
+        "to": "evid_bon_commande_pdf",
+        "label": "RECEIVED_ORDER_FORM"
+      },
+      {
+        "from": "fb_post_pneus_98124",
+        "to": "fb_page_pneus_promo",
+        "label": "PUBLISHED_BY"
+      },
+      {
+        "from": "fb_post_pneus_98177",
+        "to": "fb_page_michelin_exp",
+        "label": "PUBLISHED_BY"
+      },
+      {
+        "from": "fb_post_visa_44102",
+        "to": "fb_page_visas_express",
+        "label": "PUBLISHED_BY"
+      },
+      {
+        "from": "fb_post_visa_44189",
+        "to": "fb_page_visas_express",
+        "label": "PUBLISHED_BY"
+      },
+      {
+        "from": "fb_post_electro_7712",
+        "to": "fb_page_destock_electro",
+        "label": "PUBLISHED_BY"
+      },
+      {
+        "from": "fb_post_tv_7745",
+        "to": "fb_page_destock_electro",
+        "label": "PUBLISHED_BY"
+      },
+      {
+        "from": "fb_post_pneus_98124",
+        "to": "phone_front_amine",
+        "label": "CALL_TO_ACTION"
+      },
+      {
+        "from": "fb_page_pneus_promo",
+        "to": "phone_front_amine",
+        "label": "CONTACT_PHONE"
+      },
+      {
+        "from": "fb_page_michelin_exp",
+        "to": "phone_front_bilel",
+        "label": "CONTACT_PHONE"
+      },
+      {
+        "from": "fb_page_visas_express",
+        "to": "phone_front_fares",
+        "label": "CONTACT_PHONE"
+      },
+      {
+        "from": "fb_page_tls_appointments",
+        "to": "phone_front_sarah",
+        "label": "CONTACT_PHONE"
+      },
+      {
+        "from": "fb_page_destock_electro",
+        "to": "phone_front_mourad",
+        "label": "CONTACT_PHONE"
+      },
+      {
+        "from": "phone_front_amine",
+        "to": "suspect_op_amine",
+        "label": "USED_BY_OPERATOR"
+      },
+      {
+        "from": "phone_front_bilel",
+        "to": "suspect_op_bilel",
+        "label": "USED_BY_OPERATOR"
+      },
+      {
+        "from": "phone_front_fares",
+        "to": "suspect_op_fares",
+        "label": "USED_BY_OPERATOR"
+      },
+      {
+        "from": "phone_front_sarah",
+        "to": "suspect_op_sarah",
+        "label": "USED_BY_OPERATOR"
+      },
+      {
+        "from": "phone_front_mourad",
+        "to": "suspect_op_mourad",
+        "label": "USED_BY_OPERATOR"
+      },
+      {
+        "from": "phone_front_amine",
+        "to": "bts_oran_senia",
+        "label": "CONNECTED_BTS"
+      },
+      {
+        "from": "phone_front_sarah",
+        "to": "bts_alger_kouba",
+        "label": "CONNECTED_BTS"
+      },
+      {
+        "from": "phone_lt_youcef",
+        "to": "bts_blida_centre",
+        "label": "CONNECTED_BTS"
+      },
+      {
+        "from": "phone_lt_nadia",
+        "to": "bts_const_univ",
+        "label": "CONNECTED_BTS"
+      },
+      {
+        "from": "phone_front_amine",
+        "to": "ig_auto_pieces_pro",
+        "label": "LINKED_INSTAGRAM"
+      },
+      {
+        "from": "phone_front_amine",
+        "to": "ouedkniss_amine_2025",
+        "label": "LINKED_OUEDKNISS"
+      },
+      {
+        "from": "phone_front_fares",
+        "to": "ig_visa_dz_officiel",
+        "label": "LINKED_INSTAGRAM"
+      },
+      {
+        "from": "fb_post_pneus_98124",
+        "to": "domain_pneus_express",
+        "label": "EMBEDS_URL"
+      },
+      {
+        "from": "fb_post_pneus_98177",
+        "to": "domain_destock_auto",
+        "label": "EMBEDS_URL"
+      },
+      {
+        "from": "fb_post_visa_44102",
+        "to": "domain_visa_schengen",
+        "label": "EMBEDS_URL"
+      },
+      {
+        "from": "fb_post_visa_44189",
+        "to": "domain_visa_espana",
+        "label": "EMBEDS_URL"
+      },
+      {
+        "from": "fb_post_electro_7712",
+        "to": "domain_destock_electro",
+        "label": "EMBEDS_URL"
+      },
+      {
+        "from": "fb_post_tv_7745",
+        "to": "domain_gold_express",
+        "label": "EMBEDS_URL"
+      },
+      {
+        "from": "domain_pneus_express",
+        "to": "ip_server_web_1",
+        "label": "HOSTED_ON"
+      },
+      {
+        "from": "domain_destock_auto",
+        "to": "ip_server_web_1",
+        "label": "HOSTED_ON"
+      },
+      {
+        "from": "domain_destock_electro",
+        "to": "ip_server_web_1",
+        "label": "HOSTED_ON"
+      },
+      {
+        "from": "domain_gold_express",
+        "to": "ip_server_web_1",
+        "label": "HOSTED_ON"
+      },
+      {
+        "from": "domain_visa_schengen",
+        "to": "ip_server_web_2",
+        "label": "HOSTED_ON"
+      },
+      {
+        "from": "domain_visa_espana",
+        "to": "ip_server_web_2",
+        "label": "HOSTED_ON"
+      },
+      {
+        "from": "domain_pneus_express",
+        "to": "meta_pixel_tracker",
+        "label": "INJECTS_PIXEL"
+      },
+      {
+        "from": "domain_destock_auto",
+        "to": "meta_pixel_tracker",
+        "label": "INJECTS_PIXEL"
+      },
+      {
+        "from": "domain_destock_electro",
+        "to": "meta_pixel_tracker",
+        "label": "INJECTS_PIXEL"
+      },
+      {
+        "from": "domain_pneus_express",
+        "to": "mongodb_cluster",
+        "label": "LOGS_LEADS_TO"
+      },
+      {
+        "from": "domain_destock_auto",
+        "to": "mongodb_cluster",
+        "label": "LOGS_LEADS_TO"
+      },
+      {
+        "from": "domain_pneus_express",
+        "to": "cdn_apps_server",
+        "label": "HOSTS_DOWNLOAD_ON"
+      },
+      {
+        "from": "domain_visa_schengen",
+        "to": "cdn_apps_server",
+        "label": "HOSTS_DOWNLOAD_ON"
+      },
+      {
+        "from": "cdn_apps_server",
+        "to": "evid_apk_pneu",
+        "label": "DELIVERS_BINARY"
+      },
+      {
+        "from": "cdn_apps_server",
+        "to": "evid_apk_visa",
+        "label": "DELIVERS_BINARY"
+      },
+      {
+        "from": "evid_apk_pneu",
+        "to": "keystore_apk_signature",
+        "label": "SIGNED_BY"
+      },
+      {
+        "from": "evid_apk_visa",
+        "to": "keystore_apk_signature",
+        "label": "SIGNED_BY"
+      },
+      {
+        "from": "keystore_apk_signature",
+        "to": "suspect_dev_sofiane",
+        "label": "BELONGS_TO_DEV"
+      },
+      {
+        "from": "domain_pneus_express",
+        "to": "git_repo_public",
+        "label": "EXPOSED_GIT_DIR"
+      },
+      {
+        "from": "git_repo_public",
+        "to": "git_commit_webhook",
+        "label": "CONTAINED_IN_COMMIT"
+      },
+      {
+        "from": "git_commit_webhook",
+        "to": "suspect_dev_sofiane",
+        "label": "COMMITTED_BY"
+      },
+      {
+        "from": "git_commit_webhook",
+        "to": "discord_guild_c2",
+        "label": "LEAKED_WEBHOOK_TO"
+      },
+      {
+        "from": "discord_guild_c2",
+        "to": "discord_ch_commandes",
+        "label": "HAS_CHANNEL"
+      },
+      {
+        "from": "discord_ch_commandes",
+        "to": "evid_text_d01",
+        "label": "CONTAINS_EVIDENCE"
+      },
+      {
+        "from": "discord_ch_commandes",
+        "to": "suspect_dev_sofiane",
+        "label": "DEV_POSTS_BUILDS"
+      },
+      {
+        "from": "discord_ch_commandes",
+        "to": "suspect_boss_tarek",
+        "label": "BOSS_ORDERS_CLONES"
+      },
+      {
+        "from": "ip_server_c2_api",
+        "to": "bot_telegram_leads",
+        "label": "DISPATCHES_TO_BOT"
+      },
+      {
+        "from": "discord_guild_c2",
+        "to": "tg_group_c2_vip",
+        "label": "SHARED_VIP_INVITE"
+      },
+      {
+        "from": "discord_guild_c2",
+        "to": "tg_group_pneus_ops",
+        "label": "SHARED_PNEU_INVITE"
+      },
+      {
+        "from": "discord_guild_c2",
+        "to": "tg_group_visas_ops",
+        "label": "SHARED_VISA_INVITE"
+      },
+      {
+        "from": "discord_guild_c2",
+        "to": "tg_group_electro_ops",
+        "label": "SHARED_ELECTRO_INVITE"
+      },
+      {
+        "from": "tg_group_c2_vip",
+        "to": "evid_audio_a02",
+        "label": "AUDIO_LEAK_BOSS"
+      },
+      {
+        "from": "tg_group_c2_vip",
+        "to": "evid_audio_a03",
+        "label": "AUDIO_LEAK_NADIA"
+      },
+      {
+        "from": "tg_group_c2_vip",
+        "to": "evid_audio_a04",
+        "label": "AUDIO_LEAK_FARID"
+      },
+      {
+        "from": "tg_group_pneus_ops",
+        "to": "evid_text_t01",
+        "label": "CONTAINS_DIRECTIVE"
+      },
+      {
+        "from": "suspect_op_amine",
+        "to": "evid_audio_a01",
+        "label": "RECORDED_SPEECH"
+      },
+      {
+        "from": "suspect_lt_youcef",
+        "to": "tg_group_pneus_ops",
+        "label": "LEADS_CELL"
+      },
+      {
+        "from": "suspect_lt_nadia",
+        "to": "tg_group_visas_ops",
+        "label": "LEADS_CELL"
+      },
+      {
+        "from": "suspect_lt_farid",
+        "to": "tg_group_electro_ops",
+        "label": "LEADS_CELL"
+      },
+      {
+        "from": "suspect_op_amine",
+        "to": "tg_group_pneus_ops",
+        "label": "OPERATOR_IN_GROUP"
+      },
+      {
+        "from": "suspect_op_bilel",
+        "to": "tg_group_pneus_ops",
+        "label": "OPERATOR_IN_GROUP"
+      },
+      {
+        "from": "suspect_op_fares",
+        "to": "tg_group_visas_ops",
+        "label": "OPERATOR_IN_GROUP"
+      },
+      {
+        "from": "suspect_op_sarah",
+        "to": "tg_group_visas_ops",
+        "label": "OPERATOR_IN_GROUP"
+      },
+      {
+        "from": "suspect_op_mourad",
+        "to": "tg_group_electro_ops",
+        "label": "OPERATOR_IN_GROUP"
+      },
+      {
+        "from": "suspect_op_lyes",
+        "to": "tg_group_electro_ops",
+        "label": "OPERATOR_IN_GROUP"
+      },
+      {
+        "from": "suspect_op_amine",
+        "to": "suspect_lt_youcef",
+        "label": "REPORTS_TO_LT"
+      },
+      {
+        "from": "suspect_op_bilel",
+        "to": "suspect_lt_youcef",
+        "label": "REPORTS_TO_LT"
+      },
+      {
+        "from": "suspect_op_fares",
+        "to": "suspect_lt_nadia",
+        "label": "REPORTS_TO_LT"
+      },
+      {
+        "from": "suspect_op_sarah",
+        "to": "suspect_lt_nadia",
+        "label": "REPORTS_TO_LT"
+      },
+      {
+        "from": "suspect_op_mourad",
+        "to": "suspect_lt_farid",
+        "label": "REPORTS_TO_LT"
+      },
+      {
+        "from": "suspect_op_lyes",
+        "to": "suspect_lt_farid",
+        "label": "REPORTS_TO_LT"
+      },
+      {
+        "from": "suspect_lt_youcef",
+        "to": "suspect_boss_tarek",
         "label": "REPORTS_TO_BOSS"
       },
       {
-        "source": "lt_nadia",
-        "target": "tg_management",
+        "from": "suspect_lt_nadia",
+        "to": "suspect_boss_tarek",
         "label": "REPORTS_TO_BOSS"
       },
       {
-        "source": "lt_farid",
-        "target": "tg_management",
+        "from": "suspect_lt_farid",
+        "to": "suspect_boss_tarek",
         "label": "REPORTS_TO_BOSS"
       },
       {
-        "source": "boss_tarek",
-        "target": "tg_management",
-        "label": "COMMANDS_SYNDICATE"
+        "from": "suspect_dev_sofiane",
+        "to": "suspect_boss_tarek",
+        "label": "CONTRACTED_BY_BOSS"
       },
       {
-        "source": "boss_tarek",
-        "target": "wallet_usdt_boss",
-        "label": "LAUNDERS_FUNDS_TO_CRYPTO"
+        "from": "mule_etudiant_1",
+        "to": "rip_baridimob_mule1",
+        "label": "ACCOUNT_HOLDER"
+      },
+      {
+        "from": "mule_etudiant_2",
+        "to": "rip_baridimob_mule2",
+        "label": "ACCOUNT_HOLDER"
+      },
+      {
+        "from": "mule_interimaire",
+        "to": "rip_baridimob_mule3",
+        "label": "ACCOUNT_HOLDER"
+      },
+      {
+        "from": "mule_etudiante_3",
+        "to": "rip_baridimob_mule1",
+        "label": "RENTED_CARD"
+      },
+      {
+        "from": "suspect_cashier_kamel",
+        "to": "mule_etudiant_1",
+        "label": "RENTS_CARD_FOR_15K"
+      },
+      {
+        "from": "suspect_cashier_kamel",
+        "to": "mule_etudiant_2",
+        "label": "RENTS_CARD_FOR_15K"
+      },
+      {
+        "from": "suspect_cashier_kamel",
+        "to": "mule_interimaire",
+        "label": "RENTS_CARD_FOR_15K"
+      },
+      {
+        "from": "suspect_cashier_kamel",
+        "to": "mule_etudiante_3",
+        "label": "RENTS_CARD_FOR_15K"
+      },
+      {
+        "from": "suspect_cashier_kamel",
+        "to": "rip_baridimob_mule1",
+        "label": "DRAWS_CASH_FROM_ATM"
+      },
+      {
+        "from": "suspect_cashier_kamel",
+        "to": "rip_baridimob_mule2",
+        "label": "DRAWS_CASH_FROM_ATM"
+      },
+      {
+        "from": "suspect_cashier_kamel",
+        "to": "rip_baridimob_mule3",
+        "label": "DRAWS_CASH_FROM_ATM"
+      },
+      {
+        "from": "suspect_cashier_kamel",
+        "to": "binance_p2p_account",
+        "label": "DELIVERS_CASH_FOR_USDT"
+      },
+      {
+        "from": "binance_p2p_account",
+        "to": "crypto_wallet_trc20",
+        "label": "TRANSFERS_USDT_TRC20"
+      },
+      {
+        "from": "suspect_boss_tarek",
+        "to": "crypto_wallet_trc20",
+        "label": "CONTROLS_PRIVATE_KEY"
+      },
+      {
+        "from": "suspect_boss_tarek",
+        "to": "binance_p2p_account",
+        "label": "MANAGES_P2P_MERCHANT"
+      },
+      {
+        "from": "suspect_lt_youcef",
+        "to": "shell_societe_ouest",
+        "label": "OPERATES_FAKE_CORP"
+      },
+      {
+        "from": "suspect_lt_nadia",
+        "to": "shell_agence_voyage",
+        "label": "OPERATES_FAKE_AGENCY"
+      },
+      {
+        "from": "suspect_boss_tarek",
+        "to": "syndicate_entity_global",
+        "label": "HEADS_CRIME_SYNDICATE"
+      },
+      {
+        "from": "suspect_lt_youcef",
+        "to": "syndicate_entity_global",
+        "label": "BRANCH_HEAD_PNEUS"
+      },
+      {
+        "from": "suspect_lt_nadia",
+        "to": "syndicate_entity_global",
+        "label": "BRANCH_HEAD_VISAS"
+      },
+      {
+        "from": "suspect_lt_farid",
+        "to": "syndicate_entity_global",
+        "label": "BRANCH_HEAD_ELECTRO"
       }
     ]
   }

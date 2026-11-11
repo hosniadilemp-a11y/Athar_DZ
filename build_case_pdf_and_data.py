@@ -674,8 +674,55 @@ HTML_REPORT = """<!DOCTYPE html>
     </tbody>
   </table>
 
-  <!-- SECTION 8 & 9 -->
-  <h2 class="sec-heading"><span class="sec-num">VIII</span> Réquisitions Judiciaires &amp; Mandats Recommandés</h2>
+  <!-- SECTION 8 -->
+  <h2 class="sec-heading"><span class="sec-num">VIII</span> Matrice d'Analyse Topologique du Graphe Forensique des 100 Nœuds</h2>
+  <p>
+    La modélisation formelle de l'ensemble de l'affaire dans la plateforme <strong>Athar DZ</strong> consolide un graphe orienté de <strong>100 nœuds d'entités</strong> reliés par <strong>129 relations de preuve vérifiées</strong> :
+  </p>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Calque de Travail Forensique</th>
+        <th>Nombre de Nœuds</th>
+        <th>Entités Représentées</th>
+        <th>Valeur Probante &amp; Statut Légal</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Calque 1 : Preuves &amp; Victimes</strong></td>
+        <td><strong>25 Nœuds</strong></td>
+        <td>10 Victimes (Karim, Meriem, Djamel...), 5 PVs de plainte, 4 Vocaux scellés (A-01 à A-04), APKs binaire, reçus BaridiMob.</td>
+        <td><span class="badge badge-success">Scellé RFC 3161 TSA</span> • Force probante pénale pleine</td>
+      </tr>
+      <tr>
+        <td><strong>Calque 2 : Découvertes OSINT Brutes</strong></td>
+        <td><strong>30 Nœuds</strong></td>
+        <td>10 Pages et comptes sociaux (FB, IG, Ouedkniss), 6 Annonces/Posts sponsorisés, 8 Téléphones E.164, 6 Salons Discord &amp; TG.</td>
+        <td><span class="badge badge-info">OSINT Validé</span> • Rapprochements multi-plateformes</td>
+      </tr>
+      <tr>
+        <td><strong>Calque 3 : Infrastructure &amp; Code</strong></td>
+        <td><strong>25 Nœuds</strong></td>
+        <td>8 Domaines web phishing, 5 Serveurs &amp; IPs C2, 4 Relais BTS Cell-ID, 4 Repos/Keystores Git, 4 Comptes BaridiMob &amp; Crypto.</td>
+        <td><span class="badge badge-purple">Infra Technique</span> • Audit binaire et logs réseau</td>
+      </tr>
+      <tr>
+        <td><strong>Calque 4 : Réseau Criminel</strong></td>
+        <td><strong>20 Nœuds</strong></td>
+        <td>Le Boss (Tarek H.), Développeur (Sofiane K.), Caissier (Kamel V.), 3 Lieutenants (Youcef, Nadia, Farid), 6 Opérateurs, 4 Mules, 2 Sociétés écrans, 1 Compte Binance P2P.</td>
+        <td><span class="badge badge-danger">Cible Judiciaire</span> • Mandats d'arrêt et de blocage requis</td>
+      </tr>
+      <tr style="background:#f8fafc;font-weight:700;">
+        <td>TOTAL CONSOLIDÉ DU MODÈLE</td>
+        <td><strong>100 Nœuds</strong></td>
+        <td colspan="2">129 Arêtes orientées • Modularité Louvain Q = 0.74 (3 cellules étanches) • Centralité d'intermédiarité pointant sur le Développeur</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 9 -->
+  <h2 class="sec-heading"><span class="sec-num">IX</span> Réquisitions Judiciaires &amp; Mandats Recommandés</h2>
   <ol style="margin:4px 0 10px 18px;padding:0;font-size:8.5pt;">
     <li><strong>Mandats d'Arrêt et de Dépôt :</strong> À l'encontre de Tarek H. (Le Boss), Sofiane K. (Développeur), Youcef R., Nadia M., Farid T. (Lieutenants) et Amine B. (Opérateur).</li>
     <li><strong>Réquisitions Bancaires et Postales (Algérie Poste) :</strong> Blocage immédiat de 18 comptes RIP/CCP BaridiMob identifiés au registre des mules financières.</li>
