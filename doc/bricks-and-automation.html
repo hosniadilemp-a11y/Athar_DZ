@@ -82,104 +82,176 @@
       </div>
     </section>
 
-    <!-- 2. Interactive Tool Explorer Menu (Master-Detail) -->
+    <!-- 2. Interactive Tool Explorer Menu (Master-Detail with 3 Dedicated Tabs) -->
     <section>
-      <h2 class="section-title">2. Interactive Investigation Tools Menu (Click Any Category or Tool)</h2>
+      <h2 class="section-title">2. Catalogue des Outils d'Investigation &amp; d'Analyse (3 Onglets Spécialisés)</h2>
       <p class="section-subtitle">
-        Browse the categorized catalog of 76 forensic tools below. Select any category in the left column, pick a tool in the middle column, and read its detailed extraction flow, real case example, and legal proof standard in the right panel.
+        Explorez l'arsenal d'investigation réparti en 3 disciplines complémentaires : les <strong>Outils OSINT &amp; Web</strong>, les <strong>Outils de Police Judiciaire &amp; DFIR (Informatique Légale)</strong>, et l'<strong>Analyse SOTA de Réseaux Sociaux (SNA / SNS)</strong>.
       </p>
 
-      <!-- Prerequisite Breakdown Bar -->
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1.15rem;background:var(--bg-card);border:1px solid var(--border-color);padding:0.75rem 1rem;border-radius:8px;">
-        <div style="font-size:0.84rem;color:var(--text-primary);font-weight:600;">
-          📊 <strong>76 Outils d'Investigation Référencés</strong> &bull; Inventaire Complet &amp; Prérequis :
+      <!-- 3 Main Tabs Navigation -->
+      <div class="main-tabs-nav" role="tablist">
+        <button id="tab-btn-osint" class="main-tab-btn active" onclick="switchToolsMainTab('osint')">
+          <span>🧰</span> Onglet 1 : Arsenal OSINT &amp; Web (76 Outils par Catégorie)
+        </button>
+        <button id="tab-btn-forensics" class="main-tab-btn" onclick="switchToolsMainTab('forensics')">
+          <span>🚔</span> Onglet 2 : Police Judiciaire &amp; DFIR (12 Outils Scientifiques SOTA)
+        </button>
+        <button id="tab-btn-sna" class="main-tab-btn" onclick="switchToolsMainTab('sna')">
+          <span>🕸️</span> Onglet 3 : Analyse de Réseaux Sociaux SOTA (14 Outils SNA / SNS &amp; Graphes)
+        </button>
+      </div>
+
+      <!-- ================= TAB 1 : OSINT & WEB ARSENAL ================= -->
+      <div id="tab-panel-osint" class="tab-content-panel active">
+        <!-- Prerequisite Breakdown Bar -->
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1.15rem;background:var(--bg-card);border:1px solid var(--border-color);padding:0.75rem 1rem;border-radius:8px;">
+          <div style="font-size:0.84rem;color:var(--text-primary);font-weight:600;">
+            📊 <strong>76 Outils d'Investigation Référencés</strong> &bull; Inventaire Complet &amp; Prérequis :
+          </div>
+          <div style="display:flex;gap:0.45rem;flex-wrap:wrap;">
+            <button class="btn btn-emerald" style="font-size:0.74rem;padding:0.3rem 0.65rem;" onclick="filterToolsByPrereq('DIRECT')">🟢 Direct &amp; Gratuit (58)</button>
+            <button class="btn" style="font-size:0.74rem;padding:0.3rem 0.65rem;" onclick="filterToolsByPrereq('FREE_API')">🟡 Clé API Gratuite (11)</button>
+            <button class="btn" style="font-size:0.74rem;padding:0.3rem 0.65rem;" onclick="filterToolsByPrereq('ACCOUNT')">🟠 Compte Dédié (6)</button>
+            <button class="btn" style="font-size:0.74rem;padding:0.3rem 0.65rem;" onclick="filterToolsByPrereq('PAID')">🔴 Payant (1)</button>
+            <button class="btn" style="font-size:0.74rem;padding:0.3rem 0.65rem;" onclick="filterToolsByPrereq('ALL')">🔄 Tous (76)</button>
+          </div>
         </div>
-        <div style="display:flex;gap:0.45rem;flex-wrap:wrap;">
-          <button class="btn btn-emerald" style="font-size:0.74rem;padding:0.3rem 0.65rem;" onclick="filterToolsByPrereq('DIRECT')">🟢 Direct &amp; Gratuit (58)</button>
-          <button class="btn" style="font-size:0.74rem;padding:0.3rem 0.65rem;" onclick="filterToolsByPrereq('FREE_API')">🟡 Clé API Gratuite (11)</button>
-          <button class="btn" style="font-size:0.74rem;padding:0.3rem 0.65rem;" onclick="filterToolsByPrereq('ACCOUNT')">🟠 Compte Dédié (6)</button>
-          <button class="btn" style="font-size:0.74rem;padding:0.3rem 0.65rem;" onclick="filterToolsByPrereq('PAID')">🔴 Payant (1)</button>
-          <button class="btn" style="font-size:0.74rem;padding:0.3rem 0.65rem;" onclick="filterToolsByPrereq('ALL')">🔄 Tous (76)</button>
+
+        <div id="interactive-tool-explorer" class="tool-explorer">
+          <!-- Column 1: Category Menu -->
+          <div class="tool-cat-menu">
+            <div class="dock-heading" style="padding:0 0.4rem;">Catégories de Boîtes à Outils</div>
+            <button class="tool-cat-btn active" data-tool-cat="socmint" onclick="selectToolCategory('socmint')">
+              <span>📢</span>
+              <div>
+                <div>Social Media &amp; Ads</div>
+                <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Facebook, Telegram, Marketplaces</div>
+              </div>
+            </button>
+            <button class="tool-cat-btn" data-tool-cat="phone_id" onclick="selectToolCategory('phone_id')">
+              <span>📱</span>
+              <div>
+                <div>Phone, Email &amp; ID</div>
+                <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Carrier, 100+ Apps, Breaches</div>
+              </div>
+            </button>
+            <button class="tool-cat-btn" data-tool-cat="web_infra" onclick="selectToolCategory('web_infra')">
+              <span>🌐</span>
+              <div>
+                <div>Websites &amp; Servers</div>
+                <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Hidden Codes, Twin Scam Sites</div>
+              </div>
+            </button>
+            <button class="tool-cat-btn" data-tool-cat="media_geoint" onclick="selectToolCategory('media_geoint')">
+              <span>🖼️</span>
+              <div>
+                <div>Photos, Faces &amp; Audio</div>
+                <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Tampering, Face Matches, Voice Darija</div>
+              </div>
+            </button>
+            <button class="tool-cat-btn" data-tool-cat="police_forensics" onclick="selectToolCategory('police_forensics')">
+              <span>🚔</span>
+              <div>
+                <div>Police, CDR &amp; Vehicles</div>
+                <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Cell Towers, Alibis, License Plates</div>
+              </div>
+            </button>
+            <button class="tool-cat-btn" data-tool-cat="finance_crypto" onclick="selectToolCategory('finance_crypto')">
+              <span>💳</span>
+              <div>
+                <div>Bank, CCP &amp; Crypto</div>
+                <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">BaridiMob, CCP, USDT Wallets</div>
+              </div>
+            </button>
+            <button class="tool-cat-btn" data-tool-cat="sna" onclick="selectToolCategory('sna')">
+              <span>🕸️</span>
+              <div>
+                <div>Social Network Analysis</div>
+                <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">PageRank, Louvain, Bridges, Centrality</div>
+              </div>
+            </button>
+            <button class="tool-cat-btn" data-tool-cat="github_osint" onclick="selectToolCategory('github_osint')">
+              <span>📦</span>
+              <div>
+                <div>Modern GitHub Tools</div>
+                <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Bellingcat, Maigret, GHunt, InsightFace</div>
+              </div>
+            </button>
+            <button class="tool-cat-btn" data-tool-cat="all" onclick="selectToolCategory('all')">
+              <span>🧰</span>
+              <div>
+                <div>Voir les 76 Outils</div>
+                <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Suite complète d'investigation</div>
+              </div>
+            </button>
+          </div>
+
+          <!-- Column 2: Tools in Category -->
+          <div id="tool-explorer-list" class="tool-list-pane">
+            <!-- Populated by JavaScript -->
+          </div>
+
+          <!-- Column 3: Tool Detail & Extraction Flow -->
+          <div id="tool-explorer-detail" class="tool-detail-pane">
+            <!-- Populated by JavaScript -->
+          </div>
         </div>
       </div>
 
-      <div id="interactive-tool-explorer" class="tool-explorer">
-        <!-- Column 1: Category Menu -->
-        <div class="tool-cat-menu">
-          <div class="dock-heading" style="padding:0 0.4rem;">Toolbox Categories</div>
-          <button class="tool-cat-btn active" data-tool-cat="socmint" onclick="selectToolCategory('socmint')">
-            <span>📢</span>
-            <div>
-              <div>Social Media &amp; Ads</div>
-              <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Facebook, Telegram, Marketplaces</div>
-            </div>
-          </button>
-          <button class="tool-cat-btn" data-tool-cat="phone_id" onclick="selectToolCategory('phone_id')">
-            <span>📱</span>
-            <div>
-              <div>Phone, Email &amp; ID</div>
-              <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Carrier, 100+ Apps, Breaches</div>
-            </div>
-          </button>
-          <button class="tool-cat-btn" data-tool-cat="web_infra" onclick="selectToolCategory('web_infra')">
-            <span>🌐</span>
-            <div>
-              <div>Websites &amp; Servers</div>
-              <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Hidden Codes, Twin Scam Sites</div>
-            </div>
-          </button>
-          <button class="tool-cat-btn" data-tool-cat="media_geoint" onclick="selectToolCategory('media_geoint')">
-            <span>🖼️</span>
-            <div>
-              <div>Photos, Faces &amp; Audio</div>
-              <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Tampering, Face Matches, Voice Darija</div>
-            </div>
-          </button>
-          <button class="tool-cat-btn" data-tool-cat="police_forensics" onclick="selectToolCategory('police_forensics')">
-            <span>🚔</span>
-            <div>
-              <div>Police, CDR &amp; Vehicles</div>
-              <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Cell Towers, Alibis, License Plates</div>
-            </div>
-          </button>
-          <button class="tool-cat-btn" data-tool-cat="finance_crypto" onclick="selectToolCategory('finance_crypto')">
-            <span>💳</span>
-            <div>
-              <div>Bank, CCP &amp; Crypto</div>
-              <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">BaridiMob, CCP, USDT Wallets</div>
-            </div>
-          </button>
-          <button class="tool-cat-btn" data-tool-cat="sna" onclick="selectToolCategory('sna')">
-            <span>🕸️</span>
-            <div>
-              <div>Social Network Analysis</div>
-              <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">PageRank, Louvain, Bridges, Centrality</div>
-            </div>
-          </button>
-          <button class="tool-cat-btn" data-tool-cat="github_osint" onclick="selectToolCategory('github_osint')">
-            <span>📦</span>
-            <div>
-              <div>Modern GitHub Tools</div>
-              <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Bellingcat, Maigret, GHunt, InsightFace</div>
-            </div>
-          </button>
-          <button class="tool-cat-btn" data-tool-cat="all" onclick="selectToolCategory('all')">
-            <span>🧰</span>
-            <div>
-              <div>View All 76 Tools</div>
-              <div style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">Complete search tool suite</div>
-            </div>
-          </button>
+      <!-- ================= TAB 2 : JUDICIAL POLICE & DFIR TOOLS ================= -->
+      <div id="tab-panel-forensics" class="tab-content-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem;background:var(--bg-card);border:1px solid var(--border-color);padding:0.75rem 1rem;border-radius:8px;">
+          <div>
+            <h3 style="color:#f8fafc;font-size:1.05rem;margin:0 0 0.2rem;">🚔 Arsenal de Police Judiciaire &amp; Informatique Légale (DFIR)</h3>
+            <p style="font-size:0.8rem;color:var(--text-secondary);margin:0;">12 outils de référence pour l'analyse des supports saisis (disques, mémoire vive, métadonnées, images et réseau) conformes ISO 27037.</p>
+          </div>
+          <input type="text" id="forensics-search-input" placeholder="🔍 Filtrer les outils forensics..." oninput="renderForensicToolsTable()" style="background:#090d16;border:1px solid var(--border-color);color:#fff;padding:0.4rem 0.75rem;border-radius:6px;font-size:0.8rem;min-width:240px;" />
         </div>
 
-        <!-- Column 2: Tools in Category -->
-        <div id="tool-explorer-list" class="tool-list-pane">
-          <!-- Populated by JavaScript -->
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="min-width:220px;">Outil Forensique &amp; Rôle</th>
+                <th style="min-width:200px;">Dépôt GitHub &amp; Ressources Requises</th>
+                <th style="min-width:240px;">Entrées (Inputs) &amp; Sorties (Outputs)</th>
+                <th style="min-width:180px;">Destination de Stockage</th>
+                <th style="width:110px;text-align:center;">Priorité</th>
+              </tr>
+            </thead>
+            <tbody id="forensics-tbody">
+              <!-- Dynamically populated by renderForensicToolsTable() -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ================= TAB 3 : SOTA SOCIAL NETWORK ANALYSIS (SNA / SNS) ================= -->
+      <div id="tab-panel-sna" class="tab-content-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem;background:var(--bg-card);border:1px solid var(--border-color);padding:0.75rem 1rem;border-radius:8px;">
+          <div>
+            <h3 style="color:#f8fafc;font-size:1.05rem;margin:0 0 0.2rem;">🕸️ Analyse de Réseaux Sociaux SOTA (Social Network Analysis / SNS)</h3>
+            <p style="font-size:0.8rem;color:var(--text-secondary);margin:0;">14 algorithmes et outils de pointe pour démasquer les bandes organisées, calculer les centralités d'influence et débusquer les mules financières.</p>
+          </div>
+          <input type="text" id="sna-search-input" placeholder="🔍 Filtrer les algorithmes SNA..." oninput="renderSnaToolsTable()" style="background:#090d16;border:1px solid var(--border-color);color:#fff;padding:0.4rem 0.75rem;border-radius:6px;font-size:0.8rem;min-width:240px;" />
         </div>
 
-        <!-- Column 3: Tool Detail & Extraction Flow -->
-        <div id="tool-explorer-detail" class="tool-detail-pane">
-          <!-- Populated by JavaScript -->
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="min-width:220px;">Algorithme / Outil SOTA</th>
+                <th style="min-width:200px;">Dépôt GitHub &amp; Ressources Requises</th>
+                <th style="min-width:240px;">Entrées (Inputs) &amp; Sorties (Outputs)</th>
+                <th style="min-width:180px;">Destination de Stockage</th>
+                <th style="width:110px;text-align:center;">Priorité</th>
+              </tr>
+            </thead>
+            <tbody id="sna-tbody">
+              <!-- Dynamically populated by renderSnaToolsTable() -->
+            </tbody>
+          </table>
         </div>
       </div>
     </section>

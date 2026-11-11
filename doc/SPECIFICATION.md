@@ -141,6 +141,108 @@ To penetrate mobile-only walled gardens (WhatsApp Business, Telegram, Truecaller
 
 ---
 
+### 3.7 The 14 Investigation Element Types & Polyglot Database Storage Matrix
+
+Every piece of evidence collected by investigators or produced by tools is typed according to an atomic 14-element ontology and mapped to specialized storage engines:
+
+| Element Type | Normalized Schema | Forensic Utility | Primary Database | Secondary Projection | Serialization Format |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **`PERSON`** | Full Name, Alias, NIN ID, DOB | Central suspect, victim, witness, or money mule. | **Neo4j 5.x** (Node) | **PostgreSQL 16** (`persons`) | Bolt v5 / JSON relational |
+| **`PHONE_NUMBER`** | E.164 (`+213555019283`), MCC-MNC | Target phone line, carrier footprint, 2FA receptor. | **Neo4j 5.x** (Node) | **Redis 7** (Rate-limit) / **Postgres** | Bolt v5 / B-Tree Unique Index |
+| **`SOCIAL_ACCOUNT`** | Numeric UID, Handle, Platform | Fraudulent seller account or infiltration target. | **Neo4j 5.x** (Node) | **MongoDB 7.x** (Profile BSON) | Bolt v5 / Snappy BSON |
+| **`SOCIAL_POST`** | Canonical URL, Post UID, Date | Scam listing, sponsored ad, fraudulent offer. | **Neo4j 5.x** (Node) | **MinIO S3** (WARC/PNG) / **MongoDB** | S3 Multipart / BSON DOM tree |
+| **`EMAIL_ADDRESS`** | RFC 5322 Lowercase, Domain MX | Recovery email, registrar contact, compromised PII. | **Neo4j 5.x** (Node) | **PostgreSQL 16** (`breaches`) | Bolt v5 / Relational Index |
+| **`WEB_DOMAIN`** | FQDN, Normalized URL, IP, JARM | Scam boutique, phishing site, C2 server. | **Neo4j 5.x** (Node) | **MongoDB 7.x** (DOM) / **MinIO** | Bolt v5 / BSON Wire Protocol |
+| **`INFRASTRUCTURE_ID`** | Meta Pixel, GA4, MongoDB ObjectId | Shared hidden fingerprint linking twin scam shops. | **Neo4j 5.x** (Node) | **MongoDB 7.x** (Index) | Bolt v5 / BSON Index |
+| **`BANK_ACCOUNT`** | Algérie Poste RIP (20 digits), CCP | Money transfer destination for extorted funds. | **Neo4j 5.x** (Node) | **PostgreSQL 16** (`bank_tx`) | Bolt v5 / Relational Ledger |
+| **`CRYPTO_WALLET`** | Public Address (BTC, ETH, TRC20) | Capital flight, USDT mule laundering. | **Neo4j 5.x** (Node) | **PostgreSQL 16** (`crypto_tx`) | Bolt v5 / Bipartite Edge Graph |
+| **`VEHICLE`** | Algerian Plate (`04829-116-16`), VIN | Delivery vehicle or getaway car on CCTV. | **Neo4j 5.x** (Node) | **PostgreSQL 16** (`vehicles`) | Bolt v5 / Relational Map |
+| **`AUDIO_RECORDING`** | OPUS/WAV binary, Duration, Darija | WhatsApp voice notes negotiating scam payoffs. | **MinIO S3** (WORM Audio) | **Qdrant** (192-d voice) / **Neo4j** | S3 Object Lock / gRPC Vectors |
+| **`IMAGE_ARTIFACT`** | JPEG/PNG binary, SHA-256, EXIF | Avatar photo, forged receipt, warehouse photo. | **MinIO S3** (WORM Media) | **Qdrant** (512-d ArcFace) / **Neo4j** | S3 Object Lock / HNSW Cosine |
+| **`TELECOM_CDR`** | Line, BTS Tower ID, Azimuth, Time | Carrier call detail records for alibi verification. | **TimescaleDB** (Hyper-table) | **Neo4j** (Co-movement edges) | SQL Hypertables / PostGIS |
+| **`LEGAL_DOCUMENT`** | PV Number, TSA Seal, Merkle Root | Final prosecution package for magistrate. | **MinIO S3** (PDF/A-3b WORM) | **PostgreSQL 16** (Audit Merkle) | S3 Object Lock / Merkle Proof |
+
+---
+
+### 3.8 Graph Database Attributes & Universal Metamodel Generalization (GFPG)
+
+#### Can We Generalize the Model?
+**Yes, completely.** Through the **Generalized Forensic Property Graph (GFPG)** pattern, Athar DZ decouples schema evolution from database migrations:
+1. **Universal Core Attributes**: Every node inherits from `InvestigationEntity`:
+   - `uuid: UUIDv4` (Immutable primary key)
+   - `canonical_value: String` (Normalized unique indexed value, e.g., E.164 phone or lowercase email)
+   - `entity_type: Enum` (One of the 14 types)
+   - `layer: Enum` (1: VERIFIED, 2: OSINT_RAW, 3: INFRA, 4: HYPOTHESIS)
+   - `confidence_score: Float` (0.0 to 1.0)
+   - `source_tool: String` (Originating brick)
+   - `source_artifact_sha256: Hash` (Cryptographic proof seal in MinIO S3)
+   - `case_ids: List[String]` (Cross-case linkage for syndicate discovery)
+   - `first_seen_at / last_seen_at: Timestamps`
+   - `status: Enum` (`ACTIVE`, `ARCHIVED`, `DISCARDED`)
+2. **Universal Relationship Attributes**: Every relationship inherits from `InvestigationRelationship`:
+   - `uuid: UUIDv4`
+   - `type: Enum` (`USES_PHONE`, `TRANSFERS_FUNDS`, `REGISTERED_ON`, `COMMUNICATES_WITH`, `CO_LOCATED_WITH`, `SUSPECTED_ALIAS_OF`)
+   - `weight: Float` (Monetary amount in DZD, interaction count, or ArcFace similarity score)
+   - `confidence: Float` (0.0 to 1.0)
+   - `valid_from / valid_to: Timestamps`
+   - `evidence_warc_ref: String` (Proof artifact URI)
+3. **Zero-Migration Extensibility**: Adding novel crime clues (e.g. `Drone_Telemetry` or `Smart_Contract_Address`) requires only a new `brick.yaml` manifest. Neo4j dynamically indexes new property keys without altering existing table structures.
+
+---
+
+## 4. Standardized OSINT, Forensic & Social Network Analysis Specification
+
+Every tool in `bricks/<domain>/<brick_name>/` consists of:
+1. `brick.yaml`: Declarative capability manifest (`input_entities`, `output_entities`, `storage_destination`, `resources`, `case_profiles`, `default_policy`, `opsec_tier`).
+2. `Dockerfile`: Lightweight rootless container encapsulating the tool.
+3. `runner.py` / `entrypoint`: Standardized JSON I/O envelope.
+
+### 4.1 Deterministic Brick Scoring Formula (No-LLM Required)
+When an investigator selects a clue $e$ of type $T(e)$ in a case with profile $C$:
+$$\text{Score}(b, e, C) = \mathbb{I}\big(T(e) \in \text{Inputs}(b)\big) \times \Big( w_{\text{case}}(b, C) \cdot \text{Conf}(e) \cdot \text{Gain}(b) - \lambda_{\text{opsec}} \cdot \text{Risk}(b) \Big)$$
+
+---
+
+### 4.2 Classic Judicial Police & Digital Forensics Arsenal (DFIR) - 12 SOTA Tools
+
+| Forensic Tool | Scientific Discipline | GitHub Repository | Required Hardware | Input Format | Output Format | Polyglot Storage | Priority |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Autopsy / TSK** | Disk & Filesystem Forensics | `sleuthkit/autopsy` | 4 Cores, 16 GB RAM | `.dd`, `.raw`, `.E01`, `.vmdk` | Restored deleted files, MFT, Web history | **MinIO S3** (WORM) & **Neo4j** | **P0 (Vital)** |
+| **Volatility 3** | Volatile RAM Forensics | `volatilityfoundation/volatility3` | 4 Cores, 8-16 GB RAM | `.raw`, `.dmp`, `.vmem` | Hidden processes, active sockets, LSA secrets | **PostgreSQL 16** & **Neo4j** | **P0 (Vital)** |
+| **Plaso (log2timeline)** | Unified Super-Timeline | `log2timeline/plaso` | 4-8 Cores, 16 GB RAM | `.evtx`, syslog, MFT, prefetch | L2T CSV microsecond super-timeline | **TimescaleDB** & **MinIO S3** | **P1 (High)** |
+| **Wireshark / Zeek** | Network Packet Inspection | `wireshark/wireshark` | 2-4 Cores, 8 GB RAM | `.pcap`, `.pcapng` | Reassembled TCP streams, DNS, TLS certs | **MongoDB 7.x** & **MinIO S3** | **P1 (High)** |
+| **Bulk_Extractor** | Raw Disk Feature Extraction | `simsong/bulk_extractor` | 4 Cores, 4 GB RAM | Raw binary, unallocated space | Histograms of emails, URLs, CC, phones | **Neo4j 5.x** & **PostgreSQL 16** | **P1 (High)** |
+| **ExifTool Pro** | Media Metadata Extraction | `exiftool/exiftool` | 0.2 CPU, 64 MB RAM | JPEG, PNG, MP4, MOV, PDF | GPS Lat/Lon, camera serial, edit software | **Neo4j 5.x**, **MapLibre**, **MinIO** | **P0 (Vital)** |
+| **Sherloq** | Image Forgery Detection | `GuidoBartoli/sherloq` | 1-2 Cores, 4 GB RAM | Altered receipts, fake IDs | Error Level Analysis (ELA), clone masks | **MinIO S3** & **PostgreSQL 16** | **P1 (High)** |
+| **PhotoDNA / Hashdb** | Contraband Hash Matching | `threatstream/hashdb` | 2 Cores, 4 GB RAM | Suspect images and binaries | Match certificates against Interpol/NSRL | **Qdrant** & **Redis 7 Stack** | **P0 (Vital)** |
+| **Guymager / FTK** | Bit-Stream Physical Imaging | `dewim/guymager` | 2 Cores, 4 GB RAM | Hard drives, USB, SD, SIM | Certified `.E01` bit-stream copy with SHA-256 | **MinIO S3 WORM** (10-yr retention) | **P0 (Vital)** |
+| **TrOCR & Tesseract** | Handwritten Complaint OCR | `microsoft/unilm/trocr` | 2 Cores / 1 GPU, 4 GB RAM | Scanned paper complaints, receipts | UTF-8 text, extracted DZD sums, BaridiMob RIPs | **MongoDB 7.x** & **Neo4j 5.x** | **P1 (High)** |
+| **YOLOv8-ALPR DZ** | Algerian Plate Recognition | `JaidedAI/EasyOCR` | 1 GPU CUDA, 4 GB RAM | CCTV video stills, warehouse photos | Plate string (`04829-116-16`), Wilaya code | **Neo4j 5.x** & **MapLibre GL** | **P1 (High)** |
+| **Lynis & YASAT** | Server Compromise Audit | `CISOfy/lynis` | 1 Core, 512 MB RAM | Seized Linux web servers | IoC backdoors, hidden cron jobs, rootkits | **MongoDB 7.x** & **PostgreSQL 16** | **P2 (Medium)** |
+
+---
+
+### 4.3 State-of-the-Art Social Network Analysis (SNA / SNS) & Graph Algorithms - 14 SOTA Tools
+
+| SNA / SNS Tool | Algorithmic Paradigm | Reference / Repository | Required Hardware | Input Data | Extracted Output | Storage Engine | Priority |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Graphistry** | GPU Graph Visualization | `graphistry/pygraphistry` | NVIDIA GPU (8 GB+ VRAM) | 10M+ transaction/call edges | 60 FPS WebGL graph, visual cliques | **WebGL Client** & **Neo4j 5.x** | **P0 (Vital)** |
+| **Gephi Toolkit** | ForceAtlas2 & Centralities | `gephi/gephi-toolkit` | 2-4 Cores, 8 GB RAM (JVM) | Adjacency matrices, GraphML | Modularity, Betweenness, network diameter | **Neo4j 5.x** & **Redis 7** | **P1 (High)** |
+| **NetworkX / igraph** | Forensic Graph Theory | `networkx/networkx` | 2 Cores, 4 GB RAM | Phone call graphs, BaridiMob RIP hops | Shortest path, articulation points, k-core | **Neo4j 5.x** & **PostgreSQL 16** | **P0 (Vital)** |
+| **Stanford SNAP** | Extreme-Scale Graph Mining | `snap-stanford/snap` | 8 Cores, 32 GB RAM | Nationwide CDR and banking logs | Link prediction probabilities, structural gaps | **PostgreSQL 16** & **Neo4j 5.x** | **P1 (High)** |
+| **SocialMapper** | Cross-Platform Face Mapping | `SpiderLabs/social_mapper` | 2 Cores, 4 GB RAM | Suspect name and seed photo | Profiles on FB, Instagram, LinkedIn, VK | **Neo4j 5.x**, **Qdrant**, **MinIO** | **P0 (Vital)** |
+| **Maigret** | 3,000+ Account Enumerator | `soxoj/maigret` | 1-2 Cores, 2 GB RAM | Handle / username | Account URLs, bio extracts, avatar photos | **MongoDB 7.x** & **Neo4j 5.x** | **P0 (Vital)** |
+| **Toutatis** | Instagram ID Extractor | `megadose/toutatis` | 0.5 Core, 256 MB RAM | Instagram username | Obfuscated recovery phone & email | **Neo4j 5.x** (Candidate link) | **P0 (Vital)** |
+| **Telethon / TG-Tracker** | Closed Group Infiltrator | `LonamiWebs/Telethon` | 1 Core, 1 GB RAM | Closed Telegram channel link | Full member roster, numeric IDs, chat logs | **MongoDB 7.x**, **MinIO**, **Neo4j** | **P0 (Vital)** |
+| **Instaloader** | Instagram Media Harvester | `instaloader/instaloader` | 1 Core, 1 GB RAM | Instagram profile or tag | High-res photos, stories, tagged users, GPS | **MinIO S3**, **MongoDB**, **Neo4j** | **P1 (High)** |
+| **Bellingcat Archiver** | Multi-Platform Preserver | `bellingcat/auto-archiver` | 2 Cores, 4 GB RAM | Social media post URL | WARC web archive, raw video, screenshots | **MinIO S3 WORM** & **PostgreSQL** | **P0 (Vital)** |
+| **Louvain / Leiden** | Community Partitioning | Neo4j GDS Library | In-memory GDS (4-8 GB RAM) | Complete multi-case entity graph | Criminal cell partitioning, modularity $Q$ | **Neo4j 5.x** (`community_id`) | **P0 (Vital)** |
+| **PageRank** | Authority & Kingpin Ranking | Neo4j GDS Library | In-memory GDS (2-4 GB RAM) | Directional communication graph | Rank score (0.0 to 1.0) pinpointing leaders | **Neo4j 5.x** (`pagerank_score`) | **P0 (Vital)** |
+| **Betweenness** | Choke-Point / Mule Detection | Neo4j GDS Library | In-memory GDS | Financial transaction graph | High-betweenness money mules and couriers | **Neo4j 5.x** (`betweenness`) | **P0 (Vital)** |
+| **Link Prediction** | Hidden Link Probability | Neo4j GDS (Adamic-Adar) | In-memory GDS | Incomplete crime graph | Candidate relationship probabilities on Layer 4 | **Neo4j 5.x** (Dashed Layer 4 edges) | **P1 (High)** |
+
+---
+
 ## 4. Standardized OSINT "Brick" Plugin Specification
 
 Every tool in `bricks/<domain>/<brick_name>/` consists of:

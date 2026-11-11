@@ -1051,6 +1051,9 @@ function renderToolExplorer() {
     const tool = FULL_TOOLS_INVENTORY.find(t => t.id === currentToolId) || filtered[0] || FULL_TOOLS_INVENTORY[0];
     if (!tool) return;
 
+    const storageDest = (typeof getToolStorageDestination === 'function') ? getToolStorageDestination(tool) : 'Neo4j 5.x & MinIO S3 WORM';
+    const hardwareRes = tool.resources || '0.5 Core CPU • 512 Mo RAM • Conteneur Docker Rootless';
+
     detailEl.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border-color);">
         <div>
@@ -1064,14 +1067,22 @@ function renderToolExplorer() {
         </div>
       </div>
 
-      <div class="grid-2" style="margin-bottom:1.25rem;">
-        <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:10px;padding:0.9rem;">
-          <div style="font-size:0.72rem;text-transform:uppercase;color:var(--text-muted);font-weight:700;margin-bottom:0.3rem;">📥 Indice de Départ</div>
-          <div style="font-size:0.88rem;font-weight:700;color:var(--accent-cyan);">${tool.startClue}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:0.75rem;margin-bottom:1.25rem;">
+        <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:10px;padding:0.85rem;">
+          <div style="font-size:0.72rem;text-transform:uppercase;color:var(--text-muted);font-weight:700;margin-bottom:0.3rem;">📥 Indice de Départ (Entrée)</div>
+          <div style="font-size:0.86rem;font-weight:700;color:var(--accent-cyan);">${tool.startClue}</div>
         </div>
-        <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:10px;padding:0.9rem;">
-          <div style="font-size:0.72rem;text-transform:uppercase;color:var(--text-muted);font-weight:700;margin-bottom:0.3rem;">📤 Nouveaux Indices Découverts</div>
-          <div style="font-size:0.88rem;font-weight:700;color:var(--accent-emerald);">${tool.discovers}</div>
+        <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:10px;padding:0.85rem;">
+          <div style="font-size:0.72rem;text-transform:uppercase;color:var(--text-muted);font-weight:700;margin-bottom:0.3rem;">📤 Nouveaux Indices (Sortie)</div>
+          <div style="font-size:0.86rem;font-weight:700;color:var(--accent-emerald);">${tool.discovers}</div>
+        </div>
+        <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:10px;padding:0.85rem;">
+          <div style="font-size:0.72rem;text-transform:uppercase;color:var(--text-muted);font-weight:700;margin-bottom:0.3rem;">🗄️ Destination de Stockage</div>
+          <div style="font-size:0.82rem;font-weight:600;color:#f59e0b;">${storageDest}</div>
+        </div>
+        <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:10px;padding:0.85rem;">
+          <div style="font-size:0.72rem;text-transform:uppercase;color:var(--text-muted);font-weight:700;margin-bottom:0.3rem;">💻 Ressources &amp; Isolation</div>
+          <div style="font-size:0.8rem;font-weight:600;color:#cbd5e1;">${hardwareRes}</div>
         </div>
       </div>
 
