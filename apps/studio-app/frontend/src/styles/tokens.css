@@ -1,0 +1,107 @@
+/**
+ * Athar Design Tokens (Dark default + Light print/accessibility theme)
+ * Conforms to .agent/ui-ux-rules.md (8-pt spacing grid, WCAG 2.2 AA, D1 5-layer hues)
+ */
+
+:root,
+[data-theme="dark"] {
+  /* Neutral Gray Ramp (8+ steps) */
+  --color-bg-canvas: #070a0f;
+  --color-bg-surface: #0f172a;
+  --color-bg-elevated: #141f36;
+  --color-bg-subtle: #1e293b;
+  --color-border-default: #334155;
+  --color-border-subtle: #1e293b;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #cbd5e1;
+  --color-text-muted: #94a3b8;
+
+  /* Single Interactive Accent (Blue) */
+  --color-accent-primary: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --color-accent-subtle: rgba(37, 99, 235, 0.16);
+  --color-accent-text: #60a5fa;
+
+  /* Four Semantic Status Colors (Status Only) */
+  --color-status-success: #10b981;
+  --color-status-warning: #f59e0b;
+  --color-status-danger: #ef4444;
+  --color-status-info: #0284c7;
+
+  /* Five Forensic Layer Colors (Decision D1 — distinct from status & neutral) */
+  --color-layer-1-verified: #14b8a6;
+  --color-layer-2-osint: #06b6d4;
+  --color-layer-3-infra: #6366f1;
+  --color-layer-4-hypothesis: #a855f7;
+  --color-layer-5-flows: #d97706;
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-arabic: 'IBM Plex Sans Arabic', 'Noto Sans Arabic', sans-serif;
+
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-md: 16px;
+  --text-lg: 20px;
+  --text-xl: 24px;
+
+  /* 8-pt Spacing Scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  /* Radii (4px and 8px only) */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-full: 9999px;
+
+  /* Fixed Shell Dimensions */
+  --topbar-height: 48px;
+  --statusbar-height: 24px;
+  --panel-left-width: 240px;
+  --panel-right-width: 340px;
+
+  /* Circular Node Sizes */
+  --node-size-standard: 56px;
+  --node-size-focal: 68px;
+
+  /* Z-index Scale */
+  --z-base: 1;
+  --z-panel: 10;
+  --z-header: 20;
+  --z-modal: 30;
+}
+
+[data-theme="light"] {
+  --color-bg-canvas: #f8fafc;
+  --color-bg-surface: #ffffff;
+  --color-bg-elevated: #f1f5f9;
+  --color-bg-subtle: #e2e8f0;
+  --color-border-default: #cbd5e1;
+  --color-border-subtle: #e2e8f0;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-muted: #475569;
+
+  --color-accent-primary: #1d4ed8;
+  --color-accent-hover: #1e40af;
+  --color-accent-subtle: rgba(29, 78, 216, 0.1);
+  --color-accent-text: #1d4ed8;
+
+  --color-status-success: #047857;
+  --color-status-warning: #b45309;
+  --color-status-danger: #b91c1c;
+  --color-status-info: #0369a1;
+
+  --color-layer-1-verified: #0f766e;
+  --color-layer-2-osint: #0e7490;
+  --color-layer-3-infra: #4338ca;
+  --color-layer-4-hypothesis: #7e22ce;
+  --color-layer-5-flows: #b45309;
+}

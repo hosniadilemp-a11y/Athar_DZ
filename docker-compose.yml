@@ -1,0 +1,126 @@
+# Athar (v0.1) — 2-Tier Container Architecture (App Tier + Data Tier)
+# Conforms to .agent/phase1-implementation-rules.md §3 & §9 and DECISIONS.md (D3, D4).
+
+networks:
+  net-app:
+    driver: bridge
+  net-data:
+    driver: bridge
+    internal: true
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  postgres_data:
+  redis_data:
+
+services:
+  # ===========================================================================
+  # DATA TIER (SRV-DATA-01 simulation)
+  # ===========================================================================
+  neo4j:
+    image: neo4j:5.20.0
+    container_name: athar-neo4j
+    restart: unless-stopped
+    networks:
+      - net-data
+    environment:
+      NEO4J_AUTH: "${NEO4J_USER}/${NEO4J_PASSWORD}"
+      NEO4J_PLUGINS: '["apoc"]'
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: athar-postgres
+    restart: unless-stopped
+    networks:
+      - net-data
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  redis:
+    image: redis:7.2.5-alpine
+    container_name: athar-redis
+    restart: unless-stopped
+    networks:
+      - net-data
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a ${REDIS_PASSWORD} ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # ===========================================================================
+  # APP TIER (SRV-STUDIO-01 simulation)
+  # ===========================================================================
+  backend:
+    build:
+      context: ./apps/studio-app/backend
+      dockerfile: Dockerfile
+    container_name: athar-backend
+    restart: unless-stopped
+    networks:
+      - net-app
+      - net-data
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
+    env_file:
+      - .env
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  frontend:
+    build:
+      context: ./apps/studio-app/frontend
+      dockerfile: Dockerfile
+    container_name: athar-frontend
+    restart: unless-stopped
+    networks:
+      - net-app
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-5173}:5173"
+    environment:
+      VITE_API_BASE_URL: "http://127.0.0.1:${BACKEND_PORT:-8000}"
+      VITE_APP_NAME: "${APP_NAME:-Athar}"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:5173 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
