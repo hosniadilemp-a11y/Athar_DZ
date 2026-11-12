@@ -5,16 +5,19 @@ import { useTheme } from './context/ThemeContext';
 import type { Locale } from './i18n/translations';
 import { useGraphStore } from './store/useGraphStore';
 import { GraphCanvasAdapter } from './components/canvas/GraphCanvasAdapter';
-import { Toolbar } from './components/canvas/Toolbar';
+import { Toolbar, type ActiveViewMode } from './components/canvas/Toolbar';
 import { ContextMenu } from './components/canvas/ContextMenu';
 import { LayerChangeDialog } from './components/canvas/LayerChangeDialog';
 import { AccessibleListView } from './components/canvas/AccessibleListView';
 import { InspectorPanel } from './components/inspector/InspectorPanel';
 import { LeftAccordion } from './components/toolbox/LeftAccordion';
 import { SnaPanel } from './components/sna/SnaPanel';
+import { MapView } from './components/views/MapView';
+import { TimelineView } from './components/views/TimelineView';
+import { AuditChainViewer } from './components/views/AuditChainViewer';
+import { ExportDialog } from './components/views/ExportDialog';
 import type { CaseItem, GraphResponse } from './types/graph';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
+import { API_BASE } from './config';
 
 export function App() {
   const { locale, setLocale, t } = useI18n();
@@ -45,7 +48,8 @@ export function App() {
   } = useGraphStore();
 
   const [healthStatus, setHealthStatus] = useState<'ok' | 'degraded' | 'error'>('ok');
-  const [isTableView, setIsTableView] = useState(false);
+  const [activeView, setActiveView] = useState<ActiveViewMode>('graph');
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [isInspectorOpen, setIsInspectorOpen] = useState(true);
   const [isSnaOpen, setIsSnaOpen] = useState(false);
 
@@ -273,11 +277,12 @@ export function App() {
         {/* Center Canvas Area */}
         <div style={{ flex: 1, position: 'relative', height: '100%', overflow: 'hidden' }}>
           <Toolbar
-            isTableView={isTableView}
+            activeView={activeView}
+            onChangeView={setActiveView}
             isSnaOpen={isSnaOpen}
-            onToggleTableView={() => setIsTableView((prev) => !prev)}
-            onToggleImpactView={handleToggleImpactView}
             onToggleSna={() => setIsSnaOpen((prev) => !prev)}
+            onOpenExport={() => setIsExportOpen(true)}
+            onToggleImpactView={handleToggleImpactView}
           />
 
           {isSnaOpen && (
@@ -355,8 +360,14 @@ export function App() {
             </div>
           )}
 
-          {isTableView ? (
+          {activeView === 'table' ? (
             <AccessibleListView />
+          ) : activeView === 'map' ? (
+            <MapView />
+          ) : activeView === 'timeline' ? (
+            <TimelineView />
+          ) : activeView === 'audit' ? (
+            <AuditChainViewer />
           ) : (
             <GraphCanvasAdapter
               nodes={nodes}
@@ -394,6 +405,9 @@ export function App() {
 
           {/* Forensic Layer Change Modal */}
           {activeCase && <LayerChangeDialog caseId={activeCase.id} />}
+
+          {/* Forensic Case Export Dialog (JSON / PDF) */}
+          <ExportDialog isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} />
         </div>
 
         {/* Right Inspector Panel */}

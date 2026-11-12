@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useGraphStore } from '../../store/useGraphStore';
+import { API_BASE } from '../../config';
 import {
   BrainCircuit,
   Play,
@@ -83,7 +84,7 @@ export const SnaPanel: React.FC<SnaPanelProps> = () => {
   // Load algorithm registry from API
   useEffect(() => {
     if (!activeCase) return;
-    fetch(`/api/v1/cases/${activeCase.id}/sna`)
+    fetch(`${API_BASE}/api/v1/cases/${activeCase.id}/sna`)
       .then((r) => r.json())
       .then((data: SnaAlgorithmItem[]) => {
         setAlgorithms(data);
@@ -118,7 +119,7 @@ export const SnaPanel: React.FC<SnaPanelProps> = () => {
     setErrorMsg(null);
 
     try {
-      const res = await fetch(`/api/v1/cases/${activeCase.id}/sna/${activeAlgo.key}`, {
+      const res = await fetch(`${API_BASE}/api/v1/cases/${activeCase.id}/sna/${activeAlgo.key}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ params: paramValues }),

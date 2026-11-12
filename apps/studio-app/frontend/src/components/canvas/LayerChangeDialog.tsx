@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useGraphStore } from '../../store/useGraphStore';
+import { API_BASE } from '../../config';
 import { ShieldCheck, AlertCircle } from 'lucide-react';
 
 interface LayerChangeDialogProps {
@@ -30,7 +31,7 @@ export const LayerChangeDialog: React.FC<LayerChangeDialogProps> = ({ caseId }) 
     setErrorMsg(null);
 
     try {
-      const res = await fetch(`/api/v1/cases/${caseId}/nodes/${layerChangeModal.nodeId}/layer`, {
+      const res = await fetch(`${API_BASE}/api/v1/cases/${caseId}/nodes/${layerChangeModal.nodeId}/layer`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -56,25 +57,25 @@ export const LayerChangeDialog: React.FC<LayerChangeDialogProps> = ({ caseId }) 
         description: `Promotion de ${updatedNode.label} en ${targetLayer}`,
         undo: () => {
           if (previousLayer) {
-            fetch(`/api/v1/cases/${caseId}/nodes/${updatedNode.id}/layer`, {
+            fetch(`${API_BASE}/api/v1/cases/${caseId}/nodes/${updatedNode.id}/layer`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ layer: previousLayer, reason: 'Annulation (Undo) utilisateur' }),
             }).then(() => {
               // Refresh graph
-              fetch(`/api/v1/cases/${caseId}/graph`)
+              fetch(`${API_BASE}/api/v1/cases/${caseId}/graph`)
                 .then((r) => r.json())
                 .then(setGraphData);
             });
           }
         },
         redo: () => {
-          fetch(`/api/v1/cases/${caseId}/nodes/${updatedNode.id}/layer`, {
+          fetch(`${API_BASE}/api/v1/cases/${caseId}/nodes/${updatedNode.id}/layer`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ layer: targetLayer, reason: reason.trim() }),
           }).then(() => {
-            fetch(`/api/v1/cases/${caseId}/graph`)
+            fetch(`${API_BASE}/api/v1/cases/${caseId}/graph`)
               .then((r) => r.json())
               .then(setGraphData);
           });
