@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 import logging
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -17,6 +17,7 @@ from app.core.config import get_settings
 from app.db.neo4j_schema import init_neo4j_schema
 from app.db.postgres_schema import init_postgres_schema
 from app.domain.registry import NODE_TYPES, LayerId
+from app.services.audit_service import compute_entry_hash
 
 logger = logging.getLogger(__name__)
 
@@ -317,27 +318,42 @@ async def seed_candy_wheels(
         # Audit ledger row
         audit_id = deterministic_uuid(f"audit:seed:{case_code}")
         prev_hash = "0" * 64
+        seed_dt = datetime(2026, 1, 15, 10, 0, 0, tzinfo=timezone.utc)
         audit_payload = {
             "action": "SEED_CASE",
             "case_code": case_code,
             "nodes_count": len(processed_nodes),
             "edges_count": len(processed_edges),
         }
-        computed_hash = hashlib.sha256(
-            (prev_hash + json.dumps(audit_payload, sort_keys=True)).encode("utf-8")
-        ).hexdigest()
+        reason = "Idempotent seed of Operation Candy Wheels forensic case"
+        computed_hash = compute_entry_hash(
+            prev_hash=prev_hash,
+            action="SEED_CASE",
+            actor_id=settings.actor_id,
+            entity_type="case",
+            entity_id=case_uuid,
+            before_state=None,
+            after_state=audit_payload,
+            reason=reason,
+            timestamp=seed_dt.isoformat(),
+        )
 
         await conn.execute(
             text(
                 """
                 INSERT INTO audit_logs (
                     id, case_id, actor_id, action, entity_type, entity_id,
-                    before_state, after_state, reason, prev_hash, hash
+                    before_state, after_state, reason, timestamp, prev_hash, hash
                 ) VALUES (
                     :id, :case_id, :actor_id, :action, :entity_type, :entity_id,
                     CAST(:before_state AS JSONB), CAST(:after_state AS JSONB),
-                    :reason, :prev_hash, :hash
-                ) ON CONFLICT (id) DO NOTHING;
+                    :reason, :timestamp, :prev_hash, :hash
+                ) ON CONFLICT (id) DO UPDATE SET
+                    hash = EXCLUDED.hash,
+                    prev_hash = EXCLUDED.prev_hash,
+                    timestamp = EXCLUDED.timestamp,
+                    after_state = EXCLUDED.after_state,
+                    reason = EXCLUDED.reason;
                 """
             ),
             {
@@ -349,7 +365,8 @@ async def seed_candy_wheels(
                 "entity_id": case_uuid,
                 "before_state": None,
                 "after_state": json.dumps(audit_payload),
-                "reason": "Idempotent seed of Operation Candy Wheels forensic case",
+                "reason": reason,
+                "timestamp": seed_dt,
                 "prev_hash": prev_hash,
                 "hash": computed_hash,
             },
