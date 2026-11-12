@@ -118,6 +118,9 @@ services:
     environment:
       VITE_API_BASE_URL: "http://127.0.0.1:${BACKEND_PORT:-8000}"
       VITE_APP_NAME: "${APP_NAME:-Athar}"
+    volumes:
+      - ./apps/studio-app/frontend/src:/app/src
+      - ./apps/studio-app/frontend/package.json:/app/package.json
     depends_on:
       backend:
         condition: service_healthy
