@@ -11,6 +11,7 @@ import { LayerChangeDialog } from './components/canvas/LayerChangeDialog';
 import { AccessibleListView } from './components/canvas/AccessibleListView';
 import { InspectorPanel } from './components/inspector/InspectorPanel';
 import { LeftAccordion } from './components/toolbox/LeftAccordion';
+import { SnaPanel } from './components/sna/SnaPanel';
 import type { CaseItem, GraphResponse } from './types/graph';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
@@ -46,6 +47,7 @@ export function App() {
   const [healthStatus, setHealthStatus] = useState<'ok' | 'degraded' | 'error'>('ok');
   const [isTableView, setIsTableView] = useState(false);
   const [isInspectorOpen, setIsInspectorOpen] = useState(true);
+  const [isSnaOpen, setIsSnaOpen] = useState(false);
 
   // Load cases and initial graph
   useEffect(() => {
@@ -272,9 +274,61 @@ export function App() {
         <div style={{ flex: 1, position: 'relative', height: '100%', overflow: 'hidden' }}>
           <Toolbar
             isTableView={isTableView}
+            isSnaOpen={isSnaOpen}
             onToggleTableView={() => setIsTableView((prev) => !prev)}
             onToggleImpactView={handleToggleImpactView}
+            onToggleSna={() => setIsSnaOpen((prev) => !prev)}
           />
+
+          {isSnaOpen && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Panneau Social Network Analysis"
+              style={{
+                position: 'absolute',
+                top: '56px',
+                left: 'var(--space-4)',
+                right: 'var(--space-4)',
+                bottom: 'var(--space-4)',
+                backgroundColor: 'var(--color-bg-surface)',
+                border: '1px solid var(--color-border-default)',
+                borderRadius: 'var(--radius-md)',
+                boxShadow: '0 16px 40px rgba(0, 0, 0, 0.6)',
+                zIndex: 40,
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  padding: 'var(--space-1) var(--space-2)',
+                  borderBottom: '1px solid var(--color-border-subtle)',
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsSnaOpen(false)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'var(--color-text-secondary)',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                  }}
+                >
+                  Fermer [Esc]
+                </button>
+              </div>
+              <div style={{ flex: 1, minHeight: 0 }}>
+                <SnaPanel onClose={() => setIsSnaOpen(false)} />
+              </div>
+            </div>
+          )}
 
           {isLoading && (
             <div

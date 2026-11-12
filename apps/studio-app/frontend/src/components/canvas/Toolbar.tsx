@@ -10,18 +10,23 @@ import {
   Table,
   Network,
   Sparkles,
+  BrainCircuit,
 } from 'lucide-react';
 
 interface ToolbarProps {
   isTableView: boolean;
+  isSnaOpen?: boolean;
   onToggleTableView: () => void;
   onToggleImpactView: () => void;
+  onToggleSna?: () => void;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = ({
   isTableView,
+  isSnaOpen = false,
   onToggleTableView,
   onToggleImpactView,
+  onToggleSna,
 }) => {
   const {
     viewport,
@@ -89,6 +94,30 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             Vue Impact : {nodes.length} / {totalCaseNodes || 100} nœuds
           </span>
         </button>
+
+        {onToggleSna && (
+          <button
+            type="button"
+            onClick={onToggleSna}
+            aria-pressed={isSnaOpen}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--space-2)',
+              padding: 'var(--space-1) var(--space-3)',
+              backgroundColor: isSnaOpen ? 'var(--color-accent-subtle)' : 'transparent',
+              border: isSnaOpen ? '1px solid var(--color-accent-primary)' : '1px solid transparent',
+              borderRadius: 'var(--radius-sm)',
+              color: isSnaOpen ? 'var(--color-accent-text)' : 'var(--color-text-secondary)',
+              cursor: 'pointer',
+              fontSize: 'var(--text-xs)',
+              fontWeight: 600,
+            }}
+          >
+            <BrainCircuit size={14} style={{ color: isSnaOpen ? 'var(--color-accent-text)' : 'var(--color-text-muted)' }} />
+            <span>Analyses SNA (16)</span>
+          </button>
+        )}
       </div>
 
       {/* Right side: Viewport, History, and View switcher */}

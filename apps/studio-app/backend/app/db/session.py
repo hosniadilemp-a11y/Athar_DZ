@@ -33,5 +33,3 @@ async def get_neo4j_driver() -> AsyncIterator[AsyncDriver]:
         yield driver
     finally:
         await driver.close()
-
-
