@@ -17,7 +17,19 @@ class Settings(BaseSettings):
     app_name: str = "Athar"
     app_env: str = "development"
     actor_id: str = "opj-benali-unauthenticated"
-    cors_origin: str = "http://127.0.0.1:5173"
+    cors_origin: str = "http://127.0.0.1:5173,http://localhost:5173"
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        """Return list of allowed CORS origins, supporting both localhost and 127.0.0.1."""
+        origins = [orig.strip() for orig in self.cors_origin.split(",") if orig.strip()]
+        expanded: set[str] = set(origins)
+        for o in origins:
+            if "127.0.0.1" in o:
+                expanded.add(o.replace("127.0.0.1", "localhost"))
+            elif "localhost" in o:
+                expanded.add(o.replace("localhost", "127.0.0.1"))
+        return sorted(list(expanded))
 
     postgres_host: str = "postgres"
     postgres_port: int = 5432
