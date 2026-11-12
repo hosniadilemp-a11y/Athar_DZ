@@ -38,7 +38,7 @@ export const LayerChangeDialog: React.FC<LayerChangeDialogProps> = ({ caseId }) 
           'X-Actor-Id': 'investigator_front',
         },
         body: JSON.stringify({
-          layer: targetLayer,
+          new_layer: targetLayer,
           reason: reason.trim(),
         }),
       });
@@ -60,7 +60,7 @@ export const LayerChangeDialog: React.FC<LayerChangeDialogProps> = ({ caseId }) 
             fetch(`${API_BASE}/api/v1/cases/${caseId}/nodes/${updatedNode.id}/layer`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ layer: previousLayer, reason: 'Annulation (Undo) utilisateur' }),
+              body: JSON.stringify({ new_layer: previousLayer, reason: 'Annulation (Undo) utilisateur' }),
             }).then(() => {
               // Refresh graph
               fetch(`${API_BASE}/api/v1/cases/${caseId}/graph`)
@@ -73,7 +73,7 @@ export const LayerChangeDialog: React.FC<LayerChangeDialogProps> = ({ caseId }) 
           fetch(`${API_BASE}/api/v1/cases/${caseId}/nodes/${updatedNode.id}/layer`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ layer: targetLayer, reason: reason.trim() }),
+            body: JSON.stringify({ new_layer: targetLayer, reason: reason.trim() }),
           }).then(() => {
             fetch(`${API_BASE}/api/v1/cases/${caseId}/graph`)
               .then((r) => r.json())
@@ -216,7 +216,7 @@ export const LayerChangeDialog: React.FC<LayerChangeDialogProps> = ({ caseId }) 
               backgroundColor: reason.trim() ? 'var(--color-accent-primary)' : 'var(--color-bg-subtle)',
               border: 'none',
               borderRadius: 'var(--radius-sm)',
-              color: '#ffffff',
+              color: 'var(--color-text-on-accent)',
               cursor: reason.trim() ? 'pointer' : 'not-allowed',
               fontWeight: 600,
               fontSize: 'var(--text-sm)',

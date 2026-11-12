@@ -83,6 +83,79 @@ Athar_DZ/
 
 ---
 
+## 🚀 Athar v0.1 — Studio Applicatif Forensique (Phase 1)
+
+L'application **Athar Studio App (v0.1)** est entièrement opérationnelle en architecture microservices conteneurisée :
+
+### 🏗️ Architecture Technique (2 Tiers / 5 Services Docker)
+
+- **Frontend** : React 19, TypeScript 5.6, Vite 5.4, Lucide Icons, pure store React 19 (`useSyncExternalStore`), Zero Emojis, Design Tokens stricts (`tokens.css`, Dark default / Light accessible).
+- **Backend** : Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2.0 (async), Neo4j Async Driver, Pure Python SNA Engine.
+- **Base Graphe** : Neo4j 5.20 Community (`bolt://localhost:7687`, HTTP `7474`).
+- **Base Relationnelle & Spatiale** : TimescaleDB HA PostgreSQL 16 + PostGIS 3.4 (`timescale/timescaledb-ha:pg16`, port `5432`).
+- **Cache & Message Broker** : Redis 7.2 Alpine (`port 6379`).
+
+---
+
+### 📦 Démarrage Rapide
+
+```bash
+# 1. Copier les variables d'environnement
+cp .env.example .env
+
+# 2. Lancer la pile complète
+docker compose up -d --build
+
+# 3. Vérifier la santé des services
+curl http://127.0.0.1:8000/health
+# {"status":"ok","app_name":"Athar","services":{"neo4j":{"status":"ok"},"postgres":{"status":"ok"},"redis":{"status":"ok"}}}
+```
+
+L'application est accessible sur :
+- **Studio Web** : [http://localhost:5173](http://localhost:5173)
+- **API REST & Swagger Docs** : [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Interface Neo4j Browser** : [http://localhost:7474](http://localhost:7474)
+
+---
+
+### 🧪 Suites de Tests & Assurance Qualité
+
+```bash
+# Tests Backend (32 tests unitaires, API, SNA, audit SHA-256)
+docker exec athar-backend pytest -v
+
+# Linter & Analyse Statique Backend
+docker exec -u root athar-backend ruff check app tests
+docker exec -u root athar-backend mypy app
+
+# Tests Frontend (6 tests unitaires, store, traductions, export)
+docker exec athar-frontend npm test
+
+# Typecheck & Linter Frontend
+docker exec athar-frontend npm run typecheck
+docker exec athar-frontend npm run lint
+
+# Compilation de Production Frontend
+docker exec athar-frontend npm run build
+```
+
+---
+
+### 🛡️ Matrice des Jalons Livrés (Phase 1 — App v0.1)
+
+| Jalon | Intitulé | Statut | Vérification |
+| :--- | :--- | :---: | :--- |
+| **1A** | Foundation (Docker, Health, Shells, `tokens.css`) | **LIVRÉ** | 2/2 tests health passing, multi-tier compose opérationnel |
+| **Opt A**| Migration PostgreSQL vers TimescaleDB HA PG16 | **LIVRÉ** | `timescale/timescaledb-ha:pg16` actif et persistant |
+| **1B** | Data (Ontologie 37 types, 47 relations, Seed 100 nœuds) | **LIVRÉ** | 10/10 tests registre/schéma passing, cas *Candy Wheels* idempotent |
+| **1C** | Graph API (CRUD, Expand 1/2 hops, Filtre Impact, Audit) | **LIVRÉ** | 6/6 tests API graph passing, registre Merkle SHA-256 vérifié |
+| **1D** | Canvas (GraphCanvasAdapter, Nœuds circulaires, 5 calques, Inspecteur) | **LIVRÉ** | Interface adaptateur stricte, store réversible Undo/Redo |
+| **1E** | SNA (16 algorithmes de graphe, Allowlist, Panneau SNA) | **LIVRÉ** | 13/13 tests SNA passing, exécution pure Python < 10 ms |
+| **1F** | Views (Carte SIG 8 types GPS, Chronologie, Registre, Export PDF/JSON) | **LIVRÉ** | Multi-vues interactives, export conforme ISO 27037 |
+| **1G** | Hardening (Audit sécurité, couverture tests, accessibilité WCAG AA) | **LIVRÉ** | 38/38 tests cumulés passing, 0 erreurs lint/mypy/tsc, 0 emojis |
+
+---
+
 ## 📜 Licence
 
 Ce projet est publié sous licence **Apache-2.0**.

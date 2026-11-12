@@ -27,7 +27,7 @@ export const AccessibleListView: React.FC = () => {
           style={{
             padding: 'var(--space-2) var(--space-4)',
             backgroundColor: activeTab === 'nodes' ? 'var(--color-accent-primary)' : 'var(--color-bg-surface)',
-            color: activeTab === 'nodes' ? '#ffffff' : 'var(--color-text-secondary)',
+            color: activeTab === 'nodes' ? 'var(--color-text-on-accent)' : 'var(--color-text-secondary)',
             border: '1px solid var(--color-border-default)',
             borderRadius: 'var(--radius-sm)',
             cursor: 'pointer',
@@ -43,7 +43,7 @@ export const AccessibleListView: React.FC = () => {
           style={{
             padding: 'var(--space-2) var(--space-4)',
             backgroundColor: activeTab === 'edges' ? 'var(--color-accent-primary)' : 'var(--color-bg-surface)',
-            color: activeTab === 'edges' ? '#ffffff' : 'var(--color-text-secondary)',
+            color: activeTab === 'edges' ? 'var(--color-text-on-accent)' : 'var(--color-text-secondary)',
             border: '1px solid var(--color-border-default)',
             borderRadius: 'var(--radius-sm)',
             cursor: 'pointer',
