@@ -35,8 +35,8 @@ if [ ! -f .env ]; then
 fi
 
 # 3. Lancement des conteneurs
-echo -e "${BLUE}[1/3] Construction et démarrage des 5 conteneurs Docker...${NC}"
-docker compose up -d --build
+echo -e "${BLUE}[1/3] Démarrage des conteneurs Docker...${NC}"
+docker compose up -d "$@"
 
 # 4. Attente active de la disponibilité des services (Healthcheck)
 echo -e "${BLUE}[2/3] Vérification de la disponibilité du backend et des bases de données...${NC}"
