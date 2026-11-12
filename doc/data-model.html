@@ -1,10 +1,113 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>04. Visual Case Board Ontology & UI Spec — AegisInvestigate</title>
+  <title>04. Modèle de Données &amp; Graphe des Métadonnées — Athar DZ / AegisInvestigate</title>
   <link rel="stylesheet" href="assets/style.css" />
+  <style>
+    .onto-filter-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-bottom: 0.75rem;
+      align-items: center;
+    }
+    .onto-btn {
+      background: #0f172a;
+      border: 1px solid #23344d;
+      color: #94a3b8;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.45rem 0.85rem;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.15s ease;
+    }
+    .onto-btn:hover {
+      background: #172540;
+      color: #f1f5f9;
+      border-color: #38bdf8;
+    }
+    .onto-btn.active {
+      background: #1e293b;
+      color: #38bdf8;
+      border-color: #38bdf8;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.25);
+    }
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.81rem;
+      margin: 1rem 0;
+      background: #0d1524;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #1e293b;
+    }
+    .tech-table th {
+      background: #111d33;
+      color: #e2e8f0;
+      padding: 0.65rem 0.85rem;
+      text-align: left;
+      font-weight: 700;
+      border-bottom: 1px solid #23344d;
+    }
+    .tech-table td {
+      padding: 0.65rem 0.85rem;
+      border-bottom: 1px solid #172540;
+      color: #cbd5e1;
+      vertical-align: top;
+      line-height: 1.45;
+    }
+    .tech-table tr:hover {
+      background: rgba(56, 189, 248, 0.04);
+    }
+    .badge-ver {
+      background: #1e293b;
+      color: #38bdf8;
+      border: 1px solid #0284c7;
+      font-family: var(--font-mono, monospace);
+      font-size: 0.72rem;
+      padding: 1px 5px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .onto-node-g {
+      transition: all 0.2s ease;
+    }
+    .onto-node-g:hover rect.onto-node-rect {
+      filter: brightness(1.25);
+    }
+    .search-filter-box {
+      background: #090e17;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .search-filter-input {
+      background: #040810;
+      border: 1px solid #23344d;
+      color: #f8fafc;
+      font-size: 0.82rem;
+      padding: 0.45rem 0.8rem;
+      border-radius: 6px;
+      flex: 1;
+      min-width: 220px;
+    }
+    .search-filter-input:focus {
+      outline: none;
+      border-color: #38bdf8;
+    }
+  </style>
 </head>
 <body>
 
@@ -37,603 +140,1401 @@
     </ul>
 
     <div class="sidebar-footer">
-      <div><strong>Designed For:</strong> Investigators (Zero CS Jargon)</div>
-      <div><strong>Proof Standard:</strong> Automatic Legal Snapshots</div>
-      <div><strong>Intelligence:</strong> Standard Rules + Optional AI</div>
+      <div><strong>Conception:</strong> Enquêteurs Judiciaires (Zéro Jargon CS)</div>
+      <div><strong>Chaîne de Preuve:</strong> Scellés WORM RFC 3161 / ISO 27037</div>
+      <div><strong>Intelligence:</strong> GDS In-Memory + IA Locale Souveraine</div>
     </div>
   </aside>
 
   <!-- Main Content -->
   <main class="main-content">
     <header class="page-header">
-      <div class="page-eyebrow">Chapter 04 &bull; Visual Clue Structure &amp; Photoshop Studio Interface</div>
-      <h1>Visual Case Board Ontology &amp; User Interface Specification</h1>
+      <div class="page-eyebrow">Chapitre 04 &bull; Modèle de Données Universel (GFPG) &amp; Ontologie Judiciaire</div>
+      <h1>Graphe des Métadonnées, Ontologie Complète des Nœuds &amp; Persistance Polyglotte</h1>
       <p>
-        How clues, connections, and proof are visually structured on the <strong>Case Board</strong>, and how the <strong>"Photoshop for Investigations"</strong> interface empowers detectives to navigate complex investigations without visual clutter.
+        Spécification formelle exhaustive des <strong>37 types de nœuds d'investigation</strong>, des <strong>47 types de relations directionnelles</strong>, de la hiérarchie territoriale algérienne et de la matrice d'attribution physique aux <strong>6 moteurs de bases de données</strong> de la plateforme (Neo4j, PostgreSQL/TimescaleDB, Qdrant, MinIO WORM, MongoDB, Redis).
       </p>
     </header>
-
-    <!-- 1. Interactive Visual Ontology Diagram (Replaces raw Cypher code) -->
+    <!-- ====================================================================
+         SECTION 1: GRAPHE VISUEL MAÎTRE DE L'ONTOLOGIE & MÉTADONNÉES
+         ==================================================================== -->
     <section>
-      <h2 class="section-title">1. Visual Clue Map: How Investigation Elements Connect Together</h2>
+      <h2 class="section-title">1. Graphe Visuel Maître de l'Ontologie Judiciaire &amp; Métadonnées (37 Nœuds &amp; 47 Relations)</h2>
       <p class="section-subtitle">
-        Click any clue node in the diagram below to see its plain-language meaning, real-world case examples, the clues it connects to, and the automatic tools it unlocks on your board.
+        Explorez visuellement l'ensemble des 37 types d'entités, leurs liaisons sémantiques et leur moteur de persistance dédié. Cliquez sur un nœud pour afficher son profil canonique complet, son exemple dans l'affaire Candy Wheels, ses attributs et ses règles de stockage.
       </p>
 
-      <div style="background:#0d131f;border:1px solid var(--border-color);border-radius:14px;padding:1.5rem;margin-bottom:1.75rem;">
-        <!-- Visual SVG Map of Clues -->
-        <div style="width:100%;overflow-x:auto;">
-          <svg viewBox="0 0 940 330" style="width:100%;min-width:760px;height:auto;display:block;">
-            <defs>
-              <marker id="arrow" viewBox="0 0 10 10" refX="28" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b82f6" />
-              </marker>
-              <marker id="arrow-purple" viewBox="0 0 10 10" refX="28" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                <path d="M 0 1 L 10 5 L 0 9 z" fill="#8b5cf6" />
-              </marker>
-            </defs>
-
-            <!-- Connections -->
-            <!-- FB Account -> Post -->
-            <line x1="110" y1="80" x2="110" y2="190" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#arrow)" />
-            <text x="125" y="140" fill="#9ca3af" font-size="11" font-family="sans-serif">Published Post</text>
-
-            <!-- Post -> URL -->
-            <line x1="170" y1="210" x2="350" y2="140" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#arrow)" />
-            <text x="250" y="165" fill="#9ca3af" font-size="11" font-family="sans-serif">Contains Link</text>
-
-            <!-- Post -> Phone -->
-            <line x1="170" y1="225" x2="350" y2="255" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#arrow)" />
-            <text x="235" y="255" fill="#9ca3af" font-size="11" font-family="sans-serif">Mentions Phone</text>
-
-            <!-- URL -> Hidden Code -->
-            <line x1="440" y1="120" x2="620" y2="70" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#arrow)" />
-            <text x="510" y="85" fill="#9ca3af" font-size="11" font-family="sans-serif">Reveals Code &amp; Date</text>
-
-            <!-- Phone -> Social Media Accounts -->
-            <line x1="440" y1="265" x2="620" y2="265" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#arrow)" />
-            <text x="500" y="255" fill="#9ca3af" font-size="11" font-family="sans-serif">Registered On</text>
-
-            <!-- Social Accounts -> Suspect -->
-            <line x1="710" y1="250" x2="810" y2="185" stroke="#8b5cf6" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#arrow-purple)" />
-            <text x="735" y="210" fill="#a78bfa" font-size="11" font-family="sans-serif">Identifies Suspect</text>
-
-            <!-- Hidden Code -> Suspect -->
-            <line x1="710" y1="80" x2="810" y2="145" stroke="#8b5cf6" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#arrow-purple)" />
-            <text x="740" y="115" fill="#a78bfa" font-size="11" font-family="sans-serif">Links Scam Sites</text>
-
-            <!-- Node 1: Social Account -->
-            <g style="cursor:pointer;" onclick="selectOntologyEntity('social_account')" data-onto-node="social_account">
-              <rect x="30" y="45" width="160" height="65" rx="12" fill="#151e2e" stroke="#3b82f6" stroke-width="2" />
-              <text x="45" y="73" font-size="18">👤</text>
-              <text x="75" y="72" fill="#fff" font-size="13" font-weight="bold" font-family="sans-serif">Social Profile</text>
-              <text x="45" y="96" fill="#9ca3af" font-size="11" font-family="sans-serif">fb.com/pneus.promo</text>
-            </g>
-
-            <!-- Node 2: Social Post -->
-            <g style="cursor:pointer;" onclick="selectOntologyEntity('social_post')" data-onto-node="social_post">
-              <rect x="30" y="185" width="160" height="65" rx="12" fill="#151e2e" stroke="#10b981" stroke-width="2" />
-              <text x="45" y="213" font-size="18">📢</text>
-              <text x="75" y="212" fill="#fff" font-size="13" font-weight="bold" font-family="sans-serif">Scam Post / Ad</text>
-              <text x="45" y="236" fill="#9ca3af" font-size="11" font-family="sans-serif">FB Ad #98124 (Tyres)</text>
-            </g>
-
-            <!-- Node 3: URL -->
-            <g style="cursor:pointer;" onclick="selectOntologyEntity('website')" data-onto-node="website">
-              <rect x="330" y="105" width="160" height="65" rx="12" fill="#151e2e" stroke="#f59e0b" stroke-width="2" />
-              <text x="345" y="133" font-size="18">🌐</text>
-              <text x="375" y="132" fill="#fff" font-size="13" font-weight="bold" font-family="sans-serif">Website Link</text>
-              <text x="345" y="156" fill="#9ca3af" font-size="11" font-family="sans-serif">promo-pneus.shop</text>
-            </g>
-
-            <!-- Node 4: Phone -->
-            <g style="cursor:pointer;" onclick="selectOntologyEntity('phone')" data-onto-node="phone">
-              <rect x="330" y="235" width="160" height="65" rx="12" fill="#151e2e" stroke="#06b6d4" stroke-width="2" />
-              <text x="345" y="263" font-size="18">📱</text>
-              <text x="375" y="262" fill="#fff" font-size="13" font-weight="bold" font-family="sans-serif">Phone Number</text>
-              <text x="345" y="286" fill="#9ca3af" font-size="11" font-family="sans-serif">+213 555 019 283</text>
-            </g>
-
-            <!-- Node 5: Hidden Code -->
-            <g style="cursor:pointer;" onclick="selectOntologyEntity('hidden_code')" data-onto-node="hidden_code">
-              <rect x="580" y="45" width="170" height="65" rx="12" fill="#151e2e" stroke="#f43f5e" stroke-width="2" />
-              <text x="595" y="73" font-size="18">🏷️</text>
-              <text x="625" y="72" fill="#fff" font-size="13" font-weight="bold" font-family="sans-serif">Code &amp; Tracker</text>
-              <text x="595" y="96" fill="#9ca3af" font-size="11" font-family="sans-serif">Order Code &amp; Pixel ID</text>
-            </g>
-
-            <!-- Node 6: OSN Accounts -->
-            <g style="cursor:pointer;" onclick="selectOntologyEntity('social_account')" data-onto-node="osn">
-              <rect x="580" y="235" width="170" height="65" rx="12" fill="#151e2e" stroke="#06b6d4" stroke-width="2" />
-              <text x="595" y="263" font-size="18">💬</text>
-              <text x="625" y="262" fill="#fff" font-size="13" font-weight="bold" font-family="sans-serif">Linked Socials</text>
-              <text x="595" y="286" fill="#9ca3af" font-size="11" font-family="sans-serif">Telegram &amp; Instagram</text>
-            </g>
-
-            <!-- Node 7: Suspect -->
-            <g style="cursor:pointer;" onclick="selectOntologyEntity('person')" data-onto-node="person">
-              <rect x="780" y="130" width="150" height="75" rx="14" fill="#1f1635" stroke="#8b5cf6" stroke-width="2.5" stroke-dasharray="6,4" />
-              <text x="795" y="162" font-size="20">🎯</text>
-              <text x="825" y="160" fill="#fff" font-size="13" font-weight="bold" font-family="sans-serif">Suspect Amine</text>
-              <text x="795" y="188" fill="#a78bfa" font-size="11" font-family="sans-serif">92% Match (Theory)</text>
-            </g>
-          </svg>
-        </div>
-
-        <!-- Clue Explanation Box (Updates on click) -->
-        <div id="ontology-detail-box" style="margin-top:1.25rem;background:#151e2e;border:1px solid var(--border-color);border-radius:10px;padding:1.15rem;">
-          <!-- Rendered by app.js -->
-        </div>
-      </div>
-    </section>
-
-    <!-- 3. Structure des Données & Matrice de Persistance Polyglotte (14 Types d'Éléments) -->
-    <section>
-      <h2 class="section-title">3. Structure des Données &amp; Matrice de Persistance Polyglotte (Les 14 Types d'Éléments)</h2>
-      <p class="section-subtitle">
-        En criminalistique numérique moderne, une base de données unique est incapable de répondre à tous les besoins. Athar DZ utilise une <strong>architecture de persistance polyglotte</strong> où chaque indice est routé vers le moteur le plus adapté à sa nature géométrique, relationnelle, vectorielle ou légale.
-      </p>
-
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Type d'Élément (14 Types)</th>
-              <th>Format Canonique &amp; Validation</th>
-              <th>Rôle dans l'Enquête Criminelle</th>
-              <th>Base de Données Principale</th>
-              <th>Index &amp; Projections Secondaires</th>
-              <th>Protocole &amp; Format de Stockage</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>👤 <strong>1. Personne / Suspect</strong><br/><code>PERSON</code></td>
-              <td>Nom canonique, Alias, NIN (Numéro d'Identification Nationale), Date de naissance</td>
-              <td>Entité centrale suspectée, victime, témoin ou prête-nom (mule financière).</td>
-              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
-              <td><span class="badge badge-emerald">PostgreSQL 16 (Table <code>persons</code>)</span></td>
-              <td>Bolt v5 Cypher &bull; JSON relationnel ACID avec RLS par wilaya</td>
-            </tr>
-            <tr>
-              <td>📱 <strong>2. Ligne Téléphonique</strong><br/><code>PHONE_NUMBER</code></td>
-              <td>Format E.164 strict (ex: <code>+213555019283</code>), MCC-MNC opérateur (Mobilis, Djezzy, Ooredoo)</td>
-              <td>Vecteur de communication et d'authentification 2FA sur les réseaux sociaux et banques.</td>
-              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
-              <td><span class="badge badge-cyan">Redis 7 (Token-Bucket)</span> &bull; <span class="badge badge-emerald">PostgreSQL</span></td>
-              <td>Bolt v5 &bull; Chaîne normalisée indexée en mémoire B-Tree pour dédoublonnage instantané</td>
-            </tr>
-            <tr>
-              <td>💬 <strong>3. Compte de Réseau Social</strong><br/><code>SOCIAL_ACCOUNT</code></td>
-              <td>Identifiant numérique permanent (ex: Telegram ID <code>519283741</code>, Facebook UID), Handle, Plateforme</td>
-              <td>Profil d'escroc ou canal de diffusion d'annonces frauduleuses.</td>
-              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
-              <td><span class="badge badge-cyan">MongoDB 7.x (Dépotoir Profil BSON)</span></td>
-              <td>Bolt v5 &bull; Document BSON Snappy contenant l'historique brut des bios et followers</td>
-            </tr>
-            <tr>
-              <td>📢 <strong>4. Publication / Annonce</strong><br/><code>SOCIAL_POST</code></td>
-              <td>URL pérenne, ID de publication, Horodatage de publication ISO 8601</td>
-              <td>L'acte d'escroquerie initial (ex: vente de pneus Michelin fictifs à -60%).</td>
-              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
-              <td><span class="badge badge-amber">MinIO S3 (Capture WORM)</span> &bull; <span class="badge badge-cyan">MongoDB (DOM)</span></td>
-              <td>S3 Multipart API (WARC + PNG scellé) &bull; Document BSON pour l'arbre syntaxique du texte</td>
-            </tr>
-            <tr>
-              <td>📧 <strong>5. Adresse E-mail</strong><br/><code>EMAIL_ADDRESS</code></td>
-              <td>RFC 5322 normalisé en minuscules, domaine MX vérifié</td>
-              <td>Adresse de contact, récupération de mot de passe ou compte d'administration de site.</td>
-              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
-              <td><span class="badge badge-emerald">PostgreSQL (Table <code>breaches</code>)</span></td>
-              <td>Bolt v5 &bull; Table relationnelle liant l'e-mail aux fuites de données (DeHashed/HaveIBeenPwned)</td>
-            </tr>
-            <tr>
-              <td>🌐 <strong>6. Site Web &amp; Domaine</strong><br/><code>WEB_DOMAIN / URL</code></td>
-              <td>FQDN canonique, URL complète normalisée, IP résolue, Certificat TLS JARM</td>
-              <td>Boutique en ligne frauduleuse servant au paiement ou à l'hameçonnage.</td>
-              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
-              <td><span class="badge badge-cyan">MongoDB 7.x (DOM brut)</span> &bull; <span class="badge badge-amber">MinIO (WARC ISO 28500)</span></td>
-              <td>Bolt v5 &bull; BSON Wire Protocol pour les en-têtes HTTP bruts et scripts JavaScript</td>
-            </tr>
-            <tr>
-              <td>🏷️ <strong>7. Identifiant d'Infrastructure</strong><br/><code>INFRASTRUCTURE_ID</code></td>
-              <td>Meta Pixel (<code>88419203314</code>), Google Tag Manager, MongoDB ObjectId, Supabase Project ID</td>
-              <td>Empreinte invisible partagée par plusieurs sites créés par le même cybercriminel.</td>
-              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
-              <td><span class="badge badge-cyan">MongoDB 7.x (Index d'attributs)</span></td>
-              <td>Bolt v5 &bull; Recherche inversée instantanée dans le graphe pour relier les sites jumeaux</td>
-            </tr>
-            <tr>
-              <td>💳 <strong>8. Compte Bancaire &amp; BaridiMob</strong><br/><code>BANK_ACCOUNT / CCP</code></td>
-              <td>RIP Algérie Poste (20 chiffres canoniques), Numéro CCP, Clé, Code Banque</td>
-              <td>Destination des virements extorqués aux victimes via l'application BaridiMob.</td>
-              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
-              <td><span class="badge badge-emerald">PostgreSQL 16 (Table <code>financial_transactions</code>)</span></td>
-              <td>Bolt v5 &bull; Table financière ACID avec horodatage des flux monétaires en Dinars (DZD)</td>
-            </tr>
-            <tr>
-              <td>🪙 <strong>9. Portefeuille Crypto</strong><br/><code>CRYPTO_WALLET</code></td>
-              <td>Adresse publique base58/hexadécimale (BTC, ETH, TRC-20 USDT, Binance Pay ID)</td>
-              <td>Blanchiment de fonds volés par conversion en stablecoin USDT.</td>
-              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
-              <td><span class="badge badge-emerald">PostgreSQL (Livre de comptes de transactions)</span></td>
-              <td>Bolt v5 &bull; Graphe bipartite des transferts blockchain avec montants et horodatages</td>
-            </tr>
-            <tr>
-              <td>🚗 <strong>10. Véhicule &amp; Immatriculation</strong><br/><code>VEHICLE</code></td>
-              <td>Matricule algérien format officiel (ex: <code>04829-116-16</code>), Numéro de châssis VIN</td>
-              <td>Véhicule utilisé pour la livraison de marchandise frauduleuse ou repéré sur vidéosurveillance.</td>
-              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
-              <td><span class="badge badge-emerald">PostgreSQL 16 (Table <code>vehicles</code>)</span></td>
-              <td>Bolt v5 &bull; Modèle relationnel connecté au fichier national des cartes grises</td>
-            </tr>
-            <tr>
-              <td>🎙️ <strong>11. Enregistrement Vocal</strong><br/><code>AUDIO_RECORDING</code></td>
-              <td>Fichier binaire OPUS / WAV, Durée, Empreinte SHA-256, Langue détectée (<code>ar-DZ-darija</code>)</td>
-              <td>Notes vocales WhatsApp contenant les instructions d'arnaque et rendez-vous en Darija.</td>
-              <td><span class="badge badge-amber">MinIO S3 (Fichier WORM)</span></td>
-              <td><span class="badge badge-purple">Qdrant (Empreinte x-vector 192-d)</span> &bull; <span class="badge badge-blue">Neo4j</span></td>
-              <td>S3 REST API WORM &bull; Vecteur d'empreinte acoustique PyAnnote 3.1 &bull; Transcription textuelle dans le nœud Neo4j</td>
-            </tr>
-            <tr>
-              <td>🖼️ <strong>12. Élément Multimédia / Photo</strong><br/><code>IMAGE_ARTIFACT</code></td>
-              <td>Fichier image PNG/JPEG, Hachage cryptographique SHA-256, Hachage perceptuel pHash</td>
-              <td>Photos de profil, captures de reçus de paiement BaridiMob ou photos de faux stocks.</td>
-              <td><span class="badge badge-amber">MinIO S3 (Fichier WORM)</span></td>
-              <td><span class="badge badge-purple">Qdrant (Vecteur ArcFace 512-d)</span> &bull; <span class="badge badge-blue">Neo4j</span></td>
-              <td>S3 REST API scellé &bull; HNSW Cosine Similarity pour la biométrie faciale &bull; Nœud métadonnées EXIF dans Neo4j</td>
-            </tr>
-            <tr>
-              <td>📶 <strong>13. Bornage Télécom (CDR)</strong><br/><code>TELECOM_CDR</code></td>
-              <td>Ligne appelante/appelée, ID Antenne Relais (BTS), Azimut (0-360°), Durée, Timestamp précis</td>
-              <td>Données judiciaires réquisitionnées auprès de Mobilis, Djezzy et Ooredoo pour vérification d'alibis.</td>
-              <td><span class="badge badge-emerald">TimescaleDB / PostgreSQL (Hyper-Table)</span></td>
-              <td><span class="badge badge-blue">Neo4j (Liaisons de co-déplacement)</span></td>
-              <td>SQL Hypertables partitionnées par tranches de 24h &bull; Calculs géospatiaux PostGIS en &lt;15ms</td>
-            </tr>
-            <tr>
-              <td>⚖️ <strong>14. Document Judiciaire</strong><br/><code>LEGAL_DOCUMENT</code></td>
-              <td>Référence PV, Réquisition, Plainte, Sceau d'horodatage RFC 3161, Racine d'arbre de Merkle</td>
-              <td>Dossier officiel remis au procureur de la République ou au juge d'instruction.</td>
-              <td><span class="badge badge-amber">MinIO S3 (PDF/A-3b WORM)</span></td>
-              <td><span class="badge badge-emerald">PostgreSQL 16 (Registre d'audit chaîné)</span></td>
-              <td>S3 WORM légalement inaltérable &bull; Chaînage de hachages cryptographiques (Merkle Proof)</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- 4. Attributs de la Base Graphe (Neo4j) & Modèle Universel Généralisé (GFPG) -->
-    <section>
-      <h2 class="section-title">4. Attributs de la Base Graphe (Neo4j) &amp; Modèle Universel Généralisé (GFPG)</h2>
-      <p class="section-subtitle">
-        Comment structurer les nœuds et arêtes dans Neo4j, et comment garantir que le schéma est <strong>entièrement généralisable</strong> sans jamais nécessiter de restructuration de la base lorsqu'un nouveau type de cybercriminalité apparaît ?
-      </p>
-
-      <div class="grid-2">
-        <!-- 4.1 Attributs Communs à Tous les Nœuds -->
-        <div class="card" style="border-top:4px solid var(--accent-blue);">
-          <div class="card-title"><span>🧬</span> 4.1 Attributs Communs de Nœuds (Méta-Modèle Universel)</div>
-          <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.5;margin-bottom:0.75rem;">
-            Chaque entité du graphe, qu'il s'agisse d'un numéro de téléphone, d'un compte Instagram ou d'un suspect, implémente obligatoirement les 10 attributs pivots suivants :
-          </p>
-          <ul style="font-size:0.8rem;color:#cbd5e1;line-height:1.6;padding-left:1.2rem;margin:0;">
-            <li><code>uuid</code> : Identifiant unique universel (RFC 4122 v4) immuable.</li>
-            <li><code>canonical_value</code> : Représentation textuelle nettoyée et normalisée (ex: <code>+213555019283</code> pour un téléphone, minuscule pour un e-mail). Indexé en contrainte d'unicité.</li>
-            <li><code>entity_type</code> : Type parmi les 14 catégories (<code>PHONE</code>, <code>PERSON</code>, <code>WEBSITE</code>...).</li>
-            <li><code>layer</code> : Calque d'enquête assigné (<code>1:VERIFIED</code>, <code>2:OSINT_RAW</code>, <code>3:INFRA</code>, <code>4:HYPOTHESIS</code>).</li>
-            <li><code>confidence_score</code> : Score de certitude judiciaire (Float entre <code>0.00</code> et <code>1.00</code>).</li>
-            <li><code>source_tool</code> : Identifiant de la brique ayant découvert l'indice (ex: <code>tool.identity.phoneinfoga</code>).</li>
-            <li><code>source_artifact_sha256</code> : Empreinte de la preuve physique scellée dans MinIO S3 garantissant la chaîne de garde.</li>
-            <li><code>case_ids</code> : Tableau des numéros de dossiers liés (<code>["2026-SCAM-089", "2025-FRAUD-012"]</code>) permettant la découverte automatique de réseaux criminels multi-juridictions.</li>
-            <li><code>first_seen_at</code> / <code>last_seen_at</code> : Intervalles temporels d'activité forensique.</li>
-            <li><code>status</code> : État du cycle de vie (<code>ACTIVE</code>, <code>ARCHIVED</code>, <code>DISCARDED_FALSE_POSITIVE</code>).</li>
-          </ul>
-        </div>
-
-        <!-- 4.2 Attributs des Arêtes (Relations Typées) -->
-        <div class="card" style="border-top:4px solid var(--accent-purple);">
-          <div class="card-title"><span>🔗</span> 4.2 Attributs des Arêtes &amp; Relations Typées</div>
-          <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.5;margin-bottom:0.75rem;">
-            Les liens entre entités ne sont pas de simples traits ; ce sont des relations sémantiques riches portant leurs propres preuves juridiques :
-          </p>
-          <ul style="font-size:0.8rem;color:#cbd5e1;line-height:1.6;padding-left:1.2rem;margin:0;">
-            <li><code>type</code> : Verbe d'action orienté (<code>USES_PHONE</code>, <code>TRANSFERS_FUNDS</code>, <code>REGISTERED_ON</code>, <code>COMMUNICATES_WITH</code>, <code>CO_LOCATED_WITH</code>, <code>SUSPECTED_ALIAS_OF</code>).</li>
-            <li><code>weight</code> : Poids numérique proportionnel à l'intensité de la liaison (montant total en DZD transféré, nombre d'appels passés ou score de similarité faciale).</li>
-            <li><code>confidence</code> : Certitude de la relation (ex: <code>0.89</code> pour une correspondance faciale ArcFace, <code>1.00</code> pour un compte bancaire au nom du suspect).</li>
-            <li><code>valid_from</code> / <code>valid_to</code> : Fenêtre de validité temporelle (ex: période pendant laquelle la ligne téléphonique appartenait au suspect).</li>
-            <li><code>evidence_warc_ref</code> : Pointeur direct vers l'archive web ou le listing d'appels certifiant ce lien.</li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- 4.3 Peut-on Généraliser le Modèle ? -->
-      <div class="card" style="margin-top:1.25rem;border-left:4px solid var(--accent-emerald);">
-        <div class="card-title"><span>💡</span> 4.3 Peut-on Généraliser le Modèle ? (Le Modèle GFPG — Generalized Forensic Property Graph)</div>
-        <p style="font-size:0.84rem;color:var(--text-secondary);line-height:1.6;margin-bottom:0.75rem;">
-          <strong>Réponse formelle : OUI, le modèle est 100% généralisable.</strong><br/>
-          Dans les outils d'enquête traditionnels, l'apparition d'un nouveau type de délit (ex: arnaque aux cryptomonnaies ou fraude aux colis de livraison) exigeait de réécrire les schémas SQL, de créer de nouvelles tables et de recompiler l'application. Athar DZ résout définitivement ce problème grâce au patron de conception <strong>Generalized Forensic Property Graph (GFPG)</strong> :
-        </p>
+      <div style="background:#090e17;border:1px solid #1e293b;border-radius:12px;padding:1.25rem;margin-bottom:1.75rem;">
         
-        <div style="background:#090d16;padding:1rem;border-radius:8px;font-size:0.8rem;color:#cbd5e1;line-height:1.55;margin-bottom:0.75rem;">
-          <strong style="color:#10b981;">Comment fonctionne la généralisation sans rupture de schéma :</strong>
-          <ol style="margin:0.5rem 0 0 1.25rem;padding:0;">
-            <li><strong>Méta-Modèle Polymorphe à Propriétés Flexibles :</strong> Le moteur Neo4j stocke le cœur indexé universel (identifiant canonique, confiance, calque, dossiers liés) et encapsule les attributs spécifiques à chaque nouveau vecteur sous forme de propriétés dynamiques sans schéma rigide.</li>
-            <li><strong>Déclaration par Manifestes YAML :</strong> L'ajout d'une nouvelle entité (ex: <code>Drone_Telemetry</code> ou <code>Telegram_Bot_Token</code>) s'effectue par un simple fichier de configuration <code>brick.yaml</code> spécifiant <code>input_entities</code> et <code>output_entities</code>. Le moteur déterministe ingère le nouveau type automatiquement.</li>
-            <li><strong>Requêtage Cypher Transversal :</strong> Les algorithmes de parcours de graphe (recherche de plus court chemin, communautés de Louvain, détection de prête-noms) fonctionnent sur la topologie du graphe indépendamment du type d'entité, permettant de trouver des chemins comme :<br/>
-              <code style="color:#38bdf8;">(Suspect)-[:COMMUNICATES_WITH]->(Vocal)-[:MENTIONS]->(BaridiMob)-[:LINKED_TO]->(Autre_Dossier)</code>
-            </li>
-          </ol>
-        </div>
-      </div>
-    </section>
-
-    <!-- 2. "Photoshop for Investigations" Direct Feature Specification -->
-    <section>
-      <h2 class="section-title">2. "Photoshop for Investigations": Detailed Interface Specification</h2>
-      <p class="section-subtitle">
-        Why use the Photoshop metaphor? Because in real criminal investigations, you deal with <strong>hundreds of raw leads</strong> that must be separated from <strong>court-verified facts</strong> without cluttering the screen.
-      </p>
-
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Photoshop Feature</th>
-              <th>How It Works in AegisInvestigate</th>
-              <th>What the Detective Does in Real Practice</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>🎨 Investigation Layers</strong><br/><em>(Show / Hide Eye)</em></td>
-              <td>Separates your case into 4 clear layers:<br/>
-                &bull; <strong>Layer 1 (Verified Facts):</strong> Official police reports, victim depositions, verified photos.<br/>
-                &bull; <strong>Layer 2 (Online Search):</strong> Scraped social media accounts and search engine hits.<br/>
-                &bull; <strong>Layer 3 (Website &amp; Servers):</strong> Technical links, hosting servers, and shared trackers.<br/>
-                &bull; <strong>Layer 4 (Suspect Theories):</strong> Proposed matches and suspect candidates.
-              </td>
-              <td>If an automated search on a username returns 40 social media profiles, they all land on <strong>Layer 2</strong>. The detective can hide Layer 2 anytime with one click to keep the board clean, or right-click the real suspect's account and click <strong>"Lock as Verified Fact (Move to Layer 1)"</strong>.</td>
-            </tr>
-            <tr>
-              <td><strong>🎚️ Confidence Slider</strong><br/><em>(Like Layer Opacity)</em></td>
-              <td>A slider at the top of the screen (0% to 100%). Dragging the slider fades out weak clues and highlights solid, certified proof.</td>
-              <td>Set to <code>90%</code> when preparing a presentation for the prosecutor or magistrate to show only 100% verified facts. Set to <code>40%</code> when brainstorming all possible leads.</td>
-            </tr>
-            <tr>
-              <td><strong>🪄 Magic Wand &amp; Cluster Selector</strong></td>
-              <td>Click any clue to instantly highlight everything connected to it, or all websites sharing the exact same tracking code.</td>
-              <td>Click the Facebook Ad Tracker ID to immediately highlight the 3 fake tyre websites operated by the scammer across the board.</td>
-            </tr>
-            <tr>
-              <td><strong>🩹 Clue Healing &amp; Merge Brush</strong></td>
-              <td>Drag one clue card onto another when you discover they represent the same real-world item.</td>
-              <td>Drag the phone number card <code>0555 01 92 83</code> onto <code>+213 555 019 283</code> to merge them into one clean card while preserving the history of where both were found.</td>
-            </tr>
-            <tr>
-              <td><strong>⏪ History &amp; Checkpoint Undo</strong></td>
-              <td>Every search tool run creates an instant checkpoint in your History list.</td>
-              <td>If a search expansion leads down a dead end, click the checkpoint from 10 minutes ago to roll back the board instantly.</td>
-            </tr>
-            <tr>
-              <td><strong>📄 Flatten &amp; Export Official Dossier</strong></td>
-              <td>Exports visible layers into a clean, court-admissible PDF dossier complete with photos, timeline, map cutouts, and official operator request letters.</td>
-              <td>Click <strong>"Export Court Dossier"</strong> to generate a ready-to-print official case binder for the prosecutor in seconds.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- 3. Structure des Données & Matrice de Persistance Polyglotte (14 Types d'Éléments) -->
-    <section>
-      <h2 class="section-title">3. Structure des Données &amp; Matrice de Persistance Polyglotte (Les 14 Types d'Éléments)</h2>
-      <p class="section-subtitle">
-        En criminalistique numérique moderne, une base de données unique est incapable de répondre à tous les besoins. Athar DZ utilise une <strong>architecture de persistance polyglotte</strong> où chaque indice est routé vers le moteur le plus adapté à sa nature géométrique, relationnelle, vectorielle ou légale.
-      </p>
-
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Type d'Élément (14 Types)</th>
-              <th>Format Canonique &amp; Validation</th>
-              <th>Rôle dans l'Enquête Criminelle</th>
-              <th>Base de Données Principale</th>
-              <th>Index &amp; Projections Secondaires</th>
-              <th>Protocole &amp; Format de Stockage</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>👤 <strong>1. Personne / Suspect</strong><br/><code>PERSON</code></td>
-              <td>Nom canonique, Alias, NIN (Numéro d'Identification Nationale), Date de naissance</td>
-              <td>Entité centrale suspectée, victime, témoin ou prête-nom (mule financière).</td>
-              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
-              <td><span class="badge badge-emerald">PostgreSQL 16 (Table <code>persons</code>)</span></td>
-              <td>Bolt v5 Cypher &bull; JSON relationnel ACID avec RLS par wilaya</td>
-            </tr>
-            <tr>
-              <td>📱 <strong>2. Ligne Téléphonique</strong><br/><code>PHONE_NUMBER</code></td>
-              <td>Format E.164 strict (ex: <code>+213555019283</code>), MCC-MNC opérateur (Mobilis, Djezzy, Ooredoo)</td>
-              <td>Vecteur de communication et d'authentification 2FA sur les réseaux sociaux et banques.</td>
-              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
-              <td><span class="badge badge-cyan">Redis 7 (Token-Bucket)</span> &bull; <span class="badge badge-emerald">PostgreSQL</span></td>
-              <td>Bolt v5 &bull; Chaîne normalisée indexée en mémoire B-Tree pour dédoublonnage instantané</td>
-            </tr>
-            <tr>
-              <td>💬 <strong>3. Compte de Réseau Social</strong><br/><code>SOCIAL_ACCOUNT</code></td>
-              <td>Identifiant numérique permanent (ex: Telegram ID <code>519283741</code>, Facebook UID), Handle, Plateforme</td>
-              <td>Profil d'escroc ou canal de diffusion d'annonces frauduleuses.</td>
-              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
-              <td><span class="badge badge-cyan">MongoDB 7.x (Dépotoir Profil BSON)</span></td>
-              <td>Bolt v5 &bull; Document BSON Snappy contenant l'historique brut des bios et followers</td>
-            </tr>
-            <tr>
-              <td>📢 <strong>4. Publication / Annonce</strong><br/><code>SOCIAL_POST</code></td>
-              <td>URL pérenne, ID de publication, Horodatage de publication ISO 8601</td>
-              <td>L'acte d'escroquerie initial (ex: vente de pneus Michelin fictifs à -60%).</td>
-              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
-              <td><span class="badge badge-amber">MinIO S3 (Capture WORM)</span> &bull; <span class="badge badge-cyan">MongoDB (DOM)</span></td>
-              <td>S3 Multipart API (WARC + PNG scellé) &bull; Document BSON pour l'arbre syntaxique du texte</td>
-            </tr>
-            <tr>
-              <td>📧 <strong>5. Adresse E-mail</strong><br/><code>EMAIL_ADDRESS</code></td>
-              <td>RFC 5322 normalisé en minuscules, domaine MX vérifié</td>
-              <td>Adresse de contact, récupération de mot de passe ou compte d'administration de site.</td>
-              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
-              <td><span class="badge badge-emerald">PostgreSQL (Table <code>breaches</code>)</span></td>
-              <td>Bolt v5 &bull; Table relationnelle liant l'e-mail aux fuites de données (DeHashed/HaveIBeenPwned)</td>
-            </tr>
-            <tr>
-              <td>🌐 <strong>6. Site Web &amp; Domaine</strong><br/><code>WEB_DOMAIN / URL</code></td>
-              <td>FQDN canonique, URL complète normalisée, IP résolue, Certificat TLS JARM</td>
-              <td>Boutique en ligne frauduleuse servant au paiement ou à l'hameçonnage.</td>
-              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
-              <td><span class="badge badge-cyan">MongoDB 7.x (DOM brut)</span> &bull; <span class="badge badge-amber">MinIO (WARC ISO 28500)</span></td>
-              <td>Bolt v5 &bull; BSON Wire Protocol pour les en-têtes HTTP bruts et scripts JavaScript</td>
-            </tr>
-            <tr>
-              <td>🏷️ <strong>7. Identifiant d'Infrastructure</strong><br/><code>INFRASTRUCTURE_ID</code></td>
-              <td>Meta Pixel (<code>88419203314</code>), Google Tag Manager, MongoDB ObjectId, Supabase Project ID</td>
-              <td>Empreinte invisible partagée par plusieurs sites créés par le même cybercriminel.</td>
-              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
-              <td><span class="badge badge-cyan">MongoDB 7.x (Index d'attributs)</span></td>
-              <td>Bolt v5 &bull; Recherche inversée instantanée dans le graphe pour relier les sites jumeaux</td>
-            </tr>
-            <tr>
-              <td>💳 <strong>8. Compte Bancaire &amp; BaridiMob</strong><br/><code>BANK_ACCOUNT / CCP</code></td>
-              <td>RIP Algérie Poste (20 chiffres canoniques), Numéro CCP, Clé, Code Banque</td>
-              <td>Destination des virements extorqués aux victimes via l'application BaridiMob.</td>
-              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
-              <td><span class="badge badge-emerald">PostgreSQL 16 (Table <code>financial_transactions</code>)</span></td>
-              <td>Bolt v5 &bull; Table financière ACID avec horodatage des flux monétaires en Dinars (DZD)</td>
-            </tr>
-            <tr>
-              <td>🪙 <strong>9. Portefeuille Crypto</strong><br/><code>CRYPTO_WALLET</code></td>
-              <td>Adresse publique base58/hexadécimale (BTC, ETH, TRC-20 USDT, Binance Pay ID)</td>
-              <td>Blanchiment de fonds volés par conversion en stablecoin USDT.</td>
-              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
-              <td><span class="badge badge-emerald">PostgreSQL (Livre de comptes de transactions)</span></td>
-              <td>Bolt v5 &bull; Graphe bipartite des transferts blockchain avec montants et horodatages</td>
-            </tr>
-            <tr>
-              <td>🚗 <strong>10. Véhicule &amp; Immatriculation</strong><br/><code>VEHICLE</code></td>
-              <td>Matricule algérien format officiel (ex: <code>04829-116-16</code>), Numéro de châssis VIN</td>
-              <td>Véhicule utilisé pour la livraison de marchandise frauduleuse ou repéré sur vidéosurveillance.</td>
-              <td><span class="badge badge-blue">Neo4j 5.x (Nœud Graphe)</span></td>
-              <td><span class="badge badge-emerald">PostgreSQL 16 (Table <code>vehicles</code>)</span></td>
-              <td>Bolt v5 &bull; Modèle relationnel connecté au fichier national des cartes grises</td>
-            </tr>
-            <tr>
-              <td>🎙️ <strong>11. Enregistrement Vocal</strong><br/><code>AUDIO_RECORDING</code></td>
-              <td>Fichier binaire OPUS / WAV, Durée, Empreinte SHA-256, Langue détectée (<code>ar-DZ-darija</code>)</td>
-              <td>Notes vocales WhatsApp contenant les instructions d'arnaque et rendez-vous en Darija.</td>
-              <td><span class="badge badge-amber">MinIO S3 (Fichier WORM)</span></td>
-              <td><span class="badge badge-purple">Qdrant (Empreinte x-vector 192-d)</span> &bull; <span class="badge badge-blue">Neo4j</span></td>
-              <td>S3 REST API WORM &bull; Vecteur d'empreinte acoustique PyAnnote 3.1 &bull; Transcription textuelle dans le nœud Neo4j</td>
-            </tr>
-            <tr>
-              <td>🖼️ <strong>12. Élément Multimédia / Photo</strong><br/><code>IMAGE_ARTIFACT</code></td>
-              <td>Fichier image PNG/JPEG, Hachage cryptographique SHA-256, Hachage perceptuel pHash</td>
-              <td>Photos de profil, captures de reçus de paiement BaridiMob ou photos de faux stocks.</td>
-              <td><span class="badge badge-amber">MinIO S3 (Fichier WORM)</span></td>
-              <td><span class="badge badge-purple">Qdrant (Vecteur ArcFace 512-d)</span> &bull; <span class="badge badge-blue">Neo4j</span></td>
-              <td>S3 REST API scellé &bull; HNSW Cosine Similarity pour la biométrie faciale &bull; Nœud métadonnées EXIF dans Neo4j</td>
-            </tr>
-            <tr>
-              <td>📶 <strong>13. Bornage Télécom (CDR)</strong><br/><code>TELECOM_CDR</code></td>
-              <td>Ligne appelante/appelée, ID Antenne Relais (BTS), Azimut (0-360°), Durée, Timestamp précis</td>
-              <td>Données judiciaires réquisitionnées auprès de Mobilis, Djezzy et Ooredoo pour vérification d'alibis.</td>
-              <td><span class="badge badge-emerald">TimescaleDB / PostgreSQL (Hyper-Table)</span></td>
-              <td><span class="badge badge-blue">Neo4j (Liaisons de co-déplacement)</span></td>
-              <td>SQL Hypertables partitionnées par tranches de 24h &bull; Calculs géospatiaux PostGIS en &lt;15ms</td>
-            </tr>
-            <tr>
-              <td>⚖️ <strong>14. Document Judiciaire</strong><br/><code>LEGAL_DOCUMENT</code></td>
-              <td>Référence PV, Réquisition, Plainte, Sceau d'horodatage RFC 3161, Racine d'arbre de Merkle</td>
-              <td>Dossier officiel remis au procureur de la République ou au juge d'instruction.</td>
-              <td><span class="badge badge-amber">MinIO S3 (PDF/A-3b WORM)</span></td>
-              <td><span class="badge badge-emerald">PostgreSQL 16 (Registre d'audit chaîné)</span></td>
-              <td>S3 WORM légalement inaltérable &bull; Chaînage de hachages cryptographiques (Merkle Proof)</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- 4. Attributs de la Base Graphe (Neo4j) & Modèle Universel Généralisé (GFPG) -->
-    <section>
-      <h2 class="section-title">4. Attributs de la Base Graphe (Neo4j) &amp; Modèle Universel Généralisé (GFPG)</h2>
-      <p class="section-subtitle">
-        Comment structurer les nœuds et arêtes dans Neo4j, et comment garantir que le schéma est <strong>entièrement généralisable</strong> sans jamais nécessiter de restructuration de la base lorsqu'un nouveau type de cybercriminalité apparaît ?
-      </p>
-
-      <div class="grid-2">
-        <!-- 4.1 Attributs Communs à Tous les Nœuds -->
-        <div class="card" style="border-top:4px solid var(--accent-blue);">
-          <div class="card-title"><span>🧬</span> 4.1 Attributs Communs de Nœuds (Méta-Modèle Universel)</div>
-          <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.5;margin-bottom:0.75rem;">
-            Chaque entité du graphe, qu'il s'agisse d'un numéro de téléphone, d'un compte Instagram ou d'un suspect, implémente obligatoirement les 10 attributs pivots suivants :
-          </p>
-          <ul style="font-size:0.8rem;color:#cbd5e1;line-height:1.6;padding-left:1.2rem;margin:0;">
-            <li><code>uuid</code> : Identifiant unique universel (RFC 4122 v4) immuable.</li>
-            <li><code>canonical_value</code> : Représentation textuelle nettoyée et normalisée (ex: <code>+213555019283</code> pour un téléphone, minuscule pour un e-mail). Indexé en contrainte d'unicité.</li>
-            <li><code>entity_type</code> : Type parmi les 14 catégories (<code>PHONE</code>, <code>PERSON</code>, <code>WEBSITE</code>...).</li>
-            <li><code>layer</code> : Calque d'enquête assigné (<code>1:VERIFIED</code>, <code>2:OSINT_RAW</code>, <code>3:INFRA</code>, <code>4:HYPOTHESIS</code>).</li>
-            <li><code>confidence_score</code> : Score de certitude judiciaire (Float entre <code>0.00</code> et <code>1.00</code>).</li>
-            <li><code>source_tool</code> : Identifiant de la brique ayant découvert l'indice (ex: <code>tool.identity.phoneinfoga</code>).</li>
-            <li><code>source_artifact_sha256</code> : Empreinte de la preuve physique scellée dans MinIO S3 garantissant la chaîne de garde.</li>
-            <li><code>case_ids</code> : Tableau des numéros de dossiers liés (<code>["2026-SCAM-089", "2025-FRAUD-012"]</code>) permettant la découverte automatique de réseaux criminels multi-juridictions.</li>
-            <li><code>first_seen_at</code> / <code>last_seen_at</code> : Intervalles temporels d'activité forensique.</li>
-            <li><code>status</code> : État du cycle de vie (<code>ACTIVE</code>, <code>ARCHIVED</code>, <code>DISCARDED_FALSE_POSITIVE</code>).</li>
-          </ul>
+        <!-- Filter Bar 1: Operational Domains -->
+        <div style="margin-bottom:0.75rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.4rem;">
+            <strong style="font-size:0.75rem;text-transform:uppercase;color:#94a3b8;letter-spacing:0.5px;">Filtrer par Domaine d'Investigation :</strong>
+            <span style="font-size:0.7rem;color:#64748b;">8 Domaines Opérationnels</span>
+          </div>
+          <div class="onto-filter-toolbar">
+            <button class="onto-btn onto-domain-btn active" data-domain="all" onclick="filterOntoDomain('all')">
+          <span>🌐</span> Tous les Domaines (37 Types de Nœuds)
+        </button><button class="onto-btn onto-domain-btn" data-domain="territory" onclick="filterOntoDomain('territory')">
+          <span>🏛️</span> 1. Judiciaire & Territoire DZ
+        </button><button class="onto-btn onto-domain-btn" data-domain="actors" onclick="filterOntoDomain('actors')">
+          <span>👥</span> 2. Personnes & Entités Morales
+        </button><button class="onto-btn onto-domain-btn" data-domain="telecom" onclick="filterOntoDomain('telecom')">
+          <span>📱</span> 3. Télécoms & Forensique Mobile
+        </button><button class="onto-btn onto-domain-btn" data-domain="finance" onclick="filterOntoDomain('finance')">
+          <span>💳</span> 4. Finances Criminelles & BaridiMob
+        </button><button class="onto-btn onto-domain-btn" data-domain="socmint" onclick="filterOntoDomain('socmint')">
+          <span>🌐</span> 5. SOCMINT, Web & Trackers
+        </button><button class="onto-btn onto-domain-btn" data-domain="cyber" onclick="filterOntoDomain('cyber')">
+          <span>🛡️</span> 6. Cyber, Malwares & Forensique
+        </button><button class="onto-btn onto-domain-btn" data-domain="biometrics" onclick="filterOntoDomain('biometrics')">
+          <span>🎙️</span> 7. Biométrie Multimodale & Médias
+        </button><button class="onto-btn onto-domain-btn" data-domain="legal" onclick="filterOntoDomain('legal')">
+          <span>⚖️</span> 8. Chaîne de Preuve & Scellés WORM
+        </button>
+          </div>
         </div>
 
-        <!-- 4.2 Attributs des Arêtes (Relations Typées) -->
-        <div class="card" style="border-top:4px solid var(--accent-purple);">
-          <div class="card-title"><span>🔗</span> 4.2 Attributs des Arêtes &amp; Relations Typées</div>
-          <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.5;margin-bottom:0.75rem;">
-            Les liens entre entités ne sont pas de simples traits ; ce sont des relations sémantiques riches portant leurs propres preuves juridiques :
-          </p>
-          <ul style="font-size:0.8rem;color:#cbd5e1;line-height:1.6;padding-left:1.2rem;margin:0;">
-            <li><code>type</code> : Verbe d'action orienté (<code>USES_PHONE</code>, <code>TRANSFERS_FUNDS</code>, <code>REGISTERED_ON</code>, <code>COMMUNICATES_WITH</code>, <code>CO_LOCATED_WITH</code>, <code>SUSPECTED_ALIAS_OF</code>).</li>
-            <li><code>weight</code> : Poids numérique proportionnel à l'intensité de la liaison (montant total en DZD transféré, nombre d'appels passés ou score de similarité faciale).</li>
-            <li><code>confidence</code> : Certitude de la relation (ex: <code>0.89</code> pour une correspondance faciale ArcFace, <code>1.00</code> pour un compte bancaire au nom du suspect).</li>
-            <li><code>valid_from</code> / <code>valid_to</code> : Fenêtre de validité temporelle (ex: période pendant laquelle la ligne téléphonique appartenait au suspect).</li>
-            <li><code>evidence_warc_ref</code> : Pointeur direct vers l'archive web ou le listing d'appels certifiant ce lien.</li>
-          </ul>
+        <!-- Filter Bar 2: Polyglot Database Engines -->
+        <div style="margin-bottom:0.9rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.4rem;">
+            <strong style="font-size:0.75rem;text-transform:uppercase;color:#38bdf8;letter-spacing:0.5px;">Filtrer par Moteur de Base de Données (Persistance) :</strong>
+            <span style="font-size:0.7rem;color:#64748b;">6 Moteurs Polyglottes Spécialisés</span>
+          </div>
+          <div class="onto-filter-toolbar">
+            <button class="onto-btn onto-db-btn active" data-db="all" onclick="filterOntoDatabase('all')">
+          <span style="color:#38bdf8;">●</span> Tous les Moteurs (6 DBs)
+        </button><button class="onto-btn onto-db-btn" data-db="neo4j" onclick="filterOntoDatabase('neo4j')">
+          <span style="color:#38bdf8;">●</span> Neo4j 5.20+ Enterprise (Graphe & Relations)
+        </button><button class="onto-btn onto-db-btn" data-db="postgres" onclick="filterOntoDatabase('postgres')">
+          <span style="color:#0ea5e9;">●</span> PostgreSQL 16 + TimescaleDB (ACID & CDRs)
+        </button><button class="onto-btn onto-db-btn" data-db="qdrant" onclick="filterOntoDatabase('qdrant')">
+          <span style="color:#a855f7;">●</span> Qdrant 1.9 Rust (Vecteurs Biométriques)
+        </button><button class="onto-btn onto-db-btn" data-db="minio" onclick="filterOntoDatabase('minio')">
+          <span style="color:#f43f5e;">●</span> MinIO Enterprise S3 (Scellés WORM)
+        </button><button class="onto-btn onto-db-btn" data-db="mongodb" onclick="filterOntoDatabase('mongodb')">
+          <span style="color:#10b981;">●</span> MongoDB 7.0 WiredTiger (Documents BSON)
+        </button><button class="onto-btn onto-db-btn" data-db="redis" onclick="filterOntoDatabase('redis')">
+          <span style="color:#f59e0b;">●</span> Redis 7.2 Stack (In-Memory Pub/Sub & Cache)
+        </button>
+          </div>
         </div>
-      </div>
 
-      <!-- 4.3 Peut-on Généraliser le Modèle ? -->
-      <div class="card" style="margin-top:1.25rem;border-left:4px solid var(--accent-emerald);">
-        <div class="card-title"><span>💡</span> 4.3 Peut-on Généraliser le Modèle ? (Le Modèle GFPG — Generalized Forensic Property Graph)</div>
-        <p style="font-size:0.84rem;color:var(--text-secondary);line-height:1.6;margin-bottom:0.75rem;">
-          <strong>Réponse formelle : OUI, le modèle est 100% généralisable.</strong><br/>
-          Dans les outils d'enquête traditionnels, l'apparition d'un nouveau type de délit (ex: arnaque aux cryptomonnaies ou fraude aux colis de livraison) exigeait de réécrire les schémas SQL, de créer de nouvelles tables et de recompiler l'application. Athar DZ résout définitivement ce problème grâce au patron de conception <strong>Generalized Forensic Property Graph (GFPG)</strong> :
+        <!-- Dynamic Filter Status Banner -->
+        <div id="onto-filter-banner" style="background:#050912;border:1px dashed #24354f;border-radius:6px;padding:0.6rem 0.9rem;margin-bottom:1rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.8rem;">
+            <span style="color:#cbd5e1;">Filtre Actif : <strong style="color:#38bdf8;">Tous les Domaines</strong> &bull; <strong style="color:#10b981;">Toutes les Bases de Données</strong></span>
+            <span class="badge badge-blue" style="font-size:0.72rem;">37 Nœuds Visibles sur 37</span>
+          </div>
+        </div>
+
+        <!-- Master Ontological SVG Canvas -->
+        <div style="background:#040711;border:1px solid #1a2538;border-radius:8px;padding:0.75rem;margin-bottom:1.25rem;overflow-x:auto;">
+          <svg viewBox="0 0 1350 920" xmlns="http://www.w3.org/2000/svg" id="master-onto-svg" style="min-width:1200px;width:100%;height:auto;font-family:system-ui,-apple-system,sans-serif;user-select:none;">
+  <defs>
+    <!-- Arrowhead markers -->
+    <marker id="m-arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="m-arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#10b981"/>
+    </marker>
+    <marker id="m-arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#eab308"/>
+    </marker>
+    <marker id="m-arrow-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#f43f5e"/>
+    </marker>
+    <marker id="m-arrow-orange" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#f97316"/>
+    </marker>
+    <marker id="m-arrow-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#a855f7"/>
+    </marker>
+    <marker id="m-arrow-crimson" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#e11d48"/>
+    </marker>
+    <marker id="m-arrow-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#06b6d4"/>
+    </marker>
+    <filter id="shadow-node" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- ==================== 8 OPERATIONAL DOMAIN ZONES ==================== -->
+  <g class="onto-zone-group" id="zone_territory">
+    <rect x="20" y="20" width="380" height="260" rx="8" fill="#0b111c" stroke="#10b981" stroke-width="1.2" stroke-dasharray="5,3" opacity="0.6"/>
+    <rect x="20" y="20" width="380" height="22" rx="8" fill="#10b981" fill-opacity="0.12"/>
+    <text x="32" y="35" fill="#10b981" font-size="9" font-weight="bold" letter-spacing="0.5">1. 🏛️ ORGANISATION JUDICIAIRE & TERRITOIRE DZ</text>
+  </g>
+  <g class="onto-zone-group" id="zone_actors">
+    <rect x="415" y="20" width="425" height="260" rx="8" fill="#0b111c" stroke="#f43f5e" stroke-width="1.2" stroke-dasharray="5,3" opacity="0.6"/>
+    <rect x="415" y="20" width="425" height="22" rx="8" fill="#f43f5e" fill-opacity="0.12"/>
+    <text x="427" y="35" fill="#f43f5e" font-size="9" font-weight="bold" letter-spacing="0.5">2. 👥 ACTEURS HUMAINS, MORAUX & IDENTITÉS</text>
+  </g>
+  <g class="onto-zone-group" id="zone_biometrics">
+    <rect x="855" y="20" width="475" height="260" rx="8" fill="#0b111c" stroke="#a855f7" stroke-width="1.2" stroke-dasharray="5,3" opacity="0.6"/>
+    <rect x="855" y="20" width="475" height="22" rx="8" fill="#a855f7" fill-opacity="0.12"/>
+    <text x="867" y="35" fill="#a855f7" font-size="9" font-weight="bold" letter-spacing="0.5">7. 🎙️ BIOMÉTRIE MULTIMODALE & MÉDIAS FORENSIQUES</text>
+  </g>
+  <g class="onto-zone-group" id="zone_telecom">
+    <rect x="20" y="295" width="380" height="310" rx="8" fill="#0b111c" stroke="#f97316" stroke-width="1.2" stroke-dasharray="5,3" opacity="0.6"/>
+    <rect x="20" y="295" width="380" height="22" rx="8" fill="#f97316" fill-opacity="0.12"/>
+    <text x="32" y="310" fill="#f97316" font-size="9" font-weight="bold" letter-spacing="0.5">3. 📱 TÉLÉCOMS, BORNAGE & FORENSIQUE MOBILE</text>
+  </g>
+  <g class="onto-zone-group" id="zone_finance">
+    <rect x="415" y="295" width="425" height="310" rx="8" fill="#0b111c" stroke="#eab308" stroke-width="1.2" stroke-dasharray="5,3" opacity="0.6"/>
+    <rect x="415" y="295" width="425" height="22" rx="8" fill="#eab308" fill-opacity="0.12"/>
+    <text x="427" y="310" fill="#eab308" font-size="9" font-weight="bold" letter-spacing="0.5">4. 💳 FINANCES CRIMINELLES, BARIDIMOB & CRYPTO</text>
+  </g>
+  <g class="onto-zone-group" id="zone_socmint">
+    <rect x="855" y="295" width="475" height="310" rx="8" fill="#0b111c" stroke="#06b6d4" stroke-width="1.2" stroke-dasharray="5,3" opacity="0.6"/>
+    <rect x="855" y="295" width="475" height="22" rx="8" fill="#06b6d4" fill-opacity="0.12"/>
+    <text x="867" y="310" fill="#06b6d4" font-size="9" font-weight="bold" letter-spacing="0.5">5. 🌐 SOCMINT, WEB ÉCOSYSTÈME & TRACKERS</text>
+  </g>
+  <g class="onto-zone-group" id="zone_cyber">
+    <rect x="20" y="625" width="580" height="270" rx="8" fill="#0b111c" stroke="#22c55e" stroke-width="1.2" stroke-dasharray="5,3" opacity="0.6"/>
+    <rect x="20" y="625" width="580" height="22" rx="8" fill="#22c55e" fill-opacity="0.12"/>
+    <text x="32" y="640" fill="#22c55e" font-size="9" font-weight="bold" letter-spacing="0.5">6. 🛡️ CYBER MALWARES, C2 & FORENSIQUE TECHNIQUE</text>
+  </g>
+  <g class="onto-zone-group" id="zone_legal">
+    <rect x="615" y="625" width="715" height="270" rx="8" fill="#0b111c" stroke="#e11d48" stroke-width="1.2" stroke-dasharray="5,3" opacity="0.6"/>
+    <rect x="615" y="625" width="715" height="22" rx="8" fill="#e11d48" fill-opacity="0.12"/>
+    <text x="627" y="640" fill="#e11d48" font-size="9" font-weight="bold" letter-spacing="0.5">8. ⚖️ CHAÎNE DE PREUVE & SCELLÉS NUMÉRIQUES WORM</text>
+  </g>
+
+  <!-- ==================== 47+ DIRECTIONAL RELATIONSHIP EDGES ==================== -->
+  <g class="onto-edge-g" data-src="commune" data-tgt="daira" data-edge="APPARTIENT_A_DAIRA">
+    <path class="onto-edge-path" d="M 297.5 115.0 Q 297.5 107.0 297.5 99.0" stroke="#10b981" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-emerald)"/>
+  </g>
+  <g class="onto-edge-g" data-src="daira" data-tgt="wilaya" data-edge="APPARTIENT_A_WILAYA">
+    <path class="onto-edge-path" d="M 215.0 77.0 Q 205.0 77.0 195.0 77.0" stroke="#10b981" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-emerald)"/>
+  </g>
+  <g class="onto-edge-g" data-src="unite" data-tgt="commune" data-edge="SITUEE_DANS_COMMUNE">
+    <path class="onto-edge-path" d="M 195.0 137.0 Q 205.0 137.0 215.0 137.0" stroke="#10b981" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-emerald)"/>
+  </g>
+  <g class="onto-edge-g" data-src="affaire" data-tgt="unite" data-edge="TRAITEE_PAR_UNITE">
+    <path class="onto-edge-path" d="M 215.0 212.0 Q 205.0 174.5 195.0 137.0" stroke="#38bdf8" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-blue)"/>
+  </g>
+  <g class="onto-edge-g" data-src="affaire" data-tgt="magistrat" data-edge="INSTRUITE_PAR_MAGISTRAT">
+    <path class="onto-edge-path" d="M 215.0 212.0 Q 205.0 209.5 195.0 207.0" stroke="#38bdf8" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-blue)"/>
+  </g>
+  <g class="onto-edge-g" data-src="affaire" data-tgt="personne" data-edge="IMPLIQUE_SUSPECT">
+    <path class="onto-edge-path" d="M 380.0 212.0 Q 407.5 180.5 435.0 149.0" stroke="#38bdf8" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-blue)"/>
+  </g>
+  <g class="onto-edge-g" data-src="personne" data-tgt="personne" data-edge="COMMUNIQUE_AVEC">
+    <path class="onto-edge-path" d="M 537.5 120.0 Q 537.5 149.0 537.5 178.0" stroke="#f43f5e" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-rose)"/>
+  </g>
+  <g class="onto-edge-g" data-src="personne" data-tgt="personne" data-edge="COMPLICE_DE">
+    <path class="onto-edge-path" d="M 537.5 120.0 Q 537.5 149.0 537.5 178.0" stroke="#f43f5e" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-rose)"/>
+  </g>
+  <g class="onto-edge-g" data-src="personne" data-tgt="entreprise" data-edge="DIRIGE_ENTREPRISE">
+    <path class="onto-edge-path" d="M 640.0 149.0 Q 650.0 113.0 660.0 77.0" stroke="#f43f5e" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-rose)"/>
+  </g>
+  <g class="onto-edge-g" data-src="personne" data-tgt="vehicule" data-edge="PROPRIETAIRE_VEHICULE">
+    <path class="onto-edge-path" d="M 640.0 149.0 Q 650.0 150.5 660.0 152.0" stroke="#f43f5e" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-rose)"/>
+  </g>
+  <g class="onto-edge-g" data-src="personne" data-tgt="telephone" data-edge="UTILISE_TELEPHONE">
+    <path class="onto-edge-path" d="M 435.0 149.0 Q 407.5 251.5 380.0 354.0" stroke="#f43f5e" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-rose)"/>
+  </g>
+  <g class="onto-edge-g" data-src="telephone" data-tgt="carte_sim" data-edge="INSERE_DANS_SIM">
+    <path class="onto-edge-path" d="M 215.0 354.0 Q 205.0 354.0 195.0 354.0" stroke="#f97316" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-orange)"/>
+  </g>
+  <g class="onto-edge-g" data-src="carte_sim" data-tgt="appareil_mobile" data-edge="LOGEE_DANS_TERMINAL">
+    <path class="onto-edge-path" d="M 115.0 378.0 Q 115.0 396.5 115.0 415.0" stroke="#f97316" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-orange)"/>
+  </g>
+  <g class="onto-edge-g" data-src="telephone" data-tgt="antenne_bts" data-edge="BORNE_SUR_ANTENNE">
+    <path class="onto-edge-path" d="M 297.5 378.0 Q 297.5 396.5 297.5 415.0" stroke="#f97316" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-orange)"/>
+  </g>
+  <g class="onto-edge-g" data-src="telecom_cdr" data-tgt="telephone" data-edge="TRACE_LIGNE_APPELANTE">
+    <path class="onto-edge-path" d="M 212.5 500.0 Q 255.0 439.0 297.5 378.0" stroke="#f97316" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-orange)"/>
+  </g>
+  <g class="onto-edge-g" data-src="telecom_cdr" data-tgt="telephone" data-edge="TRACE_LIGNE_APPELEE">
+    <path class="onto-edge-path" d="M 212.5 500.0 Q 255.0 439.0 297.5 378.0" stroke="#f97316" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-orange)"/>
+  </g>
+  <g class="onto-edge-g" data-src="telecom_cdr" data-tgt="antenne_bts" data-edge="RELAIS_PAR_ANTENNE">
+    <path class="onto-edge-path" d="M 212.5 500.0 Q 255.0 481.5 297.5 463.0" stroke="#f97316" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-orange)"/>
+  </g>
+  <g class="onto-edge-g" data-src="personne" data-tgt="compte_bancaire" data-edge="DETIENT_COMPTE_BANCAIRE">
+    <path class="onto-edge-path" d="M 537.5 178.0 Q 532.5 254.0 527.5 330.0" stroke="#f43f5e" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-rose)"/>
+  </g>
+  <g class="onto-edge-g" data-src="compte_bancaire" data-tgt="compte_bancaire" data-edge="EFFECTUE_VIREMENT_VERS">
+    <path class="onto-edge-path" d="M 527.5 330.0 Q 527.5 355.0 527.5 380.0" stroke="#eab308" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-amber)"/>
+  </g>
+  <g class="onto-edge-g" data-src="compte_bancaire" data-tgt="guichet_gab" data-edge="RETRAIT_ESPECES_GAB">
+    <path class="onto-edge-path" d="M 620.0 355.0 Q 630.0 399.5 640.0 444.0" stroke="#eab308" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-amber)"/>
+  </g>
+  <g class="onto-edge-g" data-src="telephone" data-tgt="compte_bancaire" data-edge="RECOIT_OTP_BARIDIMOB">
+    <path class="onto-edge-path" d="M 380.0 354.0 Q 407.5 354.5 435.0 355.0" stroke="#f97316" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-orange)"/>
+  </g>
+  <g class="onto-edge-g" data-src="compte_bancaire" data-tgt="crypto_wallet" data-edge="CONVERTIT_EN_CRYPTO">
+    <path class="onto-edge-path" d="M 620.0 355.0 Q 630.0 355.0 640.0 355.0" stroke="#eab308" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-amber)"/>
+  </g>
+  <g class="onto-edge-g" data-src="crypto_wallet" data-tgt="crypto_wallet" data-edge="TRANSFERT_CRYPTO_VERS">
+    <path class="onto-edge-path" d="M 730.0 330.0 Q 730.0 355.0 730.0 380.0" stroke="#eab308" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-amber)"/>
+  </g>
+  <g class="onto-edge-g" data-src="personne" data-tgt="compte_social" data-edge="POSSEDE_PROFIL_SOCIAL">
+    <path class="onto-edge-path" d="M 640.0 149.0 Q 757.5 251.5 875.0 354.0" stroke="#f43f5e" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-rose)"/>
+  </g>
+  <g class="onto-edge-g" data-src="compte_social" data-tgt="publication_sociale" data-edge="PUBLIE_ANNONCE_SCAM">
+    <path class="onto-edge-path" d="M 1070.0 354.0 Q 1082.5 354.0 1095.0 354.0" stroke="#06b6d4" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-cyan)"/>
+  </g>
+  <g class="onto-edge-g" data-src="compte_social" data-tgt="canal_telegram" data-edge="ADMINISTRE_CANAL">
+    <path class="onto-edge-path" d="M 972.5 378.0 Q 972.5 396.5 972.5 415.0" stroke="#06b6d4" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-cyan)"/>
+  </g>
+  <g class="onto-edge-g" data-src="canal_telegram" data-tgt="message_chat" data-edge="HEBERGE_MESSAGES">
+    <path class="onto-edge-path" d="M 1070.0 439.0 Q 1082.5 439.0 1095.0 439.0" stroke="#06b6d4" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-cyan)"/>
+  </g>
+  <g class="onto-edge-g" data-src="publication_sociale" data-tgt="site_web" data-edge="RETOURN_VERS_SITE_WEB">
+    <path class="onto-edge-path" d="M 1205.0 378.0 Q 1205.0 439.0 1205.0 500.0" stroke="#06b6d4" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-cyan)"/>
+  </g>
+  <g class="onto-edge-g" data-src="publication_sociale" data-tgt="telephone" data-edge="MENTIONNE_TELEPHONE">
+    <path class="onto-edge-path" d="M 1095.0 354.0 Q 737.5 354.0 380.0 354.0" stroke="#06b6d4" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-cyan)"/>
+  </g>
+  <g class="onto-edge-g" data-src="site_web" data-tgt="identifiant_infrastructure" data-edge="EMBARQUE_PIXEL_TRACKER">
+    <path class="onto-edge-path" d="M 1095.0 524.0 Q 1150.0 550.5 1205.0 577.0" stroke="#06b6d4" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-cyan)"/>
+  </g>
+  <g class="onto-edge-g" data-src="site_web" data-tgt="serveur_c2" data-edge="RESOLU_VERS_IP_C2">
+    <path class="onto-edge-path" d="M 1095.0 524.0 Q 740.0 607.0 385.0 690.0" stroke="#06b6d4" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-cyan)"/>
+  </g>
+  <g class="onto-edge-g" data-src="site_web" data-tgt="certificat_tls" data-edge="UTILISE_CERTIFICAT_TLS">
+    <path class="onto-edge-path" d="M 1095.0 524.0 Q 837.5 607.0 580.0 690.0" stroke="#06b6d4" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-cyan)"/>
+  </g>
+  <g class="onto-edge-g" data-src="site_web" data-tgt="fichier_apk" data-edge="DISTRIBUE_APPLICATION_APK">
+    <path class="onto-edge-path" d="M 1095.0 524.0 Q 647.5 607.0 200.0 690.0" stroke="#06b6d4" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-cyan)"/>
+  </g>
+  <g class="onto-edge-g" data-src="fichier_apk" data-tgt="serveur_c2" data-edge="COMMUNIQUE_AVEC_C2">
+    <path class="onto-edge-path" d="M 200.0 690.0 Q 210.0 690.0 220.0 690.0" stroke="#22c55e" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-emerald)"/>
+  </g>
+  <g class="onto-edge-g" data-src="fichier_apk" data-tgt="compte_bancaire" data-edge="CIBLE_COMPTE_BARIDIMOB">
+    <path class="onto-edge-path" d="M 200.0 690.0 Q 317.5 522.5 435.0 355.0" stroke="#22c55e" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-emerald)"/>
+  </g>
+  <g class="onto-edge-g" data-src="appareil_mobile" data-tgt="artefact_dfir" data-edge="A_PRODUIT_ARTEFACT_DFIR">
+    <path class="onto-edge-path" d="M 115.0 463.0 Q 161.2 609.0 207.5 755.0" stroke="#f97316" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-orange)"/>
+  </g>
+  <g class="onto-edge-g" data-src="message_chat" data-tgt="enregistrement_vocal" data-edge="CONTIENT_ENREGISTREMENT_VOCAL">
+    <path class="onto-edge-path" d="M 1205.0 415.0 Q 1091.2 260.0 977.5 105.0" stroke="#06b6d4" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-cyan)"/>
+  </g>
+  <g class="onto-edge-g" data-src="enregistrement_vocal" data-tgt="personne" data-edge="ATTRIBUE_A_LOCUTEUR">
+    <path class="onto-edge-path" d="M 875.0 80.0 Q 757.5 114.5 640.0 149.0" stroke="#a855f7" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-purple)"/>
+  </g>
+  <g class="onto-edge-g" data-src="image_preuve" data-tgt="empreinte_faciale" data-edge="CONTIENT_EMPREINTE_FACIALE">
+    <path class="onto-edge-path" d="M 1195.0 170.0 Q 1150.0 125.0 1105.0 80.0" stroke="#a855f7" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-purple)"/>
+  </g>
+  <g class="onto-edge-g" data-src="empreinte_faciale" data-tgt="personne" data-edge="CORRESPOND_A_SUSPECT">
+    <path class="onto-edge-path" d="M 1105.0 80.0 Q 872.5 114.5 640.0 149.0" stroke="#a855f7" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-purple)"/>
+  </g>
+  <g class="onto-edge-g" data-src="image_preuve" data-tgt="vehicule" data-edge="MONTRE_VEHICULE_PLAQUE">
+    <path class="onto-edge-path" d="M 990.0 170.0 Q 905.0 161.0 820.0 152.0" stroke="#a855f7" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-purple)"/>
+  </g>
+  <g class="onto-edge-g" data-src="affaire" data-tgt="document_judiciaire" data-edge="CONTIENT_PROCES_VERBAL">
+    <path class="onto-edge-path" d="M 297.5 239.0 Q 522.5 457.0 747.5 675.0" stroke="#38bdf8" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-blue)"/>
+  </g>
+  <g class="onto-edge-g" data-src="document_judiciaire" data-tgt="scelle_numerique" data-edge="PROTEGE_PAR_SCELLE">
+    <path class="onto-edge-path" d="M 850.0 702.0 Q 862.5 702.0 875.0 702.0" stroke="#e11d48" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-crimson)"/>
+  </g>
+  <g class="onto-edge-g" data-src="scelle_numerique" data-tgt="enregistrement_vocal" data-edge="VERROUILLE_PREUVE_BINAIRE">
+    <path class="onto-edge-path" d="M 982.5 675.0 Q 980.0 390.0 977.5 105.0" stroke="#e11d48" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-crimson)"/>
+  </g>
+  <g class="onto-edge-g" data-src="scelle_numerique" data-tgt="image_preuve" data-edge="VERROUILLE_PREUVE_IMAGE">
+    <path class="onto-edge-path" d="M 982.5 675.0 Q 1037.5 435.0 1092.5 195.0" stroke="#e11d48" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-crimson)"/>
+  </g>
+  <g class="onto-edge-g" data-src="scelle_numerique" data-tgt="fichier_apk" data-edge="VERROUILLE_PREUVE_APK">
+    <path class="onto-edge-path" d="M 875.0 702.0 Q 537.5 696.0 200.0 690.0" stroke="#e11d48" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-crimson)"/>
+  </g>
+  <g class="onto-edge-g" data-src="affaire" data-tgt="preuve_merkle" data-edge="CERTIFIEE_PAR_MERKLE">
+    <path class="onto-edge-path" d="M 380.0 212.0 Q 745.0 457.0 1110.0 702.0" stroke="#38bdf8" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-blue)"/>
+  </g>
+
+  <!-- ==================== 37 STANDARDIZED NODE CARDS ==================== -->
+  <g class="onto-node-g onto-node-territory onto-db-postgres" data-node="wilaya" data-domain="territory" data-db="postgres" onclick="selectOntologyEntity('wilaya')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="35" y="55" width="160" height="44" rx="6" fill="#131c2b" stroke="#10b981" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="43" y="79" font-size="14">🏛️</text>
+    <text x="63" y="75" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Wilaya</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="63" y="81" width="126" height="15" rx="3" fill="#0b111c" stroke="#0ea5e9" stroke-width="0.7"/>
+    <text x="67" y="92" fill="#0ea5e9" font-size="7.5" font-family="monospace" font-weight="600">PostgreSQL 16 / Neo4j</text>
+  </g>
+  <g class="onto-node-g onto-node-territory onto-db-postgres" data-node="daira" data-domain="territory" data-db="postgres" onclick="selectOntologyEntity('daira')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="215" y="55" width="165" height="44" rx="6" fill="#131c2b" stroke="#10b981" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="223" y="79" font-size="14">🏘️</text>
+    <text x="243" y="75" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Daira</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="243" y="81" width="131" height="15" rx="3" fill="#0b111c" stroke="#0ea5e9" stroke-width="0.7"/>
+    <text x="247" y="92" fill="#0ea5e9" font-size="7.5" font-family="monospace" font-weight="600">PostgreSQL 16 / Neo4j</text>
+  </g>
+  <g class="onto-node-g onto-node-territory onto-db-postgres" data-node="commune" data-domain="territory" data-db="postgres" onclick="selectOntologyEntity('commune')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="215" y="115" width="165" height="44" rx="6" fill="#131c2b" stroke="#10b981" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="223" y="139" font-size="14">📍</text>
+    <text x="243" y="135" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Commune</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="243" y="141" width="131" height="15" rx="3" fill="#0b111c" stroke="#0ea5e9" stroke-width="0.7"/>
+    <text x="247" y="152" fill="#0ea5e9" font-size="7.5" font-family="monospace" font-weight="600">PostgreSQL 16 / Neo4j</text>
+  </g>
+  <g class="onto-node-g onto-node-territory onto-db-postgres" data-node="unite" data-domain="territory" data-db="postgres" onclick="selectOntologyEntity('unite')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="35" y="115" width="160" height="44" rx="6" fill="#131c2b" stroke="#10b981" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="43" y="139" font-size="14">🏢</text>
+    <text x="63" y="135" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Unite</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="63" y="141" width="126" height="15" rx="3" fill="#0b111c" stroke="#0ea5e9" stroke-width="0.7"/>
+    <text x="67" y="152" fill="#0ea5e9" font-size="7.5" font-family="monospace" font-weight="600">PostgreSQL 16 / Neo4j</text>
+  </g>
+  <g class="onto-node-g onto-node-territory onto-db-postgres" data-node="affaire" data-domain="territory" data-db="postgres" onclick="selectOntologyEntity('affaire')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="215" y="185" width="165" height="54" rx="6" fill="#131c2b" stroke="#38bdf8" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="223" y="209" font-size="14">📁</text>
+    <text x="243" y="205" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Affaire</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="243" y="211" width="131" height="15" rx="3" fill="#0b111c" stroke="#0ea5e9" stroke-width="0.7"/>
+    <text x="247" y="222" fill="#0ea5e9" font-size="7.5" font-family="monospace" font-weight="600">PostgreSQL 16 / Neo4j</text>
+  </g>
+  <g class="onto-node-g onto-node-territory onto-db-postgres" data-node="magistrat" data-domain="territory" data-db="postgres" onclick="selectOntologyEntity('magistrat')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="35" y="185" width="160" height="44" rx="6" fill="#131c2b" stroke="#38bdf8" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="43" y="209" font-size="14">⚖️</text>
+    <text x="63" y="205" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Magistrat</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="63" y="211" width="126" height="15" rx="3" fill="#0b111c" stroke="#0ea5e9" stroke-width="0.7"/>
+    <text x="67" y="222" fill="#0ea5e9" font-size="7.5" font-family="monospace" font-weight="600">PostgreSQL 16 (IAM)</text>
+  </g>
+  <g class="onto-node-g onto-node-actors onto-db-neo4j" data-node="personne" data-domain="actors" data-db="neo4j" onclick="selectOntologyEntity('personne')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="435" y="120" width="205" height="58" rx="6" fill="#131c2b" stroke="#f43f5e" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="443" y="144" font-size="14">🎯</text>
+    <text x="463" y="140" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Personne</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="463" y="146" width="171" height="15" rx="3" fill="#0b111c" stroke="#0ea5e9" stroke-width="0.7"/>
+    <text x="467" y="157" fill="#0ea5e9" font-size="7.5" font-family="monospace" font-weight="600">Neo4j 5.20+ / PostgreSQL</text>
+  </g>
+  <g class="onto-node-g onto-node-actors onto-db-neo4j" data-node="entreprise" data-domain="actors" data-db="neo4j" onclick="selectOntologyEntity('entreprise')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="660" y="55" width="160" height="44" rx="6" fill="#131c2b" stroke="#f43f5e" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="668" y="79" font-size="14">🏢</text>
+    <text x="688" y="75" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Entreprise</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="688" y="81" width="126" height="15" rx="3" fill="#0b111c" stroke="#0ea5e9" stroke-width="0.7"/>
+    <text x="692" y="92" fill="#0ea5e9" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / PostgreSQL 16</text>
+  </g>
+  <g class="onto-node-g onto-node-actors onto-db-neo4j" data-node="vehicule" data-domain="actors" data-db="neo4j" onclick="selectOntologyEntity('vehicule')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="660" y="130" width="160" height="44" rx="6" fill="#131c2b" stroke="#8b5cf6" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="668" y="154" font-size="14">🚗</text>
+    <text x="688" y="150" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Vehicule</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="688" y="156" width="126" height="15" rx="3" fill="#0b111c" stroke="#0ea5e9" stroke-width="0.7"/>
+    <text x="692" y="167" fill="#0ea5e9" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / PostgreSQL 16</text>
+  </g>
+  <g class="onto-node-g onto-node-telecom onto-db-neo4j" data-node="telephone" data-domain="telecom" data-db="neo4j" onclick="selectOntologyEntity('telephone')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="215" y="330" width="165" height="48" rx="6" fill="#131c2b" stroke="#f97316" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="223" y="354" font-size="14">📱</text>
+    <text x="243" y="350" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Telephone</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="243" y="356" width="131" height="15" rx="3" fill="#0b111c" stroke="#f59e0b" stroke-width="0.7"/>
+    <text x="247" y="367" fill="#f59e0b" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / Redis 7.2</text>
+  </g>
+  <g class="onto-node-g onto-node-telecom onto-db-postgres" data-node="carte_sim" data-domain="telecom" data-db="postgres" onclick="selectOntologyEntity('carte_sim')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="35" y="330" width="160" height="48" rx="6" fill="#131c2b" stroke="#f97316" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="43" y="354" font-size="14">📶</text>
+    <text x="63" y="350" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Carte_SIM</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="63" y="356" width="126" height="15" rx="3" fill="#0b111c" stroke="#0ea5e9" stroke-width="0.7"/>
+    <text x="67" y="367" fill="#0ea5e9" font-size="7.5" font-family="monospace" font-weight="600">PostgreSQL 16 / Neo4j</text>
+  </g>
+  <g class="onto-node-g onto-node-telecom onto-db-neo4j" data-node="appareil_mobile" data-domain="telecom" data-db="neo4j" onclick="selectOntologyEntity('appareil_mobile')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="35" y="415" width="160" height="48" rx="6" fill="#131c2b" stroke="#f97316" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="43" y="439" font-size="14">📲</text>
+    <text x="63" y="435" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Appareil_Mobile</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="63" y="441" width="126" height="15" rx="3" fill="#0b111c" stroke="#0ea5e9" stroke-width="0.7"/>
+    <text x="67" y="452" fill="#0ea5e9" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / PostgreSQL 16</text>
+  </g>
+  <g class="onto-node-g onto-node-telecom onto-db-postgres" data-node="antenne_bts" data-domain="telecom" data-db="postgres" onclick="selectOntologyEntity('antenne_bts')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="215" y="415" width="165" height="48" rx="6" fill="#131c2b" stroke="#f97316" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="223" y="439" font-size="14">📡</text>
+    <text x="243" y="435" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Antenne_BTS</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="243" y="441" width="131" height="15" rx="3" fill="#0b111c" stroke="#0ea5e9" stroke-width="0.7"/>
+    <text x="247" y="452" fill="#0ea5e9" font-size="7.5" font-family="monospace" font-weight="600">PostgreSQL 16 (PostGIS)</text>
+  </g>
+  <g class="onto-node-g onto-node-telecom onto-db-postgres" data-node="telecom_cdr" data-domain="telecom" data-db="postgres" onclick="selectOntologyEntity('telecom_cdr')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="125" y="500" width="175" height="50" rx="6" fill="#131c2b" stroke="#f97316" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="133" y="524" font-size="14">📊</text>
+    <text x="153" y="520" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Telecom_CDR</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="153" y="526" width="141" height="15" rx="3" fill="#0b111c" stroke="#10b981" stroke-width="0.7"/>
+    <text x="157" y="537" fill="#10b981" font-size="7.5" font-family="monospace" font-weight="600">TimescaleDB (Hyper-tables)</text>
+  </g>
+  <g class="onto-node-g onto-node-finance onto-db-neo4j" data-node="compte_bancaire" data-domain="finance" data-db="neo4j" onclick="selectOntologyEntity('compte_bancaire')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="435" y="330" width="185" height="50" rx="6" fill="#131c2b" stroke="#eab308" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="443" y="354" font-size="14">💳</text>
+    <text x="463" y="350" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Compte_Bancaire</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="463" y="356" width="151" height="15" rx="3" fill="#0b111c" stroke="#0ea5e9" stroke-width="0.7"/>
+    <text x="467" y="367" fill="#0ea5e9" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / PostgreSQL 16</text>
+  </g>
+  <g class="onto-node-g onto-node-finance onto-db-postgres" data-node="transaction_financiere" data-domain="finance" data-db="postgres" onclick="selectOntologyEntity('transaction_financiere')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="435" y="420" width="185" height="48" rx="6" fill="#131c2b" stroke="#eab308" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="443" y="444" font-size="14">💸</text>
+    <text x="463" y="440" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Transaction_Financiere</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="463" y="446" width="151" height="15" rx="3" fill="#0b111c" stroke="#0ea5e9" stroke-width="0.7"/>
+    <text x="467" y="457" fill="#0ea5e9" font-size="7.5" font-family="monospace" font-weight="600">PostgreSQL 16 / Neo4j</text>
+  </g>
+  <g class="onto-node-g onto-node-finance onto-db-postgres" data-node="guichet_gab" data-domain="finance" data-db="postgres" onclick="selectOntologyEntity('guichet_gab')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="640" y="420" width="180" height="48" rx="6" fill="#131c2b" stroke="#eab308" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="648" y="444" font-size="14">🏧</text>
+    <text x="668" y="440" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Guichet_GAB</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="668" y="446" width="146" height="15" rx="3" fill="#0b111c" stroke="#0ea5e9" stroke-width="0.7"/>
+    <text x="672" y="457" fill="#0ea5e9" font-size="7.5" font-family="monospace" font-weight="600">PostgreSQL 16 (PostGIS)</text>
+  </g>
+  <g class="onto-node-g onto-node-finance onto-db-neo4j" data-node="crypto_wallet" data-domain="finance" data-db="neo4j" onclick="selectOntologyEntity('crypto_wallet')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="640" y="330" width="180" height="50" rx="6" fill="#131c2b" stroke="#eab308" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="648" y="354" font-size="14">🪙</text>
+    <text x="668" y="350" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Crypto_Wallet</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="668" y="356" width="146" height="15" rx="3" fill="#0b111c" stroke="#0ea5e9" stroke-width="0.7"/>
+    <text x="672" y="367" fill="#0ea5e9" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / PostgreSQL 16</text>
+  </g>
+  <g class="onto-node-g onto-node-finance onto-db-postgres" data-node="transaction_crypto" data-domain="finance" data-db="postgres" onclick="selectOntologyEntity('transaction_crypto')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="540" y="510" width="185" height="48" rx="6" fill="#131c2b" stroke="#eab308" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="548" y="534" font-size="14">⛓️</text>
+    <text x="568" y="530" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Transaction_Crypto</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="568" y="536" width="151" height="15" rx="3" fill="#0b111c" stroke="#0ea5e9" stroke-width="0.7"/>
+    <text x="572" y="547" fill="#0ea5e9" font-size="7.5" font-family="monospace" font-weight="600">PostgreSQL 16 / Neo4j</text>
+  </g>
+  <g class="onto-node-g onto-node-socmint onto-db-neo4j" data-node="compte_social" data-domain="socmint" data-db="neo4j" onclick="selectOntologyEntity('compte_social')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="875" y="330" width="195" height="48" rx="6" fill="#131c2b" stroke="#06b6d4" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="883" y="354" font-size="14">👤</text>
+    <text x="903" y="350" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Compte_Social</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="903" y="356" width="161" height="15" rx="3" fill="#0b111c" stroke="#22c55e" stroke-width="0.7"/>
+    <text x="907" y="367" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / MongoDB 7.0</text>
+  </g>
+  <g class="onto-node-g onto-node-socmint onto-db-neo4j" data-node="publication_sociale" data-domain="socmint" data-db="neo4j" onclick="selectOntologyEntity('publication_sociale')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="1095" y="330" width="220" height="48" rx="6" fill="#131c2b" stroke="#06b6d4" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="1103" y="354" font-size="14">📢</text>
+    <text x="1123" y="350" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Publication_Sociale</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="1123" y="356" width="186" height="15" rx="3" fill="#0b111c" stroke="#22c55e" stroke-width="0.7"/>
+    <text x="1127" y="367" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / MinIO / MongoDB</text>
+  </g>
+  <g class="onto-node-g onto-node-socmint onto-db-neo4j" data-node="canal_telegram" data-domain="socmint" data-db="neo4j" onclick="selectOntologyEntity('canal_telegram')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="875" y="415" width="195" height="48" rx="6" fill="#131c2b" stroke="#06b6d4" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="883" y="439" font-size="14">📣</text>
+    <text x="903" y="435" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Canal_Telegram</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="903" y="441" width="161" height="15" rx="3" fill="#0b111c" stroke="#22c55e" stroke-width="0.7"/>
+    <text x="907" y="452" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / MongoDB 7.0</text>
+  </g>
+  <g class="onto-node-g onto-node-socmint onto-db-mongodb" data-node="message_chat" data-domain="socmint" data-db="mongodb" onclick="selectOntologyEntity('message_chat')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="1095" y="415" width="220" height="48" rx="6" fill="#131c2b" stroke="#06b6d4" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="1103" y="439" font-size="14">💬</text>
+    <text x="1123" y="435" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Message_Chat</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="1123" y="441" width="186" height="15" rx="3" fill="#0b111c" stroke="#22c55e" stroke-width="0.7"/>
+    <text x="1127" y="452" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">MongoDB 7.0 (BSON Snappy)</text>
+  </g>
+  <g class="onto-node-g onto-node-socmint onto-db-neo4j" data-node="adresse_email" data-domain="socmint" data-db="neo4j" onclick="selectOntologyEntity('adresse_email')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="875" y="500" width="195" height="48" rx="6" fill="#131c2b" stroke="#06b6d4" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="883" y="524" font-size="14">📧</text>
+    <text x="903" y="520" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Adresse_Email</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="903" y="526" width="161" height="15" rx="3" fill="#0b111c" stroke="#0ea5e9" stroke-width="0.7"/>
+    <text x="907" y="537" fill="#0ea5e9" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / PostgreSQL 16</text>
+  </g>
+  <g class="onto-node-g onto-node-socmint onto-db-neo4j" data-node="site_web" data-domain="socmint" data-db="neo4j" onclick="selectOntologyEntity('site_web')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="1095" y="500" width="220" height="48" rx="6" fill="#131c2b" stroke="#06b6d4" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="1103" y="524" font-size="14">🌐</text>
+    <text x="1123" y="520" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Site_Web</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="1123" y="526" width="186" height="15" rx="3" fill="#0b111c" stroke="#22c55e" stroke-width="0.7"/>
+    <text x="1127" y="537" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / MinIO / MongoDB</text>
+  </g>
+  <g class="onto-node-g onto-node-socmint onto-db-neo4j" data-node="identifiant_infrastructure" data-domain="socmint" data-db="neo4j" onclick="selectOntologyEntity('identifiant_infrastructure')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="985" y="555" width="220" height="44" rx="6" fill="#131c2b" stroke="#06b6d4" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="993" y="579" font-size="14">🏷️</text>
+    <text x="1013" y="575" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Identifiant_Infrastructure</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="1013" y="581" width="186" height="15" rx="3" fill="#0b111c" stroke="#38bdf8" stroke-width="0.7"/>
+    <text x="1017" y="592" fill="#38bdf8" font-size="7.5" font-family="monospace" font-weight="600">Neo4j 5.20+ (Pivot Graphe)</text>
+  </g>
+  <g class="onto-node-g onto-node-cyber onto-db-minio" data-node="fichier_apk" data-domain="cyber" data-db="minio" onclick="selectOntologyEntity('fichier_apk')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="35" y="665" width="165" height="50" rx="6" fill="#131c2b" stroke="#22c55e" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="43" y="689" font-size="14">📦</text>
+    <text x="63" y="685" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Fichier_APK</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="63" y="691" width="131" height="15" rx="3" fill="#0b111c" stroke="#22c55e" stroke-width="0.7"/>
+    <text x="67" y="702" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">MinIO WORM / MongoDB / Neo4j</text>
+  </g>
+  <g class="onto-node-g onto-node-cyber onto-db-neo4j" data-node="serveur_c2" data-domain="cyber" data-db="neo4j" onclick="selectOntologyEntity('serveur_c2')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="220" y="665" width="165" height="50" rx="6" fill="#131c2b" stroke="#22c55e" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="228" y="689" font-size="14">🖥️</text>
+    <text x="248" y="685" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Serveur_C2</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="248" y="691" width="131" height="15" rx="3" fill="#0b111c" stroke="#0ea5e9" stroke-width="0.7"/>
+    <text x="252" y="702" fill="#0ea5e9" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / PostgreSQL 16</text>
+  </g>
+  <g class="onto-node-g onto-node-cyber onto-db-neo4j" data-node="certificat_tls" data-domain="cyber" data-db="neo4j" onclick="selectOntologyEntity('certificat_tls')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="405" y="665" width="175" height="50" rx="6" fill="#131c2b" stroke="#22c55e" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="413" y="689" font-size="14">🔒</text>
+    <text x="433" y="685" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Certificat_TLS</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="433" y="691" width="141" height="15" rx="3" fill="#0b111c" stroke="#22c55e" stroke-width="0.7"/>
+    <text x="437" y="702" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / MongoDB 7.0</text>
+  </g>
+  <g class="onto-node-g onto-node-cyber onto-db-minio" data-node="artefact_dfir" data-domain="cyber" data-db="minio" onclick="selectOntologyEntity('artefact_dfir')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="120" y="755" width="175" height="48" rx="6" fill="#131c2b" stroke="#22c55e" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="128" y="779" font-size="14">🔬</text>
+    <text x="148" y="775" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Artefact_DFIR</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="148" y="781" width="141" height="15" rx="3" fill="#0b111c" stroke="#f43f5e" stroke-width="0.7"/>
+    <text x="152" y="792" fill="#f43f5e" font-size="7.5" font-family="monospace" font-weight="600">MinIO WORM / PostgreSQL 16</text>
+  </g>
+  <g class="onto-node-g onto-node-biometrics onto-db-minio" data-node="enregistrement_vocal" data-domain="biometrics" data-db="minio" onclick="selectOntologyEntity('enregistrement_vocal')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="875" y="55" width="205" height="50" rx="6" fill="#131c2b" stroke="#a855f7" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="883" y="79" font-size="14">🎙️</text>
+    <text x="903" y="75" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Enregistrement_Vocal</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="903" y="81" width="171" height="15" rx="3" fill="#0b111c" stroke="#f43f5e" stroke-width="0.7"/>
+    <text x="907" y="92" fill="#f43f5e" font-size="7.5" font-family="monospace" font-weight="600">MinIO / Qdrant 1.9 / Neo4j</text>
+  </g>
+  <g class="onto-node-g onto-node-biometrics onto-db-qdrant" data-node="empreinte_faciale" data-domain="biometrics" data-db="qdrant" onclick="selectOntologyEntity('empreinte_faciale')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="1105" y="55" width="210" height="50" rx="6" fill="#131c2b" stroke="#a855f7" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="1113" y="79" font-size="14">👤</text>
+    <text x="1133" y="75" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Empreinte_Faciale</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="1133" y="81" width="176" height="15" rx="3" fill="#0b111c" stroke="#f43f5e" stroke-width="0.7"/>
+    <text x="1137" y="92" fill="#f43f5e" font-size="7.5" font-family="monospace" font-weight="600">Qdrant 1.9 / MinIO / Neo4j</text>
+  </g>
+  <g class="onto-node-g onto-node-biometrics onto-db-minio" data-node="image_preuve" data-domain="biometrics" data-db="minio" onclick="selectOntologyEntity('image_preuve')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="990" y="145" width="205" height="50" rx="6" fill="#131c2b" stroke="#a855f7" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="998" y="169" font-size="14">🖼️</text>
+    <text x="1018" y="165" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Image_Preuve</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="1018" y="171" width="171" height="15" rx="3" fill="#0b111c" stroke="#f43f5e" stroke-width="0.7"/>
+    <text x="1022" y="182" fill="#f43f5e" font-size="7.5" font-family="monospace" font-weight="600">MinIO WORM / Neo4j</text>
+  </g>
+  <g class="onto-node-g onto-node-legal onto-db-minio" data-node="document_judiciaire" data-domain="legal" data-db="minio" onclick="selectOntologyEntity('document_judiciaire')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="645" y="675" width="205" height="54" rx="6" fill="#131c2b" stroke="#e11d48" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="653" y="699" font-size="14">📄</text>
+    <text x="673" y="695" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Document_Judiciaire</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="673" y="701" width="171" height="15" rx="3" fill="#0b111c" stroke="#f43f5e" stroke-width="0.7"/>
+    <text x="677" y="712" fill="#f43f5e" font-size="7.5" font-family="monospace" font-weight="600">MinIO / PostgreSQL 16</text>
+  </g>
+  <g class="onto-node-g onto-node-legal onto-db-minio" data-node="scelle_numerique" data-domain="legal" data-db="minio" onclick="selectOntologyEntity('scelle_numerique')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="875" y="675" width="215" height="54" rx="6" fill="#131c2b" stroke="#e11d48" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="883" y="699" font-size="14">🔏</text>
+    <text x="903" y="695" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Scelle_Numerique</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="903" y="701" width="181" height="15" rx="3" fill="#0b111c" stroke="#f43f5e" stroke-width="0.7"/>
+    <text x="907" y="712" fill="#f43f5e" font-size="7.5" font-family="monospace" font-weight="600">MinIO S3 WORM (Lock)</text>
+  </g>
+  <g class="onto-node-g onto-node-legal onto-db-postgres" data-node="preuve_merkle" data-domain="legal" data-db="postgres" onclick="selectOntologyEntity('preuve_merkle')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="1110" y="675" width="205" height="54" rx="6" fill="#131c2b" stroke="#e11d48" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="1118" y="699" font-size="14">🌲</text>
+    <text x="1138" y="695" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Preuve_Merkle</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="1138" y="701" width="171" height="15" rx="3" fill="#0b111c" stroke="#0ea5e9" stroke-width="0.7"/>
+    <text x="1142" y="712" fill="#0ea5e9" font-size="7.5" font-family="monospace" font-weight="600">PostgreSQL 16 / Neo4j</text>
+  </g>
+  <g class="onto-node-g onto-node-cyber onto-db-redis" data-node="session_recherche" data-domain="cyber" data-db="redis" onclick="selectOntologyEntity('session_recherche')" style="cursor:pointer;" filter="url(#shadow-node)">
+    <rect x="320" y="755" width="185" height="48" rx="6" fill="#131c2b" stroke="#f59e0b" stroke-width="1.5" class="onto-node-rect"/>
+    <text x="328" y="779" font-size="14">⚡</text>
+    <text x="348" y="775" fill="#f8fafc" font-size="9.5" font-weight="bold" class="onto-node-title">Session_Recherche</text>
+    
+    <!-- Primary DB Badge -->
+    <rect x="348" y="781" width="151" height="15" rx="3" fill="#0b111c" stroke="#f59e0b" stroke-width="0.7"/>
+    <text x="352" y="792" fill="#f59e0b" font-size="7.5" font-family="monospace" font-weight="600">Redis 7.2 (In-Memory RESP3)</text>
+  </g>
+</svg>
+        </div>
+
+        <!-- Live Interactive Node Inspector Card -->
+        <div id="ontology-detail-box" style="background:#060a14;border:1px solid #1e293b;border-radius:8px;padding:1.25rem;">
+          <!-- Populated dynamically by selectOntologyEntity('personne') on load -->
+        </div>
+
+      </div>
+    </section>
+    <!-- ====================================================================
+         SECTION 2: ARCHITECTURE DE PERSISTANCE POLYGLOTTE
+         ==================================================================== -->
+    <section>
+      <h2 class="section-title">2. Architecture de Persistance Polyglotte &amp; Spécialisation des Bases de Données</h2>
+      <p class="section-subtitle">
+        Justifications physiques, algorithmiques et juridiques du partitionnement des données entre 6 moteurs de persistance complémentaires.
+      </p>
+
+      <div class="card" style="border-left:4px solid #f43f5e;margin-bottom:1.5rem;">
+        <h3 style="color:#f43f5e;margin-bottom:0.5rem;">🎯 Pourquoi une Base de Données Unique est Inopérante en Cyber-Investigation</h3>
+        <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.55;">
+          Une enquête judiciaire manipule des natures de données diamétralement opposées : des graphes récursifs multi-sauts, des séries temporelles massives de bornage cellulaire, des vecteurs biométriques d'embeddings, des scellés numériques binaires inaltérables, et des flux de scraping polymorphes sans schéma préalable.<br/>
+          Une base relationnelle standard (ex: PostgreSQL) s'effondre en &gt;15 secondes dès le 3ème saut relationnel ; à l'inverse, une base graphe pure (Neo4j) n'est pas adaptée au stockage de téraoctets d'archives WARC ou d'enregistrements audio OPUS. <strong>Chaque donnée est assignée à son moteur physique optimal :</strong>
         </p>
-        
-        <div style="background:#090d16;padding:1rem;border-radius:8px;font-size:0.8rem;color:#cbd5e1;line-height:1.55;margin-bottom:0.75rem;">
-          <strong style="color:#10b981;">Comment fonctionne la généralisation sans rupture de schéma :</strong>
-          <ol style="margin:0.5rem 0 0 1.25rem;padding:0;">
-            <li><strong>Méta-Modèle Polymorphe à Propriétés Flexibles :</strong> Le moteur Neo4j stocke le cœur indexé universel (identifiant canonique, confiance, calque, dossiers liés) et encapsule les attributs spécifiques à chaque nouveau vecteur sous forme de propriétés dynamiques sans schéma rigide.</li>
-            <li><strong>Déclaration par Manifestes YAML :</strong> L'ajout d'une nouvelle entité (ex: <code>Drone_Telemetry</code> ou <code>Telegram_Bot_Token</code>) s'effectue par un simple fichier de configuration <code>brick.yaml</code> spécifiant <code>input_entities</code> et <code>output_entities</code>. Le moteur déterministe ingère le nouveau type automatiquement.</li>
-            <li><strong>Requêtage Cypher Transversal :</strong> Les algorithmes de parcours de graphe (recherche de plus court chemin, communautés de Louvain, détection de prête-noms) fonctionnent sur la topologie du graphe indépendamment du type d'entité, permettant de trouver des chemins comme :<br/>
-              <code style="color:#38bdf8;">(Suspect)-[:COMMUNICATES_WITH]->(Vocal)-[:MENTIONS]->(BaridiMob)-[:LINKED_TO]->(Autre_Dossier)</code>
-            </li>
-          </ol>
-        </div>
       </div>
-    </section>
 
-  
-    <!-- 5. Algerian Administrative Hierarchy & Forensic Graph Metadata (Verified PIC-main & frontend-master) -->
+      <table class="tech-table">
+        <thead>
+          <tr>
+            <th>Moteur de Persistance</th>
+            <th>Nature des Données Prises en Charge</th>
+            <th>Structure Physique &amp; Indexation</th>
+            <th>Protocole &amp; Ports</th>
+            <th>Justification Mathématique / Légale</th>
+            <th>Latence SLA &amp; Capacité</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Neo4j 5.20+ Enterprise</strong><br/><span class="badge-ver">Graph Database</span></td>
+            <td>Topologie criminelle, personnes, liens de parenté, co-implications, appels téléphoniques, transferts de fonds</td>
+            <td>Pointeurs mémoire doublement chaînés (Index-Free Adjacency). Traversée de relation en $O(k)$ indépendamment de la taille globale du graphe.</td>
+            <td>Protocole binaire Bolt v5.4<br/><code>Port 7687</code></td>
+            <td>Permet le calcul en temps réel de centralité d'intermédiarité (Brandes) et la détection de cellules criminelles hermétiques (Louvain).</td>
+            <td>Sub-5ms sur requêtes 5-sauts<br/>Capacité : 50 000+ nœuds à 60 FPS</td>
+          </tr>
+          <tr>
+            <td><strong>PostgreSQL 16 + TimescaleDB</strong><br/><span class="badge-ver">Relational &amp; Time-Series</span></td>
+            <td>Dossiers judiciaires, comptes enquêteurs, permissions RBAC Wilayas, CDRs d'antennes BTS, livre d'audit Merkle</td>
+            <td>Tables relationnelles ACID strictes, Row-Level Security (RLS) cryptographique, Hypertables partitionnées par tranches de 24h.</td>
+            <td>PostgreSQL Wire Protocol<br/><code>Port 5432</code></td>
+            <td>Garantit la non-répudiation des actes de procédure (Article 68 CPP algérien) et l'intégrité référentielle absolue des registres de scellés.</td>
+            <td>&lt;1ms sur requêtes d'affaires<br/>Insertion de 80k CDRs/sec</td>
+          </tr>
+          <tr>
+            <td><strong>Qdrant 1.9 (Rust)</strong><br/><span class="badge-ver">Vector Database</span></td>
+            <td>Embeddings faciaux ArcFace (512-d), empreintes vocales PyAnnote 3.1 (192-d), vecteurs sémantiques d'annonces scam</td>
+            <td>Graphe de proximité hiérarchique HNSW (Hierarchical Navigable Small World) avec métrique de distance cosinus SIMD et filtrage par métadonnées de dossier.</td>
+            <td>gRPC over HTTP/2 (Protobuf v3)<br/><code>Port 6334</code></td>
+            <td>Rapprochement biométrique 1-to-N ultra-rapide sans déperdition de précision (FAR &lt; 0.001%) tout en respectant le secret de l'instruction (100% on-premise).</td>
+            <td>&lt;8ms sur collection de 2M vecteurs<br/>Quantification scalaire mémoire</td>
+          </tr>
+          <tr>
+            <td><strong>MinIO Enterprise S3</strong><br/><span class="badge-ver">Object Storage WORM</span></td>
+            <td>Scellés numériques légaux, images de disques durs E01/RAW, archives web WARC ISO 28500, fichiers audio WhatsApp originaux, rapports PDF/A-3b</td>
+            <td>Système de stockage d'objets avec verrouillage S3 Object Lock en mode COMPLIANCE strict et horodatage RFC 3161.</td>
+            <td>Amazon S3 REST API (HTTPS)<br/><code>Port 9000</code></td>
+            <td>Conformité stricte à la norme ISO 27037 : interdiction cryptographique et matérielle d'effacer ou de modifier un scellé pendant 10 ans.</td>
+            <td>Débit continu jusqu'à 2.5 Go/s<br/>Erasure Coding 16 disques</td>
+          </tr>
+          <tr>
+            <td><strong>MongoDB 7.0 WiredTiger</strong><br/><span class="badge-ver">Document BSON Store</span></td>
+            <td>Dépotoir sans schéma des 76 briques OSINT, arbres syntaxiques DOM des fausses boutiques, réponses brutes d'APIs tierces, profils Telegram</td>
+            <td>Dépôt polymorphe BSON avec compression par bloc Snappy (gain de 70% d'espace disque) et Change Streams réactifs.</td>
+            <td>MongoDB Wire Protocol TCP<br/><code>Port 27017</code></td>
+            <td>Absorbe les variations imprévisibles de structure des données extraites du web sans jamais faire échouer le pipeline d'ingestion.</td>
+            <td>35 000 écritures BSON / sec<br/>Schema-on-read instantané</td>
+          </tr>
+          <tr>
+            <td><strong>Redis 7.2 Stack</strong><br/><span class="badge-ver">In-Memory Cache &amp; Bus</span></td>
+            <td>Sessions actives, verrous distribués Redlock, files Celery prioritaires, flux temps réel WebSockets du Studio, quotas anti-ban Token-Bucket</td>
+            <td>Structures de données en mémoire vive avec persistance AOF (Append-Only File) et exécution de scripts Lua atomiques.</td>
+            <td>Protocole RESP3 over TCP<br/><code>Port 6379</code></td>
+            <td>Fournit une latence sub-milliseconde indispensable pour rafraîchir le canvas NVL WebGL à 60 FPS dès la découverte d'un indice sur le terrain.</td>
+            <td>120 000 opérations / sec<br/>Latence P99 &lt; 0.5 milliseconde</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <!-- ====================================================================
+         SECTION 3: DICTIONNAIRE EXHAUSTIF DES 37 TYPES DE NŒUDS
+         ==================================================================== -->
+    <section>
+      <h2 class="section-title">3. Dictionnaire Exhaustif des 37 Types de Nœuds (Ontologie Canonique GFPG)</h2>
+      <p class="section-subtitle">
+        Inventaire détaillé des 37 sommets du modèle de données d'Athar DZ, de leurs clés canoniques et de leur moteur de persistance attitré.
+      </p>
+
+      <div class="search-filter-box">
+        <input type="text" id="node-search-input" class="search-filter-input" placeholder="🔍 Rechercher un type de nœud (ex: Personne, BaridiMob, CDR, APK, Wilaya)..." onkeyup="filterTable('node-search-input', 'nodes-catalog-table', 'node-domain-select')" />
+        <select id="node-domain-select" class="search-filter-input" style="max-width:260px;" onchange="filterTable('node-search-input', 'nodes-catalog-table', 'node-domain-select')">
+          <option value="all">Tous les Domaines (8 Catégories)</option>
+          <option value="territory">1. Judiciaire &amp; Territoire DZ</option>
+          <option value="actors">2. Personnes &amp; Entités Morales</option>
+          <option value="telecom">3. Télécoms &amp; Forensique Mobile</option>
+          <option value="finance">4. Finances &amp; BaridiMob</option>
+          <option value="socmint">5. SOCMINT, Web &amp; Trackers</option>
+          <option value="cyber">6. Cyber &amp; Malwares</option>
+          <option value="biometrics">7. Biométrie &amp; Médias</option>
+          <option value="legal">8. Chaîne de Preuve &amp; WORM</option>
+        </select>
+      </div>
+
+      <table class="tech-table" id="nodes-catalog-table">
+        <thead>
+          <tr>
+            <th>Type d'Entité &amp; Label Cypher</th>
+            <th>Domaine Opérationnel</th>
+            <th>Rôle &amp; Définition Judiciaire</th>
+            <th>Attributs Canoniques Clés</th>
+            <th>Moteur de Stockage Dédié</th>
+            <th>Latence SLA</th>
+          </tr>
+        </thead>
+        <tbody>
+                  <tr data-category="territory">
+          <td><strong>🏛️ Wilaya</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Wilaya)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#10b981;border:1px solid #10b981;font-size:0.7rem;">1. Judiciaire & Territoire DZ</span></td>
+          <td>Circonscription administrative et juridictionnelle algérienne (01 à 58), définissant le ressort de compétence territoriale de la brigade et de la cour de justice.</td>
+          <td><code>code_wilaya</code>, <code>nom_ar</code>, <code>nom_fr</code> <em>(+1 autres)</em></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">PostgreSQL 16 / Neo4j</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="territory">
+          <td><strong>🏘️ Daira</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Daira)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#10b981;border:1px solid #10b981;font-size:0.7rem;">1. Judiciaire & Territoire DZ</span></td>
+          <td>Subdivision administrative intermédiaire rattachée à une wilaya, regroupant plusieurs communes sous la juridiction d'un tribunal d'arrondissement.</td>
+          <td><code>id_daira</code>, <code>nom_fr</code>, <code>code_wilaya</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">PostgreSQL 16 / Neo4j</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="territory">
+          <td><strong>📍 Commune</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Commune)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#10b981;border:1px solid #10b981;font-size:0.7rem;">1. Judiciaire & Territoire DZ</span></td>
+          <td>Échelon municipal de base en Algérie (1 541 communes). Localisation précise des retraits GAB, des antennes relais et des domiciles des mis en cause.</td>
+          <td><code>id_commune</code>, <code>nom_fr</code>, <code>code_postal</code> <em>(+1 autres)</em></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">PostgreSQL 16 / Neo4j</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="territory">
+          <td><strong>🏢 Unite</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Unite)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#10b981;border:1px solid #10b981;font-size:0.7rem;">1. Judiciaire & Territoire DZ</span></td>
+          <td>Service d'enquête opérationnel traitant le dossier : Brigade de Recherche de la Gendarmerie Nationale, Sûreté Urbaine DGSN, ou Service Central Cyber.</td>
+          <td><code>id_unite</code>, <code>nom_unite</code>, <code>corps</code> <em>(+1 autres)</em></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">PostgreSQL 16 / Neo4j</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="territory">
+          <td><strong>📁 Affaire</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Affaire)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#10b981;border:1px solid #10b981;font-size:0.7rem;">1. Judiciaire & Territoire DZ</span></td>
+          <td>Dossier criminel unifié instruit sous l'autorité du parquet ou du juge d'instruction, regroupant l'intégralité des indices, cibles, scellés et PVs.</td>
+          <td><code>id_affaire</code>, <code>titre</code>, <code>statut_legal</code> <em>(+1 autres)</em></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">PostgreSQL 16 / Neo4j</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="territory">
+          <td><strong>⚖️ Magistrat</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Magistrat)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#10b981;border:1px solid #10b981;font-size:0.7rem;">1. Judiciaire & Territoire DZ</span></td>
+          <td>Autorité judiciaire ordonnant les réquisitions, délivrant les commissions rogatoires et supervisant la légalité des actes de procédure.</td>
+          <td><code>id_magistrat</code>, <code>nom_complet</code>, <code>tribunal</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">PostgreSQL 16 (IAM)</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="actors">
+          <td><strong>🎯 Personne</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Personne)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#f43f5e;border:1px solid #f43f5e;font-size:0.7rem;">2. Personnes & Entités Morales</span></td>
+          <td>Individu ciblé ou identifié au cours de l'enquête (auteur principal, complice, mule financière, victime ou témoin).</td>
+          <td><code>id_personne</code>, <code>nom_complet</code>, <code>nin</code> <em>(+3 autres)</em></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j 5.20+ / PostgreSQL</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="actors">
+          <td><strong>🏢 Entreprise</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Entreprise)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#f43f5e;border:1px solid #f43f5e;font-size:0.7rem;">2. Personnes & Entités Morales</span></td>
+          <td>Entité juridique commerciale utilisée comme paravent pour le blanchiment d'argent, la facturation fictive ou l'enregistrement de sites frauduleux.</td>
+          <td><code>numero_rc</code>, <code>nif</code>, <code>raison_sociale</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / PostgreSQL 16</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="actors">
+          <td><strong>🚗 Vehicule</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Vehicule)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#f43f5e;border:1px solid #f43f5e;font-size:0.7rem;">2. Personnes & Entités Morales</span></td>
+          <td>Véhicule automobile repéré lors de livraisons frauduleuses, de retraits GAB ou identifié par lecture automatisée de plaques (LAPI/ALPR).</td>
+          <td><code>immatriculation_dz</code>, <code>vin_chassis</code>, <code>marque_modele</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / PostgreSQL 16</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="telecom">
+          <td><strong>📱 Telephone</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Telephone)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#f97316;border:1px solid #f97316;font-size:0.7rem;">3. Télécoms & Forensique Mobile</span></td>
+          <td>Ligne téléphonique mobile ou fixe utilisée pour les appels d'extorsion, les comptes WhatsApp criminels et la réception d'OTP bancaires.</td>
+          <td><code>numero_e164</code>, <code>operateur</code>, <code>type_ligne</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / Redis 7.2</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="telecom">
+          <td><strong>📶 Carte_SIM</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Carte_SIM)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#f97316;border:1px solid #f97316;font-size:0.7rem;">3. Télécoms & Forensique Mobile</span></td>
+          <td>Puce physique SIM ou eSIM insérée dans la banque de modems USB ou dans le téléphone du suspect (identifiée par ICCID et IMSI).</td>
+          <td><code>iccid</code>, <code>imsi</code>, <code>port_tty</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">PostgreSQL 16 / Neo4j</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="telecom">
+          <td><strong>📲 Appareil_Mobile</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Appareil_Mobile)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#f97316;border:1px solid #f97316;font-size:0.7rem;">3. Télécoms & Forensique Mobile</span></td>
+          <td>Terminal physique ou conteneur ReDroid virtuel identifié par son code IMEI unique, utilisé par le cybercriminel.</td>
+          <td><code>imei</code>, <code>modele</code>, <code>fingerprint</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / PostgreSQL 16</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="telecom">
+          <td><strong>📡 Antenne_BTS</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Antenne_BTS)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#f97316;border:1px solid #f97316;font-size:0.7rem;">3. Télécoms & Forensique Mobile</span></td>
+          <td>Pylône de télécommunication cellulaire des opérateurs Mobilis, Djezzy ou Ooredoo captant les communications des suspects.</td>
+          <td><code>cell_id</code>, <code>lac</code>, <code>coordonnees</code> <em>(+1 autres)</em></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">PostgreSQL 16 (PostGIS)</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="telecom">
+          <td><strong>📊 Telecom_CDR</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Telecom_CDR)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#f97316;border:1px solid #f97316;font-size:0.7rem;">3. Télécoms & Forensique Mobile</span></td>
+          <td>Enregistrement d'appel réquisitionné auprès des opérateurs télécoms (qui a appelé qui, quelle antenne BTS, quelle heure, quelle durée).</td>
+          <td><code>cdr_id</code>, <code>timestamp_call</code>, <code>caller</code> <em>(+2 autres)</em></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">TimescaleDB (Hyper-tables)</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="finance">
+          <td><strong>💳 Compte_Bancaire</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Compte_Bancaire)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#eab308;border:1px solid #eab308;font-size:0.7rem;">4. Finances Criminelles & BaridiMob</span></td>
+          <td>Compte courant postal (CCP) ou compte bancaire algérien (Relevé d'Identité Postale à 20 chiffres) servant à recevoir les fonds extorqués.</td>
+          <td><code>rip_algerie_poste</code>, <code>ccp_numero</code>, <code>cle_rip</code> <em>(+1 autres)</em></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / PostgreSQL 16</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="finance">
+          <td><strong>💸 Transaction_Financiere</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Transaction_Financiere)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#eab308;border:1px solid #eab308;font-size:0.7rem;">4. Finances Criminelles & BaridiMob</span></td>
+          <td>Transfert de fonds opéré via l'application BaridiMob, virement de compte à compte ou versement en espèces au guichet de poste.</td>
+          <td><code>tx_id</code>, <code>montant_dzd</code>, <code>timestamp_tx</code> <em>(+1 autres)</em></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">PostgreSQL 16 / Neo4j</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="finance">
+          <td><strong>🏧 Guichet_GAB</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Guichet_GAB)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#eab308;border:1px solid #eab308;font-size:0.7rem;">4. Finances Criminelles & BaridiMob</span></td>
+          <td>Distributeur automatique de billets d'Algérie Poste ou d'une banque où les fonds extorqués ont été retirés physiquement en espèces.</td>
+          <td><code>id_gab</code>, <code>bureau_poste</code>, <code>geopoint</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">PostgreSQL 16 (PostGIS)</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="finance">
+          <td><strong>🪙 Crypto_Wallet</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Crypto_Wallet)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#eab308;border:1px solid #eab308;font-size:0.7rem;">4. Finances Criminelles & BaridiMob</span></td>
+          <td>Adresse de portefeuille blockchain (notamment Tron TRC-20 pour les transferts USDT) servant à expatrier les fonds volés hors d'Algérie.</td>
+          <td><code>adresse_publique</code>, <code>blockchain</code>, <code>plateforme_identifiee</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / PostgreSQL 16</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="finance">
+          <td><strong>⛓️ Transaction_Crypto</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Transaction_Crypto)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#eab308;border:1px solid #eab308;font-size:0.7rem;">4. Finances Criminelles & BaridiMob</span></td>
+          <td>Transfert de cybermonnaie immuable enregistré sur un registre distribué public.</td>
+          <td><code>tx_hash</code>, <code>montant_crypto</code>, <code>timestamp_block</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">PostgreSQL 16 / Neo4j</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="socmint">
+          <td><strong>👤 Compte_Social</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Compte_Social)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#06b6d4;border:1px solid #06b6d4;font-size:0.7rem;">5. SOCMINT, Web & Trackers</span></td>
+          <td>Profil en ligne sur Facebook, Instagram, Telegram, TikTok ou WhatsApp utilisé pour diffuser les arnaques ou appâter les victimes.</td>
+          <td><code>id_profil</code>, <code>plateforme</code>, <code>pseudo_handle</code> <em>(+1 autres)</em></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / MongoDB 7.0</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="socmint">
+          <td><strong>📢 Publication_Sociale</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Publication_Sociale)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#06b6d4;border:1px solid #06b6d4;font-size:0.7rem;">5. SOCMINT, Web & Trackers</span></td>
+          <td>Message public, annonce sponsorisée Facebook Ads ou vidéo TikTok constituant le support matériel de l'escroquerie.</td>
+          <td><code>id_post</code>, <code>texte_integral</code>, <code>date_publication</code> <em>(+1 autres)</em></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / MinIO / MongoDB</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="socmint">
+          <td><strong>📣 Canal_Telegram</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Canal_Telegram)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#06b6d4;border:1px solid #06b6d4;font-size:0.7rem;">5. SOCMINT, Web & Trackers</span></td>
+          <td>Espace de discussion collectif privé ou public où les escrocs coordonnent leurs actions ou diffusent des catalogues de marchandises fictives.</td>
+          <td><code>id_canal</code>, <code>titre_canal</code>, <code>nb_membres</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / MongoDB 7.0</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="socmint">
+          <td><strong>💬 Message_Chat</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Message_Chat)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#06b6d4;border:1px solid #06b6d4;font-size:0.7rem;">5. SOCMINT, Web & Trackers</span></td>
+          <td>Message texte ou vocal unitaire échangé sur WhatsApp ou Telegram contenant des aveux, des ordres ou des coordonnées bancaires.</td>
+          <td><code>message_id</code>, <code>texte_brut</code>, <code>horodatage_iso</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">MongoDB 7.0 (BSON Snappy)</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="socmint">
+          <td><strong>📧 Adresse_Email</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Adresse_Email)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#06b6d4;border:1px solid #06b6d4;font-size:0.7rem;">5. SOCMINT, Web & Trackers</span></td>
+          <td>Adresse de messagerie électronique utilisée pour administrer des sites web, souscrire des hébergements ou enregistrer des comptes sociaux.</td>
+          <td><code>email_canonique</code>, <code>domaine_mx</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / PostgreSQL 16</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="socmint">
+          <td><strong>🌐 Site_Web</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Site_Web)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#06b6d4;border:1px solid #06b6d4;font-size:0.7rem;">5. SOCMINT, Web & Trackers</span></td>
+          <td>Site de commerce électronique fictif, fausse plateforme de paiement ou portail d'hameçonnage ciblant les usagers algériens.</td>
+          <td><code>fqdn_domaine</code>, <code>ip_hebergeur</code>, <code>date_depot_whois</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / MinIO / MongoDB</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="socmint">
+          <td><strong>🏷️ Identifiant_Infrastructure</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Identifiant_Infrastructure)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#06b6d4;border:1px solid #06b6d4;font-size:0.7rem;">5. SOCMINT, Web & Trackers</span></td>
+          <td>Balise technique cachée dans le code source d'un site web (Meta Pixel ID, Google Analytics ID, JARM TLS) partagée par plusieurs sites d'un même escroc.</td>
+          <td><code>valeur_id</code>, <code>type_tracker</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j 5.20+ (Pivot Graphe)</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="cyber">
+          <td><strong>📦 Fichier_APK</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Fichier_APK)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#22c55e;border:1px solid #22c55e;font-size:0.7rem;">6. Cyber, Malwares & Forensique</span></td>
+          <td>Fichier d'installation Android (.apk) vérolé usurpant l'identité d'Algérie Poste ou d'un service public pour voler les codes secrets et SMS OTP.</td>
+          <td><code>sha256_hash</code>, <code>package_name</code>, <code>certificat_signature</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">MinIO WORM / MongoDB / Neo4j</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="cyber">
+          <td><strong>🖥️ Serveur_C2</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Serveur_C2)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#22c55e;border:1px solid #22c55e;font-size:0.7rem;">6. Cyber, Malwares & Forensique</span></td>
+          <td>Machine distante contrôlée par les cybercriminels recevant les identifiants volés, les SMS interceptés et orchestrant les attaques.</td>
+          <td><code>ip_address</code>, <code>port_c2</code>, <code>asn_pays</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / PostgreSQL 16</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="cyber">
+          <td><strong>🔒 Certificat_TLS</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Certificat_TLS)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#22c55e;border:1px solid #22c55e;font-size:0.7rem;">6. Cyber, Malwares & Forensique</span></td>
+          <td>Certificat cryptographique sécurisant un site frauduleux, dont l'empreinte JARM révèle la configuration exacte du serveur sous-jacent.</td>
+          <td><code>sha256_cert</code>, <code>jarm_hash</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / MongoDB 7.0</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="cyber">
+          <td><strong>🔬 Artefact_DFIR</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Artefact_DFIR)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#22c55e;border:1px solid #22c55e;font-size:0.7rem;">6. Cyber, Malwares & Forensique</span></td>
+          <td>Image disque brute (E01/RAW), dump de mémoire vive RAM (Volatility) ou base SQLite chiffrée extraite d'un smartphone saisi.</td>
+          <td><code>sha256_artefact</code>, <code>format_image</code>, <code>taille_octets</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">MinIO WORM / PostgreSQL 16</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="biometrics">
+          <td><strong>🎙️ Enregistrement_Vocal</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Enregistrement_Vocal)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#a855f7;border:1px solid #a855f7;font-size:0.7rem;">7. Biométrie Multimodale & Médias</span></td>
+          <td>Message vocal WhatsApp en dialecte algérien intercepté ou remis par la victime, contenant les instructions d'arnaque et la voix du suspect.</td>
+          <td><code>sha256_audio</code>, <code>duree_sec</code>, <code>transcription_darija</code> <em>(+1 autres)</em></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">MinIO / Qdrant 1.9 / Neo4j</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="biometrics">
+          <td><strong>👤 Empreinte_Faciale</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Empreinte_Faciale)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#a855f7;border:1px solid #a855f7;font-size:0.7rem;">7. Biométrie Multimodale & Médias</span></td>
+          <td>Vecteur mathématique compact à 512 dimensions extrait par réseau de neurones convolutif profond (ArcFace) représentant la biométrie d'un visage.</td>
+          <td><code>vector_id</code>, <code>vecteur_512d</code>, <code>seuil_confiance</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Qdrant 1.9 / MinIO / Neo4j</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="biometrics">
+          <td><strong>🖼️ Image_Preuve</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Image_Preuve)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#a855f7;border:1px solid #a855f7;font-size:0.7rem;">7. Biométrie Multimodale & Médias</span></td>
+          <td>Photographie d'une pièce d'identité saisie, capture d'écran d'un reçu de virement BaridiMob ou cliché de faux stocks de marchandises.</td>
+          <td><code>sha256_image</code>, <code>phash_perceptuel</code>, <code>exif_gps</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">MinIO WORM / Neo4j</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="legal">
+          <td><strong>📄 Document_Judiciaire</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Document_Judiciaire)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#e11d48;border:1px solid #e11d48;font-size:0.7rem;">8. Chaîne de Preuve & Scellés WORM</span></td>
+          <td>Acte de procédure officiel rédigé par l'officier de police judiciaire : PV d'audition, de constatation, de perquisition ou rapport de synthèse.</td>
+          <td><code>numero_pv</code>, <code>type_acte</code>, <code>date_redaction</code> <em>(+1 autres)</em></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">MinIO / PostgreSQL 16</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="legal">
+          <td><strong>🔏 Scelle_Numerique</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Scelle_Numerique)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#e11d48;border:1px solid #e11d48;font-size:0.7rem;">8. Chaîne de Preuve & Scellés WORM</span></td>
+          <td>Enveloppe cryptographique inviolable garantissant l'intégrité absolue d'un élément de preuve (vidéo, vocal, WARC, dump de base de données).</td>
+          <td><code>evidence_uid</code>, <code>num_scelle_parquet</code>, <code>lock_mode</code> <em>(+1 autres)</em></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">MinIO S3 WORM (Lock)</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="legal">
+          <td><strong>🌲 Preuve_Merkle</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Preuve_Merkle)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#e11d48;border:1px solid #e11d48;font-size:0.7rem;">8. Chaîne de Preuve & Scellés WORM</span></td>
+          <td>Structure de données cryptographique en arbre de Merkle prouvant mathématiquement qu'aucun indice n'a été inséré ou supprimé a posteriori.</td>
+          <td><code>merkle_root_sha256</code>, <code>rfc3161_timestamp</code>, <code>nb_feuilles_indices</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">PostgreSQL 16 / Neo4j</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>        <tr data-category="cyber">
+          <td><strong>⚡ Session_Recherche</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Session_Recherche)</span></td>
+          <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#22c55e;border:1px solid #22c55e;font-size:0.7rem;">6. Cyber, Malwares & Forensique</span></td>
+          <td>État temporaire en mémoire vive gérant les verrous distribués Redlock, les quotas de requêtes vers les plateformes (Token-Bucket) et le push WebSockets vers le Studio.</td>
+          <td><code>session_id</code>, <code>token_bucket_dispo</code>, <code>expires_at</code></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Redis 7.2 (In-Memory RESP3)</span></td>
+          <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
+        </tr>
+        </tbody>
+      </table>
+    </section>
+    <!-- ====================================================================
+         SECTION 4: DICTIONNAIRE EXHAUSTIF DES 47+ RELATIONS DIRECTIONNELLES
+         ==================================================================== -->
+    <section>
+      <h2 class="section-title">4. Dictionnaire Exhaustif des 47+ Relations Directionnelles (Arêtes Graphe)</h2>
+      <p class="section-subtitle">
+        Typologie formelle des arêtes orientées et pondérées reliant les entités, propriétés temporelles portées et sémantique criminalistique.
+      </p>
+
+      <div class="search-filter-box">
+        <input type="text" id="rel-search-input" class="search-filter-input" placeholder="🔍 Filtrer les relations par nom ou nœud (ex: VIREMENT, BORNE, COMMUNIQUE, MALWARE)..." onkeyup="filterTable('rel-search-input', 'relations-catalog-table', null)" />
+      </div>
+
+      <table class="tech-table" id="relations-catalog-table">
+        <thead>
+          <tr>
+            <th>Nœud Source</th>
+            <th>Type d'Arête Cypher</th>
+            <th>Nœud Cible</th>
+            <th>Cardinalité</th>
+            <th>Propriétés Portées par l'Arête</th>
+            <th>Signification &amp; Rôle Procédural</th>
+          </tr>
+        </thead>
+        <tbody>
+                  <tr>
+          <td><strong>📍 Commune</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:APPARTIENT_A_DAIRA]</code></td>
+          <td><strong>🏘️ Daira</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">code_postal</span></td>
+          <td>Rattachement administratif de la commune à sa daïra</td>
+        </tr>        <tr>
+          <td><strong>🏘️ Daira</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:APPARTIENT_A_WILAYA]</code></td>
+          <td><strong>🏛️ Wilaya</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">ordre_juridique</span></td>
+          <td>Rattachement administratif de la daïra à sa wilaya</td>
+        </tr>        <tr>
+          <td><strong>🏢 Unite</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:SITUEE_DANS_COMMUNE]</code></td>
+          <td><strong>📍 Commune</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">adresse_caserne</span></td>
+          <td>Implantation géographique de la brigade ou de la sûreté</td>
+        </tr>        <tr>
+          <td><strong>📁 Affaire</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:TRAITEE_PAR_UNITE]</code></td>
+          <td><strong>🏢 Unite</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">date_saisine, brigade_en_charge</span></td>
+          <td>Attribution de l'enquête préliminaire à une unité judiciaire</td>
+        </tr>        <tr>
+          <td><strong>📁 Affaire</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:INSTRUITE_PAR_MAGISTRAT]</code></td>
+          <td><strong>⚖️ Magistrat</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">num_cabinet, date_ordonnance</span></td>
+          <td>Supervision du dossier par le juge d'instruction</td>
+        </tr>        <tr>
+          <td><strong>📁 Affaire</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:IMPLIQUE_SUSPECT]</code></td>
+          <td><strong>🎯 Personne</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">1:N</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">_class, _Lvl_of_Implications, statut_garde_a_vue</span></td>
+          <td>Implication directe d'un suspect ou complice dans le dossier</td>
+        </tr>        <tr>
+          <td><strong>🎯 Personne</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:COMMUNIQUE_AVEC]</code></td>
+          <td><strong>🎯 Personne</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:M</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">nb_appels, total_duree_sec, premier_contact, dernier_contact</span></td>
+          <td>Lien de communication direct ou co-présence téléphonique</td>
+        </tr>        <tr>
+          <td><strong>🎯 Personne</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:COMPLICE_DE]</code></td>
+          <td><strong>🎯 Personne</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:M</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">degre_certitude, role_hierarchique</span></td>
+          <td>Lien pénal de complicité établi par l'instruction</td>
+        </tr>        <tr>
+          <td><strong>🎯 Personne</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:DIRIGE_ENTREPRISE]</code></td>
+          <td><strong>🏢 Entreprise</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:M</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">parts_sociales, date_nomination</span></td>
+          <td>Gérance légale ou de fait d'une société commerciale</td>
+        </tr>        <tr>
+          <td><strong>🎯 Personne</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:PROPRIETAIRE_VEHICULE]</code></td>
+          <td><strong>🚗 Vehicule</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">1:N</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">date_carte_grise</span></td>
+          <td>Propriété ou utilisation habituelle d'un véhicule</td>
+        </tr>        <tr>
+          <td><strong>🎯 Personne</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:UTILISE_TELEPHONE]</code></td>
+          <td><strong>📱 Telephone</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:M</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">date_debut, date_fin, type_usage</span></td>
+          <td>Utilisation d'une ligne mobile par le suspect</td>
+        </tr>        <tr>
+          <td><strong>📱 Telephone</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:INSERE_DANS_SIM]</code></td>
+          <td><strong>📶 Carte_SIM</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">1:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">date_activation</span></td>
+          <td>Association entre numéro d'appel et puce SIM physique</td>
+        </tr>        <tr>
+          <td><strong>📶 Carte_SIM</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:LOGEE_DANS_TERMINAL]</code></td>
+          <td><strong>📲 Appareil_Mobile</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">slot_sim_1_ou_2, date_premiere_detection</span></td>
+          <td>Insertion de la carte SIM dans un smartphone spécifique</td>
+        </tr>        <tr>
+          <td><strong>📱 Telephone</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:BORNE_SUR_ANTENNE]</code></td>
+          <td><strong>📡 Antenne_BTS</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:M</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">timestamp_appel, azimut, duree_sec</span></td>
+          <td>Bornage d'un appel téléphonique sur un relais cellulaire</td>
+        </tr>        <tr>
+          <td><strong>📊 Telecom_CDR</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:TRACE_LIGNE_APPELANTE]</code></td>
+          <td><strong>📱 Telephone</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">cdr_id, timestamp</span></td>
+          <td>Ligne téléphonique à l'origine de l'appel</td>
+        </tr>        <tr>
+          <td><strong>📊 Telecom_CDR</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:TRACE_LIGNE_APPELEE]</code></td>
+          <td><strong>📱 Telephone</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">cdr_id, timestamp</span></td>
+          <td>Ligne téléphonique destinataire de l'appel</td>
+        </tr>        <tr>
+          <td><strong>📊 Telecom_CDR</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:RELAIS_PAR_ANTENNE]</code></td>
+          <td><strong>📡 Antenne_BTS</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">cell_id, lac</span></td>
+          <td>Relais ayant acheminé la communication</td>
+        </tr>        <tr>
+          <td><strong>🎯 Personne</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:DETIENT_COMPTE_BANCAIRE]</code></td>
+          <td><strong>💳 Compte_Bancaire</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">1:N</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">date_ouverture, statut_compte (mule/principal)</span></td>
+          <td>Titularité d'un compte postal BaridiMob ou compte bancaire</td>
+        </tr>        <tr>
+          <td><strong>💳 Compte_Bancaire</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:EFFECTUE_VIREMENT_VERS]</code></td>
+          <td><strong>💳 Compte_Bancaire</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:M</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">montant_dzd, timestamp, tx_id, canal</span></td>
+          <td>Virement d'argent entre deux comptes (blanchiment/extorsion)</td>
+        </tr>        <tr>
+          <td><strong>💳 Compte_Bancaire</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:RETRAIT_ESPECES_GAB]</code></td>
+          <td><strong>🏧 Guichet_GAB</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:M</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">montant_dzd, timestamp, carte_utilisée</span></td>
+          <td>Retrait d'argent liquide sur un automate postal</td>
+        </tr>        <tr>
+          <td><strong>📱 Telephone</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:RECOIT_OTP_BARIDIMOB]</code></td>
+          <td><strong>💳 Compte_Bancaire</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">numero_notification</span></td>
+          <td>Numéro recevant les SMS OTP de validation des virements</td>
+        </tr>        <tr>
+          <td><strong>💳 Compte_Bancaire</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:CONVERTIT_EN_CRYPTO]</code></td>
+          <td><strong>🪙 Crypto_Wallet</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:M</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">montant_dzd_converti, equivalent_usdt</span></td>
+          <td>Achat de cryptomonnaie par virement bancaire</td>
+        </tr>        <tr>
+          <td><strong>🪙 Crypto_Wallet</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:TRANSFERT_CRYPTO_VERS]</code></td>
+          <td><strong>🪙 Crypto_Wallet</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:M</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">montant_usdt, tx_hash, blockchain</span></td>
+          <td>Transfert de jetons USDT entre portefeuilles blockchain</td>
+        </tr>        <tr>
+          <td><strong>🎯 Personne</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:POSSEDE_PROFIL_SOCIAL]</code></td>
+          <td><strong>👤 Compte_Social</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">1:N</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">date_liaison, degre_confiance</span></td>
+          <td>Attribution d'un profil Facebook, Telegram ou TikTok au suspect</td>
+        </tr>        <tr>
+          <td><strong>👤 Compte_Social</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:PUBLIE_ANNONCE_SCAM]</code></td>
+          <td><strong>📢 Publication_Sociale</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">1:N</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">date_publication, statut_sponsorise</span></td>
+          <td>Publication d'une annonce frauduleuse sur un réseau social</td>
+        </tr>        <tr>
+          <td><strong>👤 Compte_Social</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:ADMINISTRE_CANAL]</code></td>
+          <td><strong>📣 Canal_Telegram</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:M</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">role (admin, createur), date_adhesion</span></td>
+          <td>Gestion d'un canal ou groupe de vente de contrefaçons</td>
+        </tr>        <tr>
+          <td><strong>📣 Canal_Telegram</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:HEBERGE_MESSAGES]</code></td>
+          <td><strong>💬 Message_Chat</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">1:N</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">nb_messages_extraits</span></td>
+          <td>Contenu des échanges au sein du canal criminel</td>
+        </tr>        <tr>
+          <td><strong>📢 Publication_Sociale</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:RETOURN_VERS_SITE_WEB]</code></td>
+          <td><strong>🌐 Site_Web</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">url_clic, code_promo</span></td>
+          <td>Lien de redirection de l'annonce vers la fausse boutique</td>
+        </tr>        <tr>
+          <td><strong>📢 Publication_Sociale</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:MENTIONNE_TELEPHONE]</code></td>
+          <td><strong>📱 Telephone</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:M</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">texte_mention (WhatsApp commercial)</span></td>
+          <td>Numéro de contact affiché publiquement sur l'annonce</td>
+        </tr>        <tr>
+          <td><strong>🌐 Site_Web</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:EMBARQUE_PIXEL_TRACKER]</code></td>
+          <td><strong>🏷️ Identifiant_Infrastructure</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:M</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">position_code_dom</span></td>
+          <td>Présence d'un tracker d'audience partagé dans le code du site</td>
+        </tr>        <tr>
+          <td><strong>🌐 Site_Web</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:RESOLU_VERS_IP_C2]</code></td>
+          <td><strong>🖥️ Serveur_C2</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">date_resolution_dns, ttl</span></td>
+          <td>Résolution DNS du nom de domaine vers son adresse IP d'hébergement</td>
+        </tr>        <tr>
+          <td><strong>🌐 Site_Web</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:UTILISE_CERTIFICAT_TLS]</code></td>
+          <td><strong>🔒 Certificat_TLS</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">validite_certificat</span></td>
+          <td>Certificat de chiffrement HTTPS déployé sur le site</td>
+        </tr>        <tr>
+          <td><strong>🌐 Site_Web</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:DISTRIBUE_APPLICATION_APK]</code></td>
+          <td><strong>📦 Fichier_APK</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">1:N</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">url_telechargement, nom_fichier</span></td>
+          <td>Lien direct poussant la victime à installer le trojan bancaire</td>
+        </tr>        <tr>
+          <td><strong>📦 Fichier_APK</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:COMMUNIQUE_AVEC_C2]</code></td>
+          <td><strong>🖥️ Serveur_C2</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">port_ecoute, protocole_c2</span></td>
+          <td>Exfiltration des SMS et codes secrets vers le serveur criminel</td>
+        </tr>        <tr>
+          <td><strong>📦 Fichier_APK</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:CIBLE_COMPTE_BARIDIMOB]</code></td>
+          <td><strong>💳 Compte_Bancaire</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:M</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">fausse_interface_injectee</span></td>
+          <td>Interception des accès et vol des identifiants BaridiMob</td>
+        </tr>        <tr>
+          <td><strong>📲 Appareil_Mobile</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:A_PRODUIT_ARTEFACT_DFIR]</code></td>
+          <td><strong>🔬 Artefact_DFIR</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">1:N</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">methode_acquisition (extraction physique)</span></td>
+          <td>Saisie médico-légale de la mémoire ou du disque du smartphone</td>
+        </tr>        <tr>
+          <td><strong>💬 Message_Chat</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:CONTIENT_ENREGISTREMENT_VOCAL]</code></td>
+          <td><strong>🎙️ Enregistrement_Vocal</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">1:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">format_codec, taille_octets</span></td>
+          <td>Note vocale audio attachée à un message WhatsApp</td>
+        </tr>        <tr>
+          <td><strong>🎙️ Enregistrement_Vocal</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:ATTRIBUE_A_LOCUTEUR]</code></td>
+          <td><strong>🎯 Personne</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">score_similarite_vocale (PyAnnote), langue_darija</span></td>
+          <td>Identification de la voix du suspect par biométrie vocale</td>
+        </tr>        <tr>
+          <td><strong>🖼️ Image_Preuve</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:CONTIENT_EMPREINTE_FACIALE]</code></td>
+          <td><strong>👤 Empreinte_Faciale</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">1:N</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">bbox_visage, certitude_detection</span></td>
+          <td>Détection d'un visage exploitable sur une photo saisie</td>
+        </tr>        <tr>
+          <td><strong>👤 Empreinte_Faciale</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:CORRESPOND_A_SUSPECT]</code></td>
+          <td><strong>🎯 Personne</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">distance_cosinus_arcface (<0.68)</span></td>
+          <td>Rapprochement facial 1-to-N confirmé avec la fiche du suspect</td>
+        </tr>        <tr>
+          <td><strong>🖼️ Image_Preuve</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:MONTRE_VEHICULE_PLAQUE]</code></td>
+          <td><strong>🚗 Vehicule</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">immatriculation_lapi</span></td>
+          <td>Reconnaissance de plaque d'immatriculation sur une photo</td>
+        </tr>        <tr>
+          <td><strong>📁 Affaire</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:CONTIENT_PROCES_VERBAL]</code></td>
+          <td><strong>📄 Document_Judiciaire</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">1:N</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">num_piece_dossier</span></td>
+          <td>Intégration d'un PV d'audition ou de constatation au dossier pénal</td>
+        </tr>        <tr>
+          <td><strong>📄 Document_Judiciaire</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:PROTEGE_PAR_SCELLE]</code></td>
+          <td><strong>🔏 Scelle_Numerique</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">1:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">date_scellement</span></td>
+          <td>Verrouillage juridique du rapport sous scellé WORM</td>
+        </tr>        <tr>
+          <td><strong>🔏 Scelle_Numerique</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:VERROUILLE_PREUVE_BINAIRE]</code></td>
+          <td><strong>🎙️ Enregistrement_Vocal</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">1:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">sha256_conforme</span></td>
+          <td>Scellement WORM de l'audio original dans MinIO COMPLIANCE</td>
+        </tr>        <tr>
+          <td><strong>🔏 Scelle_Numerique</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:VERROUILLE_PREUVE_IMAGE]</code></td>
+          <td><strong>🖼️ Image_Preuve</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">1:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">sha256_conforme</span></td>
+          <td>Scellement WORM de l'image de reçu BaridiMob</td>
+        </tr>        <tr>
+          <td><strong>🔏 Scelle_Numerique</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:VERROUILLE_PREUVE_APK]</code></td>
+          <td><strong>📦 Fichier_APK</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">1:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">sha256_conforme</span></td>
+          <td>Scellement WORM du fichier malveillant APK</td>
+        </tr>        <tr>
+          <td><strong>📁 Affaire</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:CERTIFIEE_PAR_MERKLE]</code></td>
+          <td><strong>🌲 Preuve_Merkle</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">1:1</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">merkle_root_sha256, rfc3161_timestamp</span></td>
+          <td>Racine cryptographique garantissant l'intégrité de tous les scellés</td>
+        </tr>
+        </tbody>
+      </table>
+    </section>
+    <!-- ====================================================================
+         SECTION 5: HIÉRARCHIE TERRITORIALE ALGÉRIENNE & ATTRIBUTS DÉRIVÉS
+         ==================================================================== -->
     <section>
       <h2 class="section-title">5. Hiérarchie Territoriale Algérienne &amp; Attributs d'Intelligence Criminelle Dérivés</h2>
       <p class="section-subtitle">
-        Modélisation formelle de l'ancrage territorial judiciaire algérien (Wilaya, Daïra, Commune, Unité, Affaire) et des attributs calculés en temps réel par les algorithmes de <code>PIC-main</code> et visualisés dans <code>frontend-master</code>.
+        Modélisation formelle de l'ancrage juridictionnel algérien (Wilaya, Daïra, Commune, Unité, Affaire) et calcul en temps réel des attributs d'intelligence criminelle (GDS 2.6).
       </p>
 
       <!-- 5.1 Algerian Administrative & Judicial Hierarchy Ontological Subgraph -->
@@ -647,147 +1548,193 @@
         <div style="background:#090d16;padding:1rem;border-radius:8px;margin-bottom:0.75rem;overflow-x:auto;">
           <svg viewBox="0 0 850 110" style="min-width:750px;width:100%;height:auto;font-family:system-ui,-apple-system,sans-serif;">
             <defs>
-              <marker id="arr-green" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#10b981"/>
+              <marker id="arr-green" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#10b981" />
               </marker>
             </defs>
+            <!-- Nodes -->
+            <g transform="translate(20, 25)">
+              <rect width="130" height="55" rx="8" fill="#132338" stroke="#38bdf8" stroke-width="1.5" />
+              <text x="65" y="24" fill="#38bdf8" font-size="11" font-weight="bold" text-anchor="middle">🏛️ Wilaya (58)</text>
+              <text x="65" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">code_wilaya (01..58)</text>
+            </g>
 
-            <!-- Node Wilaya -->
-            <rect x="20" y="25" width="130" height="60" rx="8" fill="#061c14" stroke="#10b981" stroke-width="2"/>
-            <text x="85" y="50" fill="#10b981" font-size="11" font-weight="bold" text-anchor="middle">(w:Wilaya)</text>
-            <text x="85" y="68" fill="#86efac" font-size="8.5" text-anchor="middle">58 Wilayas DZ</text>
+            <line x1="150" y1="52" x2="190" y2="52" stroke="#10b981" stroke-width="2" marker-end="url(#arr-green)" />
+            <text x="170" y="44" fill="#10b981" font-size="8" font-family="monospace" text-anchor="middle">appartient</text>
 
-            <path d="M 180 55 L 155 55" stroke="#10b981" stroke-width="2" marker-end="url(#arr-green)"/>
-            <text x="168" y="47" fill="#86efac" font-size="7.5" font-family="monospace" text-anchor="middle">[:appartient]</text>
+            <g transform="translate(190, 25)">
+              <rect width="130" height="55" rx="8" fill="#132338" stroke="#38bdf8" stroke-width="1.5" />
+              <text x="65" y="24" fill="#38bdf8" font-size="11" font-weight="bold" text-anchor="middle">🏘️ Daira</text>
+              <text x="65" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">id_daira, nom_ar</text>
+            </g>
 
-            <!-- Node Daira -->
-            <rect x="190" y="25" width="130" height="60" rx="8" fill="#061c14" stroke="#10b981" stroke-width="1.5"/>
-            <text x="255" y="50" fill="#10b981" font-size="11" font-weight="bold" text-anchor="middle">(d:Daira)</text>
-            <text x="255" y="68" fill="#86efac" font-size="8.5" text-anchor="middle">Daïra de rattachement</text>
+            <line x1="320" y1="52" x2="360" y2="52" stroke="#10b981" stroke-width="2" marker-end="url(#arr-green)" />
+            <text x="340" y="44" fill="#10b981" font-size="8" font-family="monospace" text-anchor="middle">appartient</text>
 
-            <path d="M 350 55 L 325 55" stroke="#10b981" stroke-width="2" marker-end="url(#arr-green)"/>
-            <text x="338" y="47" fill="#86efac" font-size="7.5" font-family="monospace" text-anchor="middle">[:appartient]</text>
+            <g transform="translate(360, 25)">
+              <rect width="130" height="55" rx="8" fill="#132338" stroke="#38bdf8" stroke-width="1.5" />
+              <text x="65" y="24" fill="#38bdf8" font-size="11" font-weight="bold" text-anchor="middle">📍 Commune</text>
+              <text x="65" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">code_postal (1541)</text>
+            </g>
 
-            <!-- Node Commune -->
-            <rect x="360" y="25" width="130" height="60" rx="8" fill="#061c14" stroke="#10b981" stroke-width="1.5"/>
-            <text x="425" y="50" fill="#10b981" font-size="11" font-weight="bold" text-anchor="middle">(c:Commune)</text>
-            <text x="425" y="68" fill="#86efac" font-size="8.5" text-anchor="middle">1541 Communes DZ</text>
+            <line x1="490" y1="52" x2="530" y2="52" stroke="#10b981" stroke-width="2" marker-end="url(#arr-green)" />
+            <text x="510" y="44" fill="#10b981" font-size="8" font-family="monospace" text-anchor="middle">situer</text>
 
-            <path d="M 520 55 L 495 55" stroke="#10b981" stroke-width="2" marker-end="url(#arr-green)"/>
-            <text x="508" y="47" fill="#86efac" font-size="7.5" font-family="monospace" text-anchor="middle">[:situer]</text>
+            <g transform="translate(530, 25)">
+              <rect width="130" height="55" rx="8" fill="#142e2b" stroke="#10b981" stroke-width="1.5" />
+              <text x="65" y="24" fill="#10b981" font-size="11" font-weight="bold" text-anchor="middle">🏢 Unité (PJ / GN)</text>
+              <text x="65" y="42" fill="#94a3b8" font-size="9" text-anchor="middle">type_unite, brigade</text>
+            </g>
 
-            <!-- Node Unite -->
-            <rect x="530" y="25" width="140" height="60" rx="8" fill="#0c1929" stroke="#38bdf8" stroke-width="2"/>
-            <text x="600" y="50" fill="#38bdf8" font-size="11" font-weight="bold" text-anchor="middle">(u:Unite)</text>
-            <text x="600" y="68" fill="#7dd3fc" font-size="8.5" text-anchor="middle">Brigade GN / BMPJ / Sûreté</text>
+            <line x1="660" y1="52" x2="700" y2="52" stroke="#10b981" stroke-width="2" marker-end="url(#arr-green)" />
+            <text x="680" y="44" fill="#10b981" font-size="8" font-family="monospace" text-anchor="middle">Traiter</text>
 
-            <path d="M 695 55 L 675 55" stroke="#38bdf8" stroke-width="2" marker-end="url(#arr-cyan)"/>
-            <text x="685" y="47" fill="#7dd3fc" font-size="7.5" font-family="monospace" text-anchor="middle">[:Traiter]</text>
-
-            <!-- Node Affaire -->
-            <rect x="705" y="25" width="125" height="60" rx="8" fill="#201124" stroke="#ec4899" stroke-width="2"/>
-            <text x="767" y="50" fill="#ec4899" font-size="11" font-weight="bold" text-anchor="middle">(a:Affaire)</text>
-            <text x="767" y="68" fill="#f472b6" font-size="8.5" text-anchor="middle">Dossier d'Enquête</text>
+            <g transform="translate(700, 25)">
+              <rect width="130" height="55" rx="8" fill="#2b1a14" stroke="#f97316" stroke-width="2" />
+              <text x="65" y="24" fill="#f97316" font-size="11" font-weight="bold" text-anchor="middle">📁 Affaire Pénale</text>
+              <text x="65" y="42" fill="#fed7aa" font-size="9" text-anchor="middle">num_parquet, statut</text>
+            </g>
           </svg>
-        </div>
-
-        <div style="background:#090d16;padding:0.85rem;border-radius:6px;font-size:0.8rem;color:#cbd5e1;line-height:1.5;">
-          <strong style="color:#10b981;">Propriétés Canoniques Enregistrées sur les Nœuds Territoriaux :</strong>
-          <ul style="margin:0.4rem 0 0 1.25rem;padding:0;">
-            <li><code>nom_francais</code> &bull; <code>nom_arabe</code> : Bilinguisme officiel strict (ex: <em>Alger / الجزائر</em>, <em>Bab El Oued / باب الوادي</em>).</li>
-            <li><code>code_postal</code> &bull; <code>code_wilaya</code> : Numérotation officielle de 01 à 58.</li>
-            <li><code>type_unite</code> : <code>Gendarmerie_Nationale</code>, <code>Surete_Nationale_DGSN</code>, ou <code>Pole_Penal_Specialise</code>.</li>
-            <li><code>type_affaire</code> : Qualification pénale (<em>Escroquerie Numérique</em>, <em>Usurpation d'Identité</em>, <em>Blanchiment</em>, <em>Faux et Usage de Faux</em>).</li>
-          </ul>
         </div>
       </div>
 
-      <!-- 5.2 Forensic Entity Styling Specification (config_style.json) -->
+      <!-- 5.2 Forensic Entity Styling Specification -->
       <div class="card" style="border-left:4px solid var(--accent-blue);margin-bottom:1.5rem;">
-        <div class="card-title"><span>🎨</span> 5.2 Spécification du Style Visuel &amp; Icônes Forensiques (config_style.json)</div>
+        <div class="card-title"><span>🎨</span> 5.2 Spécification des Styles des Nœuds du Studio (config_style.json)</div>
         <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.55;margin-bottom:0.75rem;">
-          Conformément à l'implémentation de <code>frontend-master</code> (<code>VisualisationModule/Parser.js</code>, <code>NodeConfigForm.js</code>) et l'API backend <code>/api/node-config/</code>, chaque type d'entité possède une configuration graphique stricte :
+          Conformément au moteur <code>@neo4j-nvl/react</code> et à la charte graphique de <code>frontend-master</code>, chaque entité possède une couleur de remplissage, un diamètre et une icône normalisée :
         </p>
 
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Type d'Entité</th>
-                <th>Couleur de Remplissage</th>
-                <th>Diamètre Standard</th>
-                <th>Chemin d'Icône (/public/icon/)</th>
-                <th>Clé d'Affichage Principale (labelKey)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Personne / Suspect</strong></td>
-                <td><span style="color:#f43f5e;font-weight:700;">#f43f5e (Rose / Rouge)</span></td>
-                <td><code>130px - 140px</code></td>
-                <td><code>/icon/Personne.png</code></td>
-                <td><code>nom_complet</code> ou <code>alias</code></td>
-              </tr>
-              <tr>
-                <td><strong>Numéro Téléphone</strong></td>
-                <td><span style="color:#f97316;font-weight:700;">#f97316 (Orange)</span></td>
-                <td><code>110px</code></td>
-                <td><code>/icon/Telephone.png</code></td>
-                <td><code>numero_e164</code> (ex: +213555...)</td>
-              </tr>
-              <tr>
-                <td><strong>Compte Bancaire / BaridiMob</strong></td>
-                <td><span style="color:#eab308;font-weight:700;">#eab308 (Or / Ambre)</span></td>
-                <td><code>115px</code></td>
-                <td><code>/icon/BaridiMob.png</code></td>
-                <td><code>rip_algerie_poste</code></td>
-              </tr>
-              <tr>
-                <td><strong>Compte Réseau Social</strong></td>
-                <td><span style="color:#0ea5e9;font-weight:700;">#0ea5e9 (Cyan / Bleu)</span></td>
-                <td><code>105px</code></td>
-                <td><code>/icon/Social.png</code></td>
-                <td><code>pseudo_reseau</code> (@...)</td>
-              </tr>
-              <tr>
-                <td><strong>Note Vocale / Audio</strong></td>
-                <td><span style="color:#10b981;font-weight:700;">#10b981 (Émeraude)</span></td>
-                <td><code>100px</code></td>
-                <td><code>/icon/Audio.png</code></td>
-                <td><code>duree_et_locuteur</code></td>
-              </tr>
-              <tr>
-                <td><strong>Véhicule</strong></td>
-                <td><span style="color:#8b5cf6;font-weight:700;">#8b5cf6 (Violet)</span></td>
-                <td><code>110px</code></td>
-                <td><code>/icon/Vehicule.png</code></td>
-                <td><code>immatriculation_dz</code></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Type d'Entité</th>
+              <th>Couleur Hexadécimale</th>
+              <th>Diamètre Standard</th>
+              <th>Icône Système (/public/icon/)</th>
+              <th>Attribut d'Affichage Principal (labelKey)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Personne / Suspect</strong></td>
+              <td><span style="color:#f43f5e;font-weight:700;">#f43f5e (Rose / Rouge)</span></td>
+              <td><code>130px - 140px</code></td>
+              <td><code>/icon/Personne.png</code></td>
+              <td><code>nom_complet</code> ou <code>alias</code></td>
+            </tr>
+            <tr>
+              <td><strong>Numéro Téléphone</strong></td>
+              <td><span style="color:#f97316;font-weight:700;">#f97316 (Orange)</span></td>
+              <td><code>110px</code></td>
+              <td><code>/icon/Telephone.png</code></td>
+              <td><code>numero_e164</code> (ex: +213555...)</td>
+            </tr>
+            <tr>
+              <td><strong>Compte Bancaire / BaridiMob</strong></td>
+              <td><span style="color:#eab308;font-weight:700;">#eab308 (Or / Ambre)</span></td>
+              <td><code>115px</code></td>
+              <td><code>/icon/BaridiMob.png</code></td>
+              <td><code>rip_algerie_poste</code> (20 digits)</td>
+            </tr>
+            <tr>
+              <td><strong>Compte Réseau Social</strong></td>
+              <td><span style="color:#0ea5e9;font-weight:700;">#0ea5e9 (Cyan / Bleu)</span></td>
+              <td><code>105px</code></td>
+              <td><code>/icon/Social.png</code></td>
+              <td><code>pseudo_reseau</code> (@...)</td>
+            </tr>
+            <tr>
+              <td><strong>Note Vocale / Audio</strong></td>
+              <td><span style="color:#10b981;font-weight:700;">#10b981 (Émeraude)</span></td>
+              <td><code>100px</code></td>
+              <td><code>/icon/Audio.png</code></td>
+              <td><code>duree_et_locuteur</code></td>
+            </tr>
+            <tr>
+              <td><strong>Véhicule</strong></td>
+              <td><span style="color:#8b5cf6;font-weight:700;">#8b5cf6 (Violet)</span></td>
+              <td><code>110px</code></td>
+              <td><code>/icon/Vehicule.png</code></td>
+              <td><code>immatriculation_dz</code></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <!-- 5.3 Derived Criminal Intelligence Attributes -->
       <div class="card" style="border-left:4px solid var(--accent-purple);">
         <div class="card-title"><span>🏷️</span> 5.3 Attributs Dérivés d'Intelligence Criminelle (Calculés en Temps Réel)</div>
         <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.55;margin-bottom:0.75rem;">
-          Le moteur analytique <code>PIC-main</code> (<code>graph/analyse/view.py</code>) calcule et écrit directement sur les nœuds du graphe des attributs d'aide à la décision judiciaire, affichés sous forme de badges sur le canvas NVL :
+          Le moteur analytique <code>PIC-main</code> calcule et écrit directement sur les nœuds du graphe des attributs d'aide à la décision judiciaire, affichés sous forme de badges sur le canvas NVL :
         </p>
 
         <div style="background:#090d16;padding:1rem;border-radius:8px;font-size:0.8rem;color:#cbd5e1;line-height:1.6;">
           <ul style="padding-left:1.2rem;margin:0;">
             <li><code style="color:#a855f7;">_Lvl_of_Implications</code> : Tableau d'entiers <code>[1, 2, 3]</code> mesurant le niveau d'implication directe ou indirecte du suspect à travers les sauts de graphe de l'affaire.</li>
             <li><code style="color:#a855f7;">_class</code> : Tableau de classification pénale automatique : <code>['neutre']</code>, <code>['operationeel']</code> (homme de main/opérateur terrain), <code>['soutien']</code> (fournisseur logistique, puces SIM, prête-nom), ou <code>['leader']</code> (cerveau / donneur d'ordre).</li>
-            <li><code style="color:#a855f7;">_betweennessCentrality</code> : Valeur flottante normalisée entre <code>0.0</code> et <code>1.0</code> via GDS Brandes. Détecte les pivots indispensables au fonctionnement du syndicat.</li>
+            <li><code style="color:#a855f7;">_betweennessCentrality</code> : Valeur flottante normalisée entre <code>0.0</code> et <code>1.0</code> via GDS Brandes. Détecte les pivots indispensables au fonctionnement du syndicat criminel.</li>
             <li><code style="color:#a855f7;">_comune_Activite</code>, <code style="color:#a855f7;">_daira_activiti</code>, <code style="color:#a855f7;">_wiliya_Activiti</code> : Rayon d'action géographique calculé automatiquement par projection spatio-temporelle des bornages télécoms et retraits GAB du suspect.</li>
           </ul>
         </div>
       </div>
     </section>
+    <!-- ====================================================================
+         SECTION 6: MODÈLE UNIVERSEL GÉNÉRALISÉ GFPG
+         ==================================================================== -->
+    <section>
+      <h2 class="section-title">6. Modèle Universel Généralisé (GFPG : Generalized Forensic Property Graph)</h2>
+      <p class="section-subtitle">
+        Formalisation mathématique du graphe criminalistique étendu aux contraintes probatoires, fenêtres temporelles et scellements WORM.
+      </p>
 
+      <div style="background:#090d16;border:1px solid #1e293b;border-radius:8px;padding:1.25rem;margin-bottom:1.5rem;font-size:0.83rem;color:#cbd5e1;line-height:1.6;">
+        <h4 style="color:#38bdf8;margin:0 0 0.5rem;font-size:0.95rem;">Définition Formelle du Graphe Forensique</h4>
+        <p style="margin-bottom:0.75rem;">
+          Un graphe d'enquête forensique $\mathcal{G}_{GFPG}$ est un 8-uplet mathématique :
+        </p>
+        <div style="background:#050811;padding:0.75rem;border-radius:6px;border:1px solid #23344d;font-family:monospace;color:#f8fafc;margin-bottom:0.75rem;font-size:0.85rem;">
+          G = (V, E, &lambda;<sub>V</sub>, &lambda;<sub>E</sub>, &mu;<sub>V</sub>, &mu;<sub>E</sub>, &tau;, &sigma;)
+        </div>
+        <ul style="padding-left:1.2rem;margin:0;">
+          <li><strong>V</strong> : Ensemble des 37 types de sommets d'investigation (Personnes, Téléphones, RIPs, etc.).</li>
+          <li><strong>E</strong> : Ensemble des 47+ types d'arêtes relationnelles orientées.</li>
+          <li><strong>&lambda;<sub>V</sub> : V &rarr; Labels</strong> : Fonction d'étiquetage typologique des sommets.</li>
+          <li><strong>&lambda;<sub>E</sub> : E &rarr; Types</strong> : Fonction d'étiquetage des relations.</li>
+          <li><strong>&mu;<sub>V</sub>, &mu;<sub>E</sub></strong> : Fonctions d'attribution des propriétés clés/valeurs.</li>
+          <li><strong>&tau; = [t<sub>start</sub>, t<sub>end</sub>]</strong> : Fenêtre d'intervalle de validité chronologique de chaque indice.</li>
+          <li><strong>&sigma; = SHA256(V, E)</strong> : Empreinte de scellement cryptographique WORM garantissant la non-altération devant la cour d'assises.</li>
+        </ul>
+      </div>
+
+      <!-- Concrete Cypher Production Script Example -->
+      <div class="card" style="border-left:4px solid var(--accent-cyan);">
+        <div class="card-title"><span>💻</span> Requête Cypher d'Investigation Réelle (Candy Wheels)</div>
+        <p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.5rem;">
+          Exemple de requête Cypher exécutée via Bolt v5 traversant les 5 sauts entre l'annonce Facebook, la mule BaridiMob et le chef de réseau :
+        </p>
+        <pre style="background:#040711;border:1px solid #1e293b;border-radius:6px;padding:1rem;color:#e2e8f0;font-size:0.75rem;line-height:1.5;overflow-x:auto;"><code>// Requête de démasquage du cerveau criminel derrière une fausse annonce de pneus
+MATCH (post:Publication_Sociale {id_post: "fb_ad_981240"})
+MATCH (post)-[:RETOURN_VERS_SITE_WEB]->(site:Site_Web)
+MATCH (site)-[:EMBARQUE_PIXEL_TRACKER]->(pixel:Identifiant_Infrastructure)
+MATCH (twin_site:Site_Web)-[:EMBARQUE_PIXEL_TRACKER]->(pixel)
+MATCH (twin_site)-[:DISTRIBUE_APPLICATION_APK]->(apk:Fichier_APK)
+MATCH (apk)-[:CIBLE_COMPTE_BARIDIMOB]->(compte:Compte_Bancaire)
+MATCH (compte)-[:EFFECTUE_VIREMENT_VERS]->(mule_compte:Compte_Bancaire)
+MATCH (mule_personne:Personne)-[:DETIENT_COMPTE_BANCAIRE]->(mule_compte)
+MATCH (mule_personne)-[:COMMUNIQUE_AVEC*1..2]->(leader:Personne {_class: 'leader'})
+RETURN post, site, pixel, twin_site, apk, compte, mule_compte, mule_personne, leader;</code></pre>
+      </div>
+    </section>
   </main>
 
   <script src="assets/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof selectOntologyEntity === 'function') {
+        selectOntologyEntity('personne');
+      }
+    });
+  </script>
 </body>
 </html>

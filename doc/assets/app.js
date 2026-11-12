@@ -1219,98 +1219,801 @@ function renderToolExplorer() {
 }
 
 // ============================================================================
-// VISUAL ONTOLOGY EXPLORER (For data-model.html)
-// ============================================================================
+// VISUAL ONTOLOGY EXPLORER (For data-model.html) - 37 NODES FULL REGISTRY
 const ONTOLOGY_ENTITIES = {
-  person: {
-    icon: '🎯',
-    name: 'Suspect / Person',
-    color: '#a78bfa',
-    plainMeaning: 'A real-world individual (suspect, victim, witness, or page owner) that the investigation is trying to identify or locate.',
-    exampleValue: 'Suspect "Amine B." (Born 1994, Algiers)',
-    connectedClues: ['📱 Uses Phone Number', '💬 Owns Social Media Account', '💳 Holds Bank/CCP Account', '🚗 Drives Vehicle'],
-    availableTools: ['Compare Faces Across Photos', 'Check Prior Police Records', 'Generate Judicial Court Report']
+  "wilaya": {
+    icon: "\ud83c\udfdb\ufe0f",
+    name: "Wilaya (Collectivit\u00e9 Territoriale)",
+    domain: "territory",
+    domainName: "1. Judiciaire & Territoire DZ",
+    primaryDb: "postgres",
+    primaryDbName: "PostgreSQL 16",
+    dbTag: "PostgreSQL + Neo4j",
+    dbBadge: "PostgreSQL 16 / Neo4j",
+    color: "#10b981",
+    plainMeaning: "Circonscription administrative et juridictionnelle alg\u00e9rienne (01 \u00e0 58), d\u00e9finissant le ressort de comp\u00e9tence territoriale de la brigade et de la cour de justice.",
+    exampleValue: "Wilaya 16 - Alger (Code INSEE DZ: 16000)",
+    storageJustification: "Stock\u00e9 en table relationnelle PostgreSQL pour le contr\u00f4le d'acc\u00e8s multi-wilayas RLS (Row-Level Security) et projet\u00e9 dans Neo4j comme ancre territoriale macroscopique.",
+    schemaProps: [{"name": "code_wilaya", "type": "String (PK, 2 digits '01'..'58')", "required": true, "desc": "Code officiel de la wilaya alg\u00e9rienne"}, {"name": "nom_ar", "type": "String", "required": true, "desc": "Nom officiel en arabe (\u0627\u0644\u062c\u0632\u0627\u0626\u0631)"}, {"name": "nom_fr", "type": "String", "required": true, "desc": "Nom officiel en fran\u00e7ais (Alger)"}, {"name": "chef_lieu", "type": "String", "required": true, "desc": "Chef-lieu de wilaya"}],
+    connectedClues: ["Contient des Da\u00efras ([:CONTIENT_DAIRA])", "Territoire d'action criminelle suspect ([:ACTIVE_DANS_WILAYA])"],
+    availableTools: ["Filtrage territorial multi-wilayas", "Cartographie SIG MapLibre", "Calcul de comp\u00e9tence territoriale CPP"]
   },
-  social_account: {
-    icon: '👤',
-    name: 'Social Media or Messaging Account',
-    color: '#60a5fa',
-    plainMeaning: 'Any online profile on Facebook, Instagram, Telegram, WhatsApp, TikTok, or classified ad sites like Ouedkniss.',
-    exampleValue: 'Facebook: fb.com/pneus.promo.dz | Telegram: @amine_import',
-    connectedClues: ['📢 Published Scam Post', '📱 Registered with Phone Number', '🖼️ Uses Profile Picture'],
-    availableTools: ['Freeze & Certify Online Profile', 'Search Username Across 2,500+ Sites', 'Check Facebook Page Transparency']
+  "daira": {
+    icon: "\ud83c\udfd8\ufe0f",
+    name: "Da\u00efra (Sous-Pr\u00e9fecture)",
+    domain: "territory",
+    domainName: "1. Judiciaire & Territoire DZ",
+    primaryDb: "postgres",
+    primaryDbName: "PostgreSQL 16",
+    dbTag: "PostgreSQL + Neo4j",
+    dbBadge: "PostgreSQL 16 / Neo4j",
+    color: "#10b981",
+    plainMeaning: "Subdivision administrative interm\u00e9diaire rattach\u00e9e \u00e0 une wilaya, regroupant plusieurs communes sous la juridiction d'un tribunal d'arrondissement.",
+    exampleValue: "Da\u00efra de Dar El Be\u00efda (Wilaya 16)",
+    storageJustification: "Table relationnelle avec cl\u00e9 \u00e9trang\u00e8re vers Wilaya, n\u0153ud graphe pour les analyses hi\u00e9rarchiques APOC.",
+    schemaProps: [{"name": "id_daira", "type": "String (PK)", "required": true, "desc": "Identifiant unique de la da\u00efra"}, {"name": "nom_fr", "type": "String", "required": true, "desc": "Nom en fran\u00e7ais"}, {"name": "code_wilaya", "type": "String (FK)", "required": true, "desc": "Code de la wilaya parente"}],
+    connectedClues: ["Appartient \u00e0 une Wilaya ([:APPARTIENT_A])", "Contient des Communes ([:CONTIENT_COMMUNE])"],
+    availableTools: ["Filtrage en cascade /dairas/", "Agr\u00e9gation de criminalit\u00e9 locale"]
   },
-  social_post: {
-    icon: '📢',
-    name: 'Online Post, Ad, or Message',
-    color: '#34d399',
-    plainMeaning: 'A specific marketplace announcement, comment, video post, or chat message where the crime or scam took place.',
-    exampleValue: 'Facebook Marketplace Ad #98124 ("4 Michelin Tyres -60%")',
-    connectedClues: ['🌐 Contains Website Link', '📱 Mentions Phone Number', '🖼️ Attaches Product Photos'],
-    availableTools: ['Extract Phone Numbers & Links from Text', 'Freeze & Certify Post Before Deletion', 'Check if Attached Photos Are Stolen']
+  "commune": {
+    icon: "\ud83d\udccd",
+    name: "Commune (Municipalit\u00e9)",
+    domain: "territory",
+    domainName: "1. Judiciaire & Territoire DZ",
+    primaryDb: "postgres",
+    primaryDbName: "PostgreSQL 16",
+    dbTag: "PostgreSQL + Neo4j",
+    dbBadge: "PostgreSQL 16 / Neo4j",
+    color: "#10b981",
+    plainMeaning: "\u00c9chelon municipal de base en Alg\u00e9rie (1 541 communes). Localisation pr\u00e9cise des retraits GAB, des antennes relais et des domiciles des mis en cause.",
+    exampleValue: "Commune de Bab Ezzouar (Code postal: 16311)",
+    storageJustification: "PostgreSQL pour les index g\u00e9ographiques PostGIS et les requ\u00eates spatiales de bornage ; n\u0153ud Neo4j pour le calcul de l'attribut d\u00e9riv\u00e9 _comune_Activite.",
+    schemaProps: [{"name": "id_commune", "type": "String (PK)", "required": true, "desc": "Identifiant officiel commune"}, {"name": "nom_fr", "type": "String", "required": true, "desc": "Nom de la commune"}, {"name": "code_postal", "type": "String", "required": true, "desc": "Code postal alg\u00e9rien"}, {"name": "geopoint", "type": "Point (WGS84)", "required": false, "desc": "Coordonn\u00e9es GPS de la mairie"}],
+    connectedClues: ["Appartient \u00e0 une Da\u00efra ([:APPARTIENT_A])", "Abrite des Unit\u00e9s de police ([:SITUEE_DANS])", "Lieu de retraits GAB ([:SITUE_A])"],
+    availableTools: ["Rayon d'action criminel (_comune_Activite)", "Interpolation spatiale de bornage"]
   },
-  phone: {
-    icon: '📱',
-    name: 'Phone Number',
-    color: '#22d3ee',
-    plainMeaning: 'A mobile or landline telephone number used to contact victims, receive WhatsApp messages, or register social media accounts.',
-    exampleValue: '+213 555 019 283 (Ooredoo Algeria)',
-    connectedClues: ['💬 Linked to WhatsApp / Telegram / Instagram', '📡 Connects to Cell Towers (CDR)', '🛒 Listed in Older Marketplace Ads'],
-    availableTools: ['Find Linked WhatsApp, Telegram & Instagram', 'Look Up Caller ID & Spam Reports', 'Map Cell Tower Movements (CDR)']
+  "unite": {
+    icon: "\ud83c\udfe2",
+    name: "Unit\u00e9 de Police Judiciaire / Brigade",
+    domain: "territory",
+    domainName: "1. Judiciaire & Territoire DZ",
+    primaryDb: "postgres",
+    primaryDbName: "PostgreSQL 16",
+    dbTag: "PostgreSQL + Neo4j",
+    dbBadge: "PostgreSQL 16 / Neo4j",
+    color: "#10b981",
+    plainMeaning: "Service d'enqu\u00eate op\u00e9rationnel traitant le dossier : Brigade de Recherche de la Gendarmerie Nationale, S\u00fbret\u00e9 Urbaine DGSN, ou Service Central Cyber.",
+    exampleValue: "Brigade de Recherches Bab Ezzouar (GN)",
+    storageJustification: "Table ACID pour les habilitations des officiers, l'attribution des scell\u00e9s et le contr\u00f4le strict des acc\u00e8s aux dossiers judiciaires.",
+    schemaProps: [{"name": "id_unite", "type": "String (PK)", "required": true, "desc": "Code unit\u00e9 judiciaire"}, {"name": "nom_unite", "type": "String", "required": true, "desc": "D\u00e9nomination officielle"}, {"name": "corps", "type": "Enum [GN, DGSN, POL_SPEC]", "required": true, "desc": "Corps d'appartenance"}, {"name": "id_commune", "type": "String (FK)", "required": true, "desc": "Commune d'implantation"}],
+    connectedClues: ["Traite une Affaire ([:TRAITE_AFFAIRE])", "Implant\u00e9e dans une Commune ([:SITUEE_DANS])", "Comprend des Officiers ([:COMPORTE_OFFICIER])"],
+    availableTools: ["Matrice des r\u00f4les RBAC", "Journal d'audit non-r\u00e9pudiable"]
   },
-  website: {
-    icon: '🌐',
-    name: 'Website Link & Domain',
-    color: '#fbbf24',
-    plainMeaning: 'An external website, fake online shop, or phishing link sent to victims.',
-    exampleValue: 'https://promo-pneus-express.shop/order?uid=672f9a...',
-    connectedClues: ['🏷️ Contains Hidden Creation Code & Ad Tracker', '🖥️ Hosted on Server (IP)', '📧 Registered by Email'],
-    availableTools: ['Uncover Hidden Website Codes & Creation Date', 'Find Twin Scam Websites Sharing Same Tracker', 'Identify Website Hosting Server']
+  "affaire": {
+    icon: "\ud83d\udcc1",
+    name: "Affaire P\u00e9nale (Dossier d'Instruction)",
+    domain: "territory",
+    domainName: "1. Judiciaire & Territoire DZ",
+    primaryDb: "postgres",
+    primaryDbName: "PostgreSQL 16 + Neo4j",
+    dbTag: "PostgreSQL + Neo4j",
+    dbBadge: "PostgreSQL 16 / Neo4j",
+    color: "#38bdf8",
+    plainMeaning: "Dossier criminel unifi\u00e9 instruit sous l'autorit\u00e9 du parquet ou du juge d'instruction, regroupant l'int\u00e9gralit\u00e9 des indices, cibles, scell\u00e9s et PVs.",
+    exampleValue: "Affaire N\u00b0 ATHAR-2026-SCAM-089 (Candy Wheels)",
+    storageJustification: "PostgreSQL 16 garantit l'int\u00e9grit\u00e9 transactionnelle ACID, le verrouillage de statut l\u00e9gal et le scellement ; Neo4j contient le n\u0153ud racine de projection de sous-graphe.",
+    schemaProps: [{"name": "id_affaire", "type": "String (PK)", "required": true, "desc": "Num\u00e9ro d'enregistrement parquet"}, {"name": "titre", "type": "String", "required": true, "desc": "Intitul\u00e9 des infractions poursuivies"}, {"name": "statut_legal", "type": "Enum [ENQUETE_PRELIM, INSTRUCTION, JUGE]", "required": true, "desc": "Phase proc\u00e9durale CPP"}, {"name": "prejudice_total_dzd", "type": "Float", "required": false, "desc": "Montant total extorqu\u00e9 en Dinars"}],
+    connectedClues: ["Implique des Personnes ([:IMPLIQUE])", "Comprend des Scell\u00e9s WORM ([:COMPREND_SCELLE])", "Englobe des Proc\u00e8s-Verbaux ([:CONTIENT_ACTE])"],
+    availableTools: ["Isolation de sous-graphe APOC", "G\u00e9n\u00e9ration de PV de Synth\u00e8se PDF/A-3b", "Recoupement inter-affaires"]
   },
-  hidden_code: {
-    icon: '🏷️',
-    name: 'Hidden Website Code & Ad Tracker',
-    color: '#f43f5e',
-    plainMeaning: 'Behind-the-scenes reference numbers and advertising pixels inside a website that reveal when it was built and link sibling scam sites together.',
-    exampleValue: 'Order Code #672f9a... (Created Nov 1, 14:22) & Ad Tracker #8841920',
-    connectedClues: ['🌐 Embedded Inside Scam Website', '🕸️ Shared Across 3 Twin Scam Websites'],
-    availableTools: ['Decode Exact Creation Date from Code', 'Find All Other Websites Using This Same Tracker']
+  "magistrat": {
+    icon: "\u2696\ufe0f",
+    name: "Magistrat Instructeur / Procureur",
+    domain: "territory",
+    domainName: "1. Judiciaire & Territoire DZ",
+    primaryDb: "postgres",
+    primaryDbName: "PostgreSQL 16",
+    dbTag: "PostgreSQL",
+    dbBadge: "PostgreSQL 16 (IAM)",
+    color: "#38bdf8",
+    plainMeaning: "Autorit\u00e9 judiciaire ordonnant les r\u00e9quisitions, d\u00e9livrant les commissions rogatoires et supervisant la l\u00e9galit\u00e9 des actes de proc\u00e9dure.",
+    exampleValue: "Mme la Juge d'Instruction (P\u00f4le P\u00e9nal Sp\u00e9cialis\u00e9 Alger)",
+    storageJustification: "PostgreSQL (Casdoor IAM) g\u00e8re les certificats X.509 de signature \u00e9lectronique qualifi\u00e9e des ordonnances et r\u00e9quisitions.",
+    schemaProps: [{"name": "id_magistrat", "type": "String (PK)", "required": true, "desc": "Matricule magistrature"}, {"name": "nom_complet", "type": "String", "required": true, "desc": "Identit\u00e9 du magistrat"}, {"name": "tribunal", "type": "String", "required": true, "desc": "Juridiction de rattachement"}],
+    connectedClues: ["Supervise l'Affaire ([:SUPERVISE])", "Signe les R\u00e9quisitions ([:SIGNE_REQUISITION])"],
+    availableTools: ["Tableau de bord ex\u00e9cutif magistrat", "Validation \u00e9lectronique de r\u00e9quisitions"]
+  },
+  "personne": {
+    icon: "\ud83c\udfaf",
+    name: "Personne Physique / Suspect / Complice / Mule",
+    domain: "actors",
+    domainName: "2. Personnes & Entit\u00e9s Morales",
+    primaryDb: "neo4j",
+    primaryDbName: "Neo4j 5.20+ Enterprise",
+    dbTag: "Neo4j + PostgreSQL",
+    dbBadge: "Neo4j 5.20+ / PostgreSQL",
+    color: "#f43f5e",
+    plainMeaning: "Individu cibl\u00e9 ou identifi\u00e9 au cours de l'enqu\u00eate (auteur principal, complice, mule financi\u00e8re, victime ou t\u00e9moin).",
+    exampleValue: "Walid BOUAZIZ (Alias 'Walid Pneus', Leader pr\u00e9sum\u00e9)",
+    storageJustification: "N\u0153ud central de Neo4j avec adjacence sans index pour la travers\u00e9e relationnelle en temps r\u00e9el ; PostgreSQL conserve la fiche civile confidentielle.",
+    schemaProps: [{"name": "id_personne", "type": "String (PK UUID)", "required": true, "desc": "Identifiant unique interne"}, {"name": "nom_complet", "type": "String", "required": true, "desc": "Nom et pr\u00e9nom officiels"}, {"name": "nin", "type": "String (18 digits)", "required": false, "desc": "Num\u00e9ro d'Identification National alg\u00e9rien"}, {"name": "_class", "type": "Enum ['neutre', 'operationeel', 'soutien', 'leader']", "required": true, "desc": "R\u00f4le p\u00e9nal calcul\u00e9 par IA/GDS"}, {"name": "_betweennessCentrality", "type": "Float [0.0..1.0]", "required": true, "desc": "Score de centralit\u00e9 d'interm\u00e9diarit\u00e9 GDS"}, {"name": "_Lvl_of_Implications", "type": "List[Int] [1, 2, 3]", "required": true, "desc": "Degr\u00e9 d'implication multi-sauts"}],
+    connectedClues: ["Utilise un T\u00e9l\u00e9phone ([:UTILISE_TELEPHONE])", "D\u00e9tient un Compte Bancaire ([:DETIENT_COMPTE])", "Poss\u00e8de un Profil Social ([:POSSEDE_PROFIL])", "Communique avec ([:COMMUNIQUE_AVEC])"],
+    availableTools: ["GDS Brandes Betweenness", "Expansion r\u00e9seau 2-hops", "Classification p\u00e9nale automatique", "Profilage territorial"]
+  },
+  "entreprise": {
+    icon: "\ud83c\udfe2",
+    name: "Entreprise / Soci\u00e9t\u00e9 \u00c9cran / Commerce",
+    domain: "actors",
+    domainName: "2. Personnes & Entit\u00e9s Morales",
+    primaryDb: "neo4j",
+    primaryDbName: "Neo4j 5.20+",
+    dbTag: "Neo4j + PostgreSQL",
+    dbBadge: "Neo4j / PostgreSQL 16",
+    color: "#f43f5e",
+    plainMeaning: "Entit\u00e9 juridique commerciale utilis\u00e9e comme paravent pour le blanchiment d'argent, la facturation fictive ou l'enregistrement de sites frauduleux.",
+    exampleValue: "SARL PNEUS EXPRESS ALGERIE (RC: 16/00-98124B)",
+    storageJustification: "Graphe Neo4j pour lier les g\u00e9rants de paille et les actionnaires r\u00e9els ; PostgreSQL pour lier aux registres du CNRC.",
+    schemaProps: [{"name": "numero_rc", "type": "String (PK)", "required": true, "desc": "Num\u00e9ro de Registre de Commerce"}, {"name": "nif", "type": "String", "required": false, "desc": "Num\u00e9ro d'Identification Fiscale"}, {"name": "raison_sociale", "type": "String", "required": true, "desc": "Nom de l'entreprise"}],
+    connectedClues: ["G\u00e9r\u00e9e par une Personne ([:GEREE_PAR])", "Titulaire d'un Compte Bancaire ([:TITULAIRE_COMPTE])"],
+    availableTools: ["D\u00e9tection de pr\u00eate-noms", "V\u00e9rification CNRC automatique"]
+  },
+  "vehicule": {
+    icon: "\ud83d\ude97",
+    name: "V\u00e9hicule / Immatriculation DZ",
+    domain: "actors",
+    domainName: "2. Personnes & Entit\u00e9s Morales",
+    primaryDb: "neo4j",
+    primaryDbName: "Neo4j 5.20+",
+    dbTag: "Neo4j + PostgreSQL",
+    dbBadge: "Neo4j / PostgreSQL 16",
+    color: "#8b5cf6",
+    plainMeaning: "V\u00e9hicule automobile rep\u00e9r\u00e9 lors de livraisons frauduleuses, de retraits GAB ou identifi\u00e9 par lecture automatis\u00e9e de plaques (LAPI/ALPR).",
+    exampleValue: "Renault Clio 4 (Immatriculation: 04829-116-16)",
+    storageJustification: "Neo4j relie le v\u00e9hicule aux personnes et aux lieux de bornage ; PostgreSQL stocke la fiche technique d'immatriculation.",
+    schemaProps: [{"name": "immatriculation_dz", "type": "String (PK)", "required": true, "desc": "Matricule format officiel alg\u00e9rien"}, {"name": "vin_chassis", "type": "String", "required": false, "desc": "Num\u00e9ro de ch\u00e2ssis international"}, {"name": "marque_modele", "type": "String", "required": true, "desc": "Marque et mod\u00e8le du v\u00e9hicule"}],
+    connectedClues: ["Conduit par un Suspect ([:CONDUIT_PAR])", "Photographi\u00e9 sur un Re\u00e7u/Sc\u00e8ne ([:VISIBLE_SUR_IMAGE])"],
+    availableTools: ["Reconnaissance de plaque ALPR DZ", "Croisement fichiers cartes grises"]
+  },
+  "telephone": {
+    icon: "\ud83d\udcf1",
+    name: "Num\u00e9ro de T\u00e9l\u00e9phone (E.164 MSISDN)",
+    domain: "telecom",
+    domainName: "3. T\u00e9l\u00e9coms & Forensique Mobile",
+    primaryDb: "neo4j",
+    primaryDbName: "Neo4j 5.20+ Enterprise",
+    dbTag: "Neo4j + Redis",
+    dbBadge: "Neo4j / Redis 7.2",
+    color: "#f97316",
+    plainMeaning: "Ligne t\u00e9l\u00e9phonique mobile ou fixe utilis\u00e9e pour les appels d'extorsion, les comptes WhatsApp criminels et la r\u00e9ception d'OTP bancaires.",
+    exampleValue: "+213 555 019 283 (Op\u00e9rateur: Ooredoo Alg\u00e9rie)",
+    storageJustification: "Index m\u00e9moire Neo4j pour la r\u00e9solution instantan\u00e9e de liens de co-contact ; Redis stocke les caches de requ\u00eates d'annuaires invers\u00e9s (Truecaller).",
+    schemaProps: [{"name": "numero_e164", "type": "String (PK canonical '+213...')", "required": true, "desc": "Format international strict E.164"}, {"name": "operateur", "type": "Enum [Mobilis, Djezzy, Ooredoo, Autre]", "required": true, "desc": "Op\u00e9rateur t\u00e9l\u00e9com"}, {"name": "type_ligne", "type": "Enum [Prepayee, Postpayee]", "required": false, "desc": "Mode de souscription"}],
+    connectedClues: ["Ins\u00e9r\u00e9 dans une Carte SIM ([:INSEREE_DANS])", "Enregistr\u00e9 sur WhatsApp/Telegram ([:ENREGISTRE_SUR])", "Borne sur une Antenne ([:BORNE_A])", "Associ\u00e9 \u00e0 BaridiMob ([:NOTIFIE_BARIDIMOB])"],
+    availableTools: ["PhoneInfoga / Truecaller Reverse", "WhatsApp Business Catalog Inspector", "Reconstitution CDRs"]
+  },
+  "carte_sim": {
+    icon: "\ud83d\udcf6",
+    name: "Carte SIM & Modem GSM 4G DZ",
+    domain: "telecom",
+    domainName: "3. T\u00e9l\u00e9coms & Forensique Mobile",
+    primaryDb: "postgres",
+    primaryDbName: "PostgreSQL 16",
+    dbTag: "PostgreSQL + Neo4j",
+    dbBadge: "PostgreSQL 16 / Neo4j",
+    color: "#f97316",
+    plainMeaning: "Puce physique SIM ou eSIM ins\u00e9r\u00e9e dans la banque de modems USB ou dans le t\u00e9l\u00e9phone du suspect (identifi\u00e9e par ICCID et IMSI).",
+    exampleValue: "SIM Mobilis (IMSI: 603019812401842 \u2022 ICCID: 89213...)",
+    storageJustification: "PostgreSQL g\u00e8re l'inventaire mat\u00e9riel de la Phone Farm et les quotas de modems ; Neo4j relie la puce aux t\u00e9l\u00e9phones et suspects.",
+    schemaProps: [{"name": "iccid", "type": "String (PK 19-20 digits)", "required": true, "desc": "Num\u00e9ro de s\u00e9rie de la carte SIM"}, {"name": "imsi", "type": "String (15 digits)", "required": true, "desc": "Identit\u00e9 internationale de l'abonn\u00e9 mobile"}, {"name": "port_tty", "type": "String", "required": false, "desc": "Port physique /dev/ttyUSB dans la baie"}],
+    connectedClues: ["Fournit la ligne T\u00e9l\u00e9phone ([:ACTIVE_LIGNE])", "Install\u00e9e dans un Smartphone ([:LOGEE_DANS])"],
+    availableTools: ["Daemon AT pyserial (Interception OTP <1.5s)", "Rotation dynamique APN 4G"]
+  },
+  "appareil_mobile": {
+    icon: "\ud83d\udcf2",
+    name: "Smartphone / Terminal ReDroid (IMEI)",
+    domain: "telecom",
+    domainName: "3. T\u00e9l\u00e9coms & Forensique Mobile",
+    primaryDb: "neo4j",
+    primaryDbName: "Neo4j 5.20+",
+    dbTag: "Neo4j + PostgreSQL",
+    dbBadge: "Neo4j / PostgreSQL 16",
+    color: "#f97316",
+    plainMeaning: "Terminal physique ou conteneur ReDroid virtuel identifi\u00e9 par son code IMEI unique, utilis\u00e9 par le cybercriminel.",
+    exampleValue: "Samsung Galaxy S23 (IMEI: 358912401928471)",
+    storageJustification: "Neo4j relie les changements de cartes SIM sur un m\u00eame terminal pour d\u00e9masquer les suspects multi-puces ; PostgreSQL enregistre les scell\u00e9s mat\u00e9riels.",
+    schemaProps: [{"name": "imei", "type": "String (PK 15 digits)", "required": true, "desc": "International Mobile Equipment Identity"}, {"name": "modele", "type": "String", "required": true, "desc": "Mod\u00e8le commercial (ex: SM-S911B)"}, {"name": "fingerprint", "type": "String", "required": false, "desc": "Empreinte logicielle Android"}],
+    connectedClues: ["Contient une Carte SIM ([:LOGE_SIM])", "Utilis\u00e9 par un Suspect ([:MANIPULE_PAR])"],
+    availableTools: ["Scrcpy WebRTC 60 FPS", "Conteneur ReDroid AOSP 13", "Analyse forensique ALEAPP"]
+  },
+  "antenne_bts": {
+    icon: "\ud83d\udce1",
+    name: "Antenne Relais BTS (Cell Tower)",
+    domain: "telecom",
+    domainName: "3. T\u00e9l\u00e9coms & Forensique Mobile",
+    primaryDb: "postgres",
+    primaryDbName: "PostgreSQL 16 + PostGIS",
+    dbTag: "PostgreSQL + PostGIS",
+    dbBadge: "PostgreSQL 16 (PostGIS)",
+    color: "#f97316",
+    plainMeaning: "Pyl\u00f4ne de t\u00e9l\u00e9communication cellulaire des op\u00e9rateurs Mobilis, Djezzy ou Ooredoo captant les communications des suspects.",
+    exampleValue: "BTS Ooredoo Bab Ezzouar Ouest (CellID: 41029 \u2022 LAC: 1042)",
+    storageJustification: "Indexation spatiale R-Tree PostGIS pour le calcul instantan\u00e9 des zones de couverture (secteurs polygonaux \u00e0 120\u00b0) et requ\u00eates g\u00e9ographiques.",
+    schemaProps: [{"name": "cell_id", "type": "String (PK)", "required": true, "desc": "Identifiant de cellule op\u00e9rateur"}, {"name": "lac", "type": "Int", "required": true, "desc": "Location Area Code"}, {"name": "coordonnees", "type": "Point (WGS84)", "required": true, "desc": "Latitude et Longitude du pyl\u00f4ne"}, {"name": "azimut", "type": "Int [0..360]", "required": true, "desc": "Orientation angulaire du faisceau"}],
+    connectedClues: ["Localis\u00e9e dans une Commune ([:IMPLANTEE_DANS])", "Enregistre un CDR ([:RECOIT_COMMUNICATION])"],
+    availableTools: ["Calculateur de zone de couverture azimutale", "Recoupement d'alibis spatio-temporels"]
+  },
+  "telecom_cdr": {
+    icon: "\ud83d\udcca",
+    name: "Listing d'Appel T\u00e9l\u00e9com (CDR Record)",
+    domain: "telecom",
+    domainName: "3. T\u00e9l\u00e9coms & Forensique Mobile",
+    primaryDb: "postgres",
+    primaryDbName: "TimescaleDB / PostgreSQL",
+    dbTag: "TimescaleDB",
+    dbBadge: "TimescaleDB (Hyper-tables)",
+    color: "#f97316",
+    plainMeaning: "Enregistrement d'appel r\u00e9quisitionn\u00e9 aupr\u00e8s des op\u00e9rateurs t\u00e9l\u00e9coms (qui a appel\u00e9 qui, quelle antenne BTS, quelle heure, quelle dur\u00e9e).",
+    exampleValue: "Appel sortant vers +213555... (Dur\u00e9e: 142s, BTS 41029, 02/11 14:15)",
+    storageJustification: "TimescaleDB partitionne automatiquement des milliards de lignes par tranche de 24h, garantissant des requ\u00eates chronologiques en <15ms.",
+    schemaProps: [{"name": "cdr_id", "type": "BigInt (PK)", "required": true, "desc": "Identifiant s\u00e9quentiel de communication"}, {"name": "timestamp_call", "type": "DateTime (Time-Series PK)", "required": true, "desc": "Horodatage milliseconde"}, {"name": "caller", "type": "String", "required": true, "desc": "Num\u00e9ro appelant"}, {"name": "callee", "type": "String", "required": true, "desc": "Num\u00e9ro appel\u00e9"}, {"name": "duree_sec", "type": "Int", "required": true, "desc": "Dur\u00e9e de la communication en secondes"}],
+    connectedClues: ["\u00c9mis depuis un T\u00e9l\u00e9phone ([:EMIS_PAR])", "Re\u00e7u par un T\u00e9l\u00e9phone ([:DESTINE_A])", "Relay\u00e9 par Antenne BTS ([:RELAYE_PAR])"],
+    availableTools: ["Barre temporelle BarScroll.js", "D\u00e9tection de co-d\u00e9placement de t\u00e9l\u00e9phones", "Invalidation d'alibis"]
+  },
+  "compte_bancaire": {
+    icon: "\ud83d\udcb3",
+    name: "Compte Bancaire / BaridiMob (RIP 20d)",
+    domain: "finance",
+    domainName: "4. Finances Criminelles & BaridiMob",
+    primaryDb: "neo4j",
+    primaryDbName: "Neo4j 5.20+ Enterprise",
+    dbTag: "Neo4j + PostgreSQL",
+    dbBadge: "Neo4j / PostgreSQL 16",
+    color: "#eab308",
+    plainMeaning: "Compte courant postal (CCP) ou compte bancaire alg\u00e9rien (Relev\u00e9 d'Identit\u00e9 Postale \u00e0 20 chiffres) servant \u00e0 recevoir les fonds extorqu\u00e9s.",
+    exampleValue: "RIP Alg\u00e9rie Poste: 00799999002481920142",
+    storageJustification: "Graphe Neo4j pour tracer les cascades de blanchiment (comptes mules interm\u00e9diaires) ; PostgreSQL pour l'int\u00e9grit\u00e9 financi\u00e8re et le rapprochement r\u00e9quisitions.",
+    schemaProps: [{"name": "rip_algerie_poste", "type": "String (PK 20 digits)", "required": true, "desc": "Relev\u00e9 d'Identit\u00e9 Postale canonique"}, {"name": "ccp_numero", "type": "String", "required": true, "desc": "Num\u00e9ro de compte CCP"}, {"name": "cle_rip", "type": "String (2 digits)", "required": true, "desc": "Cl\u00e9 de contr\u00f4le calcul\u00e9e selon l'algorithme officiel"}, {"name": "titulaire_declare", "type": "String", "required": true, "desc": "Nom du titulaire ou de la mule"}],
+    connectedClues: ["D\u00e9tenu par une Personne ([:DETENU_PAR])", "Re\u00e7oit un Virement ([:RECOIT_VIREMENT])", "Objet de Retrait GAB ([:RETRAIT_EFFECTUE])"],
+    availableTools: ["V\u00e9rificateur de RIP Alg\u00e9rie Poste (Luhn DZ)", "Algorithme Dijkstra du plus court chemin de blanchiment", "D\u00e9tection de mules GDS"]
+  },
+  "transaction_financiere": {
+    icon: "\ud83d\udcb8",
+    name: "Virement Bancaire / BaridiMob DZD",
+    domain: "finance",
+    domainName: "4. Finances Criminelles & BaridiMob",
+    primaryDb: "postgres",
+    primaryDbName: "PostgreSQL 16 (Table ACID)",
+    dbTag: "PostgreSQL + Neo4j",
+    dbBadge: "PostgreSQL 16 / Neo4j",
+    color: "#eab308",
+    plainMeaning: "Transfert de fonds op\u00e9r\u00e9 via l'application BaridiMob, virement de compte \u00e0 compte ou versement en esp\u00e8ces au guichet de poste.",
+    exampleValue: "Virement BaridiMob de 100 000 DZD (R\u00e9f: TX-98412-DZ)",
+    storageJustification: "Table ACID PostgreSQL pour la balance financi\u00e8re exacte et la conformit\u00e9 bancaire ; ar\u00eate pond\u00e9r\u00e9e Neo4j ([:EFFECTUE_VIREMENT {montant}]) pour le flux.",
+    schemaProps: [{"name": "tx_id", "type": "String (PK)", "required": true, "desc": "R\u00e9f\u00e9rence unique de transaction bancaire"}, {"name": "montant_dzd", "type": "Float", "required": true, "desc": "Montant du virement en Dinars Alg\u00e9riens"}, {"name": "timestamp_tx", "type": "DateTime", "required": true, "desc": "Date et heure exacte du virement"}, {"name": "canal", "type": "Enum [BaridiMob, Guichet, GAB]", "required": true, "desc": "Canal d'ex\u00e9cution"}],
+    connectedClues: ["Depuis Compte Source ([:DEPUIS_COMPTE])", "Vers Compte Destination ([:VERS_COMPTE])", "Justifi\u00e9 par un Re\u00e7u ([:ATTESTE_PAR_IMAGE])"],
+    availableTools: ["Calculateur de pr\u00e9judice global affaire", "D\u00e9tection de sch\u00e9mas de dispersion (Smurfing/Schtroumpfage)"]
+  },
+  "guichet_gab": {
+    icon: "\ud83c\udfe7",
+    name: "Guichet GAB / Distributeur ATM",
+    domain: "finance",
+    domainName: "4. Finances Criminelles & BaridiMob",
+    primaryDb: "postgres",
+    primaryDbName: "PostgreSQL 16 + PostGIS",
+    dbTag: "PostgreSQL + PostGIS",
+    dbBadge: "PostgreSQL 16 (PostGIS)",
+    color: "#eab308",
+    plainMeaning: "Distributeur automatique de billets d'Alg\u00e9rie Poste ou d'une banque o\u00f9 les fonds extorqu\u00e9s ont \u00e9t\u00e9 retir\u00e9s physiquement en esp\u00e8ces.",
+    exampleValue: "GAB Alg\u00e9rie Poste - Bureau Central Bab Ezzouar",
+    storageJustification: "PostGIS pour la g\u00e9olocalisation exacte et le croisement avec les cam\u00e9ras de surveillance de voirie et les bornages t\u00e9l\u00e9coms.",
+    schemaProps: [{"name": "id_gab", "type": "String (PK)", "required": true, "desc": "Identifiant du distributeur"}, {"name": "bureau_poste", "type": "String", "required": true, "desc": "Nom de l'agence postale"}, {"name": "geopoint", "type": "Point (WGS84)", "required": true, "desc": "Coordonn\u00e9es GPS"}],
+    connectedClues: ["Lieu de Retrait d'un Compte ([:RETRAIT_AU_GAB])", "Implant\u00e9 dans Commune ([:SITUE_DANS_COMMUNE])"],
+    availableTools: ["R\u00e9quisition bandes vid\u00e9osurveillance", "Croisement spatio-temporel GAB / T\u00e9l\u00e9phone"]
+  },
+  "crypto_wallet": {
+    icon: "\ud83e\ude99",
+    name: "Portefeuille Crypto (USDT / BTC / ETH)",
+    domain: "finance",
+    domainName: "4. Finances Criminelles & BaridiMob",
+    primaryDb: "neo4j",
+    primaryDbName: "Neo4j 5.20+",
+    dbTag: "Neo4j + PostgreSQL",
+    dbBadge: "Neo4j / PostgreSQL 16",
+    color: "#eab308",
+    plainMeaning: "Adresse de portefeuille blockchain (notamment Tron TRC-20 pour les transferts USDT) servant \u00e0 expatrier les fonds vol\u00e9s hors d'Alg\u00e9rie.",
+    exampleValue: "Tron TRC-20: TLa2f9k...98qZ (Solde: 4 200 USDT)",
+    storageJustification: "Neo4j mod\u00e9lise le graphe bipartite des transferts entre adresses et exchanges (Binance Pay) ; PostgreSQL stocke l'historique de scraping TronScan.",
+    schemaProps: [{"name": "adresse_publique", "type": "String (PK)", "required": true, "desc": "Adresse de portefeuille blockchain"}, {"name": "blockchain", "type": "Enum [TRON_TRC20, ETHEREUM, BITCOIN]", "required": true, "desc": "R\u00e9seau blockchain"}, {"name": "plateforme_identifiee", "type": "String", "required": false, "desc": "Exchange centralis\u00e9 identifi\u00e9 (ex: Binance)"}],
+    connectedClues: ["Aliment\u00e9 depuis Compte BaridiMob ([:CONVERTIT_FONDS])", "Transf\u00e8re vers Wallet ([:TRANSFERT_CRYPTO])"],
+    availableTools: ["TronScan TRC-20 Tracker", "Breadcrumbs / GraphSense Crypto Tracer"]
+  },
+  "transaction_crypto": {
+    icon: "\u26d3\ufe0f",
+    name: "Transaction Blockchain (TX Hash)",
+    domain: "finance",
+    domainName: "4. Finances Criminelles & BaridiMob",
+    primaryDb: "postgres",
+    primaryDbName: "PostgreSQL 16",
+    dbTag: "PostgreSQL + Neo4j",
+    dbBadge: "PostgreSQL 16 / Neo4j",
+    color: "#eab308",
+    plainMeaning: "Transfert de cybermonnaie immuable enregistr\u00e9 sur un registre distribu\u00e9 public.",
+    exampleValue: "TX Hash: 0x8f192b4...38a (Montant: 2 500 USDT)",
+    storageJustification: "Table relationnelle pour la v\u00e9rification des montants et ar\u00eate Neo4j pour la navigation visuelle dans le mixeur crypto.",
+    schemaProps: [{"name": "tx_hash", "type": "String (PK)", "required": true, "desc": "Hachage de la transaction blockchain"}, {"name": "montant_crypto", "type": "Float", "required": true, "desc": "Quantit\u00e9 de jetons transf\u00e9r\u00e9s"}, {"name": "timestamp_block", "type": "DateTime", "required": true, "desc": "Horodatage d'inclusion dans le bloc"}],
+    connectedClues: ["Depuis Wallet ([:DEPUIS_WALLET])", "Vers Wallet ([:VERS_WALLET])"],
+    availableTools: ["Tracer de flux de blanchiment crypto", "D\u00e9tection d'adresses sous sanctions OFAC"]
+  },
+  "compte_social": {
+    icon: "\ud83d\udc64",
+    name: "Compte de R\u00e9seau Social / Messagerie",
+    domain: "socmint",
+    domainName: "5. SOCMINT, Web & Trackers",
+    primaryDb: "neo4j",
+    primaryDbName: "Neo4j 5.20+",
+    dbTag: "Neo4j + MongoDB",
+    dbBadge: "Neo4j / MongoDB 7.0",
+    color: "#06b6d4",
+    plainMeaning: "Profil en ligne sur Facebook, Instagram, Telegram, TikTok ou WhatsApp utilis\u00e9 pour diffuser les arnaques ou app\u00e2ter les victimes.",
+    exampleValue: "Facebook: fb.com/promo.pneus.dz | Telegram: @walid_boss",
+    storageJustification: "Neo4j mod\u00e9lise le profil comme sommet du graphe relationnel ; MongoDB 7.0 stocke le dump BSON brut de l'ensemble de la bio et des abonn\u00e9s.",
+    schemaProps: [{"name": "id_profil", "type": "String (PK)", "required": true, "desc": "Identifiant num\u00e9rique permanent ou handle"}, {"name": "plateforme", "type": "Enum [Facebook, Telegram, TikTok, Instagram, WhatsApp, Ouedkniss]", "required": true, "desc": "R\u00e9seau social"}, {"name": "pseudo_handle", "type": "String", "required": true, "desc": "Nom d'utilisateur affich\u00e9 (@...)"}, {"name": "url_profil", "type": "String", "required": true, "desc": "Lien direct vers le profil"}],
+    connectedClues: ["Appartient \u00e0 une Personne ([:POSSEDE_PROFIL])", "Publie une Annonce ([:PUBLIE_POST])", "Membre d'un Canal ([:MEMBRE_DE])"],
+    availableTools: ["Meta Transparency Tracker", "Telegram MTProto Entity Resolver", "Outil Maigret (2 500+ sites)"]
+  },
+  "publication_sociale": {
+    icon: "\ud83d\udce2",
+    name: "Publication / Annonce Frauduleuse",
+    domain: "socmint",
+    domainName: "5. SOCMINT, Web & Trackers",
+    primaryDb: "neo4j",
+    primaryDbName: "Neo4j 5.20+",
+    dbTag: "Neo4j + MinIO + MongoDB",
+    dbBadge: "Neo4j / MinIO / MongoDB",
+    color: "#06b6d4",
+    plainMeaning: "Message public, annonce sponsoris\u00e9e Facebook Ads ou vid\u00e9o TikTok constituant le support mat\u00e9riel de l'escroquerie.",
+    exampleValue: "Facebook Ad #981240 ('4 Pneus Michelin 15 pouces \u00e0 12 000 DA')",
+    storageJustification: "Neo4j relie la publication aux t\u00e9l\u00e9phones et liens cit\u00e9s ; MinIO stocke la capture d'\u00e9cran scell\u00e9e WORM ; MongoDB stocke le texte et les m\u00e9tadonn\u00e9es de diffusion.",
+    schemaProps: [{"name": "id_post", "type": "String (PK)", "required": true, "desc": "Identifiant unique du post"}, {"name": "texte_integral", "type": "String", "required": true, "desc": "Texte exact de l'annonce"}, {"name": "date_publication", "type": "DateTime", "required": true, "desc": "Date et heure de parution"}, {"name": "prix_annonce_dzd", "type": "Float", "required": false, "desc": "Tarif frauduleux all\u00e9gu\u00e9"}],
+    connectedClues: ["Publi\u00e9e par un Compte ([:PUBLIEE_PAR])", "Redirige vers Site Web ([:DIFFUSE_LIEN])", "Affiche un T\u00e9l\u00e9phone ([:AFFICHE_TELEPHONE])"],
+    availableTools: ["Extracteur d'IOCs P0", "Meta Ad Library Investigator", "Scellement WORM de page web"]
+  },
+  "canal_telegram": {
+    icon: "\ud83d\udce3",
+    name: "Canal / Groupe Telegram & WhatsApp",
+    domain: "socmint",
+    domainName: "5. SOCMINT, Web & Trackers",
+    primaryDb: "neo4j",
+    primaryDbName: "Neo4j 5.20+",
+    dbTag: "Neo4j + MongoDB",
+    dbBadge: "Neo4j / MongoDB 7.0",
+    color: "#06b6d4",
+    plainMeaning: "Espace de discussion collectif priv\u00e9 ou public o\u00f9 les escrocs coordonnent leurs actions ou diffusent des catalogues de marchandises fictives.",
+    exampleValue: "Canal Telegram 'Pneus Promo Alg\u00e9rie' (4 800 abonn\u00e9s)",
+    storageJustification: "Neo4j identifie les membres et administrateurs communs \u00e0 plusieurs canaux criminels ; MongoDB stocke les dumps d'historique de chat bruts.",
+    schemaProps: [{"name": "id_canal", "type": "String (PK)", "required": true, "desc": "ID num\u00e9rique Telegram / WhatsApp"}, {"name": "titre_canal", "type": "String", "required": true, "desc": "Nom du groupe"}, {"name": "nb_membres", "type": "Int", "required": false, "desc": "Nombre d'abonn\u00e9s au moment de la saisie"}],
+    connectedClues: ["Administr\u00e9 par Compte Social ([:ADMINISTRE_PAR])", "Contient des Messages ([:CONTIENT_MESSAGE])"],
+    availableTools: ["Telegram MTProto Scraper", "D\u00e9tection de r\u00e9seaux de propagande criminelle"]
+  },
+  "message_chat": {
+    icon: "\ud83d\udcac",
+    name: "Message de Chat Instantan\u00e9",
+    domain: "socmint",
+    domainName: "5. SOCMINT, Web & Trackers",
+    primaryDb: "mongodb",
+    primaryDbName: "MongoDB 7.0 WiredTiger",
+    dbTag: "MongoDB + MinIO",
+    dbBadge: "MongoDB 7.0 (BSON Snappy)",
+    color: "#06b6d4",
+    plainMeaning: "Message texte ou vocal unitaire \u00e9chang\u00e9 sur WhatsApp ou Telegram contenant des aveux, des ordres ou des coordonn\u00e9es bancaires.",
+    exampleValue: "Message #84102: 'Envoyez l'acompte par BaridiMob sur ce num\u00e9ro...'",
+    storageJustification: "MongoDB g\u00e8re la structure sans sch\u00e9ma et les volumes massifs de messages extraits des t\u00e9l\u00e9phones saisis avec compression Snappy.",
+    schemaProps: [{"name": "message_id", "type": "String (PK)", "required": true, "desc": "Identifiant dans le fil de discussion"}, {"name": "texte_brut", "type": "String", "required": true, "desc": "Contenu textuel du message"}, {"name": "horodatage_iso", "type": "DateTime", "required": true, "desc": "Horodatage d'envoi"}],
+    connectedClues: ["\u00c9mis dans un Canal ([:DANS_CANAL])", "Embarque un Audio Vocal ([:CONTIENT_AUDIO])", "Attache une Photo ([:CONTIENT_PHOTO])"],
+    availableTools: ["Analyseur de discussions criminelles", "Extracteur automatique d'adresses et RIPs"]
+  },
+  "adresse_email": {
+    icon: "\ud83d\udce7",
+    name: "Adresse E-mail",
+    domain: "socmint",
+    domainName: "5. SOCMINT, Web & Trackers",
+    primaryDb: "neo4j",
+    primaryDbName: "Neo4j 5.20+",
+    dbTag: "Neo4j + PostgreSQL",
+    dbBadge: "Neo4j / PostgreSQL 16",
+    color: "#06b6d4",
+    plainMeaning: "Adresse de messagerie \u00e9lectronique utilis\u00e9e pour administrer des sites web, souscrire des h\u00e9bergements ou enregistrer des comptes sociaux.",
+    exampleValue: "walid.bouaziz.dz@gmail.com",
+    storageJustification: "Neo4j pivote l'adresse pour r\u00e9v\u00e9ler tous les comptes et sites enregistr\u00e9s ; PostgreSQL stocke les correspondances avec les bases de fuites de donn\u00e9es.",
+    schemaProps: [{"name": "email_canonique", "type": "String (PK minuscule)", "required": true, "desc": "Adresse e-mail normalis\u00e9e"}, {"name": "domaine_mx", "type": "String", "required": true, "desc": "Fournisseur de messagerie (ex: gmail.com)"}],
+    connectedClues: ["Utilis\u00e9e par une Personne ([:UTILISE_EMAIL])", "Contact d'un Site Web ([:CONTACT_DE_DOMAINE])"],
+    availableTools: ["Outil GHunt (Analyseur Google Account)", "Interrogateur DeHashed & HaveIBeenPwned"]
+  },
+  "site_web": {
+    icon: "\ud83c\udf10",
+    name: "Site Web & Boutique Scam (FQDN)",
+    domain: "socmint",
+    domainName: "5. SOCMINT, Web & Trackers",
+    primaryDb: "neo4j",
+    primaryDbName: "Neo4j 5.20+",
+    dbTag: "Neo4j + MinIO + MongoDB",
+    dbBadge: "Neo4j / MinIO / MongoDB",
+    color: "#06b6d4",
+    plainMeaning: "Site de commerce \u00e9lectronique fictif, fausse plateforme de paiement ou portail d'hame\u00e7onnage ciblant les usagers alg\u00e9riens.",
+    exampleValue: "https://promo-pneus-express.shop",
+    storageJustification: "Neo4j mod\u00e9lise le graphe d'infrastructure ; MinIO stocke l'archive WARC compl\u00e8te et certifi\u00e9e ISO 28500 ; MongoDB stocke les en-t\u00eates HTTP bruts.",
+    schemaProps: [{"name": "fqdn_domaine", "type": "String (PK)", "required": true, "desc": "Nom de domaine complet"}, {"name": "ip_hebergeur", "type": "String", "required": true, "desc": "Adresse IP r\u00e9solue"}, {"name": "date_depot_whois", "type": "Date", "required": false, "desc": "Date d'enregistrement du domaine"}],
+    connectedClues: ["Embarque un Tracker ([:EMBARQUE_TRACKER])", "R\u00e9solu vers Serveur C2 ([:RESOLU_VERS_IP])", "Distribue un Malware APK ([:DISTRIBUE_APK])"],
+    availableTools: ["ArchiveBox WARC ISO 28500 Snapshotter", "PublicWWW Source Code Hunter", "JARM TLS Fingerprinter"]
+  },
+  "identifiant_infrastructure": {
+    icon: "\ud83c\udff7\ufe0f",
+    name: "Identifiant d'Infrastructure & Tracker (Meta Pixel)",
+    domain: "socmint",
+    domainName: "5. SOCMINT, Web & Trackers",
+    primaryDb: "neo4j",
+    primaryDbName: "Neo4j 5.20+",
+    dbTag: "Neo4j + MongoDB",
+    dbBadge: "Neo4j 5.20+ (Pivot Graphe)",
+    color: "#06b6d4",
+    plainMeaning: "Balise technique cach\u00e9e dans le code source d'un site web (Meta Pixel ID, Google Analytics ID, JARM TLS) partag\u00e9e par plusieurs sites d'un m\u00eame escroc.",
+    exampleValue: "Meta Pixel ID: 88419203314 (Partag\u00e9 sur 3 sites)",
+    storageJustification: "Sommet pivot Neo4j indispensable : une simple requ\u00eate Cypher \u00e0 2 sauts regroupe instantan\u00e9ment toutes les boutiques cr\u00e9\u00e9es par le m\u00eame r\u00e9seau criminel.",
+    schemaProps: [{"name": "valeur_id", "type": "String (PK)", "required": true, "desc": "Valeur alphanum\u00e9rique du pixel ou tracker"}, {"name": "type_tracker", "type": "Enum [Meta_Pixel, Google_Analytics, Adsense, JARM, GTM]", "required": true, "desc": "Nature de la balise"}],
+    connectedClues: ["Embarqu\u00e9 dans plusieurs Sites Web ([:EMBARQUE_DANS])"],
+    availableTools: ["Pivot d'infrastructure multi-sites", "D\u00e9tecteur de sites jumeaux (Twin Sites Hunter)"]
+  },
+  "fichier_apk": {
+    icon: "\ud83d\udce6",
+    name: "Application Malveillante / Trojan BaridiMob (APK)",
+    domain: "cyber",
+    domainName: "6. Cyber, Malwares & Forensique",
+    primaryDb: "minio",
+    primaryDbName: "MinIO S3 WORM",
+    dbTag: "MinIO + MongoDB + Neo4j",
+    dbBadge: "MinIO WORM / MongoDB / Neo4j",
+    color: "#22c55e",
+    plainMeaning: "Fichier d'installation Android (.apk) v\u00e9rol\u00e9 usurpant l'identit\u00e9 d'Alg\u00e9rie Poste ou d'un service public pour voler les codes secrets et SMS OTP.",
+    exampleValue: "AutoPneusDZ.apk (SHA-256: 4a12e88...)",
+    storageJustification: "MinIO conserve le binaire exact sous scell\u00e9 WORM ; MongoDB conserve l'arbre syntaxique (AST) d\u00e9compil\u00e9 par Jadx/Ghidra ; Neo4j relie l'APK aux victimes et au C2.",
+    schemaProps: [{"name": "sha256_hash", "type": "String (PK 64 hex)", "required": true, "desc": "Empreinte cryptographique du binaire"}, {"name": "package_name", "type": "String", "required": true, "desc": "Nom du package Android (ex: com.autopneus.dz)"}, {"name": "certificat_signature", "type": "String", "required": true, "desc": "Empreinte du certificat de signature d\u00e9veloppeur"}],
+    connectedClues: ["T\u00e9l\u00e9charg\u00e9 depuis Site Web ([:TELECHARGE_DEPUIS])", "Communique avec Serveur C2 ([:COMMUNIQUE_AVEC_C2])", "Cible l'Appli BaridiMob ([:CIBLE_APPLICATION])"],
+    availableTools: ["D\u00e9compilateur Jadx-GUI & Ghidra", "Analyseur de certificats APK", "YARA-X & Capa Malware Scanner"]
+  },
+  "serveur_c2": {
+    icon: "\ud83d\udda5\ufe0f",
+    name: "Serveur C2 & Adresse IP (Command & Control)",
+    domain: "cyber",
+    domainName: "6. Cyber, Malwares & Forensique",
+    primaryDb: "neo4j",
+    primaryDbName: "Neo4j 5.20+",
+    dbTag: "Neo4j + PostgreSQL",
+    dbBadge: "Neo4j / PostgreSQL 16",
+    color: "#22c55e",
+    plainMeaning: "Machine distante contr\u00f4l\u00e9e par les cybercriminels recevant les identifiants vol\u00e9s, les SMS intercept\u00e9s et orchestrant les attaques.",
+    exampleValue: "IP: 185.220.101.42 (Port 8443, H\u00e9bergeur: Hetzner)",
+    storageJustification: "Neo4j relie le C2 aux multiples APKs et sites compromis ; PostgreSQL stocke les rapports d'analyse de trafic Wireshark/TShark.",
+    schemaProps: [{"name": "ip_address", "type": "String (PK IPv4/IPv6)", "required": true, "desc": "Adresse IP publique"}, {"name": "port_c2", "type": "Int", "required": false, "desc": "Port d'\u00e9coute du serveur de commande"}, {"name": "asn_pays", "type": "String", "required": true, "desc": "Syst\u00e8me autonome et pays d'h\u00e9bergement"}],
+    connectedClues: ["Re\u00e7oit les Donn\u00e9es d'un Malware APK ([:PILOTE_MALWARE])", "H\u00e9berge un Site Web ([:HEBERGE_SITE])"],
+    availableTools: ["Dissecteur de trafic Wireshark / TShark", "Shodan / Censys Infrastructure Scanner"]
+  },
+  "certificat_tls": {
+    icon: "\ud83d\udd12",
+    name: "Certificat SSL/TLS & JARM Fingerprint",
+    domain: "cyber",
+    domainName: "6. Cyber, Malwares & Forensique",
+    primaryDb: "neo4j",
+    primaryDbName: "Neo4j 5.20+",
+    dbTag: "Neo4j + MongoDB",
+    dbBadge: "Neo4j / MongoDB 7.0",
+    color: "#22c55e",
+    plainMeaning: "Certificat cryptographique s\u00e9curisant un site frauduleux, dont l'empreinte JARM r\u00e9v\u00e8le la configuration exacte du serveur sous-jacent.",
+    exampleValue: "JARM: 27d27d27d00027d00042d42d42d42d... (Let's Encrypt)",
+    storageJustification: "Neo4j relie les serveurs partageant la m\u00eame signature JARM active ; MongoDB stocke le certificat X.509 complet.",
+    schemaProps: [{"name": "sha256_cert", "type": "String (PK)", "required": true, "desc": "Empreinte SHA-256 du certificat"}, {"name": "jarm_hash", "type": "String (62 hex)", "required": true, "desc": "Empreinte TLS JARM active"}],
+    connectedClues: ["S\u00e9curise un Site Web ([:SECURISE_DOMAINE])"],
+    availableTools: ["JARM TLS Prober", "Certificate Transparency Logs Search (crt.sh)"]
+  },
+  "artefact_dfir": {
+    icon: "\ud83d\udd2c",
+    name: "Artefact Forensique DFIR (Image Disque / Dump RAM)",
+    domain: "cyber",
+    domainName: "6. Cyber, Malwares & Forensique",
+    primaryDb: "minio",
+    primaryDbName: "MinIO S3 WORM",
+    dbTag: "MinIO + PostgreSQL",
+    dbBadge: "MinIO WORM / PostgreSQL 16",
+    color: "#22c55e",
+    plainMeaning: "Image disque brute (E01/RAW), dump de m\u00e9moire vive RAM (Volatility) ou base SQLite chiffr\u00e9e extraite d'un smartphone saisi.",
+    exampleValue: "Dump RAM Volatility (sha256: 9f81a... \u2022 Taille: 16 Go)",
+    storageJustification: "MinIO WORM stocke les volumineuses images m\u00e9dico-l\u00e9gales brutes sous Object Lock ; PostgreSQL indexe les m\u00e9tadonn\u00e9es de saisie.",
+    schemaProps: [{"name": "sha256_artefact", "type": "String (PK)", "required": true, "desc": "Hash cryptographique de l'image"}, {"name": "format_image", "type": "Enum [E01, RAW, MEM_DUMP, SQLITE_DB]", "required": true, "desc": "Format de fichier m\u00e9dico-l\u00e9gal"}, {"name": "taille_octets", "type": "BigInt", "required": true, "desc": "Taille exacte du fichier"}],
+    connectedClues: ["Extrait d'un Appareil Mobile ([:EXTRAIT_DE_TERMINAL])", "Scell\u00e9 dans la Proc\u00e9dure ([:SOUS_SCELLE])"],
+    availableTools: ["Autopsy / SleuthKit", "Volatility 3 RAM Analyzer", "ALEAPP / iLEAPP Artifact Extractors"]
+  },
+  "enregistrement_vocal": {
+    icon: "\ud83c\udf99\ufe0f",
+    name: "Enregistrement Vocal / Note Vocale WhatsApp (Darija)",
+    domain: "biometrics",
+    domainName: "7. Biom\u00e9trie Multimodale & M\u00e9dias",
+    primaryDb: "minio",
+    primaryDbName: "MinIO S3 WORM",
+    dbTag: "MinIO + Qdrant + Neo4j",
+    dbBadge: "MinIO / Qdrant 1.9 / Neo4j",
+    color: "#a855f7",
+    plainMeaning: "Message vocal WhatsApp en dialecte alg\u00e9rien intercept\u00e9 ou remis par la victime, contenant les instructions d'arnaque et la voix du suspect.",
+    exampleValue: "Audio WhatsApp (34s, ar-DZ, 'Ba3atli 10 mlayen f BaridiMob')",
+    storageJustification: "MinIO stocke l'OPUS original immuable ; Qdrant stocke l'empreinte x-vector 192-d (PyAnnote 3.1) ; Neo4j stocke la transcription textuelle et les entit\u00e9s NER.",
+    schemaProps: [{"name": "sha256_audio", "type": "String (PK)", "required": true, "desc": "Hash SHA-256 du fichier audio"}, {"name": "duree_sec", "type": "Float", "required": true, "desc": "Dur\u00e9e exacte de l'enregistrement"}, {"name": "transcription_darija", "type": "String", "required": true, "desc": "Texte transcrit par Faster-Whisper ar-DZ"}, {"name": "qdrant_vector_id", "type": "String (UUID)", "required": true, "desc": "Pointeur vers l'index vectoriel Qdrant"}],
+    connectedClues: ["Attribu\u00e9 \u00e0 un Suspect par Voix ([:ATTRIBUE_A])", "Inclus dans un Message Chat ([:ATTACHE_A_MESSAGE])", "Scell\u00e9 sous WORM ([:PROTEGE_PAR_SCELLE])"],
+    availableTools: ["Faster-Whisper Large-v3 (Fine-tun\u00e9 Darija DZ)", "PyAnnote Audio 3.1 (Diarisation & Speaker Recognition)", "D\u00e9tecteur Deepfake Vocal ResNet"]
+  },
+  "empreinte_faciale": {
+    icon: "\ud83d\udc64",
+    name: "Empreinte Faciale Biom\u00e9trique ArcFace 512-d",
+    domain: "biometrics",
+    domainName: "7. Biom\u00e9trie Multimodale & M\u00e9dias",
+    primaryDb: "qdrant",
+    primaryDbName: "Qdrant 1.9 Vector DB (Rust)",
+    dbTag: "Qdrant + MinIO + Neo4j",
+    dbBadge: "Qdrant 1.9 / MinIO / Neo4j",
+    color: "#a855f7",
+    plainMeaning: "Vecteur math\u00e9matique compact \u00e0 512 dimensions extrait par r\u00e9seau de neurones convolutif profond (ArcFace) repr\u00e9sentant la biom\u00e9trie d'un visage.",
+    exampleValue: "Vecteur ArcFace 512-d (Similarit\u00e9 cosinus: 0.89 avec suspect)",
+    storageJustification: "Qdrant indexe les vecteurs en m\u00e9moire vive via le graphe HNSW pour des recherches 1-to-N en <8ms avec filtrage par dossier p\u00e9nal.",
+    schemaProps: [{"name": "vector_id", "type": "String (PK UUID)", "required": true, "desc": "Identifiant dans la collection Qdrant"}, {"name": "vecteur_512d", "type": "List[Float] (512 dims)", "required": true, "desc": "Embedding facial normalis\u00e9"}, {"name": "seuil_confiance", "type": "Float [0..1]", "required": true, "desc": "Confiance de d\u00e9tection RetinaFace"}],
+    connectedClues: ["Extrait d'une Image Preuve ([:EXTRAIT_DE_PHOTO])", "Correspond \u00e0 une Personne ([:IDENTIFIE_SUSPECT])"],
+    availableTools: ["ArcFace DeepFace 512-d Matcher", "Recherche k-NN Qdrant sub-8ms", "V\u00e9rificateur d'usurpation de photo de profil"]
+  },
+  "image_preuve": {
+    icon: "\ud83d\uddbc\ufe0f",
+    name: "Image Preuve / Capture d'\u00c9cran / Re\u00e7u BaridiMob",
+    domain: "biometrics",
+    domainName: "7. Biom\u00e9trie Multimodale & M\u00e9dias",
+    primaryDb: "minio",
+    primaryDbName: "MinIO S3 WORM",
+    dbTag: "MinIO + Neo4j",
+    dbBadge: "MinIO WORM / Neo4j",
+    color: "#a855f7",
+    plainMeaning: "Photographie d'une pi\u00e8ce d'identit\u00e9 saisie, capture d'\u00e9cran d'un re\u00e7u de virement BaridiMob ou clich\u00e9 de faux stocks de marchandises.",
+    exampleValue: "Capture Re\u00e7u BaridiMob (SHA-256: 8f921... \u2022 1080x1920)",
+    storageJustification: "MinIO WORM prot\u00e8ge le fichier contre la falsification ; Neo4j conserve les m\u00e9tadonn\u00e9es techniques EXIF (appareil, GPS, date).",
+    schemaProps: [{"name": "sha256_image", "type": "String (PK)", "required": true, "desc": "Hash cryptographique de l'image"}, {"name": "phash_perceptuel", "type": "String (64 bits)", "required": true, "desc": "Hachage perceptuel anti-duplication"}, {"name": "exif_gps", "type": "Point (WGS84)", "required": false, "desc": "Coordonn\u00e9es GPS extraites par ExifTool"}],
+    connectedClues: ["Donne lieu \u00e0 Extraction Faciale ([:CONTIENT_VISAGE])", "Montre un V\u00e9hicule ([:MONTRE_VEHICULE])", "Justifie un Virement ([:PROUVE_VIREMENT])"],
+    availableTools: ["ExifTool GPS Extractor", "D\u00e9tecteur de retouches num\u00e9riques (ELA)", "Perceptual Hashing Image Deduplicator"]
+  },
+  "document_judiciaire": {
+    icon: "\ud83d\udcc4",
+    name: "Proc\u00e8s-Verbal Judiciaire (PV Norm\u00e9 CPP)",
+    domain: "legal",
+    domainName: "8. Cha\u00eene de Preuve & Scell\u00e9s WORM",
+    primaryDb: "minio",
+    primaryDbName: "MinIO S3 WORM (PDF/A-3b)",
+    dbTag: "MinIO + PostgreSQL",
+    dbBadge: "MinIO / PostgreSQL 16",
+    color: "#e11d48",
+    plainMeaning: "Acte de proc\u00e9dure officiel r\u00e9dig\u00e9 par l'officier de police judiciaire : PV d'audition, de constatation, de perquisition ou rapport de synth\u00e8se.",
+    exampleValue: "PV de Synth\u00e8se N\u00b0 142/2026 - Brigade Bab Ezzouar",
+    storageJustification: "MinIO conserve le PDF/A-3b scell\u00e9 ; PostgreSQL stocke le registre l\u00e9gal d'audit et la signature num\u00e9rique X.509 de l'enqu\u00eateur.",
+    schemaProps: [{"name": "numero_pv", "type": "String (PK)", "required": true, "desc": "Num\u00e9ro officiel de proc\u00e8s-verbal"}, {"name": "type_acte", "type": "Enum [PV_SYNTHESE, PV_AUDITION, PV_CONSTAT, REQUISITION]", "required": true, "desc": "Nature juridique de l'acte"}, {"name": "date_redaction", "type": "Date", "required": true, "desc": "Date de signature de l'acte"}, {"name": "hash_sha256", "type": "String (64 hex)", "required": true, "desc": "Empreinte d'int\u00e9grit\u00e9 du document"}],
+    connectedClues: ["Rattach\u00e9 \u00e0 l'Affaire ([:ACTE_DE_DOSSIER])", "Scell\u00e9 sous R\u00e9f\u00e9rence WORM ([:OBJET_DE_SCELLE])"],
+    availableTools: ["G\u00e9n\u00e9rateur PDF/A-3b WeasyPrint", "Compilateur de dossier de plaidoirie", "V\u00e9rificateur d'int\u00e9grit\u00e9 cryptographique"]
+  },
+  "scelle_numerique": {
+    icon: "\ud83d\udd0f",
+    name: "Scell\u00e9 Num\u00e9rique WORM (ISO 27037)",
+    domain: "legal",
+    domainName: "8. Cha\u00eene de Preuve & Scell\u00e9s WORM",
+    primaryDb: "minio",
+    primaryDbName: "MinIO Enterprise S3 (Object Lock)",
+    dbTag: "MinIO WORM (COMPLIANCE)",
+    dbBadge: "MinIO S3 WORM (Lock)",
+    color: "#e11d48",
+    plainMeaning: "Enveloppe cryptographique inviolable garantissant l'int\u00e9grit\u00e9 absolue d'un \u00e9l\u00e9ment de preuve (vid\u00e9o, vocal, WARC, dump de base de donn\u00e9es).",
+    exampleValue: "Scell\u00e9 Parquet N\u00b0 SC-2026-089-01 (Verrouill\u00e9 10 ans)",
+    storageJustification: "MinIO S3 en mode COMPLIANCE strict : interdiction technique absolue d'effacement ou de modification, m\u00eame par l'administrateur root.",
+    schemaProps: [{"name": "evidence_uid", "type": "String (PK UUID)", "required": true, "desc": "Identifiant universel d'indice"}, {"name": "num_scelle_parquet", "type": "String", "required": true, "desc": "Num\u00e9ro de scell\u00e9 attribu\u00e9 par le greffe"}, {"name": "lock_mode", "type": "String ('COMPLIANCE')", "required": true, "desc": "Mode de verrouillage S3 immuable"}, {"name": "retention_until", "type": "DateTime", "required": true, "desc": "Date de fin de r\u00e9tention l\u00e9gale (ex: 2036)"}],
+    connectedClues: ["Prot\u00e8ge un \u00c9l\u00e9ment de Preuve ([:SCELLE_ELEMENT])", "Ancr\u00e9 dans un Jalon Merkle ([:PROTEGE_PAR_MERKLE])"],
+    availableTools: ["V\u00e9rificateur de non-r\u00e9pudiation ISO 27037", "Contr\u00f4leur de cha\u00eene de garde CPP Art. 68"]
+  },
+  "preuve_merkle": {
+    icon: "\ud83c\udf32",
+    name: "Jalon d'Arbre de Merkle & Horodatage RFC 3161",
+    domain: "legal",
+    domainName: "8. Cha\u00eene de Preuve & Scell\u00e9s WORM",
+    primaryDb: "postgres",
+    primaryDbName: "PostgreSQL 16 (Ledger Merkle)",
+    dbTag: "PostgreSQL + Neo4j",
+    dbBadge: "PostgreSQL 16 / Neo4j",
+    color: "#e11d48",
+    plainMeaning: "Structure de donn\u00e9es cryptographique en arbre de Merkle prouvant math\u00e9matiquement qu'aucun indice n'a \u00e9t\u00e9 ins\u00e9r\u00e9 ou supprim\u00e9 a posteriori.",
+    exampleValue: "Racine Merkle: e3b0c44298fc1c149afbf4... (TSA Horodat\u00e9)",
+    storageJustification: "PostgreSQL stocke le registre s\u00e9quentiel d'audit Merkle avec cha\u00eenage de hachages ; Neo4j affiche la racine de preuve de l'affaire.",
+    schemaProps: [{"name": "merkle_root_sha256", "type": "String (PK)", "required": true, "desc": "Racine de l'arbre de hachage de l'affaire"}, {"name": "rfc3161_timestamp", "type": "DateTime", "required": true, "desc": "Jeton d'horodatage qualifi\u00e9 d'autorit\u00e9 de confiance (TSA)"}, {"name": "nb_feuilles_indices", "type": "Int", "required": true, "desc": "Nombre total d'\u00e9l\u00e9ments scell\u00e9s dans l'arbre"}],
+    connectedClues: ["Couvre l'ensemble de l'Affaire ([:CERTIFIE_AFFAIRE])"],
+    availableTools: ["G\u00e9n\u00e9rateur de preuve de Merkle pour audience", "V\u00e9rificateur d'horodatage qualifi\u00e9 RFC 3161"]
+  },
+  "session_recherche": {
+    icon: "\u26a1",
+    name: "Session d'Investigation & Quota Anti-Ban",
+    domain: "cyber",
+    domainName: "6. Cyber, Malwares & Forensique",
+    primaryDb: "redis",
+    primaryDbName: "Redis 7.2 Stack Engine",
+    dbTag: "Redis 7.2 Stack",
+    dbBadge: "Redis 7.2 (In-Memory RESP3)",
+    color: "#f59e0b",
+    plainMeaning: "\u00c9tat temporaire en m\u00e9moire vive g\u00e9rant les verrous distribu\u00e9s Redlock, les quotas de requ\u00eates vers les plateformes (Token-Bucket) et le push WebSockets vers le Studio.",
+    exampleValue: "Session Enqu\u00eateur (Token Bucket: 100 req/min sur Ooredoo)",
+    storageJustification: "Redis 7.2 en RAM pure avec latence sub-milliseconde (<0.5ms) et structures de donn\u00e9es avanc\u00e9es (Redis Streams, scripts Lua atomiques).",
+    schemaProps: [{"name": "session_id", "type": "String (PK)", "required": true, "desc": "Identifiant de session d'enqu\u00eate"}, {"name": "token_bucket_dispo", "type": "Int", "required": true, "desc": "Jetons restants avant suspension anti-ban"}, {"name": "expires_at", "type": "DateTime", "required": true, "desc": "Expiration TTL de session"}],
+    connectedClues: ["Associe l'Enqu\u00eateur au Dossier ([:SESSION_ACTIVE])"],
+    availableTools: ["Token Bucket Rate Limiter", "Pub/Sub WebSocket Studio 60 FPS"]
   }
 };
+
+let currentOntoDomainFilter = 'all';
+let currentOntoDbFilter = 'all';
 
 function selectOntologyEntity(key) {
   const box = document.getElementById('ontology-detail-box');
   if (!box || !ONTOLOGY_ENTITIES[key]) return;
   const e = ONTOLOGY_ENTITIES[key];
 
-  document.querySelectorAll('[data-onto-node]').forEach(el => {
-    el.style.strokeWidth = (el.getAttribute('data-onto-node') === key) ? '4' : '2';
+  // Highlight selected SVG node
+  document.querySelectorAll('.onto-node-g').forEach(el => {
+    const isSelected = el.getAttribute('data-node') === key;
+    const rect = el.querySelector('rect.onto-node-rect');
+    if (rect) {
+      rect.style.strokeWidth = isSelected ? '3.5' : '1.5';
+      rect.style.filter = isSelected ? 'drop-shadow(0 0 10px ' + e.color + ')' : 'none';
+    }
   });
 
+  const propsRows = (e.schemaProps || []).map(p => `
+    <tr>
+      <td style="color:#38bdf8;font-family:monospace;font-size:0.75rem;padding:0.35rem 0.6rem;">${p.name}</td>
+      <td style="color:#fbbf24;font-size:0.72rem;padding:0.35rem 0.6rem;">${p.type}</td>
+      <td style="font-size:0.72rem;padding:0.35rem 0.6rem;">${p.required ? '<span style="color:#ef4444;font-weight:700;">Requis</span>' : '<span style="color:#94a3b8;">Optionnel</span>'}</td>
+      <td style="color:#cbd5e1;font-size:0.75rem;padding:0.35rem 0.6rem;">${p.desc}</td>
+    </tr>
+  `).join('');
+
   box.innerHTML = `
-    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
-      <span style="font-size:2rem;">${e.icon}</span>
-      <div>
-        <h3 style="font-size:1.15rem;color:${e.color};margin:0;">${e.name}</h3>
-        <div style="font-size:0.78rem;color:var(--text-muted);">Example: <strong>${e.exampleValue}</strong></div>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;border-bottom:1px solid #1e293b;padding-bottom:0.75rem;margin-bottom:1rem;flex-wrap:wrap;gap:0.75rem;">
+      <div style="display:flex;align-items:center;gap:0.85rem;">
+        <span style="font-size:2.2rem;background:#141f36;padding:0.4rem 0.6rem;border-radius:10px;border:1px solid #23344d;">${e.icon}</span>
+        <div>
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.25rem;">
+            <span class="badge" style="background:rgba(255,255,255,0.08);color:${e.color};border:1px solid ${e.color};font-size:0.7rem;">${e.domainName}</span>
+            <span class="badge" style="background:#090d16;color:#38bdf8;border:1px solid #0284c7;font-size:0.7rem;font-family:monospace;">🗄️ ${e.dbBadge}</span>
+          </div>
+          <h3 style="font-size:1.25rem;color:${e.color};margin:0;font-weight:800;">${e.name}</h3>
+          <div style="font-size:0.8rem;color:#94a3b8;margin-top:0.2rem;">Exemple Concret (Affaire Athar) : <strong style="color:#f1f5f9;">${e.exampleValue}</strong></div>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <span class="badge badge-emerald" style="font-size:0.72rem;">● Modèle Conforme GFPG</span>
       </div>
     </div>
-    <p style="font-size:0.9rem;color:var(--text-primary);margin-bottom:0.9rem;">${e.plainMeaning}</p>
-    <div class="grid-2" style="margin-bottom:0;">
-      <div style="background:#0b0f17;padding:0.75rem;border-radius:8px;border:1px solid var(--border-color);">
-        <strong style="font-size:0.75rem;text-transform:uppercase;color:var(--accent-cyan);display:block;margin-bottom:0.35rem;">🔗 How It Connects on the Case Board</strong>
-        <ul style="padding-left:1.1rem;font-size:0.82rem;color:var(--text-secondary);">
-          ${e.connectedClues.map(c => `<li>${c}</li>`).join('')}
+
+    <!-- Legal & Forensic Plain Meaning -->
+    <div style="background:#0c1322;border:1px solid #1e293b;border-radius:8px;padding:0.85rem 1rem;margin-bottom:1rem;">
+      <strong style="color:#38bdf8;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:0.35rem;">🎯 Rôle dans l'Instruction Judiciaire :</strong>
+      <p style="font-size:0.85rem;color:#cbd5e1;line-height:1.55;margin:0;">${e.plainMeaning}</p>
+    </div>
+
+    <!-- Storage Architecture Rationale -->
+    <div style="background:linear-gradient(135deg, rgba(56, 189, 248, 0.08), rgba(244, 63, 94, 0.06));border:1px solid #0284c7;border-left:4px solid #38bdf8;border-radius:8px;padding:0.85rem 1rem;margin-bottom:1rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.35rem;">
+        <strong style="color:#38bdf8;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.5px;">🗄️ Justification du Stockage Polyglotte (${e.dbTag}) :</strong>
+        <span style="font-family:monospace;font-size:0.7rem;color:#94a3b8;">Moteur : ${e.primaryDbName}</span>
+      </div>
+      <p style="font-size:0.82rem;color:#e2e8f0;line-height:1.5;margin:0;">${e.storageJustification}</p>
+    </div>
+
+    <!-- Schema Properties Table -->
+    <div style="margin-bottom:1rem;">
+      <strong style="color:#94a3b8;font-size:0.76rem;text-transform:uppercase;display:block;margin-bottom:0.4rem;">📐 Attributs Canoniques &amp; Schéma de Données :</strong>
+      <div style="background:#090d16;border:1px solid #1e293b;border-radius:6px;overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:0.78rem;">
+          <thead>
+            <tr style="background:#111a2e;color:#cbd5e1;text-align:left;border-bottom:1px solid #1e293b;">
+              <th style="padding:0.4rem 0.6rem;">Propriété</th>
+              <th style="padding:0.4rem 0.6rem;">Type</th>
+              <th style="padding:0.4rem 0.6rem;">Statut</th>
+              <th style="padding:0.4rem 0.6rem;">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${propsRows}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Connections & Tools Grid -->
+    <div class="grid-2" style="margin-bottom:0;gap:0.75rem;">
+      <div style="background:#090d16;padding:0.85rem;border-radius:8px;border:1px solid #1e293b;">
+        <strong style="font-size:0.74rem;text-transform:uppercase;color:#38bdf8;display:block;margin-bottom:0.4rem;">🔗 Relations dans le Graphe d'Enquête</strong>
+        <ul style="padding-left:1.1rem;font-size:0.78rem;color:#cbd5e1;margin:0;line-height:1.5;">
+          ${(e.connectedClues || []).map(c => `<li>${c}</li>`).join('')}
         </ul>
       </div>
-      <div style="background:#0b0f17;padding:0.75rem;border-radius:8px;border:1px solid var(--border-color);">
-        <strong style="font-size:0.75rem;text-transform:uppercase;color:var(--accent-emerald);display:block;margin-bottom:0.35rem;">🧰 Automatic Tools Suggested for This Clue</strong>
-        <ul style="padding-left:1.1rem;font-size:0.82rem;color:var(--text-secondary);">
-          ${e.availableTools.map(t => `<li>${t}</li>`).join('')}
+      <div style="background:#090d16;padding:0.85rem;border-radius:8px;border:1px solid #1e293b;">
+        <strong style="font-size:0.74rem;text-transform:uppercase;color:#10b981;display:block;margin-bottom:0.4rem;">🧰 Outils &amp; Algorithmes Déclenchés</strong>
+        <ul style="padding-left:1.1rem;font-size:0.78rem;color:#cbd5e1;margin:0;line-height:1.5;">
+          ${(e.availableTools || []).map(t => `<li>${t}</li>`).join('')}
         </ul>
       </div>
     </div>
   `;
+}
+
+function filterOntoDomain(domainKey) {
+  currentOntoDomainFilter = domainKey;
+  applyOntoFilters();
+}
+
+function filterOntoDatabase(dbKey) {
+  currentOntoDbFilter = dbKey;
+  applyOntoFilters();
+}
+
+function applyOntoFilters() {
+  // Update button states
+  document.querySelectorAll('.onto-domain-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-domain') === currentOntoDomainFilter);
+  });
+  document.querySelectorAll('.onto-db-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-db') === currentOntoDbFilter);
+  });
+
+  // Filter SVG nodes
+  let visibleCount = 0;
+  document.querySelectorAll('.onto-node-g').forEach(el => {
+    const dom = el.getAttribute('data-domain');
+    const db = el.getAttribute('data-db');
+    const matchDom = (currentOntoDomainFilter === 'all') || (dom === currentOntoDomainFilter);
+    const matchDb = (currentOntoDbFilter === 'all') || (db === currentOntoDbFilter);
+    const visible = matchDom && matchDb;
+    el.style.opacity = visible ? '1' : '0.15';
+    el.style.pointerEvents = visible ? 'auto' : 'none';
+    if (visible) visibleCount++;
+  });
+
+  // Filter SVG edges
+  document.querySelectorAll('.onto-edge-g').forEach(el => {
+    const src = el.getAttribute('data-src');
+    const tgt = el.getAttribute('data-tgt');
+    const srcNode = ONTOLOGY_ENTITIES[src];
+    const tgtNode = ONTOLOGY_ENTITIES[tgt];
+    if (!srcNode || !tgtNode) return;
+
+    const srcMatchDom = (currentOntoDomainFilter === 'all') || (srcNode.domain === currentOntoDomainFilter);
+    const tgtMatchDom = (currentOntoDomainFilter === 'all') || (tgtNode.domain === currentOntoDomainFilter);
+    const matchDom = srcMatchDom && tgtMatchDom;
+
+    const srcMatchDb = (currentOntoDbFilter === 'all') || (srcNode.primaryDb === currentOntoDbFilter);
+    const tgtMatchDb = (currentOntoDbFilter === 'all') || (tgtNode.primaryDb === currentOntoDbFilter);
+    const matchDb = srcMatchDb || tgtMatchDb;
+
+    el.style.opacity = (matchDom && matchDb) ? '0.6' : '0.08';
+  });
+
+  // Update status banner
+  const banner = document.getElementById('onto-filter-banner');
+  if (banner) {
+    banner.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.8rem;">
+        <span style="color:#cbd5e1;">Filtre Actif : 
+          <strong style="color:#38bdf8;">Domaine = ${currentOntoDomainFilter.toUpperCase()}</strong> | 
+          <strong style="color:#10b981;">Base de Données = ${currentOntoDbFilter.toUpperCase()}</strong>
+        </span>
+        <span class="badge badge-blue" style="font-size:0.72rem;">${visibleCount} Nœud(s) Visible(s) sur 37</span>
+      </div>
+    `;
+  }
 }
 
 // Generic Table Filter
@@ -1336,5 +2039,7 @@ function filterTable(inputId, tableId, categoryFilterId) {
 document.addEventListener('DOMContentLoaded', () => {
   initStudioDemo();
   initToolExplorer();
-  selectOntologyEntity('social_post');
+  if (typeof selectOntologyEntity === 'function') {
+    selectOntologyEntity('personne');
+  }
 });
