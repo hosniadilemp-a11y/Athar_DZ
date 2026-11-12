@@ -165,3 +165,26 @@ Accessible directement via [`doc/maquette.html`](maquette.html) :
 - Scénario Candy Wheels avec 9 pièces à conviction scellées (P-01 à P-09).
 - Téléchargement du **Rapport de Synthèse Judiciaire Officiel (PDF)** scellé conforme au CPP algérien.
 - Fiche suspect coulissante et comparateur de preuves en écran scindé.
+
+
+---
+
+## Chapitre 09 : Topologie Physique 3 Serveurs, Attributs GPS & Panneaux Ajustables
+
+### 9.1 Architecture Physique en 3 Serveurs Séparés
+L'infrastructure de production est physiquement isolée en 3 serveurs indépendants sur des VLANs cloisonnés :
+1. **Serveur 1 : Studio App Server (`SRV-STUDIO-01`, VLAN 20)** : Interface Web Studio NVL WebGL, passerelle API FastAPI & RBAC, orchestrateur Celery, moteur d'IA locale (Llama-3-8B Text-to-Cypher), et passerelle d'ingestion SHA-256.
+2. **Serveur 2 : Polyglot Data & Storage Server (`SRV-DATA-01`, VLAN 30)** : Entrepôt de données hébergeant Neo4j 5.20+ Enterprise, PostgreSQL 16 + TimescaleDB + PostGIS, Qdrant 1.9 Rust, MinIO Enterprise S3 (WORM Compliance), MongoDB 7.0 et Redis 7.2.
+3. **Serveur 3 : Phone Farm Automation Server (`SRV-FARM-01`, VLAN 40)** : Appliance physique dédiée aux racks USB 3.0 industriels, flotte de smartphones Android (ADB / Scrcpy), banques de cartes SIM DZ (Djezzy, Mobilis, Ooredoo) et démon d'interception SMS/OTP.
+
+### 9.2 Protocoles de Communication Inter-Applicative
+- **Studio App $\leftrightarrow$ Data Server** : Pilotes natifs binaires chiffrés mTLS (`Bolt TLS`, `PostgreSQL Wire + PgBouncer`, `gRPC Qdrant`, `S3 REST HTTPS`, `RESP3`).
+- **Studio App $\leftrightarrow$ Phone Farm** : **gRPC over mTLS (Protobuf)** pour les commandes synchrones (`SendSMS`, `GetSIMStatus`), **NATS Core / Redis Streams** pour la remontée asynchrone instantanée des SMS/OTP sans polling, et **WebRTC / H.264** pour le streaming vidéo d'écran.
+- **Cloisonnement Forensique** : **Zéro accès direct** entre la Phone Farm (`SRV-FARM-01`) et le Data Server (`SRV-DATA-01`). Tout flux collecté transite obligatoirement par la passerelle d'ingestion du Studio pour vérification d'intégrité, désinfection et hachage SHA-256 avant persistance.
+
+### 9.3 Attributs Géospatiaux (GPS) pour la Vue Carte SIG
+Les entités suivantes portent des coordonnées géographiques (`gps_lat`, `gps_lon`, `azimuth_deg`, `rayon_couverture_m`, `exif_gps_lat/lon`) afin d'être projetées sur la **Carte SIG** (`view_map`) :
+- `Antenne_BTS`, `Telecom_CDR`, `Guichet_GAB`, `Vehicule`, `Image_Preuve`, `Unite`, `Commune`, et `Personne` (barycentre spatio-temporel calculé).
+
+### 9.4 Ergonomie des Panneaux Latéraux Coulissants & Ajustables
+Les panneaux gauche (Accordéon) et droit (Inspecteur contextuel) de l'application web sont **coulissants** (repliables via boutons ou raccourcis clavier `[` et `]`) et **ajustables** en largeur via des poignées séparatrices (`col-resize`, avec persistance `localStorage`), tout en garantissant au minimum 50% de largeur au canevas central.

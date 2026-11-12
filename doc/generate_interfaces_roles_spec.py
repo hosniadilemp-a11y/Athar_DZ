@@ -304,8 +304,28 @@ HTML_CONTENT = """<!DOCTYPE html>
 
         </div>
 
-        <!-- 1.5 Grille de Conformité Formelle UI/UX -->
-        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:1.5rem;margin-bottom:0.6rem;">1.5 Tableau d'Évaluation de Conformité avec <code>.agent/ui-ux-rules.md</code></h3>
+        <!-- 1.5 Panneaux Coulissants, Ajustables & Projection SIG (GPS) -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:1.5rem;margin-bottom:0.6rem;">1.5 Panneaux Latéraux Coulissants/Ajustables &amp; Projection Carte SIG (GPS)</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(290px, 1fr));gap:1rem;margin:1rem 0;">
+          <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #38bdf8;border-radius:6px;padding:0.9rem;font-size:0.82rem;">
+            <strong style="color:#38bdf8;display:block;margin-bottom:0.35rem;">↔️ Panneaux Coulissants &amp; Ajustables (Slidable &amp; Resizable)</strong>
+            <ul style="padding-left:1.1rem;margin:0;color:#cbd5e1;line-height:1.6;">
+              <li><strong>Poignées de Redimensionnement :</strong> Séparateurs verticaux interactifs (<code>col-resize</code>) entre le canevas et les panneaux gauche (200px–400px) et droit (260px–520px).</li>
+              <li><strong>Escamotage Rapide (Slidable) :</strong> Boutons latéraux et raccourcis clavier <code>[</code> et <code>]</code> pour masquer un ou deux panneaux et libérer jusqu'à 96% de l'écran.</li>
+              <li><strong>Persistance Locale :</strong> Mémorisation des largeurs dans <code>localStorage</code> tout en garantissant au minimum 50% de largeur au canevas.</li>
+            </ul>
+          </div>
+          <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #10b981;border-radius:6px;padding:0.9rem;font-size:0.82rem;">
+            <strong style="color:#10b981;display:block;margin-bottom:0.35rem;">📍 Projection Carte SIG des Nœuds Géolocalisés (GPS)</strong>
+            <ul style="padding-left:1.1rem;margin:0;color:#cbd5e1;line-height:1.6;">
+              <li><strong>8 Entités Géolocalisées :</strong> <code>Antenne_BTS</code> (azimut/portée), <code>Telecom_CDR</code>, <code>Guichet_GAB</code>, <code>Vehicule</code> (LAPI), <code>Image_Preuve</code> (EXIF), <code>Unite</code>, <code>Commune</code> et <code>Personne</code>.</li>
+              <li><strong>Rapprochement Interactif :</strong> Cliquer sur un marqueur de la Carte SIG ouvre automatiquement sa fiche détaillée dans l'Inspecteur droit.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 1.6 Grille de Conformité Formelle UI/UX -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:1.5rem;margin-bottom:0.6rem;">1.6 Tableau d'Évaluation de Conformité avec <code>.agent/ui-ux-rules.md</code></h3>
         <table class="rbac-table">
           <thead>
             <tr>

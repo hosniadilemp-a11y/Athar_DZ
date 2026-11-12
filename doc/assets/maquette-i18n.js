@@ -2878,10 +2878,119 @@ function runSimulatedQuery(queryText) {
   selectNode('node-phone');
 }
 
+
+// ============================================================================
+// SLIDABLE & ADJUSTABLE (RESIZABLE) PANELS CONTROLLER
+// ============================================================================
+function togglePanelCollapse(side) {
+  const panel = document.getElementById(side === 'left' ? 'panel-left' : 'panel-right');
+  const btn = document.getElementById(side === 'left' ? 'btn-collapse-left' : 'btn-collapse-right');
+  if (!panel) return;
+  const isCollapsed = panel.classList.toggle('collapsed');
+  if (btn) {
+    btn.setAttribute('aria-expanded', !isCollapsed);
+    if (side === 'left') {
+      btn.innerHTML = isCollapsed
+        ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>'
+        : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
+    } else {
+      btn.innerHTML = isCollapsed
+        ? '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>'
+        : '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+    }
+  }
+  try {
+    localStorage.setItem('athar_panel_' + side + '_collapsed', isCollapsed ? '1' : '0');
+  } catch (e) {}
+}
+
+function initPanelResizers() {
+  const leftPanel = document.getElementById('panel-left');
+  const rightPanel = document.getElementById('panel-right');
+  const leftResizer = document.getElementById('resizer-left');
+  const rightResizer = document.getElementById('resizer-right');
+
+  // Restore saved widths & collapse states
+  try {
+    const savedLeftW = localStorage.getItem('athar_panel_left_width');
+    const savedRightW = localStorage.getItem('athar_panel_right_width');
+    if (savedLeftW && leftPanel) {
+      leftPanel.style.width = savedLeftW + 'px';
+      leftPanel.style.minWidth = savedLeftW + 'px';
+    }
+    if (savedRightW && rightPanel) {
+      rightPanel.style.width = savedRightW + 'px';
+      rightPanel.style.minWidth = savedRightW + 'px';
+    }
+    if (localStorage.getItem('athar_panel_left_collapsed') === '1') togglePanelCollapse('left');
+    if (localStorage.getItem('athar_panel_right_collapsed') === '1') togglePanelCollapse('right');
+  } catch (e) {}
+
+  let activeSide = null;
+  let startX = 0;
+  let startWidth = 0;
+
+  function onMouseDown(side, e) {
+    if (e.target.closest('.panel-collapse-trigger')) return;
+    e.preventDefault();
+    activeSide = side;
+    startX = e.clientX;
+    const panel = side === 'left' ? leftPanel : rightPanel;
+    if (!panel || panel.classList.contains('collapsed')) return;
+    startWidth = panel.getBoundingClientRect().width;
+    (side === 'left' ? leftResizer : rightResizer).classList.add('is-resizing');
+    document.body.style.cursor = 'col-resize';
+  }
+
+  if (leftResizer) leftResizer.addEventListener('mousedown', (e) => onMouseDown('left', e));
+  if (rightResizer) rightResizer.addEventListener('mousedown', (e) => onMouseDown('right', e));
+
+  document.addEventListener('mousemove', (e) => {
+    if (!activeSide) return;
+    const isRtl = document.documentElement.dir === 'rtl';
+    const delta = e.clientX - startX;
+    const maxCanvasSafe = window.innerWidth * 0.45;
+
+    if (activeSide === 'left' && leftPanel) {
+      let newW = startWidth + (isRtl ? -delta : delta);
+      newW = Math.max(200, Math.min(400, Math.min(maxCanvasSafe, newW)));
+      leftPanel.style.width = newW + 'px';
+      leftPanel.style.minWidth = newW + 'px';
+    } else if (activeSide === 'right' && rightPanel) {
+      let newW = startWidth + (isRtl ? delta : -delta);
+      newW = Math.max(260, Math.min(520, Math.min(maxCanvasSafe, newW)));
+      rightPanel.style.width = newW + 'px';
+      rightPanel.style.minWidth = newW + 'px';
+    }
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!activeSide) return;
+    const panel = activeSide === 'left' ? leftPanel : rightPanel;
+    const resizer = activeSide === 'left' ? leftResizer : rightResizer;
+    if (resizer) resizer.classList.remove('is-resizing');
+    document.body.style.cursor = '';
+    if (panel) {
+      try {
+        localStorage.setItem('athar_panel_' + activeSide + '_width', Math.round(panel.getBoundingClientRect().width));
+      } catch (e) {}
+    }
+    activeSide = null;
+  });
+
+  // Keyboard shortcuts [ and ] to slide left/right panels
+  document.addEventListener('keydown', (e) => {
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+    if (e.key === '[') togglePanelCollapse('left');
+    else if (e.key === ']') togglePanelCollapse('right');
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   applyI18n();
   initMenubarEvents();
   initCanvasDropZone();
+  initPanelResizers();
   setScreen(2);
   if (appState.selectedNodeId) {
     renderNodeInspector(appState.selectedNodeId);

@@ -344,8 +344,9 @@ def build_section_3_nodes_catalog():
         if len(node['schemaProps']) > 3:
             props_str += f" <em>(+{len(node['schemaProps']) - 3} autres)</em>"
 
+        gps_badge = '<br/><span class="badge" style="background:rgba(16,185,129,0.12);color:#34d399;border:1px solid #10b981;font-size:0.65rem;margin-top:3px;display:inline-block;">📍 Carte SIG (GPS)</span>' if node.get('gpsPlottable') else ''
         rows.append(f'''        <tr data-category="{node['domain']}">
-          <td><strong>{node['icon']} {node['label']}</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:{node['label']})</span></td>
+          <td><strong>{node['icon']} {node['label']}</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:{node['label']})</span>{gps_badge}</td>
           <td><span class="badge" style="background:rgba(255,255,255,0.06);color:{dom_info['color']};border:1px solid {dom_info['color']};font-size:0.7rem;">{dom_info['name']}</span></td>
           <td>{node['plainMeaning']}</td>
           <td>{props_str}</td>

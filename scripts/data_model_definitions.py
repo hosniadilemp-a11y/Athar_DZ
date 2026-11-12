@@ -75,6 +75,7 @@ NODES = {
         "availableTools": ["Filtrage en cascade /dairas/", "Agrégation de criminalité locale"]
     },
     "commune": {
+        "gpsPlottable": True,
         "id": "commune",
         "domain": "territory",
         "icon": "📍",
@@ -98,6 +99,7 @@ NODES = {
         "availableTools": ["Rayon d'action criminel (_comune_Activite)", "Interpolation spatiale de bornage"]
     },
     "unite": {
+        "gpsPlottable": True,
         "id": "unite",
         "domain": "territory",
         "icon": "🏢",
@@ -168,6 +170,7 @@ NODES = {
 
     # 2. Acteurs & Entités Morales
     "personne": {
+        "gpsPlottable": True,
         "id": "personne",
         "domain": "actors",
         "icon": "🎯",
@@ -215,6 +218,7 @@ NODES = {
         "availableTools": ["Détection de prête-noms", "Vérification CNRC automatique"]
     },
     "vehicule": {
+        "gpsPlottable": True,
         "id": "vehicule",
         "domain": "actors",
         "icon": "🚗",
@@ -305,6 +309,7 @@ NODES = {
         "availableTools": ["Scrcpy WebRTC 60 FPS", "Conteneur ReDroid AOSP 13", "Analyse forensique ALEAPP"]
     },
     "antenne_bts": {
+        "gpsPlottable": True,
         "id": "antenne_bts",
         "domain": "telecom",
         "icon": "📡",
@@ -321,13 +326,16 @@ NODES = {
         "schemaProps": [
             {"name": "cell_id", "type": "String (PK)", "required": True, "desc": "Identifiant de cellule opérateur"},
             {"name": "lac", "type": "Int", "required": True, "desc": "Location Area Code"},
-            {"name": "coordonnees", "type": "Point (WGS84)", "required": True, "desc": "Latitude et Longitude du pylône"},
+            {"name": "gps_lat", "type": "Float64 (WGS84)", "required": True, "desc": "Latitude GPS du pylône BTS (Projection Carte SIG)"},
+            {"name": "gps_lon", "type": "Float64 (WGS84)", "required": True, "desc": "Longitude GPS du pylône BTS (Projection Carte SIG)"},
+            {"name": "rayon_couverture_m", "type": "Int (Mètres)", "required": False, "desc": "Rayon de portée radio du secteur"},
             {"name": "azimut", "type": "Int [0..360]", "required": True, "desc": "Orientation angulaire du faisceau"}
         ],
         "connectedClues": ["Localisée dans une Commune ([:IMPLANTEE_DANS])", "Enregistre un CDR ([:RECOIT_COMMUNICATION])"],
         "availableTools": ["Calculateur de zone de couverture azimutale", "Recoupement d'alibis spatio-temporels"]
     },
     "telecom_cdr": {
+        "gpsPlottable": True,
         "id": "telecom_cdr",
         "domain": "telecom",
         "icon": "📊",
@@ -400,6 +408,7 @@ NODES = {
         "availableTools": ["Calculateur de préjudice global affaire", "Détection de schémas de dispersion (Smurfing/Schtroumpfage)"]
     },
     "guichet_gab": {
+        "gpsPlottable": True,
         "id": "guichet_gab",
         "domain": "finance",
         "icon": "🏧",
@@ -758,6 +767,7 @@ NODES = {
         "availableTools": ["ArcFace DeepFace 512-d Matcher", "Recherche k-NN Qdrant sub-8ms", "Vérificateur d'usurpation de photo de profil"]
     },
     "image_preuve": {
+        "gpsPlottable": True,
         "id": "image_preuve",
         "domain": "biometrics",
         "icon": "🖼️",

@@ -425,6 +425,118 @@ def get_panel_global():
             </tr>
           </tbody>
         </table>
+
+        <!-- 3-Server Physical Topology & Inter-App Communication Matrix -->
+        <h3 style="color:#f8fafc;margin-top:2.2rem;margin-bottom:0.6rem;font-size:1.15rem;">2. Topologie Physique en 3 Serveurs Découplés &amp; Protocoles de Communication</h3>
+        <p style="font-size:0.84rem;color:var(--text-secondary);margin-bottom:1rem;line-height:1.6;">
+          Pour garantir la sécurité de la chaîne de garde judiciaire (ISO 27037) et isoler les risques opérationnels de l'acquisition mobile, le système physique est physiquement scindé en <strong>3 serveurs indépendants</strong> reliés par un réseau privé chiffré mTLS :
+        </p>
+
+        <div style="background:#060a12;border:1px solid #1a2538;border-radius:8px;padding:1rem;margin-bottom:1.25rem;overflow-x:auto;">
+          <svg viewBox="0 0 960 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;min-width:820px;font-family:system-ui,-apple-system,sans-serif;">
+            <defs>
+              <marker id="srv-arr-blue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#38bdf8"/>
+              </marker>
+              <marker id="srv-arr-amber" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#f59e0b"/>
+              </marker>
+              <marker id="srv-arr-red" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#ef4444"/>
+              </marker>
+            </defs>
+
+            <!-- SERVER 1: STUDIO APP SERVER -->
+            <rect x="20" y="30" width="270" height="240" rx="8" fill="#0d1524" stroke="#38bdf8" stroke-width="2"/>
+            <rect x="20" y="30" width="270" height="36" rx="8" fill="#0c263f"/>
+            <text x="155" y="53" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">SERVEUR 1 : STUDIO APP (SRV-STUDIO-01)</text>
+            <text x="35" y="88" fill="#f1f5f9" font-size="11" font-weight="bold">• Interface Web Studio (NVL WebGL)</text>
+            <text x="35" y="108" fill="#cbd5e1" font-size="11">• Passerelle API FastAPI &amp; RBAC</text>
+            <text x="35" y="128" fill="#cbd5e1" font-size="11">• Orchestrateur Celery &amp; Ingestion</text>
+            <text x="35" y="148" fill="#cbd5e1" font-size="11">• Copilot IA Local (Llama-3 / Cypher)</text>
+            <text x="35" y="168" fill="#cbd5e1" font-size="11">• Calcul d'Empreintes SHA-256</text>
+            <rect x="35" y="190" width="240" height="62" rx="4" fill="#070a0f" stroke="#1e293b"/>
+            <text x="45" y="210" fill="#94a3b8" font-size="10" font-family="monospace">VLAN 20 • 32 vCPU / 64 Go RAM</text>
+            <text x="45" y="228" fill="#34d399" font-size="10" font-family="monospace">Seul point d'accès autorisé aux données</text>
+
+            <!-- SERVER 2: DATA & STORAGE SERVER -->
+            <rect x="345" y="30" width="280" height="240" rx="8" fill="#0d1524" stroke="#10b981" stroke-width="2"/>
+            <rect x="345" y="30" width="280" height="36" rx="8" fill="#072b20"/>
+            <text x="485" y="53" fill="#10b981" font-size="13" font-weight="bold" text-anchor="middle">SERVEUR 2 : DATA &amp; STORAGE (SRV-DATA-01)</text>
+            <text x="360" y="88" fill="#f1f5f9" font-size="11" font-weight="bold">• Neo4j 5.20+ Enterprise &amp; GDS</text>
+            <text x="360" y="108" fill="#cbd5e1" font-size="11">• PostgreSQL 16 + TimescaleDB + PostGIS</text>
+            <text x="360" y="128" fill="#cbd5e1" font-size="11">• Qdrant 1.9 Rust (Vecteurs 512-d)</text>
+            <text x="360" y="148" fill="#cbd5e1" font-size="11">• MinIO S3 Enterprise (WORM Compliance)</text>
+            <text x="360" y="168" fill="#cbd5e1" font-size="11">• MongoDB 7.0 &amp; Redis 7.2 Stack</text>
+            <rect x="360" y="190" width="250" height="62" rx="4" fill="#070a0f" stroke="#1e293b"/>
+            <text x="370" y="210" fill="#94a3b8" font-size="10" font-family="monospace">VLAN 30 • 64 vCPU / 256 Go RAM</text>
+            <text x="370" y="228" fill="#34d399" font-size="10" font-family="monospace">8x NVMe RAID-10 + 48 To ZFS WORM</text>
+
+            <!-- SERVER 3: PHONE FARM SERVER -->
+            <rect x="680" y="30" width="260" height="240" rx="8" fill="#0d1524" stroke="#f59e0b" stroke-width="2"/>
+            <rect x="680" y="30" width="260" height="36" rx="8" fill="#332107"/>
+            <text x="810" y="53" fill="#f59e0b" font-size="13" font-weight="bold" text-anchor="middle">SERVEUR 3 : PHONE FARM (SRV-FARM-01)</text>
+            <text x="695" y="88" fill="#f1f5f9" font-size="11" font-weight="bold">• Racks USB 3.0 Industriels (uhubctl)</text>
+            <text x="695" y="108" fill="#cbd5e1" font-size="11">• Flotte Mobiles Android (ADB / Scrcpy)</text>
+            <text x="695" y="128" fill="#cbd5e1" font-size="11">• Banques de SIM DZ (Djezzy/Mobilis)</text>
+            <text x="695" y="148" fill="#cbd5e1" font-size="11">• Phone Farm Daemon (SMS / OTP)</text>
+            <text x="695" y="168" fill="#cbd5e1" font-size="11">• Streaming Vidéo WebRTC H.264</text>
+            <rect x="695" y="190" width="230" height="62" rx="4" fill="#070a0f" stroke="#1e293b"/>
+            <text x="705" y="210" fill="#94a3b8" font-size="10" font-family="monospace">VLAN 40 • 16 vCPU / 32 Go RAM</text>
+            <text x="705" y="228" fill="#f87171" font-size="10" font-family="monospace">Zéro accès direct aux DBs !</text>
+
+            <!-- Arrow 1: Studio <-> Data -->
+            <line x1="290" y1="120" x2="345" y2="120" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#srv-arr-blue)" marker-start="url(#srv-arr-blue)"/>
+            <text x="317" y="110" fill="#38bdf8" font-size="9" font-weight="bold" text-anchor="middle">mTLS</text>
+
+            <!-- Arrow 2: Studio <-> Phone Farm (over top arch) -->
+            <path d="M 155 30 L 155 12 L 810 12 L 810 30" fill="none" stroke="#f59e0b" stroke-width="2" marker-end="url(#srv-arr-amber)" marker-start="url(#srv-arr-amber)"/>
+            <rect x="350" y="2" width="270" height="18" rx="4" fill="#090d16" stroke="#f59e0b"/>
+            <text x="485" y="14" fill="#fbbf24" font-size="10" font-weight="bold" text-anchor="middle">gRPC mTLS + NATS Streams + WebRTC</text>
+
+            <!-- Blocked Arrow: Data x-x Phone Farm -->
+            <line x1="625" y1="150" x2="680" y2="150" stroke="#ef4444" stroke-width="2" stroke-dasharray="4 4"/>
+            <text x="652" y="142" fill="#ef4444" font-size="14" font-weight="bold" text-anchor="middle">✖</text>
+            <text x="652" y="170" fill="#ef4444" font-size="9" font-weight="bold" text-anchor="middle">BLOQUÉ</text>
+          </svg>
+        </div>
+
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Lien Inter-Serveurs</th>
+              <th>Protocole &amp; Format</th>
+              <th>Usage &amp; Justification Technique</th>
+              <th>Sécurité &amp; Isolation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Studio App &harr; Data Server</strong></td>
+              <td><code>Bolt TLS</code>, <code>PG Wire (PgBouncer)</code>, <code>gRPC</code>, <code>S3 HTTPS</code></td>
+              <td>Requêtage haute vitesse des bases polyglottes (adjacence sans index Neo4j, séries CDR TimescaleDB, vecteurs HNSW Qdrant, scellés MinIO).</td>
+              <td>VLAN 20 &harr; VLAN 30, authentification mutuelle mTLS (Ed25519), RLS multi-wilayas.</td>
+            </tr>
+            <tr>
+              <td><strong>Studio App &harr; Phone Farm (Sync)</strong></td>
+              <td><code>gRPC over mTLS (HTTP/2 Protobuf)</code></td>
+              <td>Envoi de commandes synchrones strictement typées : envoi de sonde SMS, redémarrage port USB, capture écran, statut des puces SIM.</td>
+              <td>VLAN 20 &harr; VLAN 40 uniquement sur port 50051 avec certificats clients.</td>
+            </tr>
+            <tr>
+              <td><strong>Phone Farm &rarr; Studio App (Async)</strong></td>
+              <td><code>NATS Core / Redis Streams</code> + <code>WebRTC</code></td>
+              <td>Réception en temps réel (&lt;1ms) des SMS/OTP entrants sans <em>polling</em> et streaming vidéo H.264 de l'écran du mobile dans le navigateur.</td>
+              <td>Flux unidirectionnel poussé vers la file de validation de l'application.</td>
+            </tr>
+            <tr>
+              <td><strong>Phone Farm &harr; Data Server</strong></td>
+              <td><span class="badge" style="background:rgba(239,68,68,0.15);color:#f87171;border:1px solid #ef4444;">ACCÈS INTERDIT (BLOQUÉ)</span></td>
+              <td>La Phone Farm ne peut jamais écrire directement dans Neo4j, PostgreSQL ou MinIO pour éviter toute corruption ou injection malveillante.</td>
+              <td>Firewall Drop strict. Toute donnée est désinfectée et hachée SHA-256 par le Studio.</td>
+            </tr>
+          </tbody>
+        </table>
       </section>
     </div>
 '''

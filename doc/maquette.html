@@ -943,6 +943,13 @@
         </div>
       </aside>
 
+      <!-- Left Panel Resizer & Collapse Trigger -->
+      <div class="panel-resizer panel-resizer-left" id="resizer-left" role="separator" aria-orientation="vertical" aria-label="Redimensionner le panneau gauche">
+        <button type="button" class="panel-collapse-trigger" id="btn-collapse-left" onclick="togglePanelCollapse('left')" aria-label="Replier ou déplier le panneau gauche (Raccourci: [)" title="Replier / Déplier Panneau Gauche ([)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+      </div>
+
       <!-- Center Canvas Area -->
       <section class="workspace-canvas-area" aria-label="Espace de travail principal">
 
@@ -1231,8 +1238,56 @@
               <div class="text-xs text-muted mb-2">
                 Bornage des antennes relais Mobilis/Ooredoo et géolocalisation des connexions IP suspectes.
               </div>
-              <div class="map-placeholder-box">
-                [Visualisation Vectorielle MapLibre : Relais BTS Bir El Djir (Oran) &bull; Azimut 120°]
+              <div class="gis-map-interactive">
+                <svg viewBox="0 0 560 240" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+                  <!-- Grid Background -->
+                  <defs>
+                    <pattern id="gis-grid" width="28" height="28" patternUnits="userSpaceOnUse">
+                      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#111c2d" stroke-width="1"/>
+                    </pattern>
+                  </defs>
+                  <rect width="560" height="240" fill="url(#gis-grid)"/>
+                  
+                  <!-- Coastline / Oran Bay Curve -->
+                  <path d="M 0 50 Q 140 35 280 55 T 560 40 L 560 0 L 0 0 Z" fill="#09182c" opacity="0.85"/>
+                  <text x="45" y="24" fill="#38bdf8" font-size="10" font-family="monospace" opacity="0.7">BAIE D'ORAN (WILAYA 31)</text>
+
+                  <!-- BTS Radio Sector Cone (Azimuth 120 deg) -->
+                  <path d="M 210 120 L 320 65 A 120 120 0 0 1 320 175 Z" fill="rgba(249, 115, 22, 0.14)" stroke="#f97316" stroke-width="1" stroke-dasharray="4 3"/>
+                  
+                  <!-- Trajectory CDR Path -->
+                  <polyline points="110,165 210,120 385,140 460,95" fill="none" stroke="#06b6d4" stroke-width="2" stroke-dasharray="5 3"/>
+
+                  <!-- Pin 1: Antenne BTS Bir El Djir -->
+                  <g class="gis-pin-btn" onclick="selectNode('node-phone')" transform="translate(210, 120)">
+                    <circle r="12" fill="#1e120a" stroke="#f97316" stroke-width="2"/>
+                    <circle r="4" fill="#f97316"/>
+                    <text x="0" y="24" fill="#fdba74" font-size="9" font-weight="bold" text-anchor="middle">BTS Ooredoo #41029</text>
+                    <text x="0" y="34" fill="#94a3b8" font-size="8" font-family="monospace" text-anchor="middle">35.7145°N, -0.5812°W</text>
+                  </g>
+
+                  <!-- Pin 2: Guichet GAB BaridiMob -->
+                  <g class="gis-pin-btn" onclick="selectNode('node-suspect')" transform="translate(385, 140)">
+                    <circle r="12" fill="#1c1907" stroke="#eab308" stroke-width="2"/>
+                    <circle r="4" fill="#eab308"/>
+                    <text x="0" y="24" fill="#fde047" font-size="9" font-weight="bold" text-anchor="middle">GAB Poste El-Moustakbal</text>
+                    <text x="0" y="34" fill="#94a3b8" font-size="8" font-family="monospace" text-anchor="middle">Retrait 14:22 • CCTV OK</text>
+                  </g>
+
+                  <!-- Pin 3: Image EXIF Sighting -->
+                  <g class="gis-pin-btn" onclick="selectNode('node-post')" transform="translate(110, 165)">
+                    <circle r="10" fill="#071f17" stroke="#10b981" stroke-width="2"/>
+                    <circle r="3.5" fill="#10b981"/>
+                    <text x="0" y="22" fill="#6ee7b7" font-size="9" font-weight="bold" text-anchor="middle">Cliché EXIF GPS</text>
+                  </g>
+
+                  <!-- Pin 4: Vehicule LAPI -->
+                  <g class="gis-pin-btn" onclick="selectNode('node-telegram')" transform="translate(460, 95)">
+                    <circle r="10" fill="#1c0d14" stroke="#f43f5e" stroke-width="2"/>
+                    <circle r="3.5" fill="#f43f5e"/>
+                    <text x="0" y="22" fill="#fda4af" font-size="9" font-weight="bold" text-anchor="middle">Caméra LAPI RN11</text>
+                  </g>
+                </svg>
               </div>
             </div>
           </div>
@@ -1336,6 +1391,13 @@
         </div>
 
       </section>
+
+      <!-- Right Panel Resizer & Collapse Trigger -->
+      <div class="panel-resizer panel-resizer-right" id="resizer-right" role="separator" aria-orientation="vertical" aria-label="Redimensionner l'inspecteur droit">
+        <button type="button" class="panel-collapse-trigger" id="btn-collapse-right" onclick="togglePanelCollapse('right')" aria-label="Replier ou déplier le panneau droit (Raccourci: ])" title="Replier / Déplier Panneau Droit (])">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
 
       <!-- Right Panel: 340px, Context-Driven Inspector -->
       <aside class="panel-right" id="panel-right" aria-label="Inspecteur contextuel et outils recommandés">

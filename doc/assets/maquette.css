@@ -2036,3 +2036,82 @@ html[dir="rtl"], body.rtl {
 .graph-canvas-wrapper.drag-over {
   box-shadow: inset 0 0 0 2px var(--color-accent-primary), inset 0 0 30px rgba(37, 99, 235, 0.2);
 }
+
+/* ==========================================================================
+ * SLIDABLE & ADJUSTABLE (RESIZABLE) PANELS & GIS MAP VIEW
+ * ========================================================================== */
+.panel-left.collapsed,
+.panel-right.collapsed {
+  width: 0 !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  overflow: hidden !important;
+}
+
+.panel-resizer {
+  width: 5px;
+  cursor: col-resize;
+  background: var(--color-neutral-800);
+  border-inline: 1px solid var(--color-neutral-750);
+  position: relative;
+  flex-shrink: 0;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+.panel-resizer:hover,
+.panel-resizer.is-resizing {
+  background: var(--color-accent-primary);
+}
+
+.panel-collapse-trigger {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 44px;
+  background: var(--color-neutral-850);
+  border: 1px solid var(--color-neutral-600);
+  color: var(--color-neutral-300);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 20;
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  transition: all 0.15s ease;
+}
+.panel-collapse-trigger:hover {
+  background: var(--color-accent-primary);
+  border-color: var(--color-accent-primary);
+  color: var(--color-neutral-50);
+}
+.panel-resizer-left .panel-collapse-trigger {
+  inset-inline-start: 4px;
+}
+.panel-resizer-right .panel-collapse-trigger {
+  inset-inline-end: 4px;
+}
+
+/* GIS Map Container */
+.gis-map-interactive {
+  position: relative;
+  width: 100%;
+  height: 260px;
+  background: #060b14;
+  border: 1px solid var(--color-neutral-700);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.gis-pin-btn {
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.gis-pin-btn:hover {
+  transform: scale(1.15);
+}
