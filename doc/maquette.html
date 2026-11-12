@@ -532,68 +532,412 @@
 <main class="app-workspace">
 
       <!-- Left Panel: 240px, Collapsible -->
-      <aside class="panel-left" id="panel-left" aria-label="Panneau des calques et filtres">
-        <div class="panel-header">
-          <span class="panel-heading-text" data-i18n="nav_layers_title">Calques d'Investigation</span>
-          <span class="chip chip-neutral font-mono text-xs">4/4</span>
-        </div>
-
-        <!-- Investigation Layers List -->
-        <div class="panel-section">
-          <div class="layer-list" role="list">
-            <button type="button" class="layer-row-item layer-1" role="listitem" onclick="setScreen(2)" aria-label="Calque 1: Preuves Scellées (2 éléments)">
-              <div class="layer-meta">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                <span data-i18n="layer_1_verified">1. Preuves Scellées</span>
-              </div>
-              <span class="chip chip-neutral font-mono text-xs">2</span>
-            </button>
-
-            <button type="button" class="layer-row-item layer-2" role="listitem" onclick="setScreen(2)" aria-label="Calque 2: Découvertes OSINT (3 éléments)">
-              <div class="layer-meta">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-info"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                <span data-i18n="layer_2_osint">2. Découvertes OSINT</span>
-              </div>
-              <span class="chip chip-neutral font-mono text-xs">3</span>
-            </button>
-
-            <button type="button" class="layer-row-item layer-3" role="listitem" onclick="setScreen(2)" aria-label="Calque 3: Infrastructure et Pivots (2 éléments)">
-              <div class="layer-meta">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>
-                <span data-i18n="layer_3_infra">3. Infrastructure & Pivots</span>
-              </div>
-              <span class="chip chip-neutral font-mono text-xs">2</span>
-            </button>
-
-            <button type="button" class="layer-row-item layer-4" role="listitem" onclick="setScreen(2)" aria-label="Calque 4: Hypothèses IA (1 élément)">
-              <div class="layer-meta">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-hypothesis"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/></svg>
-                <span data-i18n="layer_4_hypothesis">4. Hypothèses IA</span>
-              </div>
-              <span class="chip chip-neutral font-mono text-xs">1</span>
-            </button>
+            <!-- Left Panel: 240px, Collapsible Accordion Navigation -->
+      <aside class="panel-left" id="panel-left" aria-label="Panneau accordéon des calques, outils et filtres">
+        
+        <!-- Accordion Item 1: Calques d'Investigation -->
+        <div class="accordion-group">
+          <button type="button" class="accordion-header-btn" id="acc-btn-layers" aria-expanded="true" aria-controls="acc-panel-layers" onclick="toggleAccordion('layers')">
+            <div class="accordion-title-left">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span data-i18n="nav_layers_title">Calques d'Enquête</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <span class="chip chip-neutral font-mono text-xs">4/4</span>
+              <span class="accordion-chevron-icon"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+            </div>
+          </button>
+          <div class="accordion-panel-content is-open" id="acc-panel-layers" role="region" aria-labelledby="acc-btn-layers">
+            <div class="layer-list" role="list">
+              <button type="button" class="layer-row-item layer-1" role="listitem" onclick="setScreen(2)" aria-label="Calque 1: Preuves Scellées">
+                <div class="layer-meta">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  <span data-i18n="layer_1_verified">1. Preuves Scellées</span>
+                </div>
+                <span class="chip chip-neutral font-mono text-xs">2</span>
+              </button>
+              <button type="button" class="layer-row-item layer-2" role="listitem" onclick="setScreen(2)" aria-label="Calque 2: Découvertes OSINT">
+                <div class="layer-meta">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-info"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  <span data-i18n="layer_2_osint">2. Découvertes OSINT</span>
+                </div>
+                <span class="chip chip-neutral font-mono text-xs">3</span>
+              </button>
+              <button type="button" class="layer-row-item layer-3" role="listitem" onclick="setScreen(2)" aria-label="Calque 3: Infrastructure">
+                <div class="layer-meta">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>
+                  <span data-i18n="layer_3_infra">3. Infrastructure &amp; Pivots</span>
+                </div>
+                <span class="chip chip-neutral font-mono text-xs">2</span>
+              </button>
+              <button type="button" class="layer-row-item layer-4" role="listitem" onclick="setScreen(2)" aria-label="Calque 4: Hypothèses IA">
+                <div class="layer-meta">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-hypothesis"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  <span data-i18n="layer_4_hypothesis">4. Hypothèses IA</span>
+                </div>
+                <span class="chip chip-neutral font-mono text-xs">1</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Entity Nature Filters -->
-        <div class="panel-section">
-          <div class="panel-section-title">
-            <span data-i18n="nav_filters_title">Filtres par Nature</span>
-            <button class="btn btn-ghost btn-sm" onclick="setScreen(2)" aria-label="Réinitialiser filtres">Reset</button>
-          </div>
-          <div class="filter-chips-grid">
-            <button class="filter-btn active" data-filter="all"><span data-i18n="filter_all">Tous</span> (8)</button>
-            <button class="filter-btn" data-filter="phone"><span data-i18n="filter_phone">Téléphonie</span> (1)</button>
-            <button class="filter-btn" data-filter="social"><span data-i18n="filter_social">Réseaux</span> (3)</button>
-            <button class="filter-btn" data-filter="web"><span data-i18n="filter_web">Web / Serveurs</span> (2)</button>
-            <button class="filter-btn" data-filter="person"><span data-i18n="filter_person">Sujets</span> (1)</button>
+        <!-- Accordion Item 2: Boîte à Outils de Création de Nœuds (Drag & Drop) & Liaisons -->
+        <div class="accordion-group">
+          <button type="button" class="accordion-header-btn" id="acc-btn-toolbox" aria-expanded="true" aria-controls="acc-panel-toolbox" onclick="toggleAccordion('toolbox')">
+            <div class="accordion-title-left">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-info"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>Création &amp; Liaisons</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <span class="chip chip-neutral font-mono text-xs">37</span>
+              <span class="accordion-chevron-icon"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+            </div>
+          </button>
+          <div class="accordion-panel-content is-open" id="acc-panel-toolbox" role="region" aria-labelledby="acc-btn-toolbox">
+            
+            <!-- Link Creation Mode Toggle -->
+            <button type="button" class="link-tool-btn" id="btn-toggle-link-mode" onclick="toggleLinkCreationMode()" aria-pressed="false" title="Cliquer pour connecter deux nœuds sur le canevas">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span id="link-tool-btn-label">Mode Création de Liaison</span>
+            </button>
+
+            <!-- 8 Domain Category Filters -->
+            <div class="toolbox-domain-selector" role="tablist" aria-label="Filtrer les entités par domaine">
+              <button type="button" class="toolbox-domain-chip active" data-toolbox-domain="all" onclick="filterToolboxDomain('all')">Tous</button>
+              <button type="button" class="toolbox-domain-chip" data-toolbox-domain="territory" onclick="filterToolboxDomain('territory')">Territoire</button>
+              <button type="button" class="toolbox-domain-chip" data-toolbox-domain="actors" onclick="filterToolboxDomain('actors')">Acteurs</button>
+              <button type="button" class="toolbox-domain-chip" data-toolbox-domain="telecom" onclick="filterToolboxDomain('telecom')">Télécoms</button>
+              <button type="button" class="toolbox-domain-chip" data-toolbox-domain="finance" onclick="filterToolboxDomain('finance')">Finances</button>
+              <button type="button" class="toolbox-domain-chip" data-toolbox-domain="socmint" onclick="filterToolboxDomain('socmint')">SOCMINT</button>
+              <button type="button" class="toolbox-domain-chip" data-toolbox-domain="cyber" onclick="filterToolboxDomain('cyber')">Cyber</button>
+              <button type="button" class="toolbox-domain-chip" data-toolbox-domain="biometrics" onclick="filterToolboxDomain('biometrics')">Biométrie</button>
+              <button type="button" class="toolbox-domain-chip" data-toolbox-domain="legal" onclick="filterToolboxDomain('legal')">Preuve</button>
+            </div>
+
+            <div style="font-size:11px;color:var(--color-neutral-400);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
+              <span>Glisser l'élément vers le canevas :</span>
+              <span class="font-mono" id="toolbox-count-label">37 types</span>
+            </div>
+
+            <!-- Drag & Drop Node Items List -->
+            <div class="toolbox-nodes-grid" id="toolbox-nodes-grid" role="list">
+              <div class="node-drag-item" data-node-type="wilaya" data-domain="territory" draggable="true" ondragstart="handleNodeDragStart(event, 'wilaya')" title="Glisser vers le canevas : Wilaya (Collectivité Territoriale)">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><line x1="2" x2="22" y1="22" y2="22"/><line x1="12" x2="12" y1="2" y2="10"/><path d="M4 22V10l8-8 8 8v12"/><path d="M18 22V12"/><path d="M6 22V12"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Wilaya</span>
+                </div>
+                <span class="node-drag-db-badge">PostgreSQL 16</span>
+              </div>
+              <div class="node-drag-item" data-node-type="daira" data-domain="territory" draggable="true" ondragstart="handleNodeDragStart(event, 'daira')" title="Glisser vers le canevas : Daïra (Sous-Préfecture)">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Daira</span>
+                </div>
+                <span class="node-drag-db-badge">PostgreSQL 16</span>
+              </div>
+              <div class="node-drag-item" data-node-type="commune" data-domain="territory" draggable="true" ondragstart="handleNodeDragStart(event, 'commune')" title="Glisser vers le canevas : Commune (Municipalité)">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" x2="9" y1="3" y2="18"/><line x1="15" x2="15" y1="6" y2="21"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Commune</span>
+                </div>
+                <span class="node-drag-db-badge">PostgreSQL 16</span>
+              </div>
+              <div class="node-drag-item" data-node-type="unite" data-domain="territory" draggable="true" ondragstart="handleNodeDragStart(event, 'unite')" title="Glisser vers le canevas : Unité de Police Judiciaire / Brigade">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Unite</span>
+                </div>
+                <span class="node-drag-db-badge">PostgreSQL 16</span>
+              </div>
+              <div class="node-drag-item" data-node-type="affaire" data-domain="territory" draggable="true" ondragstart="handleNodeDragStart(event, 'affaire')" title="Glisser vers le canevas : Affaire Pénale (Dossier d'Instruction)">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="2"/><path d="M12 15v3"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Affaire</span>
+                </div>
+                <span class="node-drag-db-badge">PostgreSQL 16</span>
+              </div>
+              <div class="node-drag-item" data-node-type="magistrat" data-domain="territory" draggable="true" ondragstart="handleNodeDragStart(event, 'magistrat')" title="Glisser vers le canevas : Magistrat Instructeur / Procureur">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Magistrat</span>
+                </div>
+                <span class="node-drag-db-badge">PostgreSQL 16 (IAM)</span>
+              </div>
+              <div class="node-drag-item" data-node-type="personne" data-domain="actors" draggable="true" ondragstart="handleNodeDragStart(event, 'personne')" title="Glisser vers le canevas : Personne Physique / Suspect / Complice / Mule">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Personne</span>
+                </div>
+                <span class="node-drag-db-badge">Neo4j 5.20+</span>
+              </div>
+              <div class="node-drag-item" data-node-type="entreprise" data-domain="actors" draggable="true" ondragstart="handleNodeDragStart(event, 'entreprise')" title="Glisser vers le canevas : Entreprise / Société Écran / Commerce">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Entreprise</span>
+                </div>
+                <span class="node-drag-db-badge">Neo4j</span>
+              </div>
+              <div class="node-drag-item" data-node-type="vehicule" data-domain="actors" draggable="true" ondragstart="handleNodeDragStart(event, 'vehicule')" title="Glisser vers le canevas : Véhicule / Immatriculation DZ">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Vehicule</span>
+                </div>
+                <span class="node-drag-db-badge">Neo4j</span>
+              </div>
+              <div class="node-drag-item" data-node-type="telephone" data-domain="telecom" draggable="true" ondragstart="handleNodeDragStart(event, 'telephone')" title="Glisser vers le canevas : Numéro de Téléphone (E.164 MSISDN)">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Telephone</span>
+                </div>
+                <span class="node-drag-db-badge">Neo4j</span>
+              </div>
+              <div class="node-drag-item" data-node-type="carte_sim" data-domain="telecom" draggable="true" ondragstart="handleNodeDragStart(event, 'carte_sim')" title="Glisser vers le canevas : Carte SIM & Modem GSM 4G DZ">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Carte_SIM</span>
+                </div>
+                <span class="node-drag-db-badge">PostgreSQL 16</span>
+              </div>
+              <div class="node-drag-item" data-node-type="appareil_mobile" data-domain="telecom" draggable="true" ondragstart="handleNodeDragStart(event, 'appareil_mobile')" title="Glisser vers le canevas : Smartphone / Terminal ReDroid (IMEI)">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Appareil_Mobile</span>
+                </div>
+                <span class="node-drag-db-badge">Neo4j</span>
+              </div>
+              <div class="node-drag-item" data-node-type="antenne_bts" data-domain="telecom" draggable="true" ondragstart="handleNodeDragStart(event, 'antenne_bts')" title="Glisser vers le canevas : Antenne Relais BTS (Cell Tower)">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19.1"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Antenne_BTS</span>
+                </div>
+                <span class="node-drag-db-badge">PostgreSQL 16 (PostGIS)</span>
+              </div>
+              <div class="node-drag-item" data-node-type="telecom_cdr" data-domain="telecom" draggable="true" ondragstart="handleNodeDragStart(event, 'telecom_cdr')" title="Glisser vers le canevas : Listing d'Appel Télécom (CDR Record)">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Telecom_CDR</span>
+                </div>
+                <span class="node-drag-db-badge">TimescaleDB (Hyper-tables)</span>
+              </div>
+              <div class="node-drag-item" data-node-type="compte_bancaire" data-domain="finance" draggable="true" ondragstart="handleNodeDragStart(event, 'compte_bancaire')" title="Glisser vers le canevas : Compte Bancaire / BaridiMob (RIP 20d)">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Compte_Bancaire</span>
+                </div>
+                <span class="node-drag-db-badge">Neo4j</span>
+              </div>
+              <div class="node-drag-item" data-node-type="transaction_financiere" data-domain="finance" draggable="true" ondragstart="handleNodeDragStart(event, 'transaction_financiere')" title="Glisser vers le canevas : Virement Bancaire / BaridiMob DZD">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Transaction_Financiere</span>
+                </div>
+                <span class="node-drag-db-badge">PostgreSQL 16</span>
+              </div>
+              <div class="node-drag-item" data-node-type="guichet_gab" data-domain="finance" draggable="true" ondragstart="handleNodeDragStart(event, 'guichet_gab')" title="Glisser vers le canevas : Guichet GAB / Distributeur ATM">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Guichet_GAB</span>
+                </div>
+                <span class="node-drag-db-badge">PostgreSQL 16 (PostGIS)</span>
+              </div>
+              <div class="node-drag-item" data-node-type="crypto_wallet" data-domain="finance" draggable="true" ondragstart="handleNodeDragStart(event, 'crypto_wallet')" title="Glisser vers le canevas : Portefeuille Crypto (USDT / BTC / ETH)">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M2.97 12.92A2 2 0 0 0 2 14.63v3.24a2 2 0 0 0 .97 1.71l6 3.43a2 2 0 0 0 1.97 0l6-3.43a2 2 0 0 0 .97-1.71v-3.24a2 2 0 0 0-.97-1.71L11 9.49a2 2 0 0 0-1.97 0z"/><path d="m7 16.5 5 2.86 5-2.86"/><path d="M12 2v7.5"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Crypto_Wallet</span>
+                </div>
+                <span class="node-drag-db-badge">Neo4j</span>
+              </div>
+              <div class="node-drag-item" data-node-type="transaction_crypto" data-domain="finance" draggable="true" ondragstart="handleNodeDragStart(event, 'transaction_crypto')" title="Glisser vers le canevas : Transaction Blockchain (TX Hash)">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><circle cx="12" cy="12" r="3"/><line x1="3" x2="9" y1="12" y2="12"/><line x1="15" x2="21" y1="12" y2="12"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Transaction_Crypto</span>
+                </div>
+                <span class="node-drag-db-badge">PostgreSQL 16</span>
+              </div>
+              <div class="node-drag-item" data-node-type="compte_social" data-domain="socmint" draggable="true" ondragstart="handleNodeDragStart(event, 'compte_social')" title="Glisser vers le canevas : Compte de Réseau Social / Messagerie">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Compte_Social</span>
+                </div>
+                <span class="node-drag-db-badge">Neo4j</span>
+              </div>
+              <div class="node-drag-item" data-node-type="publication_sociale" data-domain="socmint" draggable="true" ondragstart="handleNodeDragStart(event, 'publication_sociale')" title="Glisser vers le canevas : Publication / Annonce Frauduleuse">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Publication_Sociale</span>
+                </div>
+                <span class="node-drag-db-badge">Neo4j</span>
+              </div>
+              <div class="node-drag-item" data-node-type="canal_telegram" data-domain="socmint" draggable="true" ondragstart="handleNodeDragStart(event, 'canal_telegram')" title="Glisser vers le canevas : Canal / Groupe Telegram & WhatsApp">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Canal_Telegram</span>
+                </div>
+                <span class="node-drag-db-badge">Neo4j</span>
+              </div>
+              <div class="node-drag-item" data-node-type="message_chat" data-domain="socmint" draggable="true" ondragstart="handleNodeDragStart(event, 'message_chat')" title="Glisser vers le canevas : Message de Chat Instantané">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Message_Chat</span>
+                </div>
+                <span class="node-drag-db-badge">MongoDB 7.0 (BSON Snappy)</span>
+              </div>
+              <div class="node-drag-item" data-node-type="adresse_email" data-domain="socmint" draggable="true" ondragstart="handleNodeDragStart(event, 'adresse_email')" title="Glisser vers le canevas : Adresse E-mail">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Adresse_Email</span>
+                </div>
+                <span class="node-drag-db-badge">Neo4j</span>
+              </div>
+              <div class="node-drag-item" data-node-type="site_web" data-domain="socmint" draggable="true" ondragstart="handleNodeDragStart(event, 'site_web')" title="Glisser vers le canevas : Site Web & Boutique Scam (FQDN)">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Site_Web</span>
+                </div>
+                <span class="node-drag-db-badge">Neo4j</span>
+              </div>
+              <div class="node-drag-item" data-node-type="identifiant_infrastructure" data-domain="socmint" draggable="true" ondragstart="handleNodeDragStart(event, 'identifiant_infrastructure')" title="Glisser vers le canevas : Identifiant d'Infrastructure & Tracker (Meta Pixel)">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Identifiant_Infrastructure</span>
+                </div>
+                <span class="node-drag-db-badge">Neo4j 5.20+ (Pivot Graphe)</span>
+              </div>
+              <div class="node-drag-item" data-node-type="fichier_apk" data-domain="cyber" draggable="true" ondragstart="handleNodeDragStart(event, 'fichier_apk')" title="Glisser vers le canevas : Application Malveillante / Trojan BaridiMob (APK)">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><polyline points="10 13 8 15 10 17"/><polyline points="14 13 16 15 14 17"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Fichier_APK</span>
+                </div>
+                <span class="node-drag-db-badge">MinIO WORM</span>
+              </div>
+              <div class="node-drag-item" data-node-type="serveur_c2" data-domain="cyber" draggable="true" ondragstart="handleNodeDragStart(event, 'serveur_c2')" title="Glisser vers le canevas : Serveur C2 & Adresse IP (Command & Control)">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Serveur_C2</span>
+                </div>
+                <span class="node-drag-db-badge">Neo4j</span>
+              </div>
+              <div class="node-drag-item" data-node-type="certificat_tls" data-domain="cyber" draggable="true" ondragstart="handleNodeDragStart(event, 'certificat_tls')" title="Glisser vers le canevas : Certificat SSL/TLS & JARM Fingerprint">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Certificat_TLS</span>
+                </div>
+                <span class="node-drag-db-badge">Neo4j</span>
+              </div>
+              <div class="node-drag-item" data-node-type="artefact_dfir" data-domain="cyber" draggable="true" ondragstart="handleNodeDragStart(event, 'artefact_dfir')" title="Glisser vers le canevas : Artefact Forensique DFIR (Image Disque / Dump RAM)">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><line x1="22" x2="2" y1="12" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" x2="6.01" y1="16" y2="16"/><line x1="10" x2="10.01" y1="16" y2="16"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Artefact_DFIR</span>
+                </div>
+                <span class="node-drag-db-badge">MinIO WORM</span>
+              </div>
+              <div class="node-drag-item" data-node-type="enregistrement_vocal" data-domain="biometrics" draggable="true" ondragstart="handleNodeDragStart(event, 'enregistrement_vocal')" title="Glisser vers le canevas : Enregistrement Vocal / Note Vocale WhatsApp (Darija)">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Enregistrement_Vocal</span>
+                </div>
+                <span class="node-drag-db-badge">MinIO</span>
+              </div>
+              <div class="node-drag-item" data-node-type="empreinte_faciale" data-domain="biometrics" draggable="true" ondragstart="handleNodeDragStart(event, 'empreinte_faciale')" title="Glisser vers le canevas : Empreinte Faciale Biométrique ArcFace 512-d">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="9" r="1"/><path d="M10 14h4"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Empreinte_Faciale</span>
+                </div>
+                <span class="node-drag-db-badge">Qdrant 1.9</span>
+              </div>
+              <div class="node-drag-item" data-node-type="image_preuve" data-domain="biometrics" draggable="true" ondragstart="handleNodeDragStart(event, 'image_preuve')" title="Glisser vers le canevas : Image Preuve / Capture d'Écran / Reçu BaridiMob">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Image_Preuve</span>
+                </div>
+                <span class="node-drag-db-badge">MinIO WORM</span>
+              </div>
+              <div class="node-drag-item" data-node-type="document_judiciaire" data-domain="legal" draggable="true" ondragstart="handleNodeDragStart(event, 'document_judiciaire')" title="Glisser vers le canevas : Procès-Verbal Judiciaire (PV Normé CPP)">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Document_Judiciaire</span>
+                </div>
+                <span class="node-drag-db-badge">MinIO</span>
+              </div>
+              <div class="node-drag-item" data-node-type="scelle_numerique" data-domain="legal" draggable="true" ondragstart="handleNodeDragStart(event, 'scelle_numerique')" title="Glisser vers le canevas : Scellé Numérique WORM (ISO 27037)">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Scelle_Numerique</span>
+                </div>
+                <span class="node-drag-db-badge">MinIO S3 WORM (Lock)</span>
+              </div>
+              <div class="node-drag-item" data-node-type="preuve_merkle" data-domain="legal" draggable="true" ondragstart="handleNodeDragStart(event, 'preuve_merkle')" title="Glisser vers le canevas : Jalon d'Arbre de Merkle & Horodatage RFC 3161">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><rect x="14" y="14" width="4" height="6" rx="2"/><rect x="6" y="4" width="4" height="6" rx="2"/><path d="M6 20h4"/><path d="M14 10h4"/><path d="M6 14h2v6"/><path d="M14 4h2v6"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Preuve_Merkle</span>
+                </div>
+                <span class="node-drag-db-badge">PostgreSQL 16</span>
+              </div>
+              <div class="node-drag-item" data-node-type="session_recherche" data-domain="cyber" draggable="true" ondragstart="handleNodeDragStart(event, 'session_recherche')" title="Glisser vers le canevas : Session d'Investigation & Quota Anti-Ban">
+                <div class="node-drag-meta">
+                  <span class="node-drag-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+                  <span style="font-size:12px;font-weight:500;">Session_Recherche</span>
+                </div>
+                <span class="node-drag-db-badge">Redis 7.2 (In-Memory RESP3)</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Forensic Audit Ledger Trigger -->
+        <!-- Accordion Item 3: Filtres par Nature & Statut -->
+        <div class="accordion-group">
+          <button type="button" class="accordion-header-btn" id="acc-btn-filters" aria-expanded="false" aria-controls="acc-panel-filters" onclick="toggleAccordion('filters')">
+            <div class="accordion-title-left">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span data-i18n="nav_filters_title">Filtres par Nature</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <span class="chip chip-neutral font-mono text-xs">8</span>
+              <span class="accordion-chevron-icon"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+            </div>
+          </button>
+          <div class="accordion-panel-content" id="acc-panel-filters" role="region" aria-labelledby="acc-btn-filters">
+            <div class="filter-chips-grid">
+              <button type="button" class="filter-btn active" data-filter="all"><span data-i18n="filter_all">Tous</span> (8)</button>
+              <button type="button" class="filter-btn" data-filter="phone"><span data-i18n="filter_phone">Téléphonie</span> (1)</button>
+              <button type="button" class="filter-btn" data-filter="social"><span data-i18n="filter_social">Réseaux</span> (3)</button>
+              <button type="button" class="filter-btn" data-filter="web"><span data-i18n="filter_web">Web / Serveurs</span> (2)</button>
+              <button type="button" class="filter-btn" data-filter="person"><span data-i18n="filter_person">Sujets</span> (1)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Accordion Item 4: Requêtes Guidées & Questions Métier -->
+        <div class="accordion-group">
+          <button type="button" class="accordion-header-btn" id="acc-btn-queries" aria-expanded="false" aria-controls="acc-panel-queries" onclick="toggleAccordion('queries')">
+            <div class="accordion-title-left">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>Questions Métier</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <span class="chip chip-neutral font-mono text-xs">Cypher</span>
+              <span class="accordion-chevron-icon"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+            </div>
+          </button>
+          <div class="accordion-panel-content" id="acc-panel-queries" role="region" aria-labelledby="acc-btn-queries">
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <button type="button" class="btn btn-ghost btn-sm btn-align-start w-full text-xs" onclick="runSimulatedQuery('Qui encaisse l'argent BaridiMob ?')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-warning"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg> Qui encaisse l'argent ?
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm btn-align-start w-full text-xs" onclick="runSimulatedQuery('Téléphones et puces communs ?')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-info"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> Téléphones communs ?
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm btn-align-start w-full text-xs" onclick="runSimulatedQuery('Bornages suspects dans la Daïra ?')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19.1"/></svg> Bornages suspects Oran ?
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Audit Ledger Button (Fixed Footer) -->
         <div class="panel-left-footer">
-          <button class="btn btn-secondary btn-sm w-full btn-align-start" onclick="setScreen(5)" aria-label="Consulter le registre d'audit forensique">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+          <button type="button" class="btn btn-secondary btn-sm w-full btn-align-start" onclick="setScreen(5)" aria-label="Consulter le registre d'audit forensique">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             <span data-i18n="nav_history_btn">Registre d'Audit Forensique</span>
           </button>
         </div>
@@ -673,187 +1017,132 @@
         <div class="screen-view-pane is-flex-flush" id="view-graph-canvas">
           <div class="graph-canvas-wrapper" id="canvas-svg-container">
 
-            <!-- SVG Edges Connection Layer -->
-            <svg class="canvas-edges-layer" aria-hidden="true">
-              <!-- Edge 1: Post FB -> Phone -->
-              <line x1="280" y1="105" x2="340" y2="105" class="canvas-edge-line" />
-              <!-- Edge 2: Post FB -> URL -->
-              <line x1="170" y1="140" x2="340" y2="255" class="canvas-edge-line" />
-              <!-- Edge 3: URL -> MongoDB ID -->
-              <line x1="560" y1="255" x2="620" y2="255" class="canvas-edge-line" />
-              <!-- Edge 4: URL -> Meta Pixel -->
-              <line x1="560" y1="270" x2="620" y2="385" class="canvas-edge-line" />
-              <!-- Edge 5: Phone -> Telegram -->
-              <line x1="450" y1="140" x2="450" y2="370" class="canvas-edge-line" />
-              <!-- Edge 6 (Hypothesis): Phone/Telegram -> Candidate Suspect -->
-              <line x1="560" y1="105" x2="620" y2="105" class="canvas-edge-line dashed" />
-
-            </svg>
-
-            <!-- Accessible Screen Reader List / Table Alternative (WCAG 2.2 AA) -->
-            <div class="sr-only">
-              <table aria-label="Inventaire tabulaire des nœuds et connexions du graphe d'enquête">
-                <caption>Dossier #2026-SCAM-089 — Graphe d'enquête judiciaire (8 entités, 6 liaisons)</caption>
-                <thead>
-                  <tr>
-                    <th scope="col">ID Nœud</th>
-                    <th scope="col">Type d'Entité</th>
-                    <th scope="col">Calque Légal</th>
-                    <th scope="col">Valeur / Identifiant</th>
-                    <th scope="col">Degré de Certitude</th>
-                    <th scope="col">Connexions Adjacentes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">node-post</th>
-                    <td>Annonce Réseau Social</td>
-                    <td>1. Preuves Scellées (VERIFIED)</td>
-                    <td>Post Marketplace #98124 (Liquidation 4 Pneus Michelin)</td>
-                    <td>100% Scellé RFC 3161</td>
-                    <td>Relié à : node-phone, node-url</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">node-page</th>
-                    <td>Page Réseau Social</td>
-                    <td>1. Preuves Scellées (VERIFIED)</td>
-                    <td>fb.com/pneus.promo.dz (Admin: Algérie)</td>
-                    <td>100% Scellé RFC 3161</td>
-                    <td>Relié à : node-post</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">node-phone</th>
-                    <td>Numéro Téléphonique</td>
-                    <td>2. Découvertes OSINT (OSINT_RAW)</td>
-                    <td>+213 555 019 283 (Ooredoo DZ)</td>
-                    <td>98% Extraction Authentique</td>
-                    <td>Relié à : node-post, node-telegram, node-suspect</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">node-url</th>
-                    <td>Nom de Domaine / Boutique</td>
-                    <td>2. Découvertes OSINT (OSINT_RAW)</td>
-                    <td>promo-pneus-express.shop (IP: 185.199.108.153)</td>
-                    <td>95% Capture DOM</td>
-                    <td>Relié à : node-post, node-mongoid, node-pixel</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">node-mongoid</th>
-                    <td>Identifiant Base de Données</td>
-                    <td>3. Infrastructure &amp; Pivots (INFRA)</td>
-                    <td>672f9a10c8b4a100129b4412 (Timestamp: 01 Nov 2026 14:22 UTC)</td>
-                    <td>100% Décodage Algorithmique</td>
-                    <td>Relié à : node-url</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">node-pixel</th>
-                    <td>ID Tracker Publicitaire</td>
-                    <td>3. Infrastructure &amp; Pivots (INFRA)</td>
-                    <td>Pixel Meta #88419203314</td>
-                    <td>99% Recoupement Code Source</td>
-                    <td>Relié à : node-url</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">node-telegram</th>
-                    <td>Compte Messagerie Sécurisée</td>
-                    <td>2. Découvertes OSINT (OSINT_RAW)</td>
-                    <td>@amine_import (User ID: 519283741)</td>
-                    <td>92% Résolution API</td>
-                    <td>Relié à : node-phone, node-suspect</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">node-suspect</th>
-                    <td>Sujet Candidat (Identité Physique)</td>
-                    <td>4. Hypothèses &amp; Déductions (HYPOTHESIS)</td>
-                    <td>Amine B. (31 ans, Wilaya d'Alger)</td>
-                    <td>92% Biométrie ArcFace 512-d recoupée avec CDR Ooredoo</td>
-                    <td>Relié à : node-phone, node-telegram</td>
-                  </tr>
-                </tbody>
-              </table>
+                        <!-- Active Link Creation Banner -->
+            <div class="canvas-connection-banner" id="canvas-connection-banner">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-warning"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span id="canvas-connection-text"><strong>Mode Liaison Actif :</strong> Cliquez sur le nœud source...</span>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="cancelLinkCreation()" style="padding:2px 6px;margin-inline-start:8px;">Annuler</button>
             </div>
 
-            <!-- Node 1: Post FB Marketplace (Layer 1 Verified) -->
-            <button type="button" class="canvas-node-card layer-1 node-pos-1" id="node-post" onclick="selectNode('node-post')" aria-label="Annonce FB: Post Marketplace #98124 - Liquidation 4 Pneus Michelin">
-              <div class="node-header-row">
-                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> <span data-i18n="node_lbl_post">Annonce FB</span></span>
-                <span class="chip chip-emerald text-xs" data-i18n="badge_verified">Vérifié</span>
+            <!-- SVG Edges Connection Layer (Calculated between circle centers cx, cy) -->
+            <svg class="canvas-edges-layer" id="canvas-edges-layer" aria-hidden="true">
+              <defs>
+                <marker id="arrow-solid" viewBox="0 0 10 10" refX="28" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#334155"/>
+                </marker>
+                <marker id="arrow-hypothesis" viewBox="0 0 10 10" refX="28" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#c084fc"/>
+                </marker>
+              </defs>
+              <!-- Edge 1: Post FB (68, 98) -> Phone (318, 98) -->
+              <line x1="68" y1="98" x2="318" y2="98" class="canvas-edge-line" marker-end="url(#arrow-solid)" />
+              <!-- Edge 2: Post FB (68, 98) -> URL (318, 248) -->
+              <line x1="68" y1="98" x2="318" y2="248" class="canvas-edge-line" marker-end="url(#arrow-solid)" />
+              <!-- Edge 3: URL (318, 248) -> MongoDB ID (568, 248) -->
+              <line x1="318" y1="248" x2="568" y2="248" class="canvas-edge-line" marker-end="url(#arrow-solid)" />
+              <!-- Edge 4: URL (318, 248) -> Meta Pixel (568, 378) -->
+              <line x1="318" y1="248" x2="568" y2="378" class="canvas-edge-line" marker-end="url(#arrow-solid)" />
+              <!-- Edge 5: Phone (318, 98) -> Telegram (318, 398) -->
+              <line x1="318" y1="98" x2="318" y2="398" class="canvas-edge-line" marker-end="url(#arrow-solid)" />
+              <!-- Edge 6 (Hypothesis): Phone (318, 98) -> Candidate Suspect (568, 98) -->
+              <line x1="318" y1="98" x2="568" y2="98" class="canvas-edge-line dashed" marker-end="url(#arrow-hypothesis)" />
+            </svg>
+
+            <!-- Circular Node 1: Post FB Marketplace (Layer 1 Verified) -->
+            <button type="button" class="canvas-node-circle layer-1 node-pos-1" id="node-post" onclick="handleCanvasNodeClick('node-post')" aria-label="Annonce FB: Post Marketplace #98124 - Liquidation 4 Pneus Michelin">
+              <span class="node-circle-badge-dot badge-dot-verified" title="Vérifié RFC 3161">✓</span>
+              <div class="node-circle-icon text-success">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               </div>
-              <div class="node-title-text" data-i18n="node_post_title">Post Marketplace #98124</div>
-              <div class="node-subtitle-text" data-i18n="node_post_sub">Liquidation 4 Pneus Michelin</div>
+              <div class="node-circle-label-wrap">
+                <span class="node-circle-title" data-i18n="node_post_title">Post Marketplace #98124</span>
+                <span class="node-circle-sub" data-i18n="node_post_sub">Pneus Michelin DZ</span>
+              </div>
             </button>
 
-            <!-- Node 2: Page Facebook (Layer 1 Verified) -->
-            <button type="button" class="canvas-node-card layer-1 node-pos-2" id="node-page" onclick="selectNode('node-page')" aria-label="Page FB: fb.com/pneus.promo.dz">
-              <div class="node-header-row">
-                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> <span data-i18n="node_lbl_page">Page FB</span></span>
-                <span class="chip chip-emerald text-xs" data-i18n="badge_verified">Vérifié</span>
+            <!-- Circular Node 2: Page Facebook (Layer 1 Verified) -->
+            <button type="button" class="canvas-node-circle layer-1 node-pos-2" id="node-page" onclick="handleCanvasNodeClick('node-page')" aria-label="Page FB: fb.com/pneus.promo.dz">
+              <span class="node-circle-badge-dot badge-dot-verified" title="Vérifié RFC 3161">✓</span>
+              <div class="node-circle-icon text-success">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg>
               </div>
-              <div class="node-title-text">fb.com/pneus.promo.dz</div>
-              <div class="node-subtitle-text" data-i18n="node_page_sub">Admin: Algérie • 2.4k j'aime</div>
+              <div class="node-circle-label-wrap">
+                <span class="node-circle-title">fb.com/pneus.promo.dz</span>
+                <span class="node-circle-sub" data-i18n="node_page_sub">Admin: Algérie • 2.4k fans</span>
+              </div>
             </button>
 
-            <!-- Node 3: Phone Number (Layer 2 OSINT Raw) -->
-            <button type="button" class="canvas-node-card layer-2 node-pos-3" id="node-phone" onclick="selectNode('node-phone')" aria-label="Téléphone: +213 555 019 283">
-              <div class="node-header-row">
-                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-info"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> <span data-i18n="node_lbl_phone">Téléphone</span></span>
-                <span class="chip chip-cyan text-xs">OSINT</span>
+            <!-- Circular Node 3: Phone Number (Layer 2 OSINT Raw) -->
+            <button type="button" class="canvas-node-circle layer-2 node-pos-3" id="node-phone" onclick="handleCanvasNodeClick('node-phone')" aria-label="Téléphone: +213 555 019 283">
+              <span class="node-circle-badge-dot badge-dot-osint" title="OSINT Brut">●</span>
+              <div class="node-circle-icon text-info">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
               </div>
-              <div class="node-title-text font-mono" dir="ltr">+213 555 019 283</div>
-              <div class="node-subtitle-text" data-i18n="node_phone_sub">Ooredoo DZ • Actif</div>
+              <div class="node-circle-label-wrap">
+                <span class="node-circle-title font-mono" dir="ltr">+213 555 019 283</span>
+                <span class="node-circle-sub" data-i18n="node_phone_sub">Ooredoo DZ • Actif</span>
+              </div>
             </button>
 
-            <!-- Node 4: Scam Shop URL (Layer 2 OSINT Raw) -->
-            <button type="button" class="canvas-node-card layer-2 node-pos-4" id="node-url" onclick="selectNode('node-url')" aria-label="URL Boutique: promo-pneus-express.shop">
-              <div class="node-header-row">
-                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-info"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> <span data-i18n="node_lbl_url">URL Boutique</span></span>
-                <span class="chip chip-cyan text-xs">OSINT</span>
+            <!-- Circular Node 4: Scam Shop URL (Layer 2 OSINT Raw) -->
+            <button type="button" class="canvas-node-circle layer-2 node-pos-4" id="node-url" onclick="handleCanvasNodeClick('node-url')" aria-label="URL Boutique: promo-pneus-express.shop">
+              <span class="node-circle-badge-dot badge-dot-osint" title="OSINT Brut">●</span>
+              <div class="node-circle-icon text-info">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
               </div>
-              <div class="node-title-text font-mono" dir="ltr">promo-pneus-express.shop</div>
-              <div class="node-subtitle-text" dir="ltr">IP: 185.199.108.153</div>
+              <div class="node-circle-label-wrap">
+                <span class="node-circle-title font-mono" dir="ltr">promo-pneus.shop</span>
+                <span class="node-circle-sub" dir="ltr">IP: 185.199.108.153</span>
+              </div>
             </button>
 
-            <!-- Node 5: MongoDB ObjectId (Layer 3 Infra) -->
-            <button type="button" class="canvas-node-card layer-3 node-pos-5" id="node-mongoid" onclick="selectNode('node-mongoid')" aria-label="MongoDB ID: 672f9a10c8b4a100...">
-              <div class="node-header-row">
-                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg> <span data-i18n="node_lbl_mongoid">MongoDB ID</span></span>
-                <span class="chip chip-neutral text-xs" data-i18n="badge_infra">Infra</span>
+            <!-- Circular Node 5: MongoDB ObjectId (Layer 3 Infra) -->
+            <button type="button" class="canvas-node-circle layer-3 node-pos-5" id="node-mongoid" onclick="handleCanvasNodeClick('node-mongoid')" aria-label="MongoDB ID: 672f9a10c8b4a100...">
+              <span class="node-circle-badge-dot badge-dot-infra" title="Infrastructure">⚙</span>
+              <div class="node-circle-icon" style="color:var(--color-layer-3-infra);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><line x1="22" x2="2" y1="12" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" x2="6.01" y1="16" y2="16"/><line x1="10" x2="10.01" y1="16" y2="16"/></svg>
               </div>
-              <div class="node-title-text font-mono" dir="ltr">672f9a10c8b4a100...</div>
-              <div class="node-subtitle-text" dir="ltr">UTC: 01 Nov 2026 14:22</div>
+              <div class="node-circle-label-wrap">
+                <span class="node-circle-title font-mono" dir="ltr">672f9a10c8b4...</span>
+                <span class="node-circle-sub" dir="ltr">MongoDB BSON UTC</span>
+              </div>
             </button>
 
-            <!-- Node 6: Meta Pixel (Layer 3 Infra) -->
-            <button type="button" class="canvas-node-card layer-3 node-pos-6" id="node-pixel" onclick="selectNode('node-pixel')" aria-label="Meta Pixel: Pixel #88419203314">
-              <div class="node-header-row">
-                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/></svg> <span data-i18n="node_lbl_pixel">Meta Pixel</span></span>
-                <span class="chip chip-neutral text-xs" data-i18n="badge_infra">Infra</span>
+            <!-- Circular Node 6: Meta Pixel (Layer 3 Infra) -->
+            <button type="button" class="canvas-node-circle layer-3 node-pos-6" id="node-pixel" onclick="handleCanvasNodeClick('node-pixel')" aria-label="Meta Pixel: Pixel #88419203314">
+              <span class="node-circle-badge-dot badge-dot-infra" title="Infrastructure">⚙</span>
+              <div class="node-circle-icon" style="color:var(--color-layer-3-infra);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></svg>
               </div>
-              <div class="node-title-text font-mono" dir="ltr">Pixel #88419203314</div>
-              <div class="node-subtitle-text" data-i18n="node_pixel_sub">2 sites jumeaux détectés</div>
+              <div class="node-circle-label-wrap">
+                <span class="node-circle-title font-mono" dir="ltr">Pixel #88419203314</span>
+                <span class="node-circle-sub" data-i18n="node_pixel_sub">2 sites jumeaux</span>
+              </div>
             </button>
 
-            <!-- Node 7: Telegram Account (Layer 2 OSINT Raw) -->
-            <button type="button" class="canvas-node-card layer-2 node-pos-7" id="node-telegram" onclick="selectNode('node-telegram')" aria-label="Telegram: @amine_import">
-              <div class="node-header-row">
-                <span class="node-type-label"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-info"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg> <span data-i18n="node_lbl_telegram">Telegram</span></span>
-                <span class="chip chip-cyan text-xs">OSINT</span>
+            <!-- Circular Node 7: Telegram Account (Layer 2 OSINT Raw) -->
+            <button type="button" class="canvas-node-circle layer-2 node-pos-7" id="node-telegram" onclick="handleCanvasNodeClick('node-telegram')" aria-label="Telegram: @amine_import">
+              <span class="node-circle-badge-dot badge-dot-osint" title="OSINT Brut">●</span>
+              <div class="node-circle-icon text-info">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
               </div>
-              <div class="node-title-text font-mono" dir="ltr">@amine_import</div>
-              <div class="node-subtitle-text" dir="ltr">User ID: 519283741</div>
+              <div class="node-circle-label-wrap">
+                <span class="node-circle-title font-mono" dir="ltr">@amine_import</span>
+                <span class="node-circle-sub" dir="ltr">ID: 519283741</span>
+              </div>
             </button>
 
-            <!-- Node 8: Candidate Subject (Layer 4 Hypothesis - Selected by default) -->
-            <button type="button" class="canvas-node-card layer-4 selected node-pos-8" id="node-suspect" onclick="selectNode('node-suspect')" aria-label="Sujet Candidat: Amine B. (31 ans) - Hypothèse IA">
-              <div class="node-header-row">
-                <span class="node-type-label text-hypothesis"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/></svg> <span data-i18n="node_lbl_suspect">Sujet Candidat</span></span>
-                <span class="chip chip-purple text-xs" data-i18n="badge_hypothesis">Hypothèse</span>
+            <!-- Circular Node 8: Candidate Subject (Layer 4 Hypothesis - Selected by default) -->
+            <button type="button" class="canvas-node-circle layer-4 selected node-pos-8 node-focal" id="node-suspect" onclick="handleCanvasNodeClick('node-suspect')" aria-label="Sujet Candidat: Amine B. (31 ans) - Hypothèse IA">
+              <span class="node-circle-badge-dot badge-dot-hypothesis" title="Hypothèse IA">✦</span>
+              <div class="node-circle-icon text-hypothesis">
+                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               </div>
-              <div class="node-title-text">Amine B. (31 ans)</div>
-              <div class="node-subtitle-text font-mono" title="Biométrie Faciale ArcFace 512-d (92%) recoupée avec CDR Ooredoo" data-i18n="node_suspect_sub">Biométrie ArcFace (92%) • CDR Ooredoo</div>
+              <div class="node-circle-label-wrap">
+                <span class="node-circle-title" style="color:var(--color-layer-4-hypothesis);font-weight:700;">Amine B. (31 ans)</span>
+                <span class="node-circle-sub" title="Biométrie Faciale ArcFace 512-d (92%) recoupée avec CDR Ooredoo" data-i18n="node_suspect_sub">ArcFace (92%) • CDR</span>
+              </div>
             </button>
-
-
 
             <!-- Floating Tool Palette Bottom-Left -->
             <div class="canvas-floating-palette" role="toolbar" aria-label="Outils de navigation canevas">
@@ -1399,6 +1688,126 @@
 
   <!-- Application Controller Scripts -->
   <script src="assets/maquette-i18n.js"></script>
+  <!-- Modal: Création Manuelle de Nœud Forensique (Drag & Drop) -->
+  <div class="modal-overlay" id="modal-create-node" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modal-create-node-title">
+    <div class="modal-card" style="max-width:440px;">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="node-drag-icon" id="create-node-modal-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-info"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <h3 class="modal-title" id="modal-create-node-title">Ajouter une Entité au Dossier</h3>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="closeCreateNodeModal()" aria-label="Fermer la modale">✕</button>
+      </div>
+      <div class="modal-body" style="padding:16px;">
+        <form id="form-create-node" onsubmit="confirmCreateNode(event)">
+          <input type="hidden" id="new-node-type" value="telephone" />
+          <input type="hidden" id="new-node-pos-x" value="200" />
+          <input type="hidden" id="new-node-pos-y" value="150" />
+
+          <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:12px;color:var(--color-neutral-300);margin-bottom:4px;font-weight:600;">Type d'Entité Sélectionné :</label>
+            <div id="new-node-type-display" style="padding:6px 10px;background:var(--color-neutral-900);border:1px solid var(--color-neutral-700);border-radius:4px;font-size:13px;color:var(--color-accent-text);font-weight:600;">
+              Téléphone (MSISDN +213)
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px;">
+            <label for="new-node-value" style="display:block;font-size:12px;color:var(--color-neutral-300);margin-bottom:4px;font-weight:600;">Valeur / Identifiant Judiciaire <span style="color:var(--color-status-danger);">*</span> :</label>
+            <input type="text" id="new-node-value" required class="input-text font-mono" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--color-neutral-900);border:1px solid var(--color-neutral-700);border-radius:4px;color:var(--color-neutral-100);font-size:13px;" placeholder="Ex: +213 661 123 456, RIP 007999..." />
+          </div>
+
+          <div style="margin-bottom:12px;">
+            <label for="new-node-label" style="display:block;font-size:12px;color:var(--color-neutral-300);margin-bottom:4px;font-weight:600;">Libellé de Référence (Optionnel) :</label>
+            <input type="text" id="new-node-label" class="input-text" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--color-neutral-900);border:1px solid var(--color-neutral-700);border-radius:4px;color:var(--color-neutral-100);font-size:13px;" placeholder="Ex: Téléphone de contact complice, Faux profil..." />
+          </div>
+
+          <div style="margin-bottom:16px;">
+            <label for="new-node-layer" style="display:block;font-size:12px;color:var(--color-neutral-300);margin-bottom:4px;font-weight:600;">Calque Forensique &amp; Degré de Preuve :</label>
+            <select id="new-node-layer" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--color-neutral-900);border:1px solid var(--color-neutral-700);border-radius:4px;color:var(--color-neutral-100);font-size:13px;">
+              <option value="layer-1">1. Preuve Scellée (100% RFC 3161)</option>
+              <option value="layer-2" selected>2. Découverte OSINT (Extrait du Web/Réseau)</option>
+              <option value="layer-3">3. Infrastructure &amp; Pivots (IP, Serveur, Hash)</option>
+              <option value="layer-4">4. Hypothèse IA / Enquêteur (À valider)</option>
+            </select>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;gap:8px;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeCreateNodeModal()">Annuler</button>
+            <button type="submit" class="btn btn-primary btn-sm"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Créer le Nœud</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Création Manuelle de Relation d'Investigation (Link Connector) -->
+  <div class="modal-overlay" id="modal-create-edge" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modal-create-edge-title">
+    <div class="modal-card" style="max-width:440px;">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="node-drag-icon text-warning"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <h3 class="modal-title" id="modal-create-edge-title">Connecter Deux Nœuds</h3>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="closeCreateEdgeModal()" aria-label="Fermer la modale">✕</button>
+      </div>
+      <div class="modal-body" style="padding:16px;">
+        <form id="form-create-edge" onsubmit="confirmCreateEdge(event)">
+          <input type="hidden" id="edge-source-id" value="" />
+          <input type="hidden" id="edge-target-id" value="" />
+
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-bottom:14px;background:var(--color-neutral-900);padding:10px;border-radius:6px;border:1px solid var(--color-neutral-700);">
+            <div style="text-align:center;">
+              <span style="font-size:10px;color:var(--color-neutral-400);display:block;">SOURCE</span>
+              <strong style="font-size:12px;color:var(--color-neutral-100);" id="edge-source-name">Nœud A</strong>
+            </div>
+            <div style="color:var(--color-status-warning);"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div style="text-align:center;">
+              <span style="font-size:10px;color:var(--color-neutral-400);display:block;">CIBLE</span>
+              <strong style="font-size:12px;color:var(--color-neutral-100);" id="edge-target-name">Nœud B</strong>
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px;">
+            <label for="new-edge-type" style="display:block;font-size:12px;color:var(--color-neutral-300);margin-bottom:4px;font-weight:600;">Type de Relation Judiciaire (47 GFPG) <span style="color:var(--color-status-danger);">*</span> :</label>
+            <select id="new-edge-type" required style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--color-neutral-900);border:1px solid var(--color-neutral-700);border-radius:4px;color:var(--color-accent-text);font-family:var(--font-mono);font-size:12px;font-weight:700;">
+              <option value="COMMUNIQUE_AVEC">[:COMMUNIQUE_AVEC] (Téléphonie / SMS)</option>
+              <option value="TITULAIRE_DE">[:TITULAIRE_DE] (Attribution Ligne)</option>
+              <option value="INSEREE_DANS">[:INSEREE_DANS] (Carte SIM -> Mobile)</option>
+              <option value="BORNE_SUR">[:BORNE_SUR] (Bornage BTS Antenne)</option>
+              <option value="POSSEDE_COMPTE">[:POSSEDE_COMPTE] (Titulaire Bancaire/RIP)</option>
+              <option value="EMET_VIREMENT">[:EMET_VIREMENT] (Flux BaridiMob Sortant)</option>
+              <option value="RECOIT_VIREMENT">[:RECOIT_VIREMENT] (Flux BaridiMob Entrant)</option>
+              <option value="RETRAIT_GAB">[:RETRAIT_GAB] (Retrait Espèces Automate)</option>
+              <option value="CONTROLE_WALLET">[:CONTROLE_WALLET] (Portefeuille Crypto)</option>
+              <option value="OPERE_COMPTE">[:OPERE_COMPTE] (Gestion Faux Profil)</option>
+              <option value="PUBLIE">[:PUBLIE] (Publication Offre Fraude)</option>
+              <option value="MEMBRE_DE">[:MEMBRE_DE] (Canal Télégram Clandestin)</option>
+              <option value="INFECTE_PAR">[:INFECTE_PAR] (Compromission Trojan APK)</option>
+              <option value="COMMUNIQUE_AVEC_C2">[:COMMUNIQUE_AVEC_C2] (Exfiltration Pirate)</option>
+              <option value="CORRESPOND_A">[:CORRESPOND_A] (Rapprochement Biométrique)</option>
+              <option value="CONSTATE_PAR">[:CONSTATE_PAR] (Procès-Verbal Judiciaire)</option>
+              <option value="ASSOCIE_A">[:ASSOCIE_A] (Liaison Générale Recoupée)</option>
+            </select>
+          </div>
+
+          <div style="margin-bottom:12px;">
+            <label for="new-edge-weight" style="display:block;font-size:12px;color:var(--color-neutral-300);margin-bottom:4px;font-weight:600;">Degré de Certitude / Force du Lien :</label>
+            <select id="new-edge-weight" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--color-neutral-900);border:1px solid var(--color-neutral-700);border-radius:4px;color:var(--color-neutral-100);font-size:13px;">
+              <option value="1.0">100% — Preuve Scellée / Relevé Bancaire Officiel</option>
+              <option value="0.8" selected>80% — Recoupement OSINT Multi-Sources</option>
+              <option value="0.5">50% — Indice Circonstanciel / Hypothèse</option>
+            </select>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;gap:8px;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeCreateEdgeModal()">Annuler</button>
+            <button type="submit" class="btn btn-primary btn-sm"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Établir la Liaison</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
 
