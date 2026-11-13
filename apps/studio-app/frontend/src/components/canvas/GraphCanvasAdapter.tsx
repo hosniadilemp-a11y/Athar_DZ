@@ -3,6 +3,9 @@ import type { GraphNode, GraphEdge } from '../../types/graph';
 import type { LayerId } from '../../types/registry';
 import { CircularNode } from './CircularNode';
 import { EdgeLine } from './EdgeLine';
+import { CanvasFloatingPalette } from './CanvasFloatingPalette';
+import { useGraphStore } from '../../store/useGraphStore';
+import { Link2 } from 'lucide-react';
 
 export interface Viewport {
   panX: number;
@@ -24,6 +27,10 @@ export interface GraphCanvasAdapterProps {
   onNodeContextMenu: (e: React.MouseEvent | React.KeyboardEvent, nodeId: string) => void;
   onNodeDragEnd?: (nodeId: string, x: number, y: number) => void;
   onViewportChange: (panX: number, panY: number, zoom: number) => void;
+  onToggleImpactView: () => void;
+  onToggleSna?: () => void;
+  isSnaOpen?: boolean;
+  onAddNodeAtPosition?: (typeKey: string, x: number, y: number) => void;
 }
 
 export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
@@ -40,8 +47,19 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
   onNodeContextMenu,
   onNodeDragEnd,
   onViewportChange,
+  onToggleImpactView,
+  onToggleSna,
+  isSnaOpen = false,
+  onAddNodeAtPosition,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const {
+    isLinkMode,
+    linkSourceNodeId,
+    setLinkMode,
+    setLinkSourceNodeId,
+    createManualEdge,
+  } = useGraphStore();
 
   // Pan dragging state
   const [isPanning, setIsPanning] = useState(false);
@@ -51,6 +69,25 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
   const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [livePositions, setLivePositions] = useState<Map<string, { x: number; y: number }>>(new Map());
+
+  // Mouse position in canvas space for link preview
+  const [mouseCanvasPos, setMouseCanvasPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // Handle Node Click (Selection or Link Creation Mode)
+  const handleNodeClick = useCallback(
+    (nodeId: string, isMulti: boolean) => {
+      if (isLinkMode) {
+        if (!linkSourceNodeId) {
+          setLinkSourceNodeId(nodeId);
+        } else if (linkSourceNodeId !== nodeId) {
+          createManualEdge(linkSourceNodeId, nodeId);
+        }
+        return;
+      }
+      onSelectNode(nodeId, isMulti);
+    },
+    [isLinkMode, linkSourceNodeId, setLinkSourceNodeId, createManualEdge, onSelectNode]
+  );
 
   // Fast node lookup for edge rendering
   const nodeMap = React.useMemo(() => {
@@ -74,13 +111,97 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
     return edges.filter((e) => visibleIds.has(e.source_id) && visibleIds.has(e.target_id));
   }, [edges, visibleNodes]);
 
-  // Handle Wheel Zoom
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    const factor = e.deltaY < 0 ? 1.08 : 0.92;
-    const nextZoom = Math.min(Math.max(viewport.zoom * factor, 0.2), 3.0);
-    onViewportChange(viewport.panX, viewport.panY, nextZoom);
+  // Native Non-Passive Wheel Listener (strictly prevents browser zoom / page scrolling)
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const onNativeWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const factor = e.deltaY < 0 ? 1.1 : 0.9;
+      const rect = el.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      const currentZoom = viewport.zoom;
+      const nextZoom = Math.min(Math.max(currentZoom * factor, 0.2), 3.5);
+      const ratio = nextZoom / currentZoom;
+
+      const nextPanX = mouseX - (mouseX - viewport.panX) * ratio;
+      const nextPanY = mouseY - (mouseY - viewport.panY) * ratio;
+
+      onViewportChange(nextPanX, nextPanY, nextZoom);
+    };
+
+    el.addEventListener('wheel', onNativeWheel, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', onNativeWheel);
+    };
   }, [viewport, onViewportChange]);
+
+  // Handle Drag Over for Entity Drop
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'copy';
+  }, []);
+
+  // Handle Drag Enter for Entity Drop
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  // Handle Entity Drop onto Canvas (creates node at cursor position)
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      let typeKey = e.dataTransfer.getData('athar/node-type') || e.dataTransfer.getData('text/plain');
+      if (!typeKey) {
+        try {
+          const json = e.dataTransfer.getData('application/json');
+          if (json) {
+            const parsed = JSON.parse(json);
+            typeKey = parsed.type;
+          }
+        } catch {
+          // ignore
+        }
+      }
+      if (!typeKey || !onAddNodeAtPosition) return;
+
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      const canvasX = Math.round((mouseX - viewport.panX) / viewport.zoom);
+      const canvasY = Math.round((mouseY - viewport.panY) / viewport.zoom);
+
+      onAddNodeAtPosition(typeKey, canvasX, canvasY);
+    },
+    [viewport, onAddNodeAtPosition]
+  );
+
+  // Track canvas mouse position for interactive rubber-band link line
+  const handleCanvasMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isLinkMode || !linkSourceNodeId) return;
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      setMouseCanvasPos({
+        x: Math.round((mouseX - viewport.panX) / viewport.zoom),
+        y: Math.round((mouseY - viewport.panY) / viewport.zoom),
+      });
+    },
+    [isLinkMode, linkSourceNodeId, viewport]
+  );
 
   // Handle Pan Start
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -170,6 +291,8 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
     }
   };
 
+  const linkSourceNode = linkSourceNodeId ? nodeMap.get(linkSourceNodeId) : null;
+
   return (
     <div
       ref={containerRef}
@@ -182,11 +305,14 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
         height: '100%',
         overflow: 'hidden',
         backgroundColor: 'var(--color-bg-canvas)',
-        cursor: isPanning ? 'grabbing' : 'default',
+        cursor: isPanning ? 'grabbing' : isLinkMode ? 'crosshair' : 'default',
         outline: 'none',
       }}
-      onWheel={handleWheel}
       onMouseDown={handleMouseDown}
+      onMouseMove={handleCanvasMouseMove}
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
       onKeyDown={handleKeyDown}
       onClick={onClearSelection}
     >
@@ -260,6 +386,21 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
               onSelect={onSelectEdge}
             />
           ))}
+
+          {/* Dynamic rubber-band guide line during link creation */}
+          {isLinkMode && linkSourceNode && (
+            <line
+              x1={linkSourceNode.x ?? 0}
+              y1={linkSourceNode.y ?? 0}
+              x2={mouseCanvasPos.x}
+              y2={mouseCanvasPos.y}
+              stroke="var(--color-status-warning)"
+              strokeWidth={2.5}
+              strokeDasharray="6 4"
+              pointerEvents="none"
+              opacity={0.85}
+            />
+          )}
         </svg>
 
         {/* DOM Layer for Circular Nodes */}
@@ -273,13 +414,45 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
               key={node.id}
               node={effectiveNode}
               isSelected={isSelected}
-              onSelect={onSelectNode}
+              isLinkSource={linkSourceNodeId === node.id}
+              onSelect={handleNodeClick}
               onContextMenu={onNodeContextMenu}
               onDragStart={handleNodeDragStart}
             />
           );
         })}
       </div>
+
+      {/* Active Link Creation Mode Banner */}
+      {isLinkMode && (
+        <div className="canvas-connection-banner is-visible" role="status" aria-live="polite">
+          <Link2 size={15} className="text-warning" />
+          <span id="canvas-connection-text">
+            <strong>Mode Liaison Actif :</strong>{' '}
+            {linkSourceNodeId ? (
+              <span>
+                Premier nœud sélectionné ({nodes.find((n) => n.id === linkSourceNodeId)?.label || linkSourceNodeId}). Cliquez sur le nœud cible pour créer la liaison...
+              </span>
+            ) : (
+              <span>Cliquez sur le premier nœud de la liaison...</span>
+            )}
+          </span>
+          <button
+            type="button"
+            className="btn btn-ghost btn-xs banner-cancel-btn"
+            onClick={() => setLinkMode(false)}
+          >
+            Annuler
+          </button>
+        </div>
+      )}
+
+      {/* Floating Canvas Tool Palette (Bottom-Left) */}
+      <CanvasFloatingPalette
+        onToggleImpactView={onToggleImpactView}
+        onToggleSna={onToggleSna}
+        isSnaOpen={isSnaOpen}
+      />
     </div>
   );
 };

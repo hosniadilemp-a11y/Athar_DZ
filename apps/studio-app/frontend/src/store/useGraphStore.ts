@@ -6,6 +6,9 @@
 import { create } from './createStore';
 import type { GraphNode, GraphEdge, CaseItem, GraphResponse } from '../types/graph';
 import type { LayerId } from '../types/registry';
+import { computeGraphLayout, type GraphLayoutType } from '../utils/graphLayouts';
+
+export type { GraphLayoutType };
 
 export interface Command {
   id: string;
@@ -39,6 +42,9 @@ export interface GraphStoreState {
   // View slice
   viewport: ViewportState;
   activeLayers: Set<LayerId>;
+  isLinkMode: boolean;
+  linkSourceNodeId: string | null;
+  activeLayout: GraphLayoutType;
 
   // Context Menu state
   contextMenu: {
@@ -68,15 +74,22 @@ export interface GraphStoreState {
 
   // Selection actions
   selectNode: (id: string | null, isMulti?: boolean) => void;
+  selectAllNodes: () => void;
+  deleteNode: (id: string) => void;
   selectEdge: (id: string | null) => void;
   clearSelection: () => void;
 
-  // Viewport actions
+  // Viewport & Layout actions
   setViewport: (panX: number, panY: number, zoom: number) => void;
   panBy: (dx: number, dy: number) => void;
   zoomBy: (factor: number) => void;
   resetViewport: () => void;
   toggleLayer: (layer: LayerId) => void;
+  setAllLayers: (active: boolean) => void;
+  applyLayout: (layoutType: GraphLayoutType) => void;
+  setLinkMode: (active: boolean) => void;
+  setLinkSourceNodeId: (id: string | null) => void;
+  createManualEdge: (sourceId: string, targetId: string) => void;
 
   // Canvas Node Position actions (with reversible command)
   updateNodePosition: (nodeId: string, x: number, y: number, recordHistory?: boolean) => void;
@@ -113,6 +126,9 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
 
   viewport: { panX: 0, panY: 0, zoom: 1 },
   activeLayers: new Set(DEFAULT_LAYERS),
+  isLinkMode: false,
+  linkSourceNodeId: null,
+  activeLayout: 'concentric',
 
   contextMenu: {
     isOpen: false,
@@ -141,21 +157,29 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
       }
     });
 
-    // Circular layout initialization for new nodes
-    const count = res.nodes.length;
-    const radius = Math.max(250, count * 10);
-    const angleStep = count > 0 ? (2 * Math.PI) / count : 0;
+    // Check if we need to apply layout to new nodes
+    const unpositionedNodes = res.nodes.filter((n) => !existingPosMap.has(n.id));
+    let layoutedPositions = new Map<string, { x: number; y: number }>();
 
-    const positionedNodes = res.nodes.map((node, i) => {
+    if (unpositionedNodes.length > 0) {
+      const computed = computeGraphLayout(res.nodes, res.edges, get().activeLayout);
+      computed.forEach((cn) => {
+        if (cn.x !== undefined && cn.y !== undefined) {
+          layoutedPositions.set(cn.id, { x: cn.x, y: cn.y });
+        }
+      });
+    }
+
+    const positionedNodes = res.nodes.map((node) => {
       const existing = existingPosMap.get(node.id);
       if (existing) {
         return { ...node, x: existing.x, y: existing.y };
       }
-      const angle = i * angleStep;
+      const computedPos = layoutedPositions.get(node.id);
       return {
         ...node,
-        x: Math.round(500 + radius * Math.cos(angle)),
-        y: Math.round(400 + radius * Math.sin(angle)),
+        x: computedPos?.x ?? 500,
+        y: computedPos?.y ?? 400,
         radius: node.properties && (node.properties['implication_level'] === 'high' || node.properties['is_critical']) ? 34 : 28,
       };
     });
@@ -227,6 +251,50 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     }
   },
 
+  selectAllNodes: () => {
+    const allIds = get().nodes.map((n) => n.id);
+    set({
+      selectedNodeIds: allIds,
+      selectedNodeId: allIds[0] ?? null,
+      selectedEdgeId: null,
+    });
+  },
+
+  deleteNode: (id: string) => {
+    const currentNodes = get().nodes;
+    const currentEdges = get().edges;
+    const targetNode = currentNodes.find((n) => n.id === id);
+    if (!targetNode) return;
+
+    const remainingNodes = currentNodes.filter((n) => n.id !== id);
+    const remainingEdges = currentEdges.filter((e) => e.source_id !== id && e.target_id !== id);
+    const deletedEdges = currentEdges.filter((e) => e.source_id === id || e.target_id === id);
+
+    set({
+      nodes: remainingNodes,
+      edges: remainingEdges,
+      selectedNodeId: get().selectedNodeId === id ? null : get().selectedNodeId,
+      selectedNodeIds: get().selectedNodeIds.filter((nId) => nId !== id),
+    });
+
+    get().executeCommand({
+      id: `delete-${id}-${Date.now()}`,
+      description: `Suppression de ${targetNode.label}`,
+      undo: () => {
+        set({
+          nodes: [...get().nodes, targetNode],
+          edges: [...get().edges, ...deletedEdges],
+        });
+      },
+      redo: () => {
+        set({
+          nodes: get().nodes.filter((n) => n.id !== id),
+          edges: get().edges.filter((e) => e.source_id !== id && e.target_id !== id),
+        });
+      },
+    });
+  },
+
   selectEdge: (id) => set({ selectedEdgeId: id, selectedNodeId: null, selectedNodeIds: [] }),
   clearSelection: () => set({ selectedNodeId: null, selectedNodeIds: [], selectedEdgeId: null }),
 
@@ -254,6 +322,94 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
       current.add(layer);
     }
     set({ activeLayers: current });
+  },
+
+  setAllLayers: (active) => {
+    set({ activeLayers: active ? new Set(DEFAULT_LAYERS) : new Set() });
+  },
+
+  applyLayout: (layoutType) => {
+    const { nodes, edges, activeLayout } = get();
+    if (nodes.length === 0) {
+      set({ activeLayout: layoutType });
+      return;
+    }
+
+    const previousNodes = nodes;
+    const previousLayout = activeLayout;
+    const updatedNodes = computeGraphLayout(nodes, edges, layoutType);
+
+    set({
+      nodes: updatedNodes,
+      activeLayout: layoutType,
+    });
+
+    get().executeCommand({
+      id: `layout-${layoutType}-${Date.now()}`,
+      description: `Disposition du graphe : ${layoutType}`,
+      undo: () => {
+        set({ nodes: previousNodes, activeLayout: previousLayout });
+      },
+      redo: () => {
+        set({ nodes: updatedNodes, activeLayout: layoutType });
+      },
+    });
+  },
+
+  setLinkMode: (active) => {
+    set({ isLinkMode: active, linkSourceNodeId: null });
+  },
+
+  setLinkSourceNodeId: (id) => {
+    set({ linkSourceNodeId: id });
+  },
+
+  createManualEdge: (sourceId, targetId) => {
+    const { nodes, edges } = get();
+    const sourceNode = nodes.find((n) => n.id === sourceId);
+    const targetNode = nodes.find((n) => n.id === targetId);
+    if (!sourceNode || !targetNode || sourceId === targetId) return;
+
+    // Check if edge already exists
+    const exists = edges.some(
+      (e) => (e.source_id === sourceId && e.target_id === targetId) ||
+             (e.source_id === targetId && e.target_id === sourceId)
+    );
+    if (exists) {
+      set({ isLinkMode: false, linkSourceNodeId: null });
+      return;
+    }
+
+    const newEdge: GraphEdge = {
+      id: `edge-manual-${Date.now()}`,
+      case_id: get().activeCase?.id || 'case-candy-wheels',
+      source_id: sourceId,
+      target_id: targetId,
+      type: 'CORRESPONDS_TO',
+      layer: 'HYPOTHESIS',
+      confidence: 1.0,
+      provenance: 'INVESTIGATOR_MANUAL',
+      properties: { label: 'Liaison directe' },
+    };
+
+    const previousEdges = edges;
+    set({
+      edges: [...previousEdges, newEdge],
+      isLinkMode: false,
+      linkSourceNodeId: null,
+      selectedEdgeId: newEdge.id,
+    });
+
+    get().executeCommand({
+      id: `create-manual-edge-${newEdge.id}`,
+      description: `Créer liaison : ${sourceNode.label} -> ${targetNode.label}`,
+      undo: () => {
+        set({ edges: get().edges.filter((e) => e.id !== newEdge.id) });
+      },
+      redo: () => {
+        set({ edges: [...get().edges, newEdge] });
+      },
+    });
   },
 
   updateNodePosition: (nodeId, x, y, recordHistory = false) => {

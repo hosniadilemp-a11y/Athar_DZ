@@ -7,6 +7,7 @@ from app.api.v1.cases import router as cases_router
 from app.api.v1.edges import router as edges_router
 from app.api.v1.graph import router as graph_router
 from app.api.v1.nodes import router as nodes_router
+from app.api.v1.registry import router as registry_router
 from app.api.v1.sna import router as sna_router
 
 api_router = APIRouter(prefix="/api/v1")
@@ -16,3 +17,4 @@ api_router.include_router(nodes_router)
 api_router.include_router(edges_router)
 api_router.include_router(audit_router)
 api_router.include_router(sna_router)
+api_router.include_router(registry_router)

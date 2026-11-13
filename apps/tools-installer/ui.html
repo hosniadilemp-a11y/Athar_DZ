@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Athar DZ — Tools Installer &amp; Progress Monitor</title>
+  <style>
+    :root {
+      --bg: #080d18;
+      --panel: #0f172a;
+      --panel-2: #111c33;
+      --border: #1e293b;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --cyan: #38bdf8;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --purple: #a855f7;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+    .wrap {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 1.25rem;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.9rem;
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: 1.35rem;
+      color: #f8fafc;
+      letter-spacing: -0.01em;
+    }
+    .brand span {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .env-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+    .pill {
+      font-size: 0.74rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .pill.ok { color: var(--emerald); border-color: rgba(16,185,129,0.45); }
+    .pill.warn { color: var(--amber); border-color: rgba(245,158,11,0.45); }
+    .grid-top {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 980px) {
+      .grid-top { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+    }
+    .card-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--cyan);
+      margin: 0 0 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.65rem;
+    }
+    label {
+      display: block;
+      font-size: 0.73rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+    select, input[type="text"], input[type="number"] {
+      width: 100%;
+      background: #090e1a;
+      border: 1px solid #23324b;
+      color: var(--text);
+      padding: 0.45rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+    }
+    .profiles-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .btn {
+      border: 1px solid #2b3c57;
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 0.48rem 0.85rem;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: all 0.15s ease;
+    }
+    .btn:hover:not(:disabled) { border-color: var(--cyan); color: #fff; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary { background: #0284c7; border-color: #38bdf8; color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: #0369a1; }
+    .btn-emerald { background: rgba(16,185,129,0.16); border-color: var(--emerald); color: #6ee7b7; }
+    .btn-danger { background: rgba(244,63,94,0.16); border-color: var(--rose); color: #fda4af; }
+    .btn-amber { background: rgba(245,158,11,0.15); border-color: var(--amber); color: #fcd34d; }
+    .btn-profile.active { background: rgba(56,189,248,0.18); border-color: var(--cyan); color: #7dd3fc; }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.65rem;
+      margin-bottom: 0.8rem;
+    }
+    .kpi {
+      background: #0a101f;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.55rem 0.7rem;
+    }
+    .kpi .k-lbl { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; }
+    .kpi .k-val { font-size: 1.05rem; font-weight: 800; color: #f8fafc; margin-top: 0.15rem; }
+
+    .progress-outer {
+      width: 100%;
+      height: 12px;
+      background: #090e1a;
+      border: 1px solid #23324b;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-inner {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #0284c7, #10b981);
+      transition: width 0.2s ease;
+    }
+    .progress-sm { height: 7px; margin-top: 4px; }
+    .actions-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.85rem;
+    }
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      margin-bottom: 0.75rem;
+    }
+    .cat-tabs { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .cat-tab {
+      font-size: 0.76rem;
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      background: #0a101f;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .cat-tab.active { color: var(--cyan); border-color: var(--cyan); background: #13223b; }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      max-height: 460px;
+      overflow-y: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+    th {
+      position: sticky;
+      top: 0;
+      background: #121e36;
+      color: #e2e8f0;
+      text-align: left;
+      padding: 0.6rem 0.7rem;
+      border-bottom: 1px solid #23324b;
+      z-index: 1;
+    }
+    td {
+      padding: 0.55rem 0.7rem;
+      border-bottom: 1px solid #16233b;
+      vertical-align: middle;
+    }
+    tr:hover { background: rgba(56,189,248,0.04); }
+    .badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      padding: 0.14rem 0.45rem;
+      border-radius: 4px;
+      font-weight: 700;
+      border: 1px solid transparent;
+    }
+    .st-idle { color: var(--muted); background: #0f172a; border-color: #334155; }
+    .st-queued { color: #93c5fd; background: rgba(59,130,246,0.12); border-color: #3b82f6; }
+    .st-downloading, .st-extracting { color: #38bdf8; background: rgba(56,189,248,0.14); border-color: #38bdf8; }
+    .st-done { color: #34d399; background: rgba(16,185,129,0.14); border-color: #10b981; }
+    .st-failed { color: #fda4af; background: rgba(244,63,94,0.15); border-color: #f43f5e; }
+    .st-skipped, .st-cancelled { color: #fcd34d; background: rgba(245,158,11,0.12); border-color: #f59e0b; }
+
+    .logs-box {
+      background: #050912;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem;
+      height: 170px;
+      overflow-y: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.74rem;
+      color: #cbd5e1;
+      margin-top: 1rem;
+    }
+    .log-line { margin-bottom: 2px; white-space: pre-wrap; word-break: break-word; }
+    .log-error { color: #fb7185; }
+    .log-warn { color: #fbbf24; }
+    .log-info { color: #38bdf8; }
+    .log-debug { color: #94a3b8; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>Athar DZ — Tools Downloader &amp; Progress Monitor</h1>
+      <span>Cross-Platform Installer (Windows &amp; Linux &bull; NVIDIA GPU CUDA &amp; CPU)</span>
+    </div>
+    <div class="env-pills" id="env-pills"></div>
+  </header>
+
+  <div class="grid-top">
+    <div class="card">
+      <div class="card-title">1. Target Environment &amp; Download Settings</div>
+      <div class="controls-grid">
+        <div>
+          <label for="cfg-os">Target OS</label>
+          <select id="cfg-os" onchange="recomputeEstimate()">
+            <option value="both" selected>Both (Windows + Linux)</option>
+            <option value="windows">Windows Only</option>
+            <option value="linux">Linux Only</option>
+          </select>
+        </div>
+        <div>
+          <label for="cfg-arch">CPU Arch</label>
+          <select id="cfg-arch" onchange="recomputeEstimate()">
+            <option value="amd64">x86_64 (amd64)</option>
+            <option value="arm64">ARM64 (aarch64)</option>
+          </select>
+        </div>
+        <div>
+          <label for="cfg-compute">Compute Mode</label>
+          <select id="cfg-compute" onchange="recomputeEstimate()">
+            <option value="both" selected>Both (CPU + GPU CUDA)</option>
+            <option value="gpu">NVIDIA GPU (CUDA 12.4)</option>
+            <option value="cpu">CPU Only</option>
+          </select>
+        </div>
+        <div>
+          <label>Parallel Source Channels</label>
+          <div style="font-size:0.75rem;color:var(--emerald);padding:0.4rem 0;" id="channels-info">Docker(2) • GitHub(3) • PyPI(2) • HTTP(3) • AI(2)</div>
+        </div>
+        <div style="grid-column: span 2;">
+          <label for="cfg-dest">Install / Download Directory</label>
+          <input type="text" id="cfg-dest" />
+        </div>
+        <div>
+          <label for="cfg-mbps">Est. Bandwidth: <strong id="mbps-label">50</strong> Mbps</label>
+          <input type="range" id="cfg-mbps" min="10" max="500" step="10" value="50" style="width:100%;" oninput="recomputeEstimate()" />
+        </div>
+        <div style="display:flex;flex-direction:column;justify-content:flex-end;gap:0.35rem;padding-bottom:0.15rem;">
+          <label style="display:flex;align-items:center;gap:0.4rem;margin:0;color:var(--text);cursor:pointer;">
+            <input type="checkbox" id="cfg-venv" checked /> Install host Python venv
+          </label>
+          <label style="display:flex;align-items:center;gap:0.4rem;margin:0;color:var(--text);cursor:pointer;">
+            <input type="checkbox" id="cfg-dryrun" /> Dry-Run Mode (Simulate)
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">2. Preflight Estimate &amp; Live Progress</div>
+      <div class="kpi-row">
+        <div class="kpi"><div class="k-lbl">Selected</div><div class="k-val" id="kpi-count">0</div></div>
+        <div class="kpi"><div class="k-lbl">Download</div><div class="k-val" id="kpi-dl">0 MB</div></div>
+        <div class="kpi"><div class="k-lbl">Disk Needed</div><div class="k-val" id="kpi-disk">0 MB</div></div>
+        <div class="kpi"><div class="k-lbl">Est. Time</div><div class="k-val" id="kpi-eta">0s</div></div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;font-size:0.76rem;color:var(--muted);margin-bottom:0.3rem;">
+        <span id="overall-label">Ready</span>
+        <span id="overall-stats">0% &bull; 0.0 MB/s</span>
+      </div>
+      <div class="progress-outer">
+        <div class="progress-inner" id="overall-bar"></div>
+      </div>
+
+      <div class="actions-row">
+        <button class="btn btn-primary" id="btn-start" onclick="startDownloads()">Start Download</button>
+        <button class="btn btn-danger" id="btn-cancel" onclick="cancelDownloads()" disabled>Cancel</button>
+        <button class="btn btn-amber" id="btn-retry" onclick="retryFailed()">Retry Failed</button>
+        <button class="btn" id="btn-reset" onclick="resetState()">Reset State</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">3. Profiles &amp; Tool Selection</div>
+    <div class="profiles-bar" id="profiles-bar"></div>
+
+    <div class="toolbar">
+      <div class="cat-tabs" id="cat-tabs">
+        <button class="cat-tab active" onclick="setCat('all', this)">All</button>
+        <button class="cat-tab" onclick="setCat('docker', this)">Docker Images</button>
+        <button class="cat-tab" onclick="setCat('core_app', this)">Core App</button>
+        <button class="cat-tab" onclick="setCat('osint', this)">OSINT</button>
+        <button class="cat-tab" onclick="setCat('sna', this)">SNA</button>
+        <button class="cat-tab" onclick="setCat('forensics', this)">Forensics (DFIR)</button>
+        <button class="cat-tab" onclick="setCat('ai_models', this)">Sovereign AI</button>
+      </div>
+      <input type="text" id="search-input" placeholder="Filter tools..." style="max-width:260px;" oninput="renderTable()" />
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:36px;text-align:center;"><input type="checkbox" id="chk-all" onchange="toggleVisible(this.checked)" /></th>
+            <th>Tool / Technology</th>
+            <th>Category</th>
+            <th>OS / Compute</th>
+            <th>Method</th>
+            <th>Size</th>
+            <th style="min-width:210px;">Status &amp; Progress</th>
+          </tr>
+        </thead>
+        <tbody id="tools-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="logs-box" id="logs-box"></div>
+  </div>
+</div>
+
+<script>
+  let CATALOG = { profiles: [], tools: [] };
+  let ENV = {};
+  let ITEM_STATE = {};
+  let SELECTED = new Set();
+  let ACTIVE_CAT = 'all';
+  let RUNNING = false;
+  let LAST_PLAN = null;
+
+  function fmtSize(mb) {
+    if (mb >= 1024) return (mb / 1024).toFixed(2) + ' GB';
+    return Math.round(mb) + ' MB';
+  }
+
+  function fmtTime(sec) {
+    if (sec < 60) return sec + 's';
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    if (m < 60) return `${m}m ${s}s`;
+    const h = Math.floor(m / 60);
+    return `${h}h ${m % 60}m`;
+  }
+
+  async function init() {
+    const res = await fetch('/api/bootstrap');
+    const data = await res.json();
+    ENV = data.env;
+    CATALOG = data.catalog;
+    ITEM_STATE = data.state.items || {};
+    RUNNING = !!data.state.running;
+
+    document.getElementById('cfg-os').value = 'both';
+    document.getElementById('cfg-arch').value = ENV.arch || 'amd64';
+    document.getElementById('cfg-compute').value = 'both';
+    document.getElementById('cfg-dest').value = data.state.dest_dir || ENV.default_dest;
+    if (ENV.channels) {
+      document.getElementById('channels-info').innerText =
+        Object.entries(ENV.channels).map(([k, v]) => `${k}(${v})`).join(' • ');
+    }
+
+    renderEnvPills();
+    renderProfiles();
+    selectProfile('smoke_test');
+    (data.state.logs || []).forEach(appendLog);
+    updateRunningUI();
+    connectSSE();
+  }
+
+  function renderEnvPills() {
+    const b = ENV.bins || {};
+    const gpuLabel = ENV.gpu && ENV.gpu.has_nvidia ? `GPU: ${ENV.gpu.name}` : 'GPU: None (CPU mode)';
+    const pills = [
+      { label: `Host: ${ENV.os}/${ENV.arch}`, ok: true },
+      { label: `Free Disk: ${ENV.disk_free_gb} GB`, ok: ENV.disk_free_gb > 5 },
+      { label: gpuLabel, ok: !!(ENV.gpu && ENV.gpu.has_nvidia) },
+      { label: `Docker: ${b.docker ? 'OK' : 'Missing'}`, ok: !!b.docker },
+      { label: `Git: ${b.git ? 'OK' : 'Missing'}`, ok: !!b.git },
+      { label: `Node/npm: ${b.npm ? 'OK' : 'Missing'}`, ok: !!b.npm },
+      { label: `Ollama: ${b.ollama ? 'OK' : 'Missing'}`, ok: !!b.ollama }
+    ];
+    document.getElementById('env-pills').innerHTML = pills
+      .map(p => `<span class="pill ${p.ok ? 'ok' : 'warn'}">${p.label}</span>`)
+      .join('');
+  }
+
+  function renderProfiles() {
+    const bar = document.getElementById('profiles-bar');
+    const btns = CATALOG.profiles.map(p =>
+      `<button class="btn btn-profile" data-prof="${p.id}" title="${p.description}" onclick="selectProfile('${p.id}')">${p.name} <span style="opacity:.75;font-size:.7rem;">[${p.badge}]</span></button>`
+    );
+    btns.push(`<button class="btn" onclick="selectAll()">Select All</button>`);
+    btns.push(`<button class="btn" onclick="clearAll()">Clear</button>`);
+    bar.innerHTML = btns.join('');
+  }
+
+  function selectProfile(profileId) {
+    SELECTED.clear();
+    CATALOG.tools.forEach(t => {
+      if ((t.profiles || []).includes(profileId)) SELECTED.add(t.id);
+    });
+    document.querySelectorAll('.btn-profile').forEach(b => {
+      b.classList.toggle('active', b.dataset.prof === profileId);
+    });
+    recomputeEstimate();
+    renderTable();
+  }
+
+  function selectAll() {
+    CATALOG.tools.forEach(t => SELECTED.add(t.id));
+    document.querySelectorAll('.btn-profile').forEach(b => b.classList.remove('active'));
+    recomputeEstimate();
+    renderTable();
+  }
+
+  function clearAll() {
+    SELECTED.clear();
+    document.querySelectorAll('.btn-profile').forEach(b => b.classList.remove('active'));
+    recomputeEstimate();
+    renderTable();
+  }
+
+  function setCat(cat, el) {
+    ACTIVE_CAT = cat;
+    document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    renderTable();
+  }
+
+  function toggleTool(id, checked) {
+    if (checked) SELECTED.add(id);
+    else SELECTED.delete(id);
+    recomputeEstimate();
+  }
+
+  function toggleVisible(checked) {
+    getFilteredTools().forEach(t => {
+      if (checked) SELECTED.add(t.id);
+      else SELECTED.delete(t.id);
+    });
+    recomputeEstimate();
+    renderTable();
+  }
+
+  function getFilteredTools() {
+    const q = (document.getElementById('search-input').value || '').toLowerCase().trim();
+    return CATALOG.tools.filter(t => {
+      const catOk = ACTIVE_CAT === 'all' || t.category === ACTIVE_CAT;
+      const text = `${t.name} ${t.description} ${t.method} ${t.category}`.toLowerCase();
+      return catOk && (!q || text.includes(q));
+    });
+  }
+
+  async function recomputeEstimate() {
+    const mbps = Number(document.getElementById('cfg-mbps').value || 50);
+    document.getElementById('mbps-label').innerText = mbps;
+    const body = {
+      selected_ids: Array.from(SELECTED),
+      os: document.getElementById('cfg-os').value,
+      arch: document.getElementById('cfg-arch').value,
+      compute: document.getElementById('cfg-compute').value,
+      mbps
+    };
+    const res = await fetch('/api/estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    LAST_PLAN = await res.json();
+    document.getElementById('kpi-count').innerText =
+      `${LAST_PLAN.active_count}` + (LAST_PLAN.skipped_os_count ? ` (+${LAST_PLAN.skipped_os_count} skip)` : '');
+    document.getElementById('kpi-dl').innerText = fmtSize(LAST_PLAN.total_download_mb);
+    document.getElementById('kpi-disk').innerText = fmtSize(LAST_PLAN.total_disk_mb);
+    document.getElementById('kpi-eta').innerText = fmtTime(LAST_PLAN.eta_seconds);
+    renderTable();
+    updateOverallProgress();
+  }
+
+  function renderTable() {
+    const targetOs = document.getElementById('cfg-os').value;
+    const planById = {};
+    if (LAST_PLAN && LAST_PLAN.items) {
+      LAST_PLAN.items.forEach(it => { planById[it.id] = it; });
+    }
+    const rows = getFilteredTools().map(t => {
+      const checked = SELECTED.has(t.id) ? 'checked' : '';
+      const targetList = targetOs === 'both' ? ['windows', 'linux'] : [targetOs];
+      const osOk = targetList.some(o => (t.os_support || []).includes(o));
+      const planned = planById[t.id];
+      const sizeMb = planned ? planned.resolved_size_mb : (document.getElementById('cfg-compute').value === 'cpu' ? t.size_mb_cpu : t.size_mb_gpu);
+      const st = ITEM_STATE[t.id] || { status: 'idle', pct: 0, message: 'Ready' };
+      const stClass = `st-${st.status || 'idle'}`;
+      const chBadge = planned ? planned.channel : (t.method === 'docker_pull' ? 'docker' : (t.method === 'pip_install' ? 'pypi' : ((t.method === 'github_release' || t.method === 'git_clone') ? 'github' : 'http')));
+      return `
+        <tr id="row-${t.id}" style="${osOk ? '' : 'opacity:0.55;'}">
+          <td style="text-align:center;"><input type="checkbox" ${checked} onchange="toggleTool('${t.id}', this.checked)" /></td>
+          <td>
+            <div style="font-weight:700;color:#f8fafc;">${t.name}</div>
+            <div style="font-size:0.73rem;color:var(--muted);">${t.description}</div>
+          </td>
+          <td><span class="badge st-idle">${t.category}</span><div style="font-size:0.68rem;color:var(--emerald);margin-top:2px;">pool: ${chBadge}</div></td>
+          <td style="font-size:0.74rem;">
+            <div>${(t.os_support || []).join(' / ')} ${osOk ? '' : '<span style="color:var(--amber);">(N/A)</span>'}</div>
+            <div style="color:var(--muted);">${t.compute === 'cpu_gpu' ? 'GPU + CPU' : 'Standard'}</div>
+          </td>
+          <td><code style="font-size:0.74rem;color:var(--cyan);">${t.method}</code></td>
+          <td style="white-space:nowrap;">${fmtSize(sizeMb)}</td>
+          <td>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
+              <span class="badge ${stClass}" id="st-${t.id}">${(st.status || 'idle').toUpperCase()}</span>
+              <span style="font-size:0.72rem;color:var(--muted);" id="pct-${t.id}">${st.pct || 0}%</span>
+            </div>
+            <div class="progress-outer progress-sm">
+              <div class="progress-inner" id="bar-${t.id}" style="width:${st.pct || 0}%;"></div>
+            </div>
+            <div style="font-size:0.7rem;color:var(--muted);margin-top:2px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="msg-${t.id}" title="${st.message || ''}">${st.message || 'Ready'}</div>
+          </td>
+        </tr>`;
+    }).join('');
+    document.getElementById('tools-tbody').innerHTML = rows;
+  }
+
+  function updateRow(id, st) {
+    const badge = document.getElementById(`st-${id}`);
+    const pct = document.getElementById(`pct-${id}`);
+    const bar = document.getElementById(`bar-${id}`);
+    const msg = document.getElementById(`msg-${id}`);
+    if (!badge) return;
+    badge.className = `badge st-${st.status || 'idle'}`;
+    badge.innerText = (st.status || 'idle').toUpperCase();
+    pct.innerText = `${st.pct || 0}%`;
+    bar.style.width = `${st.pct || 0}%`;
+    msg.innerText = st.message || '';
+    msg.title = st.message || '';
+  }
+
+  function updateOverallProgress() {
+    const ids = Array.from(SELECTED);
+    if (!ids.length) {
+      document.getElementById('overall-bar').style.width = '0%';
+      document.getElementById('overall-label').innerText = 'No tools selected';
+      document.getElementById('overall-stats').innerText = '0%';
+      return;
+    }
+    let sumPct = 0;
+    let done = 0, failed = 0, activeSpeed = 0;
+    ids.forEach(id => {
+      const st = ITEM_STATE[id];
+      if (st) {
+        sumPct += (st.pct || 0);
+        if (st.status === 'done' || st.status === 'skipped') done++;
+        if (st.status === 'failed') failed++;
+        if (st.status === 'downloading') activeSpeed += (st.speed_mb_s || 0);
+      }
+    });
+    const avgPct = Math.round(sumPct / ids.length);
+    document.getElementById('overall-bar').style.width = avgPct + '%';
+    document.getElementById('overall-label').innerText = RUNNING
+      ? `Downloading... (${done}/${ids.length} completed, ${failed} failed)`
+      : `Completed ${done}/${ids.length}` + (failed ? ` (${failed} failed)` : '');
+    document.getElementById('overall-stats').innerText = `${avgPct}% • ${activeSpeed.toFixed(2)} MB/s`;
+  }
+
+  function updateRunningUI() {
+    document.getElementById('btn-start').disabled = RUNNING;
+    document.getElementById('btn-cancel').disabled = !RUNNING;
+    document.getElementById('btn-reset').disabled = RUNNING;
+  }
+
+  async function startDownloads() {
+    if (!SELECTED.size) return alert('Select at least one tool.');
+    const body = {
+      selected_ids: Array.from(SELECTED),
+      os: document.getElementById('cfg-os').value,
+      arch: document.getElementById('cfg-arch').value,
+      compute: document.getElementById('cfg-compute').value,
+      dest_dir: document.getElementById('cfg-dest').value,
+      install_venv: document.getElementById('cfg-venv').checked,
+      dry_run: document.getElementById('cfg-dryrun').checked
+    };
+    const res = await fetch('/api/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const out = await res.json();
+    if (!out.ok) return alert(out.error || 'Failed to start');
+    RUNNING = true;
+    updateRunningUI();
+  }
+
+  async function cancelDownloads() {
+    await fetch('/api/cancel', { method: 'POST', body: '{}' });
+  }
+
+  async function retryFailed() {
+    const res = await fetch('/api/retry', { method: 'POST', body: '{}' });
+    const out = await res.json();
+    if (!out.ok) return alert(out.error || 'Nothing to retry.');
+    RUNNING = true;
+    updateRunningUI();
+  }
+
+  async function resetState() {
+    const res = await fetch('/api/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dest_dir: document.getElementById('cfg-dest').value })
+    });
+    if (res.ok) {
+      ITEM_STATE = {};
+      document.getElementById('logs-box').innerHTML = '';
+      renderTable();
+      updateOverallProgress();
+    }
+  }
+
+  function appendLog(entry) {
+    const box = document.getElementById('logs-box');
+    const div = document.createElement('div');
+    div.className = `log-line log-${entry.level || 'info'}`;
+    const prefix = entry.item_id ? `[${entry.item_id}] ` : '';
+    div.textContent = `${entry.ts} [${(entry.level || 'info').toUpperCase()}] ${prefix}${entry.message}`;
+    box.appendChild(div);
+    if (box.children.length > 250) box.removeChild(box.firstChild);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function connectSSE() {
+    const es = new EventSource('/api/events');
+    es.addEventListener('snapshot', e => {
+      const snap = JSON.parse(e.data);
+      ITEM_STATE = snap.items || {};
+      RUNNING = !!snap.running;
+      updateRunningUI();
+      renderTable();
+      updateOverallProgress();
+    });
+    es.addEventListener('item_update', e => {
+      const st = JSON.parse(e.data);
+      ITEM_STATE[st.id] = st;
+      updateRow(st.id, st);
+      updateOverallProgress();
+    });
+    es.addEventListener('log', e => {
+      appendLog(JSON.parse(e.data));
+    });
+    es.addEventListener('job_done', e => {
+      const snap = JSON.parse(e.data);
+      ITEM_STATE = snap.items || {};
+      RUNNING = false;
+      updateRunningUI();
+      renderTable();
+      updateOverallProgress();
+    });
+  }
+
+  init();
+</script>
+</body>
+</html>

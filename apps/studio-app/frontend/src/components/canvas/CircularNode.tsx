@@ -11,6 +11,7 @@ const registry = registryDataRaw as unknown as RegistryData;
 interface CircularNodeProps {
   node: GraphNode;
   isSelected: boolean;
+  isLinkSource?: boolean;
   onSelect: (id: string, isMulti: boolean) => void;
   onContextMenu: (e: React.MouseEvent | React.KeyboardEvent, nodeId: string) => void;
   onDragStart: (e: React.MouseEvent, nodeId: string) => void;
@@ -27,6 +28,7 @@ const LAYER_BORDER_COLORS: Record<LayerId, string> = {
 export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
   node,
   isSelected,
+  isLinkSource = false,
   onSelect,
   onContextMenu,
   onDragStart,
@@ -37,7 +39,7 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
 
   const borderColor = LAYER_BORDER_COLORS[node.layer] || 'var(--color-border-default)';
   const isHypothesis = node.layer === 'HYPOTHESIS';
-  const size = isSelected || node.radius === 34 ? 68 : 56;
+  const size = isSelected || node.radius === 34 ? 76 : 64;
   const halfSize = size / 2;
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -95,8 +97,10 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
           backgroundColor: 'var(--color-bg-surface)',
           borderWidth: isHypothesis ? '2.5px' : '2px',
           borderStyle: isHypothesis ? 'dashed' : 'solid',
-          borderColor: borderColor,
-          boxShadow: isSelected
+          borderColor: isLinkSource ? 'var(--color-status-warning)' : borderColor,
+          boxShadow: isLinkSource
+            ? '0 0 0 4px var(--color-status-warning), 0 0 16px rgba(245, 158, 11, 0.6)'
+            : isSelected
             ? '0 0 0 3px var(--color-accent-subtle), 0 0 12px rgba(37, 99, 235, 0.4)'
             : '0 2px 4px rgba(0, 0, 0, 0.3)',
           display: 'flex',
@@ -106,7 +110,7 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
           transition: 'transform 0.1s ease, box-shadow 0.1s ease',
         }}
       >
-        <NodeIcon name={iconName} size={size === 68 ? 26 : 22} style={{ color: borderColor }} />
+        <NodeIcon name={iconName} size={size === 76 ? 30 : 26} style={{ color: borderColor }} />
 
         {/* Confidence chip if confidence < 1.0 */}
         {node.confidence !== null && node.confidence !== undefined && node.confidence < 1.0 && (
@@ -115,7 +119,7 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
               position: 'absolute',
               top: '-4px',
               right: '-4px',
-              fontSize: '10px',
+              fontSize: 'var(--text-xs)',
               fontFamily: 'var(--font-mono)',
               padding: '1px 4px',
               borderRadius: 'var(--radius-sm)',
@@ -161,17 +165,24 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
       <div
         title={node.label}
         style={{
-          marginTop: 'var(--space-1)',
-          fontSize: 'var(--text-xs)',
+          marginTop: '6px',
+          fontSize: '12.5px',
+          lineHeight: '1.25',
           fontFamily: 'var(--font-sans)',
           color: isSelected ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
-          fontWeight: isSelected ? 600 : 400,
+          fontWeight: isSelected ? 600 : 500,
           textAlign: 'center',
-          maxWidth: '120px',
+          maxWidth: '140px',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           pointerEvents: 'none',
+          backgroundColor: 'rgba(15, 23, 42, 0.88)',
+          padding: '2px 8px',
+          borderRadius: 'var(--radius-sm)',
+          border: isSelected ? '1px solid var(--color-accent-primary)' : '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 2px 6px rgba(0, 0, 0, 0.6)',
+          backdropFilter: 'blur(4px)',
         }}
       >
         {node.label}

@@ -163,4 +163,82 @@ describe('useGraphStore & Reversible Undo/Redo Engine', () => {
     useGraphStore.getState().zoomBy(1.5);
     expect(useGraphStore.getState().viewport.zoom).toBe(1.5);
   });
+
+  it('toggles all layers and individual layer visibility correctly', () => {
+    // Default has 5 active layers
+    expect(useGraphStore.getState().activeLayers.size).toBe(5);
+
+    // Toggle off FLOWS
+    useGraphStore.getState().toggleLayer('FLOWS');
+    expect(useGraphStore.getState().activeLayers.has('FLOWS')).toBe(false);
+    expect(useGraphStore.getState().activeLayers.size).toBe(4);
+
+    // Toggle on FLOWS again
+    useGraphStore.getState().toggleLayer('FLOWS');
+    expect(useGraphStore.getState().activeLayers.has('FLOWS')).toBe(true);
+
+    // Turn all off
+    useGraphStore.getState().setAllLayers(false);
+    expect(useGraphStore.getState().activeLayers.size).toBe(0);
+
+    // Turn all on
+    useGraphStore.getState().setAllLayers(true);
+    expect(useGraphStore.getState().activeLayers.size).toBe(5);
+  });
+
+  it('manages link mode and creates manual edges with reversible undo/redo', () => {
+    const nodeA: GraphNode = {
+      id: 'node-link-1',
+      case_id: 'case-test',
+      type: 'personne',
+      layer: 'VERIFIED',
+      label: 'Suspect Alpha',
+      confidence: 1.0,
+      provenance: 'MANUAL',
+      properties: {},
+      latitude: null,
+      longitude: null,
+    };
+    const nodeB: GraphNode = {
+      id: 'node-link-2',
+      case_id: 'case-test',
+      type: 'telephone',
+      layer: 'FLOWS',
+      label: '+2135550199',
+      confidence: 0.9,
+      provenance: 'MANUAL',
+      properties: {},
+      latitude: null,
+      longitude: null,
+    };
+
+    useGraphStore.setState({ nodes: [nodeA, nodeB], edges: [] });
+
+    // Enable link mode
+    useGraphStore.getState().setLinkMode(true);
+    expect(useGraphStore.getState().isLinkMode).toBe(true);
+    expect(useGraphStore.getState().linkSourceNodeId).toBeNull();
+
+    useGraphStore.getState().setLinkSourceNodeId('node-link-1');
+    expect(useGraphStore.getState().linkSourceNodeId).toBe('node-link-1');
+
+    // Create edge between nodeA and nodeB
+    useGraphStore.getState().createManualEdge('node-link-1', 'node-link-2');
+
+    expect(useGraphStore.getState().edges).toHaveLength(1);
+    expect(useGraphStore.getState().edges[0]?.source_id).toBe('node-link-1');
+    expect(useGraphStore.getState().edges[0]?.target_id).toBe('node-link-2');
+    expect(useGraphStore.getState().isLinkMode).toBe(false);
+    expect(useGraphStore.getState().linkSourceNodeId).toBeNull();
+    expect(useGraphStore.getState().undoStack).toHaveLength(1);
+
+    // Undo edge creation
+    useGraphStore.getState().undo();
+    expect(useGraphStore.getState().edges).toHaveLength(0);
+    expect(useGraphStore.getState().redoStack).toHaveLength(1);
+
+    // Redo edge creation
+    useGraphStore.getState().redo();
+    expect(useGraphStore.getState().edges).toHaveLength(1);
+  });
 });

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useGraphStore } from '../../store/useGraphStore';
 import { API_BASE } from '../../config';
 import { ShieldCheck, AlertTriangle, RefreshCw, Hash } from 'lucide-react';
+import { useI18n } from '../../context/I18nContext';
 
 interface AuditVerificationData {
   is_valid: boolean;
@@ -12,6 +13,7 @@ interface AuditVerificationData {
 
 export const AuditChainViewer: React.FC = () => {
   const { activeCase } = useGraphStore();
+  const { tr } = useI18n();
   const [verification, setVerification] = useState<AuditVerificationData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -34,7 +36,7 @@ export const AuditChainViewer: React.FC = () => {
   return (
     <div
       role="region"
-      aria-label="Registre forensique immuable de l'enquête"
+      aria-label={tr('Registre d\'Audit Forensique')}
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -67,11 +69,11 @@ export const AuditChainViewer: React.FC = () => {
               <div>
                 <h3 style={{ margin: 0, fontSize: 'var(--text-md)', fontWeight: 600 }}>
                   {verification?.is_valid
-                    ? 'Chaîne de Preuves Cryptographique Intègre (ISO 27037)'
-                    : 'Alerte : Altération Détectée dans la Chaîne de Preuves'}
+                    ? tr('Chaîne de Preuves Cryptographique Intègre (ISO 27037)')
+                    : tr('Alerte : Altération Détectée dans la Chaîne de Preuves')}
                 </h3>
                 <p style={{ margin: '4px 0 0', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-                  {verification?.message || 'Vérification en cours...'}
+                  {verification?.message || tr('Vérification en cours...')}
                 </p>
               </div>
             </div>
@@ -94,7 +96,7 @@ export const AuditChainViewer: React.FC = () => {
               }}
             >
               <RefreshCw size={14} className={isLoading ? 'animate-spin' : undefined} />
-              <span>Revérifier</span>
+              <span>{tr('Revérifier')}</span>
             </button>
           </div>
         </div>
@@ -104,25 +106,27 @@ export const AuditChainViewer: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
             <Hash size={18} style={{ color: 'var(--color-accent-text)' }} />
             <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600 }}>
-              Caractéristiques du Registre Forensique d&apos;Athar
+              {tr('Caractéristiques du Registre Forensique d\'Athar')}
             </span>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
             <p style={{ margin: 0 }}>
-              Chaque mutation sur le dossier (chargement de scellé, promotion de couche judiciaire, exécution algorithmique SNA, exportation judiciaire) génère un bloc immuable scellé par empreinte <strong>SHA-256</strong> chaînée en amont.
+              {tr('Description du registre chaîné SHA-256')}
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
               <div style={{ padding: 'var(--space-2)', backgroundColor: 'var(--color-bg-canvas)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-subtle)' }}>
-                <span style={{ color: 'var(--color-text-muted)' }}>Algorithme de hachage :</span>
+                <span style={{ color: 'var(--color-text-muted)' }}>{tr('Algorithme de hachage :')}</span>
                 <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--color-text-primary)', marginTop: '2px' }}>SHA-256 Merkle-Chained</div>
               </div>
               <div style={{ padding: 'var(--space-2)', backgroundColor: 'var(--color-bg-canvas)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-subtle)' }}>
-                <span style={{ color: 'var(--color-text-muted)' }}>Entrées enregistrées :</span>
-                <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--color-text-primary)', marginTop: '2px' }}>{verification?.total_entries || 0} blocs certifiés</div>
+                <span style={{ color: 'var(--color-text-muted)' }}>{tr('Entrées enregistrées :')}</span>
+                <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--color-text-primary)', marginTop: '2px' }}>
+                  {tr('{n} entrées au total', { n: verification?.total_entries || 0 })}
+                </div>
               </div>
               <div style={{ padding: 'var(--space-2)', backgroundColor: 'var(--color-bg-canvas)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-subtle)' }}>
-                <span style={{ color: 'var(--color-text-muted)' }}>Conformité judiciaire :</span>
+                <span style={{ color: 'var(--color-text-muted)' }}>{tr('Conformité judiciaire :')}</span>
                 <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--color-layer-1-verified)', marginTop: '2px' }}>ISO/IEC 27037:2012</div>
               </div>
             </div>

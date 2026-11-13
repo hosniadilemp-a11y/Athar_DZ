@@ -40,46 +40,86 @@ def make_tiny_test_graph() -> tuple[list[dict], list[dict]]:
     id_a, id_b, id_c, id_d, id_e = [uuid.uuid4() for _ in range(5)]
     nodes = [
         {
-            "id": id_a, "type": "personne", "layer": "VERIFIED",
-            "label": "A", "confidence": 1.0, "latitude": 36.75, "longitude": 3.05,
+            "id": id_a,
+            "type": "personne",
+            "layer": "VERIFIED",
+            "label": "A",
+            "confidence": 1.0,
+            "latitude": 36.75,
+            "longitude": 3.05,
         },
         {
-            "id": id_b, "type": "personne", "layer": "VERIFIED",
-            "label": "B", "confidence": 0.9, "latitude": 36.76, "longitude": 3.06,
+            "id": id_b,
+            "type": "personne",
+            "layer": "VERIFIED",
+            "label": "B",
+            "confidence": 0.9,
+            "latitude": 36.76,
+            "longitude": 3.06,
         },
         {
-            "id": id_c, "type": "personne", "layer": "VERIFIED",
-            "label": "C", "confidence": 0.8, "latitude": 36.77, "longitude": 3.07,
+            "id": id_c,
+            "type": "personne",
+            "layer": "VERIFIED",
+            "label": "C",
+            "confidence": 0.8,
+            "latitude": 36.77,
+            "longitude": 3.07,
         },
         {
-            "id": id_d, "type": "telephone", "layer": "INFRA",
-            "label": "D", "confidence": 0.5, "latitude": None, "longitude": None,
+            "id": id_d,
+            "type": "telephone",
+            "layer": "INFRA",
+            "label": "D",
+            "confidence": 0.5,
+            "latitude": None,
+            "longitude": None,
         },
         {
-            "id": id_e, "type": "compte_social", "layer": "OSINT_RAW",
-            "label": "E", "confidence": 0.3, "latitude": 37.0, "longitude": 4.0,
+            "id": id_e,
+            "type": "compte_social",
+            "layer": "OSINT_RAW",
+            "label": "E",
+            "confidence": 0.3,
+            "latitude": 37.0,
+            "longitude": 4.0,
         },
     ]
     edges = [
         {
-            "id": uuid.uuid4(), "type": "COMMUNIQUE_AVEC",
-            "source_id": id_a, "target_id": id_b, "layer": "VERIFIED",
+            "id": uuid.uuid4(),
+            "type": "COMMUNIQUE_AVEC",
+            "source_id": id_a,
+            "target_id": id_b,
+            "layer": "VERIFIED",
         },
         {
-            "id": uuid.uuid4(), "type": "COMMUNIQUE_AVEC",
-            "source_id": id_b, "target_id": id_c, "layer": "VERIFIED",
+            "id": uuid.uuid4(),
+            "type": "COMMUNIQUE_AVEC",
+            "source_id": id_b,
+            "target_id": id_c,
+            "layer": "VERIFIED",
         },
         {
-            "id": uuid.uuid4(), "type": "COMMUNIQUE_AVEC",
-            "source_id": id_a, "target_id": id_c, "layer": "VERIFIED",
+            "id": uuid.uuid4(),
+            "type": "COMMUNIQUE_AVEC",
+            "source_id": id_a,
+            "target_id": id_c,
+            "layer": "VERIFIED",
         },
         {
-            "id": uuid.uuid4(), "type": "UTILISE",
-            "source_id": id_c, "target_id": id_d, "layer": "INFRA",
+            "id": uuid.uuid4(),
+            "type": "UTILISE",
+            "source_id": id_c,
+            "target_id": id_d,
+            "layer": "INFRA",
         },
         {
-            "id": uuid.uuid4(), "type": "ASSOCIE_A",
-            "source_id": id_d, "target_id": id_e, "layer": "OSINT_RAW",
+            "id": uuid.uuid4(),
+            "type": "ASSOCIE_A",
+            "source_id": id_d,
+            "target_id": id_e,
+            "layer": "OSINT_RAW",
         },
     ]
     return nodes, edges
@@ -89,10 +129,22 @@ def test_sna_registry_exact_16_algorithms() -> None:
     """Must register exactly 16 algorithms."""
     assert len(SNA_REGISTRY) == 16
     expected_keys = {
-        "betweenness", "pagerank", "personalized_pagerank", "degree_centrality",
-        "closeness_eigenvector", "louvain", "label_propagation", "k_core",
-        "articulation_points", "shortest_path_dijkstra", "jaccard", "adamic_adar",
-        "node_classification", "threshold_expand", "temporal_subgraph", "activity_sector",
+        "betweenness",
+        "pagerank",
+        "personalized_pagerank",
+        "degree_centrality",
+        "closeness_eigenvector",
+        "louvain",
+        "label_propagation",
+        "k_core",
+        "articulation_points",
+        "shortest_path_dijkstra",
+        "jaccard",
+        "adamic_adar",
+        "node_classification",
+        "threshold_expand",
+        "temporal_subgraph",
+        "activity_sector",
     }
     assert set(SNA_REGISTRY.keys()) == expected_keys
 
@@ -151,7 +203,8 @@ def test_k_core_and_articulation_points() -> None:
 def test_shortest_path_dijkstra() -> None:
     nodes, edges = make_tiny_test_graph()
     res = run_shortest_path_dijkstra(
-        nodes, edges,
+        nodes,
+        edges,
         {"source_id": str(nodes[0]["id"]), "target_id": str(nodes[4]["id"])},
     )
     assert res.summary["path_found"] is True
@@ -200,8 +253,13 @@ def test_edge_cases_empty_and_single_node() -> None:
     empty_edges: list[dict] = []
     single_node = [
         {
-            "id": uuid.uuid4(), "type": "personne", "layer": "VERIFIED",
-            "label": "Solo", "confidence": 1.0, "latitude": None, "longitude": None,
+            "id": uuid.uuid4(),
+            "type": "personne",
+            "layer": "VERIFIED",
+            "label": "Solo",
+            "confidence": 1.0,
+            "latitude": None,
+            "longitude": None,
         }
     ]
 

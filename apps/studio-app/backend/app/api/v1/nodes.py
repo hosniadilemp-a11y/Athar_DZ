@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from typing import Any
 
 from fastapi import APIRouter, Depends
 from neo4j import AsyncDriver
@@ -15,6 +16,7 @@ from app.schemas.node import NodeCreate, NodeLayerChange, NodeResponse, ToolProp
 from app.services.graph_service import (
     change_node_layer,
     create_node,
+    delete_node,
     get_tool_proposals,
 )
 
@@ -78,3 +80,21 @@ async def get_node_tools_endpoint(
 
     node_type = row[0] if row else "unknown"
     return get_tool_proposals(node_type)
+
+
+@router.delete("/{node_id}")
+async def delete_node_endpoint(
+    case_id: uuid.UUID,
+    node_id: uuid.UUID,
+    engine: AsyncEngine = Depends(get_pg_engine),
+    neo4j_driver: AsyncDriver = Depends(get_neo4j_driver),
+    actor_id: str = Depends(get_actor_id),
+) -> dict[str, Any]:
+    """Soft-delete an entity node and incident edges with forensic audit logging."""
+    return await delete_node(
+        engine=engine,
+        neo4j_driver=neo4j_driver,
+        case_id=case_id,
+        node_id=node_id,
+        actor_id=actor_id,
+    )

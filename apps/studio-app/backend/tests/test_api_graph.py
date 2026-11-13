@@ -225,3 +225,17 @@ async def test_audit_verification_endpoint() -> None:
         assert verification["is_valid"] is True
         assert verification["total_entries"] >= 1
         assert "100% authentic" in verification["message"]
+
+
+@pytest.mark.asyncio
+async def test_get_registry_endpoint() -> None:
+    """Test that the /api/v1/registry endpoint returns 37 types, 47 relations, and 5 layers."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        res = await client.get("/api/v1/registry")
+        assert res.status_code == 200
+        reg = res.json()
+        assert len(reg["layers"]) == 5
+        assert len(reg["node_types"]) == 37
+        assert len(reg["relation_types"]) == 47
+        assert reg["metadata"]["gps_enabled_count"] == 8

@@ -1,20 +1,23 @@
 import React from 'react';
 import { useGraphStore } from '../../store/useGraphStore';
+import type { GraphLayoutType } from '../../utils/graphLayouts';
+import { useI18n } from '../../context/I18nContext';
 import {
-  ZoomIn,
-  ZoomOut,
-  Maximize2,
-  RotateCcw,
+  Network,
+  Calendar,
+  MapPin,
+  Table,
+  ShieldCheck,
   Undo2,
   Redo2,
-  Table,
-  Network,
-  Sparkles,
-  BrainCircuit,
-  MapPin,
-  Calendar,
-  ShieldCheck,
+  Play,
   FileDown,
+  Target,
+  Share2,
+  Circle,
+  GitFork,
+  Grid,
+  Sparkles,
 } from 'lucide-react';
 
 export type ActiveViewMode = 'graph' | 'map' | 'timeline' | 'table' | 'audit';
@@ -26,324 +29,235 @@ interface ToolbarProps {
   onToggleSna?: () => void;
   onOpenExport?: () => void;
   onToggleImpactView: () => void;
+  onRunRecommendedScenario?: () => void;
 }
+
+type LayoutOptionDef = {
+  key: GraphLayoutType;
+  labelFr: string;
+  shortNameFr: string;
+  tooltipFr: string;
+  icon: React.ReactNode;
+};
+
+const LAYOUT_OPTIONS: LayoutOptionDef[] = [
+  {
+    key: 'concentric',
+    labelFr: 'Concentrique par Calque',
+    shortNameFr: 'Concentrique',
+    tooltipFr: "Disposition Concentrique : Stratification en anneaux orbitaux par calque de preuve judiciaire (recommandé pour l'enquête)",
+    icon: <Target size={13} />,
+  },
+  {
+    key: 'force',
+    labelFr: 'Organique (Forces)',
+    shortNameFr: 'Organique',
+    tooltipFr: 'Disposition Organique (Forces F-R) : Rapprochement physique des entités fortement connectées pour faire émerger les cellules',
+    icon: <Share2 size={13} />,
+  },
+  {
+    key: 'circular',
+    labelFr: 'Circulaire Global',
+    shortNameFr: 'Circulaire',
+    tooltipFr: 'Disposition Circulaire : Placement équiangulaire sur un anneau unique pour analyser les flux transversaux',
+    icon: <Circle size={13} />,
+  },
+  {
+    key: 'hierarchical',
+    labelFr: 'Hiérarchique',
+    shortNameFr: 'Hiérarchique',
+    tooltipFr: 'Disposition Hiérarchique : Arborescence par niveau de causalité (Territoire ➔ Cibles ➔ Vecteurs ➔ Flux)',
+    icon: <GitFork size={13} />,
+  },
+  {
+    key: 'grid',
+    labelFr: 'Matrice en Grille',
+    shortNameFr: 'Grille',
+    tooltipFr: "Disposition en Grille : Alignement cartésien compact ordonné par calque de scellé pour l'inventaire méthodique",
+    icon: <Grid size={13} />,
+  },
+];
 
 export const Toolbar: React.FC<ToolbarProps> = ({
   activeView,
   onChangeView,
-  isSnaOpen = false,
-  onToggleSna,
   onOpenExport,
   onToggleImpactView,
+  onRunRecommendedScenario,
 }) => {
   const {
-    viewport,
-    zoomBy,
-    resetViewport,
     undo,
     redo,
     undoStack,
     redoStack,
+    activeLayout,
+    applyLayout,
     isImpactView,
     nodes,
     totalCaseNodes,
   } = useGraphStore();
+  const { tr } = useI18n();
 
   return (
-    <div
-      role="toolbar"
-      aria-label="Barre d'outils et sélecteur de vues d'investigation"
-      style={{
-        position: 'absolute',
-        top: 'var(--space-3)',
-        left: 'var(--space-4)',
-        right: 'var(--space-4)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        pointerEvents: 'none',
-        zIndex: 10,
-      }}
-    >
-      {/* Left side: Impact View & Multi-View Switcher */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 'var(--space-2)',
-          backgroundColor: 'var(--color-bg-surface)',
-          padding: 'var(--space-1) var(--space-2)',
-          borderRadius: 'var(--radius-md)',
-          border: '1px solid var(--color-border-default)',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-          pointerEvents: 'auto',
-        }}
-      >
-        {/* Impact View Toggle */}
+    <header className="canvas-sub-header" role="region" aria-label={tr('Sous-barre de sélection de vue et actions de canevas')}>
+      {/* 1. Segmented View Switcher */}
+      <div className="canvas-segmented-tabs" role="tablist" aria-label={tr('Vues analytiques')}>
         <button
           type="button"
-          onClick={onToggleImpactView}
-          aria-pressed={isImpactView}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--space-2)',
-            padding: 'var(--space-1) var(--space-3)',
-            backgroundColor: isImpactView ? 'var(--color-accent-subtle)' : 'transparent',
-            border: isImpactView ? '1px solid var(--color-accent-primary)' : '1px solid transparent',
-            borderRadius: 'var(--radius-sm)',
-            color: isImpactView ? 'var(--color-accent-text)' : 'var(--color-text-secondary)',
-            cursor: 'pointer',
-            fontSize: 'var(--text-xs)',
-            fontWeight: 600,
-          }}
-        >
-          <Sparkles size={14} style={{ color: isImpactView ? 'var(--color-accent-text)' : 'var(--color-text-muted)' }} />
-          <span>
-            Vue Impact : {nodes.length} / {totalCaseNodes || 100} nœuds
-          </span>
-        </button>
-
-        <div style={{ width: '1px', height: '18px', backgroundColor: 'var(--color-border-default)' }} />
-
-        {/* View Switchers */}
-        <button
-          type="button"
-          title="Vue Graphe Interactif"
-          aria-label="Vue Graphe"
+          className={`canvas-segmented-btn ${activeView === 'graph' ? 'active' : ''}`}
+          role="tab"
+          aria-selected={activeView === 'graph'}
           onClick={() => onChangeView('graph')}
-          style={viewBtnStyle(activeView === 'graph')}
+          title={tr('Vue Graphe de Rapprochement [Alt+1]')}
         >
-          <Network size={14} />
-          <span>Graphe</span>
+          <Network size={13} />
+          <span>{tr('Graphe')}</span>
         </button>
 
         <button
           type="button"
-          title="Vue Cartographie SIG (8 types GPS)"
-          aria-label="Vue Carte"
+          className={`canvas-segmented-btn ${activeView === 'map' ? 'active' : ''}`}
+          role="tab"
+          aria-selected={activeView === 'map'}
           onClick={() => onChangeView('map')}
-          style={viewBtnStyle(activeView === 'map')}
+          title={tr('Vue Cartographie SIG (8 types géolocalisés sur le territoire algérien) [Alt+3]')}
         >
-          <MapPin size={14} />
-          <span>Carte</span>
+          <MapPin size={13} />
+          <span>{tr('Carte SIG')}</span>
         </button>
 
         <button
           type="button"
-          title="Vue Chronologie Temporelle"
-          aria-label="Vue Chronologie"
+          className={`canvas-segmented-btn ${activeView === 'timeline' ? 'active' : ''}`}
+          role="tab"
+          aria-selected={activeView === 'timeline'}
           onClick={() => onChangeView('timeline')}
-          style={viewBtnStyle(activeView === 'timeline')}
+          title={tr('Vue Chronologie Temporelle des Faits [Alt+2]')}
         >
-          <Calendar size={14} />
-          <span>Chronologie</span>
+          <Calendar size={13} />
+          <span>{tr('Chronologie')}</span>
         </button>
 
         <button
           type="button"
-          title="Vue Tableau Accessible"
-          aria-label="Vue Tableau"
+          className={`canvas-segmented-btn ${activeView === 'table' ? 'active' : ''}`}
+          role="tab"
+          aria-selected={activeView === 'table'}
           onClick={() => onChangeView('table')}
-          style={viewBtnStyle(activeView === 'table')}
+          title={tr('Vue Tableau Accessible (WCAG AA) [Alt+4]')}
         >
-          <Table size={14} />
-          <span>Tableau</span>
+          <Table size={13} />
+          <span>{tr('Tableau')}</span>
         </button>
 
         <button
           type="button"
-          title="Vue Registre Forensique (ISO 27037)"
-          aria-label="Vue Registre"
+          className={`canvas-segmented-btn ${activeView === 'audit' ? 'active' : ''}`}
+          role="tab"
+          aria-selected={activeView === 'audit'}
           onClick={() => onChangeView('audit')}
-          style={viewBtnStyle(activeView === 'audit')}
+          title={tr("Vue Registre d'Audit Forensique ISO 27037 [Alt+5]")}
         >
-          <ShieldCheck size={14} />
-          <span>Registre</span>
+          <ShieldCheck size={13} />
+          <span>{tr("Registre d'Audit")}</span>
         </button>
       </div>
 
-      {/* Right side: SNA, Export, and Navigation Controls */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 'var(--space-1)',
-          backgroundColor: 'var(--color-bg-surface)',
-          padding: 'var(--space-1)',
-          borderRadius: 'var(--radius-md)',
-          border: '1px solid var(--color-border-default)',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-          pointerEvents: 'auto',
-        }}
-      >
-        {/* SNA Panel Toggle */}
-        {onToggleSna && (
+      {/* 2. Graph Layout Switcher (Visible when in Graph view) */}
+      {activeView === 'graph' && (
+        <div className="toolbar-layouts-bar" role="group" aria-label={tr('Dispositions du graphe') || 'Graph layouts'}>
+          <span className="toolbar-layouts-label">{tr('Disposition :')}</span>
+          <div className="toolbar-layouts-pills">
+            {LAYOUT_OPTIONS.map((layout) => {
+              const isCurrent = activeLayout === layout.key;
+              return (
+                <button
+                  key={layout.key}
+                  type="button"
+                  className={`toolbar-layout-pill ${isCurrent ? 'active' : ''}`}
+                  onClick={() => applyLayout(layout.key)}
+                  title={tr(layout.tooltipFr)}
+                  aria-label={tr(layout.labelFr) || layout.labelFr}
+                  aria-pressed={isCurrent}
+                >
+                  <span className="toolbar-layout-icon">{layout.icon}</span>
+                  <span className="toolbar-layout-pill-name">{tr(layout.shortNameFr)}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 3. Sub-Header Actions & Impact Badge */}
+      <div className="canvas-sub-header-actions">
+        {/* Impact View Toggle Button */}
+        {activeView === 'graph' && (
           <button
             type="button"
-            onClick={onToggleSna}
-            aria-pressed={isSnaOpen}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--space-1)',
-              padding: 'var(--space-1) var(--space-2)',
-              backgroundColor: isSnaOpen ? 'var(--color-accent-subtle)' : 'transparent',
-              border: isSnaOpen ? '1px solid var(--color-accent-primary)' : '1px solid transparent',
-              borderRadius: 'var(--radius-sm)',
-              color: isSnaOpen ? 'var(--color-accent-text)' : 'var(--color-text-secondary)',
-              cursor: 'pointer',
-              fontSize: 'var(--text-xs)',
-              fontWeight: 600,
-            }}
+            className={`btn btn-ghost btn-sm toolbar-impact-btn ${isImpactView ? 'active' : ''}`}
+            onClick={onToggleImpactView}
+            title={tr("Basculer entre la vue d'ensemble (100 nœuds) et la vue restreinte de préjudice (35 nœuds)")}
+            aria-label={tr('Vue Impact : {n} sur {total} nœuds', { n: nodes.length, total: totalCaseNodes || 100 })}
           >
-            <BrainCircuit size={14} style={{ color: isSnaOpen ? 'var(--color-accent-text)' : 'var(--color-text-muted)' }} />
-            <span>SNA (16)</span>
+            <Sparkles size={13} className={isImpactView ? 'text-accent' : 'text-muted'} />
+            <span className="font-mono text-xs">
+              {tr('Vue Impact : {n} / {total} nœuds', { n: nodes.length, total: totalCaseNodes || 100 })}
+            </span>
           </button>
         )}
 
-        {/* Export Modal Button */}
+        {/* Undo / Redo */}
+        <div className="canvas-history-group" role="group" aria-label={tr('Historique des actions')}>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={undo}
+            disabled={undoStack.length === 0}
+            title={tr('Annuler la dernière action ({n}) [Ctrl+Z]', { n: undoStack.length })}
+            aria-label={tr('Annuler la dernière action')}
+          >
+            <Undo2 size={13} />
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={redo}
+            disabled={redoStack.length === 0}
+            title={tr("Rétablir l'action ({n}) [Ctrl+Y]", { n: redoStack.length })}
+            aria-label={tr('Rétablir la dernière action')}
+          >
+            <Redo2 size={13} />
+          </button>
+        </div>
+
+        {/* Recommended Playbook CTA (Review-Run) */}
+        <button
+          type="button"
+          className="btn btn-secondary btn-sm play-scenario-btn"
+          onClick={onRunRecommendedScenario}
+          title={tr("Lancer le scénario d'enquête déterministe recommandé pour l'affaire en cours")}
+          aria-label={tr('Lancer le Scénario Recommandé (Review-Run)')}
+        >
+          <Play size={13} className="text-accent" />
+          <span>{tr('Lancer le Scénario Recommandé')}</span>
+          <span className="chip chip-neutral font-mono text-xs">Review-Run</span>
+        </button>
+
+        {/* Case Export */}
         {onOpenExport && (
           <button
             type="button"
+            className="btn btn-ghost btn-sm"
             onClick={onOpenExport}
-            title="Exporter le dossier (PDF / JSON)"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--space-1)',
-              padding: 'var(--space-1) var(--space-2)',
-              backgroundColor: 'transparent',
-              border: '1px solid var(--color-border-subtle)',
-              borderRadius: 'var(--radius-sm)',
-              color: 'var(--color-text-secondary)',
-              cursor: 'pointer',
-              fontSize: 'var(--text-xs)',
-              fontWeight: 600,
-            }}
+            title={tr('Exporter le dossier judiciaire en PDF ou archive JSON conforme')}
+            aria-label={tr('Exporter le Dossier Judiciaire')}
           >
-            <FileDown size={14} />
-            <span>Exporter</span>
+            <FileDown size={13} />
+            <span>{tr('Exporter')}</span>
           </button>
         )}
-
-        {activeView === 'graph' && (
-          <>
-            <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--color-border-default)', margin: '0 4px' }} />
-
-            {/* Undo */}
-            <button
-              type="button"
-              title={`Annuler (${undoStack.length}) [Ctrl+Z]`}
-              aria-label="Annuler la dernière action"
-              disabled={undoStack.length === 0}
-              onClick={undo}
-              style={toolBtnStyle(undoStack.length > 0)}
-            >
-              <Undo2 size={16} />
-            </button>
-
-            {/* Redo */}
-            <button
-              type="button"
-              title={`Rétablir (${redoStack.length}) [Ctrl+Y]`}
-              aria-label="Rétablir la dernière action"
-              disabled={redoStack.length === 0}
-              onClick={redo}
-              style={toolBtnStyle(redoStack.length > 0)}
-            >
-              <Redo2 size={16} />
-            </button>
-
-            <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--color-border-default)', margin: '0 4px' }} />
-
-            {/* Zoom Out */}
-            <button
-              type="button"
-              title="Zoom arrière (-)"
-              aria-label="Zoom arrière"
-              onClick={() => zoomBy(0.85)}
-              style={toolBtnStyle(true)}
-            >
-              <ZoomOut size={16} />
-            </button>
-
-            {/* Zoom Level Indicator */}
-            <span
-              style={{
-                fontSize: '11px',
-                fontFamily: 'var(--font-mono)',
-                color: 'var(--color-text-muted)',
-                minWidth: '38px',
-                textAlign: 'center',
-              }}
-            >
-              {Math.round(viewport.zoom * 100)}%
-            </span>
-
-            {/* Zoom In */}
-            <button
-              type="button"
-              title="Zoom avant (+)"
-              aria-label="Zoom avant"
-              onClick={() => zoomBy(1.15)}
-              style={toolBtnStyle(true)}
-            >
-              <ZoomIn size={16} />
-            </button>
-
-            {/* Reset View */}
-            <button
-              type="button"
-              title="Réinitialiser vue (0)"
-              aria-label="Réinitialiser vue"
-              onClick={resetViewport}
-              style={toolBtnStyle(true)}
-            >
-              <RotateCcw size={16} />
-            </button>
-
-            {/* Fit */}
-            <button
-              type="button"
-              title="Ajuster à l'écran"
-              aria-label="Ajuster à l'écran"
-              onClick={resetViewport}
-              style={toolBtnStyle(true)}
-            >
-              <Maximize2 size={16} />
-            </button>
-          </>
-        )}
       </div>
-    </div>
+    </header>
   );
 };
-
-const viewBtnStyle = (active: boolean): React.CSSProperties => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '4px',
-  padding: '4px 8px',
-  backgroundColor: active ? 'var(--color-accent-subtle)' : 'transparent',
-  border: active ? '1px solid var(--color-accent-primary)' : '1px solid transparent',
-  borderRadius: 'var(--radius-sm)',
-  color: active ? 'var(--color-accent-text)' : 'var(--color-text-secondary)',
-  fontSize: 'var(--text-xs)',
-  fontWeight: active ? 600 : 400,
-  cursor: 'pointer',
-});
-
-const toolBtnStyle = (enabled: boolean): React.CSSProperties => ({
-  width: '28px',
-  height: '28px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: 'transparent',
-  border: 'none',
-  borderRadius: 'var(--radius-sm)',
-  color: enabled ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
-  cursor: enabled ? 'pointer' : 'not-allowed',
-  padding: 0,
-});

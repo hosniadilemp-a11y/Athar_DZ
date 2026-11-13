@@ -817,6 +817,73 @@ async def change_node_layer(
     )
 
 
+async def delete_node(
+    engine: AsyncEngine,
+    neo4j_driver: AsyncDriver,
+    case_id: uuid.UUID,
+    node_id: uuid.UUID,
+    actor_id: str,
+    reason: str = "Suppression de l'entité par l'enquêteur",
+) -> dict[str, Any]:
+    """Soft-delete an entity node and its incident edges with full forensic audit logging."""
+    await get_case(engine, case_id)
+
+    async with engine.connect() as conn:
+        res = await conn.execute(
+            text(
+                "SELECT id, type, layer, label FROM nodes "
+                "WHERE id = :id AND case_id = :cid AND deleted_at IS NULL;"
+            ),
+            {"id": node_id, "cid": case_id},
+        )
+        row = res.fetchone()
+
+    if not row:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": "NODE_NOT_FOUND",
+                "message": f"Node '{node_id}' not found in case '{case_id}'",
+            },
+        )
+
+    # 1. Soft delete node and incident edges in Postgres
+    async with engine.begin() as conn:
+        await conn.execute(
+            text("UPDATE nodes SET deleted_at = CURRENT_TIMESTAMP WHERE id = :id;"),
+            {"id": node_id},
+        )
+        await conn.execute(
+            text(
+                "UPDATE edges SET deleted_at = CURRENT_TIMESTAMP "
+                "WHERE (source_id = :id OR target_id = :id) AND deleted_at IS NULL;"
+            ),
+            {"id": node_id},
+        )
+
+    # 2. Detach delete in Neo4j
+    async with neo4j_driver.session() as session:
+        await session.run(
+            "MATCH (n:Node {id: $id}) DETACH DELETE n",
+            {"id": str(node_id)},
+        )
+
+    # 3. Log to Audit
+    await log_audit_event(
+        engine=engine,
+        case_id=case_id,
+        actor_id=actor_id,
+        action="DELETE_NODE",
+        entity_type="node",
+        entity_id=node_id,
+        before_state={"label": row[3], "type": row[1], "layer": row[2]},
+        after_state={"deleted": True},
+        reason=reason,
+    )
+
+    return {"status": "DELETED", "id": str(node_id)}
+
+
 # ==============================================================================
 # 5. SPECIALIZED TOOL PROPOSALS PER NODE TYPE
 # ==============================================================================

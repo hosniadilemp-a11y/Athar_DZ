@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Athar Design Tokens (Dark default + Light print/accessibility theme)
  * Conforms to .agent/ui-ux-rules.md (8-pt spacing grid, WCAG 2.2 AA, D1 5-layer hues)
  */
@@ -16,18 +16,50 @@
   --color-text-secondary: #cbd5e1;
   --color-text-muted: #94a3b8;
 
+  /* Neutral palette mapping for maquette classes */
+  --color-neutral-950: #070a0f;
+  --color-neutral-900: #0f172a;
+  --color-neutral-850: #141f36;
+  --color-neutral-800: #1e293b;
+  --color-neutral-750: #25334a;
+  --color-neutral-700: #334155;
+  --color-neutral-600: #475569;
+  --color-neutral-500: #64748b;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-50:  #f8fafc;
+
   /* Single Interactive Accent (Blue) */
   --color-accent-primary: #2563eb;
   --color-accent-hover: #1d4ed8;
+  --color-accent-active: #1e40af;
   --color-accent-subtle: rgba(37, 99, 235, 0.16);
+  --color-accent-border: rgba(37, 99, 235, 0.4);
   --color-accent-text: #60a5fa;
   --color-text-on-accent: #ffffff;
 
   /* Four Semantic Status Colors (Status Only) */
   --color-status-success: #10b981;
+  --color-status-success-bg: rgba(16, 185, 129, 0.12);
+  --color-status-success-border: rgba(16, 185, 129, 0.35);
+  --color-status-success-text: #34d399;
+
   --color-status-warning: #f59e0b;
+  --color-status-warning-bg: rgba(245, 158, 11, 0.12);
+  --color-status-warning-border: rgba(245, 158, 11, 0.35);
+  --color-status-warning-text: #fbbf24;
+
   --color-status-danger: #ef4444;
+  --color-status-danger-bg: rgba(239, 68, 68, 0.12);
+  --color-status-danger-border: rgba(239, 68, 68, 0.35);
+  --color-status-danger-text: #f87171;
+
   --color-status-info: #0284c7;
+  --color-status-info-bg: rgba(2, 132, 199, 0.12);
+  --color-status-info-border: rgba(2, 132, 199, 0.35);
+  --color-status-info-text: #38bdf8;
 
   /* Five Forensic Layer Colors (Decision D1 — distinct from status & neutral) */
   --color-layer-1-verified: #14b8a6;
@@ -36,10 +68,13 @@
   --color-layer-4-hypothesis: #a855f7;
   --color-layer-5-flows: #d97706;
 
+  --color-hypothesis-bg: rgba(168, 85, 247, 0.08);
+  --color-hypothesis-border: rgba(168, 85, 247, 0.35);
+
   /* Typography */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --font-arabic: 'IBM Plex Sans Arabic', 'Noto Sans Arabic', sans-serif;
+  --font-arabic: 'IBM Plex Sans Arabic', 'Noto Sans Arabic', 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
 
   --text-xs: 12px;
   --text-sm: 13px;
@@ -48,13 +83,33 @@
   --text-lg: 20px;
   --text-xl: 24px;
 
-  /* 8-pt Spacing Scale */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.8125rem;
+  --font-size-base: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.45;
+  --line-height-relaxed: 1.6;
+
+  /* 8-pt Spacing Scale with half-steps */
+  --space-0-5: 2px;
   --space-1: 4px;
+  --space-1-5: 6px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
+  --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
+  --space-10: 40px;
   --space-12: 48px;
 
   /* Radii (4px and 8px only) */
@@ -63,10 +118,17 @@
   --radius-full: 9999px;
 
   /* Fixed Shell Dimensions */
+  --menubar-height: 32px;
+  --subbar-height: 44px;
   --topbar-height: 48px;
   --statusbar-height: 24px;
   --panel-left-width: 240px;
   --panel-right-width: 340px;
+
+  /* Interactive Targets */
+  --target-size-min: 32px;
+  --target-size-compact: 28px;
+  --target-size-standard: 36px;
 
   /* Circular Node Sizes */
   --node-size-standard: 56px;
@@ -75,8 +137,21 @@
   /* Z-index Scale */
   --z-base: 1;
   --z-panel: 10;
+  --z-topbar: 20;
   --z-header: 20;
-  --z-modal: 30;
+  --z-modal: 40;
+  --z-toast: 50;
+
+  /* Elevation Shadows */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 14px -2px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 28px -4px rgba(0, 0, 0, 0.65);
+  --shadow-topbar: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+  /* Sleek Scrollbar Tokens */
+  --scrollbar-thumb: rgba(148, 163, 184, 0.28);
+  --scrollbar-thumb-hover: rgba(148, 163, 184, 0.55);
 }
 
 [data-theme="light"] {
@@ -90,20 +165,64 @@
   --color-text-secondary: #334155;
   --color-text-muted: #475569;
 
+  --color-neutral-950: #f8fafc;
+  --color-neutral-900: #ffffff;
+  --color-neutral-850: #f1f5f9;
+  --color-neutral-800: #e2e8f0;
+  --color-neutral-750: #cbd5e1;
+  --color-neutral-700: #94a3b8;
+  --color-neutral-600: #64748b;
+  --color-neutral-500: #475569;
+  --color-neutral-400: #334155;
+  --color-neutral-300: #1e293b;
+  --color-neutral-200: #0f172a;
+  --color-neutral-100: #020617;
+  --color-neutral-50:  #000000;
+
   --color-accent-primary: #1d4ed8;
   --color-accent-hover: #1e40af;
+  --color-accent-active: #172554;
   --color-accent-subtle: rgba(29, 78, 216, 0.1);
+  --color-accent-border: rgba(29, 78, 216, 0.3);
   --color-accent-text: #1d4ed8;
   --color-text-on-accent: #ffffff;
 
   --color-status-success: #047857;
+  --color-status-success-bg: rgba(4, 120, 87, 0.1);
+  --color-status-success-border: rgba(4, 120, 87, 0.3);
+  --color-status-success-text: #065f46;
+
   --color-status-warning: #b45309;
+  --color-status-warning-bg: rgba(180, 83, 9, 0.1);
+  --color-status-warning-border: rgba(180, 83, 9, 0.3);
+  --color-status-warning-text: #92400e;
+
   --color-status-danger: #b91c1c;
+  --color-status-danger-bg: rgba(185, 28, 28, 0.1);
+  --color-status-danger-border: rgba(185, 28, 28, 0.3);
+  --color-status-danger-text: #991b1b;
+
   --color-status-info: #0369a1;
+  --color-status-info-bg: rgba(3, 105, 161, 0.1);
+  --color-status-info-border: rgba(3, 105, 161, 0.3);
+  --color-status-info-text: #075985;
 
   --color-layer-1-verified: #0f766e;
   --color-layer-2-osint: #0e7490;
   --color-layer-3-infra: #4338ca;
   --color-layer-4-hypothesis: #7e22ce;
   --color-layer-5-flows: #b45309;
+
+  --color-hypothesis-bg: rgba(126, 34, 206, 0.08);
+  --color-hypothesis-border: rgba(126, 34, 206, 0.3);
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-topbar: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+  /* Sleek Scrollbar Tokens */
+  --scrollbar-thumb: rgba(100, 116, 139, 0.35);
+  --scrollbar-thumb-hover: rgba(100, 116, 139, 0.65);
 }

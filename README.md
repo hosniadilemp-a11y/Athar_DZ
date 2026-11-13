@@ -33,6 +33,7 @@ La spécification complète est accompagnée d'une suite de démonstrateurs HTML
 | **🕸️ Ontologie du Graphe & Spécification UI** | Modèle de données formel (nœuds, arêtes, provenance légale) et conception ergonomique du studio de travail. | [`doc/data-model.html`](doc/data-model.html) |
 | **🚀 6 Phases de Développement Incrémentales** | Feuille de route technique où **chaque phase fournit une application exécutable et utilisable sur le terrain**. | [`doc/roadmap-phases.html`](doc/roadmap-phases.html) |
 | **📦 Audit de 48 Dépôts GitHub** | Benchmark comparatif des frameworks et bibliothèques open source intégrables (OSINTBuddy, PhoneInfoga, Maigret, ArchiveBox, InsightFace...). | [`doc/github-repos-audit.html`](doc/github-repos-audit.html) |
+| **📋 Inventaire Maître des Outils & Modèles** | Inventaire complet des outils OSINT, SNA, Forensique, conteneurs Docker et modèles IA calibrés pour serveur 1 GPU + 32 Go RAM (Win/Linux CPU/GPU). | [`TOOLS_INVENTORY.md`](TOOLS_INVENTORY.md) |
 
 ---
 

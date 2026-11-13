@@ -1,0 +1,190 @@
+{
+  "binaries": {
+    "osint_subfinder": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\bin\\osint_subfinder\\windows_amd64\\subfinder.exe"
+    },
+    "osint_dnsx": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\bin\\osint_dnsx\\windows_amd64\\dnsx.exe"
+    },
+    "osint_httpx": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\bin\\osint_httpx\\windows_amd64\\httpx.exe"
+    },
+    "osint_katana": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\bin\\osint_katana\\windows_amd64\\katana.exe"
+    },
+    "osint_nuclei": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\bin\\osint_nuclei\\windows_amd64\\nuclei.exe"
+    },
+    "osint_trufflehog": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\bin\\osint_trufflehog\\windows_amd64\\trufflehog.exe"
+    },
+    "osint_phoneinfoga": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\bin\\osint_phoneinfoga\\windows_amd64\\phoneinfoga.exe"
+    },
+    "osint_cyberchef": {
+      "exists": false,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\bin\\osint_cyberchef\\index.html"
+    },
+    "osint_gowitness": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\downloads\\osint_gowitness\\windows\\gowitness-3.2.2-windows-amd64.exe"
+    },
+    "osint_amass": {
+      "exists": false,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\bin\\osint_amass\\windows_amd64\\amass.exe"
+    },
+    "forensic_adb": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\bin\\platform-tools\\windows_amd64\\platform-tools\\adb.exe"
+    },
+    "forensic_scrcpy": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\bin\\forensic_scrcpy\\windows_amd64\\scrcpy-win64-v5.0.1\\scrcpy.exe"
+    },
+    "forensic_jadx": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\bin\\forensic_jadx\\windows_amd64\\bin\\jadx.bat"
+    },
+    "forensic_exiftool": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\bin\\exiftool\\windows_amd64\\exiftool.exe"
+    },
+    "forensic_ffmpeg": {
+      "exists": false,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\bin\\ffmpeg\\windows_amd64\\ffmpeg.exe"
+    },
+    "forensic_ghidra": {
+      "exists": false,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\bin\\ghidra\\ghidraRun.bat"
+    },
+    "sna_gephi_toolkit": {
+      "exists": false,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\bin\\gephi\\gephi-toolkit.jar"
+    }
+  },
+  "repos": {
+    "osint_blackbird_repo": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\repos\\osint_blackbird_repo"
+    },
+    "osint_nuclei_templates": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\repos\\osint_nuclei_templates"
+    },
+    "osint_sherlock_repo": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\repos\\osint_sherlock_repo"
+    },
+    "osint_maigret_repo": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\repos\\osint_maigret_repo"
+    },
+    "osint_theharvester_repo": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\repos\\osint_theharvester_repo"
+    },
+    "osint_holehe_repo": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\repos\\osint_holehe_repo"
+    },
+    "osint_ghunt_repo": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\repos\\osint_ghunt_repo"
+    },
+    "osint_toutatis_repo": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\repos\\osint_toutatis_repo"
+    },
+    "osint_ignorant_repo": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\repos\\osint_ignorant_repo"
+    },
+    "osint_socialscan_repo": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\repos\\osint_socialscan_repo"
+    },
+    "osint_auto_archiver_repo": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\repos\\osint_auto_archiver_repo"
+    },
+    "osint_waymore_repo": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\repos\\osint_waymore_repo"
+    },
+    "forensic_sherloq_repo": {
+      "exists": true,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\repos\\forensic_sherloq_repo"
+    },
+    "forensic_aleapp_repo": {
+      "exists": false,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\repos\\forensic_aleapp_repo"
+    },
+    "forensic_ileapp_repo": {
+      "exists": false,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\repos\\forensic_ileapp_repo"
+    },
+    "osint_shadowfinder_repo": {
+      "exists": false,
+      "path": "c:\\Users\\adel\\Documents\\IC\\Athar_DZ\\.athar-tools\\repos\\osint_shadowfinder_repo"
+    }
+  },
+  "wheels": {
+    "win": 100,
+    "lin": 46,
+    "packages_found": []
+  },
+  "docker": {
+    "neo4j:5.20.0": true,
+    "timescale/timescaledb-ha:pg16": true,
+    "redis:7.2.5-alpine": true,
+    "postgres:16-alpine": true,
+    "mongo:7.0": true,
+    "qdrant/qdrant:v1.9.3": true,
+    "python:3.12-slim": false,
+    "node:20-alpine": false,
+    "temporalio/auto-setup:1.24.2": false,
+    "archivebox/archivebox:latest": false,
+    "opensanctions/yente:latest": false,
+    "ollama/ollama:latest": false
+  },
+  "models": {},
+  "missing_to_download": [
+    "binary:osint_cyberchef",
+    "binary:osint_amass",
+    "binary:forensic_ffmpeg",
+    "binary:forensic_ghidra",
+    "binary:sna_gephi_toolkit",
+    "repo:forensic_aleapp_repo",
+    "repo:forensic_ileapp_repo",
+    "repo:osint_shadowfinder_repo",
+    "wheel:igraph",
+    "wheel:leidenalg",
+    "wheel:cdlib",
+    "wheel:scikit-learn",
+    "wheel:pandas",
+    "wheel:polars",
+    "wheel:pygraphistry",
+    "wheel:celery",
+    "wheel:volatility3",
+    "wheel:frida",
+    "wheel:yara-python",
+    "wheel:flare-capa",
+    "wheel:imagehash",
+    "wheel:ctranslate2",
+    "wheel:torch",
+    "wheel:transformers",
+    "docker:python:3.12-slim",
+    "docker:node:20-alpine",
+    "docker:temporalio/auto-setup:1.24.2",
+    "docker:archivebox/archivebox:latest",
+    "docker:opensanctions/yente:latest",
+    "docker:ollama/ollama:latest"
+  ]
+}

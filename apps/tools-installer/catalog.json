@@ -1,0 +1,1129 @@
+{
+  "version": "1.0.0",
+  "project": "Athar DZ",
+  "profiles": [
+    {
+      "id": "smoke_test",
+      "name": "Quick Test (<100 MB)",
+      "badge": "Test",
+      "description": "Fast verification bundle (<100 MB): Go OSINT binaries (Win+Linux), Python OSINT wheels (Win+Linux CPU/GPU), and Tesseract OCR data."
+    },
+    {
+      "id": "core",
+      "name": "1. Core Stack",
+      "badge": "Phase 1",
+      "description": "docker-compose.yml base images (Neo4j, TimescaleDB/PG16, Redis, Python, Node) + Studio backend/frontend dependencies."
+    },
+    {
+      "id": "osint_sna",
+      "name": "2. OSINT + SNA Arsenal",
+      "badge": "76+14",
+      "description": "76 OSINT tools (ProjectDiscovery, Maigret, BBOT, GHunt, Telethon, Auto-Archiver, Chromium, CyberChef) + 14 SNA libraries."
+    },
+    {
+      "id": "dfir_mobile",
+      "name": "3. DFIR & Mobile Lab",
+      "badge": "Forensics",
+      "description": "Volatility 3, Plaso, Autopsy/TSK, ExifTool, FFmpeg, Wireshark, Ghidra+JDK, Jadx, Frida, Scrcpy/ADB, Sherloq, Tesseract."
+    },
+    {
+      "id": "polyglot_ai",
+      "name": "4. Polyglot + Sovereign AI",
+      "badge": "GPU / CPU",
+      "description": "MongoDB, MinIO, Qdrant, Temporal, Yente, ArchiveBox, Ollama, PyTorch (CUDA/CPU), Gemma-2-9B, Whisper-v3, ArcFace, GeoCLIP."
+    }
+  ],
+  "tools": [
+    {
+      "id": "docker_neo4j",
+      "name": "Neo4j 5.20.0 (+ APOC)",
+      "category": "docker",
+      "profiles": ["core", "polyglot_ai"],
+      "description": "Primary property graph database for entities, relationships, and layers.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 450,
+      "size_mb_gpu": 450,
+      "disk_mb_cpu": 1100,
+      "disk_mb_gpu": 1100,
+      "method": "docker_pull",
+      "spec": { "image": "neo4j:5.20.0" }
+    },
+    {
+      "id": "docker_timescaledb",
+      "name": "PostgreSQL 16 + TimescaleDB + PostGIS",
+      "category": "docker",
+      "profiles": ["core", "polyglot_ai"],
+      "description": "ACID case metadata, RLS multi-wilayas, CDR hypertables, and geospatial GIS.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 650,
+      "size_mb_gpu": 650,
+      "disk_mb_cpu": 1800,
+      "disk_mb_gpu": 1800,
+      "method": "docker_pull",
+      "spec": { "image": "timescale/timescaledb-ha:pg16" }
+    },
+    {
+      "id": "docker_redis",
+      "name": "Redis 7.2.5 Alpine",
+      "category": "docker",
+      "profiles": ["core", "polyglot_ai"],
+      "description": "Celery broker, Pub/Sub real-time WebSocket bus, and anti-ban token bucket.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 16,
+      "size_mb_gpu": 16,
+      "disk_mb_cpu": 45,
+      "disk_mb_gpu": 45,
+      "method": "docker_pull",
+      "spec": { "image": "redis:7.2.5-alpine" }
+    },
+    {
+      "id": "docker_python_base",
+      "name": "Python 3.12 Slim (Docker Base)",
+      "category": "docker",
+      "profiles": ["core"],
+      "description": "Base image for Athar Studio FastAPI backend container.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 50,
+      "size_mb_gpu": 50,
+      "disk_mb_cpu": 150,
+      "disk_mb_gpu": 150,
+      "method": "docker_pull",
+      "spec": { "image": "python:3.12-slim" }
+    },
+    {
+      "id": "docker_node_base",
+      "name": "Node 20 Alpine (Docker Base)",
+      "category": "docker",
+      "profiles": ["core"],
+      "description": "Base image for Athar Studio React/Vite frontend container.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 48,
+      "size_mb_gpu": 48,
+      "disk_mb_cpu": 135,
+      "disk_mb_gpu": 135,
+      "method": "docker_pull",
+      "spec": { "image": "node:20-alpine" }
+    },
+    {
+      "id": "studio_backend_deps",
+      "name": "Studio Backend Python Dependencies",
+      "category": "core_app",
+      "profiles": ["core"],
+      "description": "Installs apps/studio-app/backend/requirements.txt into managed venv.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 120,
+      "size_mb_gpu": 120,
+      "disk_mb_cpu": 320,
+      "disk_mb_gpu": 320,
+      "method": "pip_install",
+      "spec": {
+        "packages": [
+          "fastapi==0.115.4",
+          "uvicorn[standard]==0.32.0",
+          "pydantic==2.9.2",
+          "pydantic-settings==2.6.1",
+          "neo4j==5.26.0",
+          "sqlalchemy[asyncio]==2.0.36",
+          "asyncpg==0.30.0",
+          "redis==5.2.0",
+          "httpx==0.27.2"
+        ]
+      }
+    },
+    {
+      "id": "studio_frontend_deps",
+      "name": "Studio Frontend Node Dependencies",
+      "category": "core_app",
+      "profiles": ["core"],
+      "description": "Installs npm packages for apps/studio-app/frontend.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 240,
+      "size_mb_gpu": 240,
+      "disk_mb_cpu": 480,
+      "disk_mb_gpu": 480,
+      "method": "npm_install",
+      "spec": { "project_rel": "../studio-app/frontend" }
+    },
+    {
+      "id": "osint_python_core",
+      "name": "OSINT Core Python Libraries (phonenumbers, schwifty, httpx)",
+      "category": "osint",
+      "profiles": ["smoke_test", "osint_sna"],
+      "description": "Phone E.164 normalization, Algerian CCP/RIB/IBAN validation, and async HTTP client wheels.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 6,
+      "size_mb_gpu": 6,
+      "disk_mb_cpu": 18,
+      "disk_mb_gpu": 18,
+      "method": "pip_install",
+      "spec": {
+        "packages": ["phonenumbers", "schwifty", "httpx"]
+      }
+    },
+    {
+      "id": "osint_subfinder",
+      "name": "ProjectDiscovery Subfinder",
+      "category": "osint",
+      "profiles": ["smoke_test", "osint_sna"],
+      "description": "Fast passive subdomain enumeration tool (Go binary).",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 12,
+      "size_mb_gpu": 12,
+      "disk_mb_cpu": 28,
+      "disk_mb_gpu": 28,
+      "method": "github_release",
+      "spec": {
+        "repo": "projectdiscovery/subfinder",
+        "extract": true,
+        "asset_patterns": {
+          "windows_amd64": "windows_amd64\\.zip$",
+          "linux_amd64": "linux_amd64\\.zip$",
+          "linux_arm64": "linux_arm64\\.zip$"
+        }
+      }
+    },
+    {
+      "id": "osint_dnsx",
+      "name": "ProjectDiscovery dnsx",
+      "category": "osint",
+      "profiles": ["smoke_test", "osint_sna"],
+      "description": "Multi-purpose DNS toolkit for A/MX/TXT resolution (Go binary).",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 10,
+      "size_mb_gpu": 10,
+      "disk_mb_cpu": 24,
+      "disk_mb_gpu": 24,
+      "method": "github_release",
+      "spec": {
+        "repo": "projectdiscovery/dnsx",
+        "extract": true,
+        "asset_patterns": {
+          "windows_amd64": "windows_amd64\\.zip$",
+          "linux_amd64": "linux_amd64\\.zip$",
+          "linux_arm64": "linux_arm64\\.zip$"
+        }
+      }
+    },
+    {
+      "id": "osint_phoneinfoga",
+      "name": "PhoneInfoga v2",
+      "category": "osint",
+      "profiles": ["smoke_test", "osint_sna"],
+      "description": "Phone carrier, country/region recognition, and search footprints (Go binary).",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 9,
+      "size_mb_gpu": 9,
+      "disk_mb_cpu": 22,
+      "disk_mb_gpu": 22,
+      "method": "github_release",
+      "spec": {
+        "repo": "sundowndev/phoneinfoga",
+        "extract": true,
+        "asset_patterns": {
+          "windows_amd64": "Windows_x86_64\\.(zip|tar\\.gz)$",
+          "linux_amd64": "Linux_x86_64\\.(zip|tar\\.gz)$",
+          "linux_arm64": "Linux_arm64\\.(zip|tar\\.gz)$"
+        }
+      }
+    },
+    {
+      "id": "osint_cyberchef",
+      "name": "GCHQ CyberChef (Offline Bundle)",
+      "category": "osint",
+      "profiles": ["osint_sna", "dfir_mobile"],
+      "description": "Offline forensic decoding, regex extraction, and cryptographic hashing.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 80,
+      "size_mb_gpu": 80,
+      "disk_mb_cpu": 120,
+      "disk_mb_gpu": 120,
+      "method": "github_release",
+      "spec": {
+        "repo": "gchq/CyberChef",
+        "extract": true,
+        "asset_patterns": {
+          "windows_amd64": "CyberChef_.*\\.zip$",
+          "linux_amd64": "CyberChef_.*\\.zip$",
+          "linux_arm64": "CyberChef_.*\\.zip$"
+        }
+      }
+    },
+    {
+      "id": "forensic_tessdata_ara",
+      "name": "Tesseract 5 OCR — Arabic (ara.traineddata)",
+      "category": "forensics",
+      "profiles": ["smoke_test", "dfir_mobile"],
+      "description": "Fast Arabic LSTM OCR model for scanned depositions and receipts.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 2,
+      "size_mb_gpu": 2,
+      "disk_mb_cpu": 2,
+      "disk_mb_gpu": 2,
+      "method": "http_file",
+      "spec": {
+        "url": "https://github.com/tesseract-ocr/tessdata_fast/raw/main/ara.traineddata",
+        "subdir": "tessdata",
+        "filename": "ara.traineddata"
+      }
+    },
+    {
+      "id": "forensic_tessdata_fra",
+      "name": "Tesseract 5 OCR — French (fra.traineddata)",
+      "category": "forensics",
+      "profiles": ["smoke_test", "dfir_mobile"],
+      "description": "Fast French LSTM OCR model for PV documents and BaridiMob receipts.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 2,
+      "size_mb_gpu": 2,
+      "disk_mb_cpu": 2,
+      "disk_mb_gpu": 2,
+      "method": "http_file",
+      "spec": {
+        "url": "https://github.com/tesseract-ocr/tessdata_fast/raw/main/fra.traineddata",
+        "subdir": "tessdata",
+        "filename": "fra.traineddata"
+      }
+    },
+    {
+      "id": "osint_httpx",
+      "name": "ProjectDiscovery httpx",
+      "category": "osint",
+      "profiles": ["osint_sna"],
+      "description": "HTTP probing, tech stack detection, Favicon MurmurHash3, and JARM.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 22,
+      "size_mb_gpu": 22,
+      "disk_mb_cpu": 45,
+      "disk_mb_gpu": 45,
+      "method": "github_release",
+      "spec": {
+        "repo": "projectdiscovery/httpx",
+        "extract": true,
+        "asset_patterns": {
+          "windows_amd64": "windows_amd64\\.zip$",
+          "linux_amd64": "linux_amd64\\.zip$",
+          "linux_arm64": "linux_arm64\\.zip$"
+        }
+      }
+    },
+    {
+      "id": "osint_katana",
+      "name": "ProjectDiscovery Katana",
+      "category": "osint",
+      "profiles": ["osint_sna"],
+      "description": "Next-gen headless crawler for JS bundles, API endpoints, and secrets.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 28,
+      "size_mb_gpu": 28,
+      "disk_mb_cpu": 60,
+      "disk_mb_gpu": 60,
+      "method": "github_release",
+      "spec": {
+        "repo": "projectdiscovery/katana",
+        "extract": true,
+        "asset_patterns": {
+          "windows_amd64": "windows_amd64\\.zip$",
+          "linux_amd64": "linux_amd64\\.zip$",
+          "linux_arm64": "linux_arm64\\.zip$"
+        }
+      }
+    },
+    {
+      "id": "osint_nuclei",
+      "name": "ProjectDiscovery Nuclei + Templates",
+      "category": "osint",
+      "profiles": ["osint_sna"],
+      "description": "Exposed .env, .git, and misconfigured backend scanner.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 25,
+      "size_mb_gpu": 25,
+      "disk_mb_cpu": 55,
+      "disk_mb_gpu": 55,
+      "method": "github_release",
+      "spec": {
+        "repo": "projectdiscovery/nuclei",
+        "extract": true,
+        "asset_patterns": {
+          "windows_amd64": "windows_amd64\\.zip$",
+          "linux_amd64": "linux_amd64\\.zip$",
+          "linux_arm64": "linux_arm64\\.zip$"
+        }
+      }
+    },
+    {
+      "id": "osint_nuclei_templates",
+      "name": "Nuclei Community Templates",
+      "category": "osint",
+      "profiles": ["osint_sna"],
+      "description": "YAML detection templates for Nuclei exposure scanner.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 180,
+      "size_mb_gpu": 180,
+      "disk_mb_cpu": 340,
+      "disk_mb_gpu": 340,
+      "method": "git_clone",
+      "spec": { "repo_url": "https://github.com/projectdiscovery/nuclei-templates.git" }
+    },
+    {
+      "id": "osint_amass",
+      "name": "OWASP Amass",
+      "category": "osint",
+      "profiles": ["osint_sna"],
+      "description": "ASN, BGP, WHOIS, and network infrastructure attack surface mapping.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 35,
+      "size_mb_gpu": 35,
+      "disk_mb_cpu": 80,
+      "disk_mb_gpu": 80,
+      "method": "github_release",
+      "spec": {
+        "repo": "owasp-amass/amass",
+        "extract": true,
+        "asset_patterns": {
+          "windows_amd64": "Windows_amd64\\.zip$",
+          "linux_amd64": "Linux_amd64\\.zip$",
+          "linux_arm64": "Linux_arm64\\.zip$"
+        }
+      }
+    },
+    {
+      "id": "osint_trufflehog",
+      "name": "TruffleHog Secret Scanner",
+      "category": "osint",
+      "profiles": ["osint_sna"],
+      "description": "Extracts leaked Telegram bot tokens, Firebase keys, and DB secrets from JS.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 40,
+      "size_mb_gpu": 40,
+      "disk_mb_cpu": 90,
+      "disk_mb_gpu": 90,
+      "method": "github_release",
+      "spec": {
+        "repo": "trufflesecurity/trufflehog",
+        "extract": true,
+        "asset_patterns": {
+          "windows_amd64": "windows_amd64\\.tar\\.gz$",
+          "linux_amd64": "linux_amd64\\.tar\\.gz$",
+          "linux_arm64": "linux_arm64\\.tar\\.gz$"
+        }
+      }
+    },
+    {
+      "id": "osint_gowitness",
+      "name": "SensePost Gowitness",
+      "category": "osint",
+      "profiles": ["osint_sna"],
+      "description": "Headless web screenshot and HTTP header capture tool.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 25,
+      "size_mb_gpu": 25,
+      "disk_mb_cpu": 55,
+      "disk_mb_gpu": 55,
+      "method": "github_release",
+      "spec": {
+        "repo": "sensepost/gowitness",
+        "extract": false,
+        "asset_patterns": {
+          "windows_amd64": "windows-amd64\\.exe$",
+          "linux_amd64": "linux-amd64$",
+          "linux_arm64": "linux-arm64$"
+        }
+      }
+    },
+    {
+      "id": "osint_python_identity",
+      "name": "Python Identity & SOCMINT Suite",
+      "category": "osint",
+      "profiles": ["osint_sna"],
+      "description": "maigret, sherlock-project, holehe, ignorant, h8mail, telethon, instaloader, toutatis, yt-dlp, phonenumbers, schwifty, followthemoney.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 240,
+      "size_mb_gpu": 240,
+      "disk_mb_cpu": 680,
+      "disk_mb_gpu": 680,
+      "method": "pip_install",
+      "spec": {
+        "packages": [
+          "maigret",
+          "sherlock-project",
+          "holehe",
+          "ignorant",
+          "h8mail",
+          "telethon",
+          "instaloader",
+          "toutatis",
+          "yt-dlp",
+          "phonenumbers",
+          "schwifty",
+          "followthemoney",
+          "scrapy",
+          "bbot"
+        ]
+      }
+    },
+    {
+      "id": "osint_archiver_playwright",
+      "name": "Bellingcat Auto-Archiver + Playwright Chromium",
+      "category": "osint",
+      "profiles": ["osint_sna"],
+      "description": "Installs auto-archiver, playwright, and headless Chromium browser for WARC preservation.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 250,
+      "size_mb_gpu": 250,
+      "disk_mb_cpu": 620,
+      "disk_mb_gpu": 620,
+      "method": "pip_install",
+      "spec": {
+        "packages": ["auto-archiver", "playwright"],
+        "post_venv_cmd": ["playwright", "install", "chromium"]
+      }
+    },
+    {
+      "id": "osint_blackbird_repo",
+      "name": "Blackbird OSINT (GitHub Repo + Python Libs)",
+      "category": "osint",
+      "profiles": ["smoke_test", "osint_sna"],
+      "description": "600+ site username & email OSINT hunter cloned from GitHub with companion Python libraries for Win/Linux.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 6,
+      "size_mb_gpu": 6,
+      "disk_mb_cpu": 18,
+      "disk_mb_gpu": 18,
+      "method": "git_clone",
+      "spec": {
+        "repo_url": "https://github.com/p1ngul1n0/blackbird.git",
+        "companion_pip": ["aiohttp", "beautifulsoup4", "colorama", "rich", "requests"]
+      }
+    },
+    {
+      "id": "osint_ghunt_blackbird",
+      "name": "GHunt v2 (Google Account OSINT)",
+      "category": "osint",
+      "profiles": ["osint_sna"],
+      "description": "Google account Gaia ID and Google Maps reviews intelligence.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 40,
+      "size_mb_gpu": 40,
+      "disk_mb_cpu": 100,
+      "disk_mb_gpu": 100,
+      "method": "pip_install",
+      "spec": { "packages": ["ghunt"] }
+    },
+    {
+      "id": "sna_python_graph",
+      "name": "Python SNA & Graph Analytics Stack",
+      "category": "sna",
+      "profiles": ["osint_sna"],
+      "description": "NetworkX, python-igraph, CDlib, leidenalg, scikit-network, scikit-learn, SciPy, Pandas, Polars, PyGraphistry, Celery, Temporalio.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 380,
+      "size_mb_gpu": 380,
+      "disk_mb_cpu": 1150,
+      "disk_mb_gpu": 1150,
+      "method": "pip_install",
+      "spec": {
+        "packages": [
+          "networkx",
+          "igraph",
+          "leidenalg",
+          "cdlib",
+          "scikit-network",
+          "scikit-learn",
+          "scipy",
+          "pandas",
+          "polars",
+          "pygraphistry",
+          "celery",
+          "temporalio"
+        ]
+      }
+    },
+    {
+      "id": "sna_gephi_toolkit",
+      "name": "Gephi Toolkit (Headless ForceAtlas2)",
+      "category": "sna",
+      "profiles": ["osint_sna"],
+      "description": "Java headless graph layout and centrality computation library.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 65,
+      "size_mb_gpu": 65,
+      "disk_mb_cpu": 95,
+      "disk_mb_gpu": 95,
+      "method": "github_release",
+      "spec": {
+        "repo": "gephi/gephi-toolkit",
+        "extract": false,
+        "asset_patterns": {
+          "windows_amd64": "gephi-toolkit-.*\\.jar$",
+          "linux_amd64": "gephi-toolkit-.*\\.jar$",
+          "linux_arm64": "gephi-toolkit-.*\\.jar$"
+        }
+      }
+    },
+    {
+      "id": "sna_stanford_snap",
+      "name": "Stanford SNAP (snap-stanford)",
+      "category": "sna",
+      "profiles": ["osint_sna"],
+      "description": "High-performance C++ graph mining library (Linux native).",
+      "os_support": ["linux"],
+      "compute": "any",
+      "size_mb_cpu": 45,
+      "size_mb_gpu": 45,
+      "disk_mb_cpu": 120,
+      "disk_mb_gpu": 120,
+      "method": "pip_install",
+      "spec": { "packages": ["snap-stanford"] }
+    },
+    {
+      "id": "forensic_exiftool",
+      "name": "ExifTool (Phil Harvey)",
+      "category": "forensics",
+      "profiles": ["dfir_mobile"],
+      "description": "Deep metadata, GPS, camera serial, and edit-history extraction.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 12,
+      "size_mb_gpu": 12,
+      "disk_mb_cpu": 28,
+      "disk_mb_gpu": 28,
+      "method": "http_file",
+      "spec": {
+        "windows_url": "https://sourceforge.net/projects/exiftool/files/exiftool-13.63_64.zip/download",
+        "linux_url": "https://sourceforge.net/projects/exiftool/files/Image-ExifTool-13.63.tar.gz/download",
+        "extract": true,
+        "subdir": "bin/exiftool"
+      }
+    },
+    {
+      "id": "forensic_ffmpeg",
+      "name": "FFmpeg Static Binaries",
+      "category": "forensics",
+      "profiles": ["dfir_mobile", "osint_sna"],
+      "description": "Audio/video demuxing and WhatsApp .ogg/.opus normalization for Whisper.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 95,
+      "size_mb_gpu": 95,
+      "disk_mb_cpu": 240,
+      "disk_mb_gpu": 240,
+      "method": "github_release",
+      "spec": {
+        "repo": "BtbN/FFmpeg-Builds",
+        "extract": true,
+        "asset_patterns": {
+          "windows_amd64": "ffmpeg-master-latest-win64-gpl\\.zip$",
+          "linux_amd64": "ffmpeg-master-latest-linux64-gpl\\.tar\\.xz$",
+          "linux_arm64": "ffmpeg-master-latest-linuxarm64-gpl\\.tar\\.xz$"
+        }
+      }
+    },
+    {
+      "id": "forensic_adb_platform_tools",
+      "name": "Android SDK Platform-Tools (ADB / Fastboot)",
+      "category": "forensics",
+      "profiles": ["dfir_mobile"],
+      "description": "ADB bridge for ReDroid Android farm & mobile seizure triage.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 15,
+      "size_mb_gpu": 15,
+      "disk_mb_cpu": 40,
+      "disk_mb_gpu": 40,
+      "method": "http_file",
+      "spec": {
+        "windows_url": "https://dl.google.com/android/repository/platform-tools-latest-windows.zip",
+        "linux_url": "https://dl.google.com/android/repository/platform-tools-latest-linux.zip",
+        "extract": true,
+        "subdir": "bin/platform-tools"
+      }
+    },
+    {
+      "id": "forensic_scrcpy",
+      "name": "Scrcpy Screen Mirror & Control",
+      "category": "forensics",
+      "profiles": ["dfir_mobile"],
+      "description": "Low-latency Android screen capture and interactive control.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 30,
+      "size_mb_gpu": 30,
+      "disk_mb_cpu": 75,
+      "disk_mb_gpu": 75,
+      "method": "github_release",
+      "spec": {
+        "repo": "Genymobile/scrcpy",
+        "extract": true,
+        "asset_patterns": {
+          "windows_amd64": "scrcpy-win64-v.*\\.zip$",
+          "linux_amd64": "scrcpy-linux-x86_64-v.*\\.tar\\.gz$"
+        }
+      }
+    },
+    {
+      "id": "forensic_jadx",
+      "name": "Jadx APK Decompiler (CLI & GUI)",
+      "category": "forensics",
+      "profiles": ["dfir_mobile"],
+      "description": "Static decompilation of malicious Android APKs (e.g. fake BaridiMob apps).",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 55,
+      "size_mb_gpu": 55,
+      "disk_mb_cpu": 120,
+      "disk_mb_gpu": 120,
+      "method": "github_release",
+      "spec": {
+        "repo": "skylot/jadx",
+        "extract": true,
+        "asset_patterns": {
+          "windows_amd64": "jadx-[0-9.]+\\.zip$",
+          "linux_amd64": "jadx-[0-9.]+\\.zip$",
+          "linux_arm64": "jadx-[0-9.]+\\.zip$"
+        }
+      }
+    },
+    {
+      "id": "forensic_ghidra",
+      "name": "NSA Ghidra Reverse Engineering Suite",
+      "category": "forensics",
+      "profiles": ["dfir_mobile"],
+      "description": "Native .so / binary reverse engineering for packed malware.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 450,
+      "size_mb_gpu": 450,
+      "disk_mb_cpu": 950,
+      "disk_mb_gpu": 950,
+      "method": "github_release",
+      "spec": {
+        "repo": "NationalSecurityAgency/ghidra",
+        "extract": true,
+        "asset_patterns": {
+          "windows_amd64": "ghidra_.*_PUBLIC_.*\\.zip$",
+          "linux_amd64": "ghidra_.*_PUBLIC_.*\\.zip$"
+        }
+      }
+    },
+    {
+      "id": "forensic_python_dfir",
+      "name": "Python DFIR, Mobile & Media Forensics Suite",
+      "category": "forensics",
+      "profiles": ["dfir_mobile"],
+      "description": "volatility3, frida-tools, mitmproxy, yara-python, flare-capa, imagehash, opencv-python-headless, pyserial-asyncio.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 340,
+      "size_mb_gpu": 340,
+      "disk_mb_cpu": 920,
+      "disk_mb_gpu": 920,
+      "method": "pip_install",
+      "spec": {
+        "packages": [
+          "volatility3",
+          "frida-tools",
+          "mitmproxy",
+          "yara-python",
+          "flare-capa",
+          "imagehash",
+          "opencv-python-headless",
+          "pyserial-asyncio",
+          "pypdf"
+        ]
+      }
+    },
+    {
+      "id": "forensic_sherloq_repo",
+      "name": "Sherloq Image Forensics (ELA / Copy-Move)",
+      "category": "forensics",
+      "profiles": ["dfir_mobile"],
+      "description": "Error Level Analysis and tampering detection for forged CCP/BaridiMob receipts (+ companion OpenCV/SciPy libs).",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 95,
+      "size_mb_gpu": 95,
+      "disk_mb_cpu": 240,
+      "disk_mb_gpu": 240,
+      "method": "git_clone",
+      "spec": {
+        "repo_url": "https://github.com/GuidoBartoli/sherloq.git",
+        "companion_pip": ["opencv-python-headless", "numpy", "scipy", "pillow"]
+      }
+    },
+    {
+      "id": "forensic_aleapp_ileapp",
+      "name": "ALEAPP & iLEAPP Mobile Artifact Parsers",
+      "category": "forensics",
+      "profiles": ["dfir_mobile"],
+      "description": "Android & iOS forensic SQLite, call log, and messaging artifact parsers (+ companion Python libs).",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 85,
+      "size_mb_gpu": 85,
+      "disk_mb_cpu": 210,
+      "disk_mb_gpu": 210,
+      "method": "git_clone",
+      "spec": {
+        "repo_url": "https://github.com/abrignoni/ALEAPP.git",
+        "companion_pip": ["packaging", "six", "pycryptodome", "pillow"]
+      }
+    },
+    {
+      "id": "forensic_plaso_docker",
+      "name": "Plaso (log2timeline) Docker Image",
+      "category": "forensics",
+      "profiles": ["dfir_mobile"],
+      "description": "Super-timeline forensic correlation across EVTX, MFT, Syslog, and web history.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 600,
+      "size_mb_gpu": 600,
+      "disk_mb_cpu": 1600,
+      "disk_mb_gpu": 1600,
+      "method": "docker_pull",
+      "spec": { "image": "log2timeline/plaso:latest" }
+    },
+    {
+      "id": "forensic_wireshark",
+      "name": "Wireshark / TShark Installer",
+      "category": "forensics",
+      "profiles": ["dfir_mobile"],
+      "description": "PCAP network capture & TLS/DNS protocol dissection.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 85,
+      "size_mb_gpu": 85,
+      "disk_mb_cpu": 320,
+      "disk_mb_gpu": 320,
+      "method": "system_pkg",
+      "spec": {
+        "windows_winget": "WiresharkFoundation.Wireshark",
+        "linux_apt": "tshark wireshark"
+      }
+    },
+    {
+      "id": "forensic_autopsy",
+      "name": "Autopsy & The Sleuth Kit (TSK)",
+      "category": "forensics",
+      "profiles": ["dfir_mobile"],
+      "description": "Disk image (.E01 / .dd / .raw) carving and deleted file recovery.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 1100,
+      "size_mb_gpu": 1100,
+      "disk_mb_cpu": 2500,
+      "disk_mb_gpu": 2500,
+      "method": "github_release",
+      "spec": {
+        "repo": "sleuthkit/autopsy",
+        "extract": false,
+        "asset_patterns": {
+          "windows_amd64": "autopsy-.*-64bit\\.msi$",
+          "linux_amd64": "autopsy-.*\\.zip$"
+        }
+      }
+    },
+    {
+      "id": "forensic_lynis",
+      "name": "Lynis UNIX Forensic Audit",
+      "category": "forensics",
+      "profiles": ["dfir_mobile"],
+      "description": "Compromised Linux server backdoor & cron persistence auditing.",
+      "os_support": ["linux"],
+      "compute": "any",
+      "size_mb_cpu": 3,
+      "size_mb_gpu": 3,
+      "disk_mb_cpu": 10,
+      "disk_mb_gpu": 10,
+      "method": "git_clone",
+      "spec": { "repo_url": "https://github.com/CISOfy/lynis.git" }
+    },
+    {
+      "id": "docker_mongodb",
+      "name": "MongoDB 7.0 (WiredTiger)",
+      "category": "docker",
+      "profiles": ["polyglot_ai"],
+      "description": "Schema-less BSON storage for raw OSINT & scraper DOM dumps.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 270,
+      "size_mb_gpu": 270,
+      "disk_mb_cpu": 780,
+      "disk_mb_gpu": 780,
+      "method": "docker_pull",
+      "spec": { "image": "mongo:7.0" }
+    },
+    {
+      "id": "docker_minio",
+      "name": "MinIO S3 WORM Vault",
+      "category": "docker",
+      "profiles": ["polyglot_ai"],
+      "description": "Immutable COMPLIANCE Object Lock storage for sealed WARC, audio, and disk images.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 90,
+      "size_mb_gpu": 90,
+      "disk_mb_cpu": 250,
+      "disk_mb_gpu": 250,
+      "method": "docker_pull",
+      "spec": { "image": "minio/minio:latest" }
+    },
+    {
+      "id": "docker_qdrant",
+      "name": "Qdrant v1.9.x Vector Engine",
+      "category": "docker",
+      "profiles": ["polyglot_ai"],
+      "description": "Sub-8ms HNSW vector search for 512-d ArcFace & 192-d voiceprints.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 65,
+      "size_mb_gpu": 65,
+      "disk_mb_cpu": 180,
+      "disk_mb_gpu": 180,
+      "method": "docker_pull",
+      "spec": { "image": "qdrant/qdrant:v1.9.3" }
+    },
+    {
+      "id": "docker_temporal",
+      "name": "Temporal.io v1.24 Workflow Server",
+      "category": "docker",
+      "profiles": ["polyglot_ai"],
+      "description": "Deterministic long-running investigation workflow state machine.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 220,
+      "size_mb_gpu": 220,
+      "disk_mb_cpu": 550,
+      "disk_mb_gpu": 550,
+      "method": "docker_pull",
+      "spec": { "image": "temporalio/auto-setup:1.24.2" }
+    },
+    {
+      "id": "docker_archivebox",
+      "name": "ArchiveBox (WARC ISO 28500)",
+      "category": "docker",
+      "profiles": ["polyglot_ai"],
+      "description": "Automated web page preservation into WARC + PNG + DOM snapshots.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 850,
+      "size_mb_gpu": 850,
+      "disk_mb_cpu": 2400,
+      "disk_mb_gpu": 2400,
+      "method": "docker_pull",
+      "spec": { "image": "archivebox/archivebox:latest" }
+    },
+    {
+      "id": "docker_yente",
+      "name": "OpenSanctions Yente",
+      "category": "docker",
+      "profiles": ["polyglot_ai"],
+      "description": "Local Interpol, PEP, and international sanctions screening API.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 250,
+      "size_mb_gpu": 250,
+      "disk_mb_cpu": 700,
+      "disk_mb_gpu": 700,
+      "method": "docker_pull",
+      "spec": { "image": "opensanctions/yente:latest" }
+    },
+    {
+      "id": "docker_mitmproxy",
+      "name": "Mitmproxy 10.3 Container",
+      "category": "docker",
+      "profiles": ["polyglot_ai"],
+      "description": "Containerized TLS 1.3 interception proxy for ReDroid mobile traffic.",
+      "os_support": ["windows", "linux"],
+      "compute": "any",
+      "size_mb_cpu": 120,
+      "size_mb_gpu": 120,
+      "disk_mb_cpu": 320,
+      "disk_mb_gpu": 320,
+      "method": "docker_pull",
+      "spec": { "image": "mitmproxy/mitmproxy:10.3.0" }
+    },
+    {
+      "id": "docker_redroid",
+      "name": "ReDroid Android 13 Phone Farm",
+      "category": "docker",
+      "profiles": ["polyglot_ai"],
+      "description": "Containerized Android 13 AOSP instances (Linux kernel binder_linux required).",
+      "os_support": ["linux"],
+      "compute": "any",
+      "size_mb_cpu": 900,
+      "size_mb_gpu": 900,
+      "disk_mb_cpu": 2500,
+      "disk_mb_gpu": 2500,
+      "method": "docker_pull",
+      "spec": { "image": "redroid/redroid:13.0.0-latest" }
+    },
+    {
+      "id": "docker_ollama",
+      "name": "Ollama Local Inference Server",
+      "category": "docker",
+      "profiles": ["polyglot_ai"],
+      "description": "Local sovereign LLM runtime for Text-to-Cypher.",
+      "os_support": ["windows", "linux"],
+      "compute": "cpu_gpu",
+      "size_mb_cpu": 280,
+      "size_mb_gpu": 2400,
+      "disk_mb_cpu": 750,
+      "disk_mb_gpu": 5500,
+      "method": "docker_pull",
+      "spec": { "image": "ollama/ollama:latest" }
+    },
+    {
+      "id": "ai_pytorch_runtime",
+      "name": "PyTorch + ONNX Runtime (CUDA GPU vs CPU)",
+      "category": "ai_models",
+      "profiles": ["polyglot_ai"],
+      "description": "Deep learning backend for ArcFace, Whisper, PyAnnote, GeoCLIP, TrOCR, and YOLOv8.",
+      "os_support": ["windows", "linux"],
+      "compute": "cpu_gpu",
+      "size_mb_cpu": 405,
+      "size_mb_gpu": 3050,
+      "disk_mb_cpu": 950,
+      "disk_mb_gpu": 7100,
+      "method": "pip_install",
+      "spec": {
+        "packages_cpu": [
+          "torch",
+          "torchvision",
+          "torchaudio",
+          "onnxruntime",
+          "ctranslate2",
+          "faster-whisper",
+          "deepface",
+          "insightface",
+          "transformers",
+          "easyocr",
+          "ultralytics",
+          "huggingface_hub"
+        ],
+        "index_url_cpu": "https://download.pytorch.org/whl/cpu",
+        "packages_gpu": [
+          "torch",
+          "torchvision",
+          "torchaudio",
+          "onnxruntime-gpu",
+          "ctranslate2",
+          "faster-whisper",
+          "deepface",
+          "insightface",
+          "transformers",
+          "easyocr",
+          "ultralytics",
+          "huggingface_hub"
+        ],
+        "index_url_gpu": "https://download.pytorch.org/whl/cu124"
+      }
+    },
+    {
+      "id": "ai_ollama_text2cypher",
+      "name": "Ollama Model: Text-to-Cypher Gemma-2-9B",
+      "category": "ai_models",
+      "profiles": ["polyglot_ai"],
+      "description": "Local French/Arabic-to-Cypher LLM model (requires Ollama running).",
+      "os_support": ["windows", "linux"],
+      "compute": "cpu_gpu",
+      "size_mb_cpu": 5800,
+      "size_mb_gpu": 5800,
+      "disk_mb_cpu": 5800,
+      "disk_mb_gpu": 5800,
+      "method": "ollama_pull",
+      "spec": { "model": "DavidLanz/text2cypher-gemma-2-9b" }
+    },
+    {
+      "id": "ai_whisper_large_v3",
+      "name": "Faster-Whisper Large-v3 (CTranslate2)",
+      "category": "ai_models",
+      "profiles": ["polyglot_ai"],
+      "description": "Offline Algerian Darija / French speech-to-text weights.",
+      "os_support": ["windows", "linux"],
+      "compute": "cpu_gpu",
+      "size_mb_cpu": 3100,
+      "size_mb_gpu": 3100,
+      "disk_mb_cpu": 3100,
+      "disk_mb_gpu": 3100,
+      "method": "hf_snapshot",
+      "spec": { "repo_id": "Systran/faster-whisper-large-v3" }
+    },
+    {
+      "id": "ai_trocr_handwritten",
+      "name": "Microsoft TrOCR Base Handwritten",
+      "category": "ai_models",
+      "profiles": ["polyglot_ai"],
+      "description": "Neural handwriting OCR for scanned police complaints and postal slips.",
+      "os_support": ["windows", "linux"],
+      "compute": "cpu_gpu",
+      "size_mb_cpu": 1350,
+      "size_mb_gpu": 1350,
+      "disk_mb_cpu": 1350,
+      "disk_mb_gpu": 1350,
+      "method": "hf_snapshot",
+      "spec": { "repo_id": "microsoft/trocr-base-handwritten" }
+    },
+    {
+      "id": "ai_geoclip_weights",
+      "name": "GeoCLIP Visual Geolocation Repo + Weights",
+      "category": "ai_models",
+      "profiles": ["polyglot_ai"],
+      "description": "Estimates GPS probability heatmaps from outdoor photos without EXIF.",
+      "os_support": ["windows", "linux"],
+      "compute": "cpu_gpu",
+      "size_mb_cpu": 1700,
+      "size_mb_gpu": 1700,
+      "disk_mb_cpu": 1700,
+      "disk_mb_gpu": 1700,
+      "method": "pip_install",
+      "spec": { "packages": ["geoclip", "git+https://github.com/bellingcat/ShadowFinder.git"] }
+    },
+    {
+      "id": "ai_insightface_buffalo",
+      "name": "InsightFace ArcFace (buffalo_l Model Pack)",
+      "category": "ai_models",
+      "profiles": ["polyglot_ai"],
+      "description": "512-d ArcFace ResNet-100 + RetinaFace alignment biometric pack.",
+      "os_support": ["windows", "linux"],
+      "compute": "cpu_gpu",
+      "size_mb_cpu": 326,
+      "size_mb_gpu": 326,
+      "disk_mb_cpu": 550,
+      "disk_mb_gpu": 550,
+      "method": "http_file",
+      "spec": {
+        "url": "https://github.com/deepinsight/insightface/releases/download/v0.7/buffalo_l.zip",
+        "extract": true,
+        "subdir": "models/insightface/buffalo_l"
+      }
+    }
+  ]
+}

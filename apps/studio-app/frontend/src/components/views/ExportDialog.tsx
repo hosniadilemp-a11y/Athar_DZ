@@ -3,6 +3,7 @@ import { useGraphStore } from '../../store/useGraphStore';
 import { exportCaseToJson, printForensicReport } from '../../services/exportService';
 import { API_BASE } from '../../config';
 import { FileDown, Printer, ShieldCheck, X } from 'lucide-react';
+import { useI18n } from '../../context/I18nContext';
 
 interface ExportDialogProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface ExportDialogProps {
 
 export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) => {
   const { activeCase, nodes, edges } = useGraphStore();
+  const { tr, dir } = useI18n();
   const [auditVerified, setAuditVerified] = useState(true);
 
   useEffect(() => {
@@ -65,17 +67,22 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) =
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
             <FileDown size={22} style={{ color: 'var(--color-accent-text)' }} />
             <h2 id="export-dialog-title" style={{ fontSize: 'var(--text-md)', fontWeight: 600, margin: 0 }}>
-              Exportation Judiciaire & Forensique
+              {tr('Export Judiciaire')}
             </h2>
           </div>
-          <button type="button" onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)' }}>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={tr('Fermer')}
+            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)' }}
+          >
             <X size={18} />
           </button>
         </div>
 
         <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
-          Dossier : <strong>{activeCase.title}</strong> ({activeCase.code})<br />
-          Volume : {nodes.length} entités et {edges.length} relations actives.
+          {tr('Dossier : {title} ({code})', { title: activeCase.title, code: activeCase.code })}<br />
+          {tr('Volume : {nodes} entités et {edges} relations actives.', { nodes: nodes.length, edges: edges.length })}
         </p>
 
         <div
@@ -87,7 +94,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) =
             backgroundColor: 'var(--color-bg-elevated)',
             border: '1px solid var(--color-border-subtle)',
             borderRadius: 'var(--radius-sm)',
-            fontSize: '11px',
+            fontSize: 'var(--text-xs)',
             color: auditVerified ? 'var(--color-layer-1-verified)' : 'var(--color-status-danger)',
             marginBottom: 'var(--space-6)',
           }}
@@ -95,8 +102,8 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) =
           <ShieldCheck size={16} />
           <span>
             {auditVerified
-              ? 'Chaîne de garde forensique (ISO 27037) validée : Empreintes SHA-256 certifiées.'
-              : 'Attention : le registre forensique présente des anomalies de vérification.'}
+              ? tr('Chaîne de garde forensique (ISO 27037) validée : Empreintes SHA-256 certifiées.')
+              : tr('Attention : le registre forensique présente des anomalies de vérification.')}
           </span>
         </div>
 
@@ -107,13 +114,13 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) =
               printForensicReport(reportData);
               onClose();
             }}
-            style={exportBtnStyle}
+            style={{ ...exportBtnStyle, textAlign: dir === 'rtl' ? 'right' : 'left' }}
           >
-            <Printer size={18} style={{ color: 'var(--color-accent-text)' }} />
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>Générer le Rapport Forensique PDF / Impression</div>
-              <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                Rapport officiel distinguant preuves scellées (VERIFIED) et hypothèses d&apos;enquête.
+            <Printer size={18} style={{ color: 'var(--color-accent-text)', flexShrink: 0 }} />
+            <div>
+              <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>{tr('Générer le Rapport Forensique PDF / Impression')}</div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
+                {tr('Rapport officiel distinguant preuves scellées et hypothèses.')}
               </div>
             </div>
           </button>
@@ -124,13 +131,13 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) =
               exportCaseToJson(reportData);
               onClose();
             }}
-            style={exportBtnStyle}
+            style={{ ...exportBtnStyle, textAlign: dir === 'rtl' ? 'right' : 'left' }}
           >
-            <FileDown size={18} style={{ color: 'var(--color-layer-2-osint)' }} />
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>Exporter en Format Structuré JSON</div>
-              <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                Archive complète avec métadonnées, graphe, distribution des couches et hachages.
+            <FileDown size={18} style={{ color: 'var(--color-layer-2-osint)', flexShrink: 0 }} />
+            <div>
+              <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>{tr('Exporter en Format Structuré JSON')}</div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
+                {tr('Archive complète avec métadonnées, graphe, couches et hachages.')}
               </div>
             </div>
           </button>

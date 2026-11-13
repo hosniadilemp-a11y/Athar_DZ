@@ -77,7 +77,7 @@ export function printForensicReport(data: ExportReportData): void {
         th { background: #f1f5f9; }
         .verified-badge { background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
         .hypothesis-badge { background: #fae8ff; color: #86198f; padding: 2px 6px; border-radius: 4px; font-style: italic; }
-        .disclaimer { font-size: 11px; color: #64748b; margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 12px; }
+        .disclaimer { font-size: var(--text-xs); color: #64748b; margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 12px; }
       </style>
     </head>
     <body>

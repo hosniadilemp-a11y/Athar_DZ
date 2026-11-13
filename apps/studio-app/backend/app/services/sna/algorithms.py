@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import math
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 import networkx as nx
@@ -700,6 +700,32 @@ def run_threshold_expand(
     )
 
 
+def _parse_utc_datetime(val: Any, is_end: bool = False) -> datetime | None:
+    """Parse string or datetime and normalize to UTC timezone-aware.
+
+    If a date-only string (YYYY-MM-DD) is provided and is_end is True,
+    it spans to the end of that calendar day (23:59:59.999999 UTC) so investigative
+    events occurring throughout the entire day are included.
+    """
+    if not val:
+        return None
+    if isinstance(val, datetime):
+        return val if val.tzinfo is not None else val.replace(tzinfo=timezone.utc)
+    if isinstance(val, str):
+        cleaned = val.replace("Z", "+00:00")
+        try:
+            if len(cleaned) == 10 and cleaned.count("-") == 2:
+                if is_end:
+                    cleaned += "T23:59:59.999999+00:00"
+                else:
+                    cleaned += "T00:00:00+00:00"
+            parsed = datetime.fromisoformat(cleaned)
+            return parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=timezone.utc)
+        except Exception:
+            return None
+    return None
+
+
 # 15. Temporal Subgraph Window
 def run_temporal_subgraph(
     nodes: list[dict[str, Any]],
@@ -709,17 +735,16 @@ def run_temporal_subgraph(
     start_dt_str = params.get("start_date")
     end_dt_str = params.get("end_date")
 
-    start_dt = datetime.fromisoformat(start_dt_str) if start_dt_str else None
-    end_dt = datetime.fromisoformat(end_dt_str) if end_dt_str else None
+    start_dt = _parse_utc_datetime(start_dt_str, is_end=False)
+    end_dt = _parse_utc_datetime(end_dt_str, is_end=True)
 
     def match_time(item: dict[str, Any]) -> bool:
         ts = item.get("created_at") or item.get("updated_at")
         if not ts:
             return True
-        if isinstance(ts, str):
-            dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
-        else:
-            dt = ts
+        dt = _parse_utc_datetime(ts)
+        if dt is None:
+            return True
         if start_dt and dt < start_dt:
             return False
         if end_dt and dt > end_dt:

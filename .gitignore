@@ -15,7 +15,7 @@ Desktop.ini
 *.bak
 .idea/
 .vscode/
-.agent/
+*.tsbuildinfo
 
 # Logs & Runtime Artifacts
 *.log
@@ -71,4 +71,7 @@ wheels/
 
 # Thesis and Academic Reports directory
 Rapport/
+
+# Tools Installer downloaded binaries, venvs, and models
+.athar-tools/
 
