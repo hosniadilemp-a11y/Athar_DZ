@@ -75,8 +75,12 @@ Rapport/
 # Tools Installer downloaded binaries, venvs, and models
 .athar-tools/
 
+# Isolated Tool Testing Lab (Local sandbox, ignored from git)
+tools_isolated_lab/
+
 # Audio Evidence & Wiretaps (Air-gapped local storage, ignored from git)
 apps/studio-app/frontend/public/audio/
 *.wav
+
 
 
