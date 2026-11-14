@@ -317,6 +317,66 @@ export const SnaPanel: React.FC<SnaPanelProps> = () => {
       const resData: SnaResultData = await res.json();
       setResult(resData);
 
+      // Feature 4: Compute visual overlay on graph nodes
+      const COMMUNITY_PALETTE = [
+        '#3b82f6',
+        '#10b981',
+        '#f59e0b',
+        '#ef4444',
+        '#8b5cf6',
+        '#ec4899',
+        '#06b6d4',
+        '#84cc16',
+      ];
+      const nodeColors: Record<string, string> = {};
+      const nodeBadges: Record<string, string> = {};
+      const legend: Array<{ label: string; color: string }> = [];
+
+      if (
+        activeAlgo.category === 'community' ||
+        activeAlgo.key === 'louvain' ||
+        activeAlgo.key === 'connected_components' ||
+        activeAlgo.key === 'label_propagation'
+      ) {
+        const commMap = new Map<string, string>();
+        let commIndex = 0;
+        resData.node_metrics.forEach((m) => {
+          const commId = String(m.value);
+          if (!commMap.has(commId)) {
+            const color = COMMUNITY_PALETTE[commIndex % COMMUNITY_PALETTE.length] || '#3b82f6';
+            commMap.set(commId, color);
+            legend.push({ label: `Cellule ${commId}`, color });
+            commIndex++;
+          }
+          const c = commMap.get(commId) || '#3b82f6';
+          nodeColors[m.node_id] = c;
+          nodeBadges[m.node_id] = `C${commId}`;
+        });
+      } else {
+        // Centrality / Ranking
+        legend.push({ label: 'Rang #1 (Leader/Pivot)', color: '#eab308' });
+        legend.push({ label: 'Rang #2 (Relais)', color: '#94a3b8' });
+        legend.push({ label: 'Rang #3 (Intermédiaire)', color: '#f97316' });
+        legend.push({ label: 'Top 10 Influents', color: '#3b82f6' });
+
+        resData.node_metrics.slice(0, 15).forEach((m, idx) => {
+          let col = '#3b82f6';
+          if (idx === 0) col = '#eab308';
+          else if (idx === 1) col = '#94a3b8';
+          else if (idx === 2) col = '#f97316';
+          nodeColors[m.node_id] = col;
+          nodeBadges[m.node_id] = `#${idx + 1}`;
+        });
+      }
+
+      useGraphStore.getState().setSnaVisualOverlay({
+        algoKey: activeAlgo.key,
+        algoTitle: meta.titleFr || activeAlgo.label_fr,
+        nodeColors,
+        nodeBadges,
+        legend: legend.slice(0, 6),
+      });
+
       // If Betweenness or PageRank, dynamically update node focal radii in store
       if (activeAlgo.key === 'betweenness' || activeAlgo.key === 'pagerank') {
         const topIds = new Set(resData.node_metrics.slice(0, 15).map((m) => m.node_id));

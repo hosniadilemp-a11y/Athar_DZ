@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { GraphNode } from '../../types/graph';
 import type { LayerId } from '../../types/registry';
 import { NodeIcon } from './NodeIcon';
 import registryDataRaw from '../../registry/registry.json';
 import type { RegistryData } from '../../types/registry';
 import { MoreHorizontal } from 'lucide-react';
+import { useGraphStore } from '../../store/useGraphStore';
 
 const registry = registryDataRaw as unknown as RegistryData;
 
@@ -12,6 +13,7 @@ interface CircularNodeProps {
   node: GraphNode;
   isSelected: boolean;
   isLinkSource?: boolean;
+  isDragging?: boolean;
   onSelect: (id: string, isMulti: boolean) => void;
   onContextMenu: (e: React.MouseEvent | React.KeyboardEvent, nodeId: string) => void;
   onDragStart: (e: React.MouseEvent, nodeId: string) => void;
@@ -29,6 +31,7 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
   node,
   isSelected,
   isLinkSource = false,
+  isDragging = false,
   onSelect,
   onContextMenu,
   onDragStart,
@@ -37,15 +40,55 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
   const iconName = typeDef?.icon || 'help-circle';
   const layerDef = registry.layers[node.layer];
 
-  const borderColor = LAYER_BORDER_COLORS[node.layer] || 'var(--color-border-default)';
+  // Global store states
+  const snaOverlay = useGraphStore((s) => s.snaVisualOverlay);
+  const investigationMode = useGraphStore((s) => s.investigationMode);
+  const updateNodeLabel = useGraphStore((s) => s.updateNodeLabel);
+
+  // Inline rename state (Feature 2)
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingLabel, setEditingLabel] = useState(node.label);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setEditingLabel(node.label);
+  }, [node.label]);
+
+  useEffect(() => {
+    if (isEditing) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [isEditing]);
+
+  const handleSaveLabel = async () => {
+    const trimmed = editingLabel.trim();
+    if (trimmed && trimmed !== node.label) {
+      await updateNodeLabel(node.id, trimmed);
+    } else {
+      setEditingLabel(node.label);
+    }
+    setIsEditing(false);
+  };
+
+  // Feature 4: SNA Community / Metric colors and badges
+  const snaColor = snaOverlay?.nodeColors?.[node.id];
+  const snaBadge = snaOverlay?.nodeBadges?.[node.id];
+
+  const defaultBorderColor = LAYER_BORDER_COLORS[node.layer] || 'var(--color-border-default)';
+  const activeBorderColor = snaColor || defaultBorderColor;
   const isHypothesis = node.layer === 'HYPOTHESIS';
   const size = isSelected || node.radius === 34 ? 76 : 64;
   const halfSize = size / 2;
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (isEditing) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       onSelect(node.id, e.shiftKey || e.ctrlKey);
+    } else if (e.key === 'F2') {
+      e.preventDefault();
+      setIsEditing(true);
     } else if (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) {
       e.preventDefault();
       onContextMenu(e, node.id);
@@ -68,12 +111,21 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        cursor: 'grab',
+        cursor: isDragging ? 'grabbing' : 'grab',
         userSelect: 'none',
+        // Feature 5: Smooth Layout transitions when not dragging
+        transition: isDragging
+          ? 'none'
+          : 'left 0.45s cubic-bezier(0.16, 1, 0.3, 1), top 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
+        zIndex: isSelected ? 15 : isDragging ? 20 : 5,
       }}
       onClick={(e) => {
         e.stopPropagation();
         onSelect(node.id, e.shiftKey || e.ctrlKey);
+      }}
+      onDoubleClick={(e) => {
+        e.stopPropagation();
+        setIsEditing(true);
       }}
       onContextMenu={(e) => {
         e.preventDefault();
@@ -81,12 +133,12 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
         onContextMenu(e, node.id);
       }}
       onMouseDown={(e) => {
-        if (e.button === 0) {
+        if (e.button === 0 && !isEditing) {
           onDragStart(e, node.id);
         }
       }}
       onKeyDown={handleKeyDown}
-      className="canvas-circular-node"
+      className={`canvas-circular-node ${isDragging ? 'is-dragging' : ''}`}
     >
       {/* Circular Body */}
       <div
@@ -97,9 +149,11 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
           backgroundColor: 'var(--color-bg-surface)',
           borderWidth: isHypothesis ? '2.5px' : '2px',
           borderStyle: isHypothesis ? 'dashed' : 'solid',
-          borderColor: isLinkSource ? 'var(--color-status-warning)' : borderColor,
+          borderColor: isLinkSource ? 'var(--color-status-warning)' : activeBorderColor,
           boxShadow: isLinkSource
             ? '0 0 0 4px var(--color-status-warning), 0 0 16px rgba(245, 158, 11, 0.6)'
+            : snaColor
+            ? `0 0 0 3px ${snaColor}44, 0 0 14px ${snaColor}88`
             : isSelected
             ? '0 0 0 3px var(--color-accent-subtle), 0 0 12px rgba(37, 99, 235, 0.4)'
             : '0 2px 4px rgba(0, 0, 0, 0.3)',
@@ -107,32 +161,58 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
-          transition: 'transform 0.1s ease, box-shadow 0.1s ease',
+          transition: 'transform 0.15s ease, box-shadow 0.15s ease',
         }}
       >
-        <NodeIcon name={iconName} size={size === 76 ? 30 : 26} style={{ color: borderColor }} />
+        <NodeIcon name={iconName} size={size === 76 ? 30 : 26} style={{ color: activeBorderColor }} />
 
-        {/* Confidence chip if confidence < 1.0 */}
-        {node.confidence !== null && node.confidence !== undefined && node.confidence < 1.0 && (
+        {/* Feature 4: SNA Result Badge (Rank or Cluster) */}
+        {snaBadge && (
           <span
+            className="sna-node-pill"
             style={{
               position: 'absolute',
-              top: '-4px',
-              right: '-4px',
-              fontSize: 'var(--text-xs)',
-              fontFamily: 'var(--font-mono)',
-              padding: '1px 4px',
-              borderRadius: 'var(--radius-sm)',
-              backgroundColor: 'var(--color-bg-elevated)',
-              border: '1px solid var(--color-border-default)',
-              color: 'var(--color-text-secondary)',
+              top: '-8px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              backgroundColor: snaColor || 'var(--color-accent-primary)',
+              color: '#ffffff',
+              fontSize: '10.5px',
+              fontWeight: 700,
+              padding: '1px 6px',
+              borderRadius: 'var(--radius-full)',
+              boxShadow: '0 2px 5px rgba(0,0,0,0.5)',
+              whiteSpace: 'nowrap',
             }}
           >
-            {Math.round(node.confidence * 100)}%
+            {snaBadge}
           </span>
         )}
 
-        {/* Context Menu Button for keyboard / accessibility */}
+        {/* Feature 10: Confidence chip in Analyst mode */}
+        {investigationMode === 'analyst' &&
+          node.confidence !== null &&
+          node.confidence !== undefined &&
+          node.confidence < 1.0 && (
+            <span
+              style={{
+                position: 'absolute',
+                top: '-4px',
+                right: '-4px',
+                fontSize: '10px',
+                fontFamily: 'var(--font-mono)',
+                padding: '1px 4px',
+                borderRadius: 'var(--radius-sm)',
+                backgroundColor: 'var(--color-bg-elevated)',
+                border: '1px solid var(--color-border-default)',
+                color: 'var(--color-text-secondary)',
+              }}
+            >
+              {Math.round(node.confidence * 100)}%
+            </span>
+          )}
+
+        {/* Context Menu Button */}
         <button
           type="button"
           aria-label={`Options pour ${node.label}`}
@@ -161,32 +241,76 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
         </button>
       </div>
 
-      {/* Node Text Label below */}
-      <div
-        title={node.label}
-        style={{
-          marginTop: '6px',
-          fontSize: '12.5px',
-          lineHeight: '1.25',
-          fontFamily: 'var(--font-sans)',
-          color: isSelected ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
-          fontWeight: isSelected ? 600 : 500,
-          textAlign: 'center',
-          maxWidth: '140px',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          pointerEvents: 'none',
-          backgroundColor: 'rgba(15, 23, 42, 0.88)',
-          padding: '2px 8px',
-          borderRadius: 'var(--radius-sm)',
-          border: isSelected ? '1px solid var(--color-accent-primary)' : '1px solid rgba(255, 255, 255, 0.1)',
-          boxShadow: '0 2px 6px rgba(0, 0, 0, 0.6)',
-          backdropFilter: 'blur(4px)',
-        }}
-      >
-        {node.label}
-      </div>
+      {/* Feature 2: Node Label or Inline Rename Input */}
+      {isEditing ? (
+        <div
+          style={{
+            marginTop: '6px',
+            position: 'relative',
+            zIndex: 30,
+          }}
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          <input
+            ref={inputRef}
+            type="text"
+            className="node-rename-input"
+            value={editingLabel}
+            onChange={(e) => setEditingLabel(e.target.value)}
+            onBlur={handleSaveLabel}
+            onKeyDown={(e) => {
+              e.stopPropagation();
+              if (e.key === 'Enter') handleSaveLabel();
+              if (e.key === 'Escape') {
+                setEditingLabel(node.label);
+                setIsEditing(false);
+              }
+            }}
+            style={{
+              fontSize: '12px',
+              fontFamily: 'var(--font-sans)',
+              padding: '2px 6px',
+              backgroundColor: 'var(--color-bg-elevated)',
+              color: 'var(--color-text-primary)',
+              border: '1px solid var(--color-accent-primary)',
+              borderRadius: 'var(--radius-sm)',
+              outline: 'none',
+              width: '140px',
+              textAlign: 'center',
+              boxShadow: '0 0 8px rgba(37, 99, 235, 0.5)',
+            }}
+            aria-label="Modifier le libellé du nœud"
+          />
+        </div>
+      ) : (
+        <div
+          title={`${node.label} (Double-cliquer pour renommer)`}
+          style={{
+            marginTop: '6px',
+            fontSize: '12.5px',
+            lineHeight: '1.25',
+            fontFamily: 'var(--font-sans)',
+            color: isSelected ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+            fontWeight: isSelected ? 600 : 500,
+            textAlign: 'center',
+            maxWidth: '150px',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            pointerEvents: 'auto',
+            backgroundColor: 'rgba(15, 23, 42, 0.88)',
+            padding: '2px 8px',
+            borderRadius: 'var(--radius-sm)',
+            border: isSelected ? '1px solid var(--color-accent-primary)' : '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(4px)',
+            cursor: 'text',
+          }}
+        >
+          {node.label}
+        </div>
+      )}
     </div>
   );
 });

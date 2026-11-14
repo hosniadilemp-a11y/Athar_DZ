@@ -48,9 +48,9 @@ export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
   onToggleSna,
   onRunPlaybook,
 }) => {
-  const { locale, setLocale, t } = useI18n();
+  const { locale, setLocale, t, tr } = useI18n();
   const { theme, toggleTheme } = useTheme();
-  const { activeLayout, applyLayout } = useGraphStore();
+  const { activeLayout, applyLayout, investigationMode, toggleInvestigationMode } = useGraphStore();
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [appMode, setAppMode] = useState<'collect' | 'analyze' | 'report'>('analyze');
   const menubarRef = useRef<HTMLDivElement>(null);
@@ -1034,6 +1034,25 @@ export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
         >
           <FileText size={12} />
           <span>Spécifications (8 Chap.)</span>
+        </button>
+
+        {/* Feature 10: Mode Enquêteur vs Analyste Forensique Toggle */}
+        <button
+          type="button"
+          className={`btn btn-xs ${investigationMode === 'analyst' ? 'btn-secondary' : 'btn-ghost'}`}
+          onClick={toggleInvestigationMode}
+          title={
+            investigationMode === 'analyst'
+              ? tr('Mode Analyste : Détails forensiques, hashes SHA-256 et ancrage Merkle actifs')
+              : tr('Mode Enquêteur : Vue simplifiée pour magistrat et enquête de police judiciaire')
+          }
+          aria-label={tr('Basculer entre Mode Enquêteur et Mode Analyste')}
+          style={{ gap: '4px', paddingInline: '6px' }}
+        >
+          <Shield size={12} className={investigationMode === 'analyst' ? 'text-accent' : ''} />
+          <span style={{ fontSize: '11px', fontWeight: 600 }}>
+            {investigationMode === 'analyst' ? tr('Analyste') : tr('Enquêteur')}
+          </span>
         </button>
 
         {/* Theme Toggle */}

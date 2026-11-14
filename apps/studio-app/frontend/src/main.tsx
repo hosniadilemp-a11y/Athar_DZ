@@ -4,6 +4,7 @@ import './styles/tokens.css';
 import './styles/studio.css';
 import { I18nProvider } from './context/I18nContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { ToastProvider } from './context/ToastContext';
 import App from './App';
 
 const rootEl = document.getElementById('root');
@@ -12,7 +13,9 @@ if (rootEl) {
     <StrictMode>
       <ThemeProvider>
         <I18nProvider>
-          <App />
+          <ToastProvider>
+            <App />
+          </ToastProvider>
         </I18nProvider>
       </ThemeProvider>
     </StrictMode>,

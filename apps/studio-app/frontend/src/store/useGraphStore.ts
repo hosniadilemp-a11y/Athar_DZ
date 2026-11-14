@@ -10,6 +10,14 @@ import { computeGraphLayout, type GraphLayoutType } from '../utils/graphLayouts'
 
 export type { GraphLayoutType };
 
+export interface SnaVisualOverlay {
+  algoKey: string;
+  algoTitle: string;
+  nodeColors: Record<string, string>;
+  nodeBadges: Record<string, string>;
+  legend: Array<{ label: string; color: string }>;
+}
+
 export interface Command {
   id: string;
   description: string;
@@ -45,6 +53,19 @@ export interface GraphStoreState {
   isLinkMode: boolean;
   linkSourceNodeId: string | null;
   activeLayout: GraphLayoutType;
+
+  // Feature 4: SNA Visual Overlay
+  snaVisualOverlay: SnaVisualOverlay | null;
+  setSnaVisualOverlay: (overlay: SnaVisualOverlay | null) => void;
+  clearSnaVisualOverlay: () => void;
+
+  // Feature 10: Mode Enquêteur vs Analyste Forensique
+  investigationMode: 'investigator' | 'analyst';
+  toggleInvestigationMode: () => void;
+  setInvestigationMode: (mode: 'investigator' | 'analyst') => void;
+
+  // Feature 2: Node Rename
+  updateNodeLabel: (nodeId: string, label: string) => Promise<void>;
 
   // Context Menu state
   contextMenu: {
@@ -130,6 +151,17 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
   linkSourceNodeId: null,
   activeLayout: 'concentric',
 
+  snaVisualOverlay: null,
+  setSnaVisualOverlay: (overlay) => set({ snaVisualOverlay: overlay }),
+  clearSnaVisualOverlay: () => set({ snaVisualOverlay: null }),
+
+  investigationMode: 'investigator',
+  toggleInvestigationMode: () =>
+    set((state) => ({
+      investigationMode: state.investigationMode === 'investigator' ? 'analyst' : 'investigator',
+    })),
+  setInvestigationMode: (mode) => set({ investigationMode: mode }),
+
   contextMenu: {
     isOpen: false,
     x: 0,
@@ -201,16 +233,17 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     const nodeIds = new Set(currentNodes.map((n) => n.id));
     const edgeIds = new Set(currentEdges.map((e) => e.id));
 
-    // Place new neighbor nodes in a small orbit around their first known neighbor
+    // Place new neighbor nodes in a small orbit around their first known neighbor if not explicitly positioned
     const nodesToAdd: GraphNode[] = [];
     newNodes.forEach((node, idx) => {
       if (!nodeIds.has(node.id)) {
         nodeIds.add(node.id);
+        const hasPos = typeof node.x === 'number' && typeof node.y === 'number';
         const angle = (idx * (2 * Math.PI)) / Math.max(1, newNodes.length);
         nodesToAdd.push({
           ...node,
-          x: Math.round(500 + 350 * Math.cos(angle)),
-          y: Math.round(400 + 350 * Math.sin(angle)),
+          x: hasPos ? node.x : Math.round(500 + 350 * Math.cos(angle)),
+          y: hasPos ? node.y : Math.round(400 + 350 * Math.sin(angle)),
           radius: 28,
         });
       }
@@ -221,6 +254,70 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     set({
       nodes: [...currentNodes, ...nodesToAdd],
       edges: [...currentEdges, ...edgesToAdd],
+    });
+  },
+
+  updateNodeLabel: async (nodeId: string, newLabel: string) => {
+    const currentNodes = get().nodes;
+    const target = currentNodes.find((n) => n.id === nodeId);
+    if (!target || !newLabel.trim()) return;
+
+    const oldLabel = target.label;
+    if (oldLabel === newLabel.trim()) return;
+
+    // Optimistic UI update
+    set({
+      nodes: currentNodes.map((n) => (n.id === nodeId ? { ...n, label: newLabel.trim() } : n)),
+    });
+
+    // Server update
+    const activeCase = get().activeCase;
+    if (activeCase) {
+      try {
+        await fetch(`/api/v1/cases/${activeCase.id}/nodes/${nodeId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Actor-Id': 'investigator_front',
+          },
+          body: JSON.stringify({
+            label: newLabel.trim(),
+            reason: 'Modification de libellé par l\'enquêteur',
+          }),
+        });
+      } catch (err) {
+        console.error('Erreur mise à jour libellé nœud:', err);
+      }
+    }
+
+    // Command for Undo / Redo
+    get().executeCommand({
+      id: `rename-${nodeId}-${Date.now()}`,
+      description: `Renommer "${oldLabel}" en "${newLabel.trim()}"`,
+      undo: () => {
+        set({
+          nodes: get().nodes.map((n) => (n.id === nodeId ? { ...n, label: oldLabel } : n)),
+        });
+        if (activeCase) {
+          fetch(`/api/v1/cases/${activeCase.id}/nodes/${nodeId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'X-Actor-Id': 'investigator_front' },
+            body: JSON.stringify({ label: oldLabel, reason: 'Annulation modification libellé' }),
+          }).catch(() => {});
+        }
+      },
+      redo: () => {
+        set({
+          nodes: get().nodes.map((n) => (n.id === nodeId ? { ...n, label: newLabel.trim() } : n)),
+        });
+        if (activeCase) {
+          fetch(`/api/v1/cases/${activeCase.id}/nodes/${nodeId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'X-Actor-Id': 'investigator_front' },
+            body: JSON.stringify({ label: newLabel.trim(), reason: 'Rétablissement modification libellé' }),
+          }).catch(() => {});
+        }
+      },
     });
   },
 

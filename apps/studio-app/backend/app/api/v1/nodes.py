@@ -12,12 +12,13 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 from app.api.v1.cases import get_actor_id
 from app.db.session import get_neo4j_driver, get_pg_engine
-from app.schemas.node import NodeCreate, NodeLayerChange, NodeResponse, ToolProposal
+from app.schemas.node import NodeCreate, NodeLayerChange, NodeResponse, NodeUpdate, ToolProposal
 from app.services.graph_service import (
     change_node_layer,
     create_node,
     delete_node,
     get_tool_proposals,
+    update_node,
 )
 
 router = APIRouter(prefix="/cases/{case_id}/nodes", tags=["nodes"])
@@ -36,6 +37,26 @@ async def create_node_endpoint(
         engine=engine,
         neo4j_driver=neo4j_driver,
         case_id=case_id,
+        payload=payload,
+        actor_id=actor_id,
+    )
+
+
+@router.patch("/{node_id}", response_model=NodeResponse)
+async def update_node_endpoint(
+    case_id: uuid.UUID,
+    node_id: uuid.UUID,
+    payload: NodeUpdate,
+    engine: AsyncEngine = Depends(get_pg_engine),
+    neo4j_driver: AsyncDriver = Depends(get_neo4j_driver),
+    actor_id: str = Depends(get_actor_id),
+) -> NodeResponse:
+    """Update node display label and metadata attributes with forensic audit logging."""
+    return await update_node(
+        engine=engine,
+        neo4j_driver=neo4j_driver,
+        case_id=case_id,
+        node_id=node_id,
         payload=payload,
         actor_id=actor_id,
     )

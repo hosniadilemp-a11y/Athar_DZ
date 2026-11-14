@@ -19,10 +19,12 @@ import { CommandPalette } from './components/modals/CommandPalette';
 import { ToolInfoModal, type ToolSpec } from './components/modals/ToolInfoModal';
 import { CasePropertiesModal } from './components/modals/CasePropertiesModal';
 import { PhaseNoticeModal } from './components/modals/PhaseNoticeModal';
+import { useToast } from './context/ToastContext';
 import type { CaseItem, GraphResponse } from './types/graph';
 import { API_BASE } from './config';
 
 export function App() {
+  const toast = useToast();
   const {
     nodes,
     edges,
@@ -260,12 +262,15 @@ export function App() {
           if (!createdNode || !createdNode.id) return;
           mergeExpandedNodes([createdNode], []);
           selectNode(createdNode.id);
+          setIsInspectorOpen(true);
+          toast.success(`Entité "${createdNode.label}" ajoutée`, "Création d'entité");
         })
         .catch((err) => {
           console.error('Erreur création nœud au centre:', err);
+          toast.error(err instanceof Error ? err.message : 'Erreur serveur', "Échec de création");
         });
     },
-    [activeCase, nodes.length, mergeExpandedNodes, selectNode]
+    [activeCase, nodes.length, mergeExpandedNodes, selectNode, toast]
   );
 
   // Handle Add Node Dropped at specific Canvas Coordinates
@@ -302,12 +307,15 @@ export function App() {
           createdNode.y = y;
           mergeExpandedNodes([createdNode], []);
           selectNode(createdNode.id);
+          setIsInspectorOpen(true);
+          toast.success(`Entité "${createdNode.label}" positionnée sur le graphe`, "Création d'entité");
         })
         .catch((err) => {
           console.error('Erreur création nœud à la position:', err);
+          toast.error(err instanceof Error ? err.message : 'Erreur serveur', "Échec de création");
         });
     },
-    [activeCase, nodes.length, mergeExpandedNodes, selectNode]
+    [activeCase, nodes.length, mergeExpandedNodes, selectNode, toast]
   );
 
   const handleTriggerPhaseNotice = (name: string, phase: string) => {
@@ -316,7 +324,10 @@ export function App() {
   };
 
   const handleRunPlaybook = () => {
-    alert("Scénario d'enquête recommandé exécuté : 3 nouveaux indices dirigés vers la Boîte d'Arbitrage (Review-Run).");
+    toast.info(
+      "Scénario d'enquête recommandé exécuté : 3 nouveaux indices dirigés vers la Boîte d'Arbitrage (Review-Run).",
+      "Scénario Recommandé"
+    );
   };
 
   return (

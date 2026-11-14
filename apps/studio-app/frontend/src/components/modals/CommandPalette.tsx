@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Search, X, Layers, Activity, Wrench, Database } from 'lucide-react';
 import { useGraphStore } from '../../store/useGraphStore';
+import { useI18n } from '../../context/I18nContext';
 import type { ActiveViewMode } from '../canvas/Toolbar';
 
 interface CommandPaletteProps {
@@ -30,7 +31,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { nodes, selectNode } = useGraphStore();
+  const { nodes, selectNode, applyLayout } = useGraphStore();
+  const { tr } = useI18n();
 
   useEffect(() => {
     if (isOpen) {
@@ -45,7 +47,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       // Views
       {
         id: 'view-graph',
-        title: 'Affichage : Tableau des Indices (Graphe)',
+        title: tr('Affichage : Tableau des Indices (Graphe)'),
         category: 'view',
         action: () => {
           onSelectView('graph');
@@ -54,7 +56,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       },
       {
         id: 'view-timeline',
-        title: 'Affichage : Chronologie Temporelle Forensique',
+        title: tr('Affichage : Chronologie Temporelle Forensique'),
         category: 'view',
         action: () => {
           onSelectView('timeline');
@@ -63,7 +65,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       },
       {
         id: 'view-map',
-        title: 'Affichage : Carte SIG des Bornages & Territoires',
+        title: tr('Affichage : Carte SIG des Bornages & Territoires'),
         category: 'view',
         action: () => {
           onSelectView('map');
@@ -72,7 +74,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       },
       {
         id: 'view-table',
-        title: 'Affichage : Liste Accessible WCAG AA',
+        title: tr('Affichage : Liste Accessible WCAG AA'),
         category: 'view',
         action: () => {
           onSelectView('table');
@@ -81,7 +83,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       },
       {
         id: 'view-audit',
-        title: 'Affichage : Registre d’Audit Immuable (ISO 27037)',
+        title: tr('Affichage : Registre d’Audit Immuable (ISO 27037)'),
         category: 'view',
         action: () => {
           onSelectView('audit');
@@ -89,10 +91,52 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         },
       },
 
+      // Layouts
+      {
+        id: 'layout-concentric',
+        title: tr('Disposition : Concentrique par Calque (Recommandé)'),
+        category: 'action',
+        action: () => {
+          applyLayout('concentric');
+          onSelectView('graph');
+          onClose();
+        },
+      },
+      {
+        id: 'layout-force',
+        title: tr('Disposition : Organique (Forces F-R)'),
+        category: 'action',
+        action: () => {
+          applyLayout('force');
+          onSelectView('graph');
+          onClose();
+        },
+      },
+      {
+        id: 'layout-circular',
+        title: tr('Disposition : Circulaire Global'),
+        category: 'action',
+        action: () => {
+          applyLayout('circular');
+          onSelectView('graph');
+          onClose();
+        },
+      },
+      {
+        id: 'layout-grid',
+        title: tr('Disposition : Matrice en Grille'),
+        category: 'action',
+        action: () => {
+          applyLayout('grid');
+          onSelectView('graph');
+          onClose();
+        },
+      },
+
       // Phase 1 SNA Tools
       {
         id: 'tool-betweenness',
-        title: 'SNA : Centralité d’Intermédiarité (Betweenness)',
+        title: tr('SNA : Pivots & Intermédiaires Clés (Betweenness)'),
         category: 'tool',
         phase: 'Phase 1',
         action: () => {
@@ -102,7 +146,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       },
       {
         id: 'tool-louvain',
-        title: 'SNA : Détection de Communautés (Louvain)',
+        title: tr('SNA : Détection de Cellules Criminelles (Louvain)'),
         category: 'tool',
         phase: 'Phase 1',
         action: () => {
@@ -112,7 +156,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       },
       {
         id: 'tool-pagerank',
-        title: 'SNA : Détection de Mules (PageRank Bipartite)',
+        title: tr('SNA : Têtes de Réseau & Commanditaires (PageRank)'),
         category: 'tool',
         phase: 'Phase 1',
         action: () => {
@@ -122,7 +166,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       },
       {
         id: 'tool-adamic',
-        title: 'SNA : Prédiction de Liens (Adamic-Adar)',
+        title: tr('SNA : Prédiction de Liens Suspects (Adamic-Adar)'),
         category: 'tool',
         phase: 'Phase 1',
         action: () => {
@@ -175,14 +219,17 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     ];
 
     // Add nodes from the current graph
-    nodes.slice(0, 30).forEach((node) => {
+    nodes.slice(0, 50).forEach((node) => {
       list.push({
         id: `node-${node.id}`,
-        title: `Nœud : ${node.label} (${node.type})`,
+        title: `${tr('Nœud')} : ${node.label} (${node.type})`,
         category: 'node',
         action: () => {
           selectNode(node.id, false);
           onSelectView('graph');
+          if (typeof node.x === 'number' && typeof node.y === 'number') {
+            useGraphStore.getState().setViewport(450 - node.x, 350 - node.y, 1.1);
+          }
           onClose();
         },
       });
@@ -192,7 +239,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
     const q = query.toLowerCase();
     return list.filter((item) => item.title.toLowerCase().includes(q));
-  }, [query, nodes, onSelectView, onTriggerTool, onTriggerPhaseNotice, selectNode, onClose]);
+  }, [query, nodes, onSelectView, onTriggerTool, onTriggerPhaseNotice, selectNode, applyLayout, tr, onClose]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {

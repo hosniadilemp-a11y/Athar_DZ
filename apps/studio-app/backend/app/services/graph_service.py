@@ -1070,3 +1070,100 @@ def get_tool_proposals(node_type: str) -> list[ToolProposal]:
             is_active=True,
         ),
     ]
+
+
+async def update_node(
+    engine: AsyncEngine,
+    neo4j_driver: AsyncDriver,
+    case_id: uuid.UUID,
+    node_id: uuid.UUID,
+    payload: Any,
+    actor_id: str,
+) -> NodeResponse:
+    """Update node display label and metadata attributes with forensic audit logging."""
+    await get_case(engine, case_id)
+
+    async with engine.connect() as conn:
+        res = await conn.execute(
+            text(
+                "SELECT id, type, layer, label, confidence, "
+                "provenance, properties, latitude, longitude, created_at, updated_at "
+                "FROM nodes WHERE id = :id AND case_id = :cid AND deleted_at IS NULL;"
+            ),
+            {"id": node_id, "cid": case_id},
+        )
+        row = res.fetchone()
+
+    if not row:
+        raise HTTPException(
+            status_code=404,
+            detail={"code": "NODE_NOT_FOUND", "message": f"Node '{node_id}' not found in case '{case_id}'"},
+        )
+
+    old_label = row[3]
+    new_label = payload.label if payload.label is not None else old_label
+    new_conf = payload.confidence if payload.confidence is not None else row[4]
+    current_props = row[6] if isinstance(row[6], dict) else json.loads(row[6] or "{}")
+    if payload.properties:
+        current_props.update(payload.properties)
+    new_lat = payload.latitude if payload.latitude is not None else row[7]
+    new_lng = payload.longitude if payload.longitude is not None else row[8]
+    now = datetime.now(timezone.utc)
+
+    # 1. PostgreSQL update
+    async with engine.begin() as conn:
+        await conn.execute(
+            text(
+                "UPDATE nodes SET label = :lbl, confidence = :conf, properties = CAST(:props AS JSONB), "
+                "latitude = :lat, longitude = :lng, updated_at = :now "
+                "WHERE id = :id AND case_id = :cid;"
+            ),
+            {
+                "lbl": new_label,
+                "conf": new_conf,
+                "props": json.dumps(current_props),
+                "lat": new_lat,
+                "lng": new_lng,
+                "now": now,
+                "id": node_id,
+                "cid": case_id,
+            },
+        )
+
+    # 2. Neo4j update
+    async with neo4j_driver.session() as session:
+        await session.run(
+            "MATCH (n:Node {id: $id, case_id: $cid}) "
+            "SET n.label = $lbl, n.confidence = $conf, n.updated_at = $now",
+            {"id": str(node_id), "cid": str(case_id), "lbl": new_label, "conf": new_conf, "now": now.isoformat()},
+        )
+
+    # 3. Audit log
+    await log_audit_event(
+        engine=engine,
+        case_id=case_id,
+        actor_id=actor_id,
+        action="UPDATE_NODE",
+        entity_type="node",
+        entity_id=node_id,
+        before_state={"label": old_label, "confidence": row[4]},
+        after_state={"label": new_label, "confidence": new_conf},
+        reason=payload.reason or "Investigator updated node label/metadata",
+    )
+
+    node_type = row[1]
+    return NodeResponse(
+        id=row[0],
+        case_id=case_id,
+        type=node_type,
+        layer=row[2],
+        label=new_label,
+        confidence=new_conf,
+        provenance=row[5],
+        properties=current_props,
+        latitude=new_lat,
+        longitude=new_lng,
+        icon=NODE_TYPES[node_type].icon if node_type in NODE_TYPES else "circle",
+        created_at=row[9],
+        updated_at=now,
+    )

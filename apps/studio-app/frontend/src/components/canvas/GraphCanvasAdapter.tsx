@@ -4,8 +4,10 @@ import type { LayerId } from '../../types/registry';
 import { CircularNode } from './CircularNode';
 import { EdgeLine } from './EdgeLine';
 import { CanvasFloatingPalette } from './CanvasFloatingPalette';
+import { CanvasMinimap } from './CanvasMinimap';
 import { useGraphStore } from '../../store/useGraphStore';
-import { Link2 } from 'lucide-react';
+import { Link2, Sparkles, X } from 'lucide-react';
+import { useI18n } from '../../context/I18nContext';
 
 export interface Viewport {
   panX: number;
@@ -53,12 +55,15 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
   onAddNodeAtPosition,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { tr } = useI18n();
   const {
     isLinkMode,
     linkSourceNodeId,
     setLinkMode,
     setLinkSourceNodeId,
     createManualEdge,
+    snaVisualOverlay,
+    clearSnaVisualOverlay,
   } = useGraphStore();
 
   // Pan dragging state
@@ -70,8 +75,28 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [livePositions, setLivePositions] = useState<Map<string, { x: number; y: number }>>(new Map());
 
+  // Canvas Drag & Drop State (Feature 1)
+  const [isDragOverCanvas, setIsDragOverCanvas] = useState(false);
+
   // Mouse position in canvas space for link preview
   const [mouseCanvasPos, setMouseCanvasPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // Container dimensions for minimap
+  const [containerSize, setContainerSize] = useState({ w: 800, h: 600 });
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setContainerSize({
+          w: entry.contentRect.width,
+          h: entry.contentRect.height,
+        });
+      }
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   // Handle Node Click (Selection or Link Creation Mode)
   const handleNodeClick = useCallback(
@@ -141,24 +166,38 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
     };
   }, [viewport, onViewportChange]);
 
-  // Handle Drag Over for Entity Drop
+  // Handle Drag Over for Entity Drop (Feature 1)
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     e.dataTransfer.dropEffect = 'copy';
+    setIsDragOverCanvas(true);
   }, []);
 
-  // Handle Drag Enter for Entity Drop
+  // Handle Drag Enter
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    setIsDragOverCanvas(true);
   }, []);
 
-  // Handle Entity Drop onto Canvas (creates node at cursor position)
+  // Handle Drag Leave
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only deactivate if leaving the container boundaries
+    if (e.currentTarget === e.target) {
+      setIsDragOverCanvas(false);
+    }
+  }, []);
+
+  // Handle Entity Drop onto Canvas (Feature 1)
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
+      setIsDragOverCanvas(false);
+
       let typeKey = e.dataTransfer.getData('athar/node-type') || e.dataTransfer.getData('text/plain');
       if (!typeKey) {
         try {
@@ -312,6 +351,7 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
       onMouseMove={handleCanvasMouseMove}
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       onKeyDown={handleKeyDown}
       onClick={onClearSelection}
@@ -334,6 +374,33 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
         </defs>
         <rect width="100%" height="100%" fill="url(#canvas-grid)" />
       </svg>
+
+      {/* Feature 1: Luminous Active Drop Zone Overlay */}
+      {isDragOverCanvas && (
+        <div
+          className="canvas-drop-zone-overlay"
+          style={{
+            position: 'absolute',
+            inset: '12px',
+            border: '2px dashed var(--color-accent-primary)',
+            borderRadius: 'var(--radius-lg)',
+            backgroundColor: 'rgba(37, 99, 235, 0.08)',
+            boxShadow: 'inset 0 0 24px rgba(37, 99, 235, 0.25)',
+            pointerEvents: 'none',
+            zIndex: 40,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            color: 'var(--color-accent-text)',
+            fontSize: 'var(--text-sm)',
+            fontWeight: 600,
+          }}
+        >
+          <Sparkles size={18} className="text-accent" />
+          <span>{tr('Déposer l\'entité ici pour la positionner sur le graphe')}</span>
+        </div>
+      )}
 
       {/* Transformed Content Layer */}
       <div
@@ -415,6 +482,7 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
               node={effectiveNode}
               isSelected={isSelected}
               isLinkSource={linkSourceNodeId === node.id}
+              isDragging={draggingNodeId === node.id}
               onSelect={handleNodeClick}
               onContextMenu={onNodeContextMenu}
               onDragStart={handleNodeDragStart}
@@ -423,18 +491,63 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
         })}
       </div>
 
+      {/* Feature 4: Floating SNA Visual Overlay Legend */}
+      {snaVisualOverlay && (
+        <div
+          className="canvas-sna-legend-card"
+          role="region"
+          aria-label="Légende de l'analyse visuelle SNA"
+        >
+          <div className="canvas-sna-legend-header">
+            <div className="canvas-sna-legend-title">
+              <Sparkles size={13} className="text-accent" />
+              <span>{snaVisualOverlay.algoTitle}</span>
+            </div>
+            <button
+              type="button"
+              className="canvas-sna-legend-close"
+              onClick={clearSnaVisualOverlay}
+              title={tr('Effacer l\'analyse visuelle')}
+              aria-label="Fermer la visualisation SNA"
+            >
+              <X size={12} />
+            </button>
+          </div>
+          <div className="canvas-sna-legend-items">
+            {snaVisualOverlay.legend.map((item, idx) => (
+              <div key={idx} className="canvas-sna-legend-item">
+                <span
+                  className="canvas-sna-legend-dot"
+                  style={{ backgroundColor: item.color }}
+                />
+                <span className="canvas-sna-legend-text">{item.label}</span>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="btn btn-ghost btn-xs canvas-sna-legend-reset-btn"
+            onClick={clearSnaVisualOverlay}
+          >
+            {tr('Réinitialiser l\'affichage')}
+          </button>
+        </div>
+      )}
+
       {/* Active Link Creation Mode Banner */}
       {isLinkMode && (
         <div className="canvas-connection-banner is-visible" role="status" aria-live="polite">
           <Link2 size={15} className="text-warning" />
           <span id="canvas-connection-text">
-            <strong>Mode Liaison Actif :</strong>{' '}
+            <strong>{tr('Mode Liaison Actif :')}</strong>{' '}
             {linkSourceNodeId ? (
               <span>
-                Premier nœud sélectionné ({nodes.find((n) => n.id === linkSourceNodeId)?.label || linkSourceNodeId}). Cliquez sur le nœud cible pour créer la liaison...
+                {tr('Premier nœud sélectionné ({name}). Cliquez sur le nœud cible pour créer la liaison...', {
+                  name: nodes.find((n) => n.id === linkSourceNodeId)?.label || linkSourceNodeId,
+                })}
               </span>
             ) : (
-              <span>Cliquez sur le premier nœud de la liaison...</span>
+              <span>{tr('Cliquez sur le premier nœud de la liaison...')}</span>
             )}
           </span>
           <button
@@ -442,10 +555,19 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
             className="btn btn-ghost btn-xs banner-cancel-btn"
             onClick={() => setLinkMode(false)}
           >
-            Annuler
+            {tr('Annuler')}
           </button>
         </div>
       )}
+
+      {/* Feature 6: Interactive Canvas Minimap (Bottom-Right) */}
+      <CanvasMinimap
+        nodes={visibleNodes}
+        viewport={viewport}
+        onViewportChange={onViewportChange}
+        containerWidth={containerSize.w}
+        containerHeight={containerSize.h}
+      />
 
       {/* Floating Canvas Tool Palette (Bottom-Left) */}
       <CanvasFloatingPalette
