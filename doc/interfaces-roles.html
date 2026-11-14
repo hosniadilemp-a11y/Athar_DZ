@@ -106,6 +106,7 @@
       <li><a href="forensics-sna.html"><span>🚔 06. Forensics (DFIR) &amp; SNA Functions</span><span class="nav-badge">SOTA Funcs</span></a></li>
       <li><a href="roadmap-phases.html"><span>🚀 07. Incremental Development Phases</span><span class="nav-badge">6 Releases</span></a></li>
       <li><a href="maquette.html" class="maquette-cta"><span>🖥️ 08. Interactive Application Mock</span><span class="nav-badge">Live Studio</span></a></li>
+      <li><a href="tools-cache-inventory.html"><span>📦 09. Outils Téléchargés &amp; Justification</span><span class="nav-badge" style="background:#10b981;color:#fff;">100% Hors-Ligne</span></a></li>
     </ul>
 
     <div class="nav-section">Markdown Reference</div>
@@ -374,6 +375,86 @@
           </tbody>
         </table>
 
+        <!-- 1.7 Sous-Barre Contextuelle des Dispositions de Graphe & Moteur de Simulation en Direct -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">1.7 Sous-Barre Contextuelle des Dispositions &amp; Simulation Physique en Direct</h3>
+        <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;">
+          Pour éliminer toute surcharge visuelle sur les vues non graphiques (Carte SIG, Chronologie, Matrice d'audit), le menu de disposition du réseau est désormais encapsulé dans une <strong>sous-barre contextuelle</strong> qui apparaît exclusivement lorsque l'onglet <em>« Graphe »</em> est actif :
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:1rem;margin:1rem 0;">
+          <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #38bdf8;border-radius:6px;padding:0.9rem;font-size:0.82rem;">
+            <strong style="color:#38bdf8;display:block;margin-bottom:0.35rem;">🌐 4 Dispositions Topologiques Spécialisées</strong>
+            <ul style="padding-left:1.1rem;margin:0;color:#cbd5e1;line-height:1.6;">
+              <li><strong>Concentrique par Calque :</strong> Les preuves scellées au centre (rayon R1), puis l'OSINT (R2), l'Infra (R3) et les hypothèses (R4).</li>
+              <li><strong>Organique (Forces Fruchterman-Reingold) :</strong> Visualisation naturelle des grappes d'acteurs et des ponts criminels.</li>
+              <li><strong>Circulaire Global :</strong> Distribution équilibrée sur le cercle pour les vues d'ensemble de dossiers complexes.</li>
+              <li><strong>Matrice en Grille :</strong> Tri matriciel ordonné par certitude probatoire décroissante.</li>
+            </ul>
+          </div>
+          <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #10b981;border-radius:6px;padding:0.9rem;font-size:0.82rem;">
+            <strong style="color:#10b981;display:block;margin-bottom:0.35rem;">⏯️ Contrôle de Simulation en Direct (Live Layout)</strong>
+            <ul style="padding-left:1.1rem;margin:0;color:#cbd5e1;line-height:1.6;">
+              <li><strong>Bouton Play / Pause :</strong> Permet à l'enquêteur de laisser les forces physiques équilibrer le réseau, puis de <strong>figer instantanément les positions</strong> pour stabiliser l'espace d'analyse.</li>
+              <li><strong>Zéro Saut Visuel :</strong> Les nœuds conservent leurs coordonnées lors du passage d'un onglet à l'autre ou de l'application d'un filtre.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 1.8 Palette Flottante de Personnalisation Graphique & Mode Visuel Adaptatif -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">1.8 Palette Flottante de Personnalisation Graphique &amp; Coloration Duale</h3>
+        <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;">
+          Accessible via le bouton de configuration du canevas, une <strong>palette flottante escamotable</strong> offre à l'analyste un contrôle millimétrique sur la lisibilité du réseau :
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:1rem;margin:1rem 0;">
+          <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #f59e0b;border-radius:6px;padding:0.9rem;font-size:0.82rem;">
+            <strong style="color:#f59e0b;display:block;margin-bottom:0.35rem;">🎛️ Curseurs de Redimensionnement Dynamique</strong>
+            <ul style="padding-left:1.1rem;margin:0;color:#cbd5e1;line-height:1.6;">
+              <li><strong>Taille des Nœuds :</strong> Ajustement continu de 40px à 110px de diamètre.</li>
+              <li><strong>Épaisseur des Liens :</strong> Calibrage fin de 1px à 6px pour faire ressortir les flux financiers critiques.</li>
+              <li><strong>Taille des Polices :</strong> Réglage séparé pour les libellés de nœuds et les annotations d'arêtes.</li>
+              <li><strong>Interrupteurs Dédiés :</strong> Masquage/affichage sélectif des textes de liaisons et des portraits photos.</li>
+            </ul>
+          </div>
+          <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #a855f7;border-radius:6px;padding:0.9rem;font-size:0.82rem;">
+            <strong style="color:#a855f7;display:block;margin-bottom:0.35rem;">🎨 Coloration par Famille Ontologique &amp; Bordure de Calque</strong>
+            <ul style="padding-left:1.1rem;margin:0;color:#cbd5e1;line-height:1.6;">
+              <li><strong>Mode Famille Métier :</strong> Acteurs (Bleu <code>#3b82f6</code>), Territoire (Émeraude <code>#10b981</code>), Télécoms (Cyan <code>#06b6d4</code>), Finances (Ambre <code>#eab308</code>), Cyber (Orange <code>#f97316</code>), SOCMINT (Rose <code>#ec4899</code>), Biométrie/Preuve (Violet <code>#a855f7</code>).</li>
+              <li><strong>Bordure de Calque Préservée :</strong> La bordure extérieure atteste toujours de la force probatoire du scellé (Vert = Vérifié WORM, Tireté violet = Hypothèse).</li>
+              <li><strong>Lisibilité Mode Clair / Sombre :</strong> Adaptation automatique du contraste avec halo anti-éblouissement et typographie sombre <code>#0f172a</code> en thème lumineux.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 1.9 Fiche Nœud d'Enquête Approfondie & Scellés Audio Interactifs (Darija Algéroise) -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">1.9 Fiche Nœud Approfondie &amp; Lecteur d'Interceptions Vocales (Darija Algéroise)</h3>
+        <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;">
+          L'Inspecteur latéral droit intègre une suite judiciaire complète pour l'audition et l'exploitation des pièces à conviction numériques, notamment les <strong>interceptions téléphoniques et vocales en dialecte algérien (Darija)</strong> :
+        </p>
+        <div style="background:#090d16;border:1px solid #1e293b;border-radius:8px;padding:1.1rem;margin:1rem 0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e293b;padding-bottom:0.5rem;margin-bottom:0.8rem;">
+            <strong style="color:#a855f7;font-size:0.9rem;">📻 Lecteur Audio Judiciaire Interactif (HTML5 Local Air-Gapped)</strong>
+            <span class="badge" style="background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid #a855f7;">4 Pièces Audio Authentiques</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;font-size:0.82rem;color:#cbd5e1;">
+            <div>
+              <strong style="color:#38bdf8;">Fonctionnalités du Lecteur :</strong>
+              <ul style="padding-left:1.1rem;margin:0.3rem 0;line-height:1.6;">
+                <li><strong>Lecture / Pause &amp; Recommencer :</strong> Moteur audio local, aucun appel à un service tiers en ligne (air-gap absolu).</li>
+                <li><strong>Barre de Défilement (Seek Bar) :</strong> Navigation interactive à la seconde près dans l'enregistrement.</li>
+                <li><strong>Visualiseur Spectral 28 Barres :</strong> Ondes réactives animées calquées sur le niveau d'écoute et la progression temporelle.</li>
+                <li><strong>Téléchargement Scellé WAV :</strong> Bouton d'export direct de la pièce sonore brute avec intégrité SHA-256.</li>
+              </ul>
+            </div>
+            <div>
+              <strong style="color:#10b981;">Double Transcription Juridique &amp; Copie 1 Clic :</strong>
+              <ul style="padding-left:1.1rem;margin:0.3rem 0;line-height:1.6;">
+                <li><strong>Cartouche Darija Algéroise :</strong> Transcription phonétique fidèle des échanges criminels (ex: <em>« Khouya Karim... versi les 64 000 da f'had le compte BaridiMob »</em>) avec bouton de copie et notification toast.</li>
+                <li><strong>Traduction Assermentée (OPJ) :</strong> Traduction formelle en français certifiée pour le dossier pénal d'instruction.</li>
+                <li><strong>Empreinte Scellé SHA-256 :</strong> Attestation d'intégrité cryptographique WORM affichée sur chaque scellé.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
       </section>
     </div>
 
@@ -476,6 +557,86 @@
             </tr>
           </tbody>
         </table>
+
+        <!-- 1.7 Sous-Barre Contextuelle des Dispositions de Graphe & Moteur de Simulation en Direct -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">1.7 Sous-Barre Contextuelle des Dispositions &amp; Simulation Physique en Direct</h3>
+        <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;">
+          Pour éliminer toute surcharge visuelle sur les vues non graphiques (Carte SIG, Chronologie, Matrice d'audit), le menu de disposition du réseau est désormais encapsulé dans une <strong>sous-barre contextuelle</strong> qui apparaît exclusivement lorsque l'onglet <em>« Graphe »</em> est actif :
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:1rem;margin:1rem 0;">
+          <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #38bdf8;border-radius:6px;padding:0.9rem;font-size:0.82rem;">
+            <strong style="color:#38bdf8;display:block;margin-bottom:0.35rem;">🌐 4 Dispositions Topologiques Spécialisées</strong>
+            <ul style="padding-left:1.1rem;margin:0;color:#cbd5e1;line-height:1.6;">
+              <li><strong>Concentrique par Calque :</strong> Les preuves scellées au centre (rayon R1), puis l'OSINT (R2), l'Infra (R3) et les hypothèses (R4).</li>
+              <li><strong>Organique (Forces Fruchterman-Reingold) :</strong> Visualisation naturelle des grappes d'acteurs et des ponts criminels.</li>
+              <li><strong>Circulaire Global :</strong> Distribution équilibrée sur le cercle pour les vues d'ensemble de dossiers complexes.</li>
+              <li><strong>Matrice en Grille :</strong> Tri matriciel ordonné par certitude probatoire décroissante.</li>
+            </ul>
+          </div>
+          <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #10b981;border-radius:6px;padding:0.9rem;font-size:0.82rem;">
+            <strong style="color:#10b981;display:block;margin-bottom:0.35rem;">⏯️ Contrôle de Simulation en Direct (Live Layout)</strong>
+            <ul style="padding-left:1.1rem;margin:0;color:#cbd5e1;line-height:1.6;">
+              <li><strong>Bouton Play / Pause :</strong> Permet à l'enquêteur de laisser les forces physiques équilibrer le réseau, puis de <strong>figer instantanément les positions</strong> pour stabiliser l'espace d'analyse.</li>
+              <li><strong>Zéro Saut Visuel :</strong> Les nœuds conservent leurs coordonnées lors du passage d'un onglet à l'autre ou de l'application d'un filtre.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 1.8 Palette Flottante de Personnalisation Graphique & Mode Visuel Adaptatif -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">1.8 Palette Flottante de Personnalisation Graphique &amp; Coloration Duale</h3>
+        <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;">
+          Accessible via le bouton de configuration du canevas, une <strong>palette flottante escamotable</strong> offre à l'analyste un contrôle millimétrique sur la lisibilité du réseau :
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:1rem;margin:1rem 0;">
+          <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #f59e0b;border-radius:6px;padding:0.9rem;font-size:0.82rem;">
+            <strong style="color:#f59e0b;display:block;margin-bottom:0.35rem;">🎛️ Curseurs de Redimensionnement Dynamique</strong>
+            <ul style="padding-left:1.1rem;margin:0;color:#cbd5e1;line-height:1.6;">
+              <li><strong>Taille des Nœuds :</strong> Ajustement continu de 40px à 110px de diamètre.</li>
+              <li><strong>Épaisseur des Liens :</strong> Calibrage fin de 1px à 6px pour faire ressortir les flux financiers critiques.</li>
+              <li><strong>Taille des Polices :</strong> Réglage séparé pour les libellés de nœuds et les annotations d'arêtes.</li>
+              <li><strong>Interrupteurs Dédiés :</strong> Masquage/affichage sélectif des textes de liaisons et des portraits photos.</li>
+            </ul>
+          </div>
+          <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #a855f7;border-radius:6px;padding:0.9rem;font-size:0.82rem;">
+            <strong style="color:#a855f7;display:block;margin-bottom:0.35rem;">🎨 Coloration par Famille Ontologique &amp; Bordure de Calque</strong>
+            <ul style="padding-left:1.1rem;margin:0;color:#cbd5e1;line-height:1.6;">
+              <li><strong>Mode Famille Métier :</strong> Acteurs (Bleu <code>#3b82f6</code>), Territoire (Émeraude <code>#10b981</code>), Télécoms (Cyan <code>#06b6d4</code>), Finances (Ambre <code>#eab308</code>), Cyber (Orange <code>#f97316</code>), SOCMINT (Rose <code>#ec4899</code>), Biométrie/Preuve (Violet <code>#a855f7</code>).</li>
+              <li><strong>Bordure de Calque Préservée :</strong> La bordure extérieure atteste toujours de la force probatoire du scellé (Vert = Vérifié WORM, Tireté violet = Hypothèse).</li>
+              <li><strong>Lisibilité Mode Clair / Sombre :</strong> Adaptation automatique du contraste avec halo anti-éblouissement et typographie sombre <code>#0f172a</code> en thème lumineux.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 1.9 Fiche Nœud d'Enquête Approfondie & Scellés Audio Interactifs (Darija Algéroise) -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">1.9 Fiche Nœud Approfondie &amp; Lecteur d'Interceptions Vocales (Darija Algéroise)</h3>
+        <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;">
+          L'Inspecteur latéral droit intègre une suite judiciaire complète pour l'audition et l'exploitation des pièces à conviction numériques, notamment les <strong>interceptions téléphoniques et vocales en dialecte algérien (Darija)</strong> :
+        </p>
+        <div style="background:#090d16;border:1px solid #1e293b;border-radius:8px;padding:1.1rem;margin:1rem 0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e293b;padding-bottom:0.5rem;margin-bottom:0.8rem;">
+            <strong style="color:#a855f7;font-size:0.9rem;">📻 Lecteur Audio Judiciaire Interactif (HTML5 Local Air-Gapped)</strong>
+            <span class="badge" style="background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid #a855f7;">4 Pièces Audio Authentiques</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;font-size:0.82rem;color:#cbd5e1;">
+            <div>
+              <strong style="color:#38bdf8;">Fonctionnalités du Lecteur :</strong>
+              <ul style="padding-left:1.1rem;margin:0.3rem 0;line-height:1.6;">
+                <li><strong>Lecture / Pause &amp; Recommencer :</strong> Moteur audio local, aucun appel à un service tiers en ligne (air-gap absolu).</li>
+                <li><strong>Barre de Défilement (Seek Bar) :</strong> Navigation interactive à la seconde près dans l'enregistrement.</li>
+                <li><strong>Visualiseur Spectral 28 Barres :</strong> Ondes réactives animées calquées sur le niveau d'écoute et la progression temporelle.</li>
+                <li><strong>Téléchargement Scellé WAV :</strong> Bouton d'export direct de la pièce sonore brute avec intégrité SHA-256.</li>
+              </ul>
+            </div>
+            <div>
+              <strong style="color:#10b981;">Double Transcription Juridique &amp; Copie 1 Clic :</strong>
+              <ul style="padding-left:1.1rem;margin:0.3rem 0;line-height:1.6;">
+                <li><strong>Cartouche Darija Algéroise :</strong> Transcription phonétique fidèle des échanges criminels (ex: <em>« Khouya Karim... versi les 64 000 da f'had le compte BaridiMob »</em>) avec bouton de copie et notification toast.</li>
+                <li><strong>Traduction Assermentée (OPJ) :</strong> Traduction formelle en français certifiée pour le dossier pénal d'instruction.</li>
+                <li><strong>Empreinte Scellé SHA-256 :</strong> Attestation d'intégrité cryptographique WORM affichée sur chaque scellé.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
 
         <!-- Security Features -->
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;margin-top:1.5rem;">
