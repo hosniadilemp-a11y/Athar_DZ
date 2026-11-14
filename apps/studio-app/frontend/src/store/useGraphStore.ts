@@ -54,6 +54,11 @@ export interface GraphStoreState {
   linkSourceNodeId: string | null;
   activeLayout: GraphLayoutType;
 
+  // Live Force Physics Simulation Toggle
+  isLiveSimulationActive: boolean;
+  toggleLiveSimulation: () => void;
+  setLiveSimulation: (active: boolean) => void;
+
   // Feature 4: SNA Visual Overlay
   snaVisualOverlay: SnaVisualOverlay | null;
   setSnaVisualOverlay: (overlay: SnaVisualOverlay | null) => void;
@@ -150,6 +155,10 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
   isLinkMode: false,
   linkSourceNodeId: null,
   activeLayout: 'concentric',
+
+  isLiveSimulationActive: false,
+  toggleLiveSimulation: () => set((state) => ({ isLiveSimulationActive: !state.isLiveSimulationActive })),
+  setLiveSimulation: (active) => set({ isLiveSimulationActive: active }),
 
   snaVisualOverlay: null,
   setSnaVisualOverlay: (overlay) => set({ snaVisualOverlay: overlay }),

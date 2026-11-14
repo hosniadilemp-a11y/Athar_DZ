@@ -340,6 +340,18 @@ body,
   margin-top: 0;
 }
 
+.menu-category-subheader {
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  padding: 4px var(--space-3) 2px;
+  background-color: var(--color-bg-base);
+  border-top: 1px solid var(--color-border-subtle);
+  border-bottom: 1px solid var(--color-border-subtle);
+  margin-top: 4px;
+  letter-spacing: 0.03em;
+}
+
 .menu-dropdown-item {
   display: flex;
   align-items: center;
@@ -1772,56 +1784,96 @@ body,
 }
 
 /* ---------------------------------------------------------------------------
- * FAVORITES BAR IN TOOLBOX (Feature 8)
+ * CONTEXTUAL GRAPH SUB-TOOLBAR & LIVE SIMULATION CONTROLLER
  * --------------------------------------------------------------------------- */
-.toolbox-favorites-bar {
-  margin-top: var(--space-2);
-  margin-bottom: var(--space-2-5);
-  padding-bottom: var(--space-2-5);
-  border-bottom: 1px solid var(--color-border-subtle);
-}
-
-.toolbox-favorites-header {
+.graph-sub-toolbar {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--space-2);
+  padding: 4px var(--space-3);
+  background-color: var(--color-bg-base);
+  border-bottom: 1px solid var(--color-border-subtle);
+  overflow-x: auto;
+}
+
+.graph-sub-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.graph-sub-toolbar-label {
   font-size: 11px;
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  margin-bottom: var(--space-1-5);
-}
-
-.toolbox-favorites-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 4px;
-}
-
-.toolbox-favorite-chip {
-  background-color: var(--color-bg-base);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-sm);
-  padding: 4px 6px;
-  color: var(--color-text-secondary);
-  font-size: 11.5px;
-  font-weight: var(--font-weight-medium);
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  cursor: grab;
-  transition: all 0.15s ease;
-  text-align: start;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.toolbox-favorite-chip:hover {
+.graph-sub-toolbar-separator {
+  width: 1px;
+  height: 18px;
+  background-color: var(--color-border-subtle);
+  margin: 0 var(--space-1);
+}
+
+.graph-live-sim-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: var(--font-weight-medium);
+  border: 1px solid var(--color-border-subtle);
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.graph-live-sim-btn:hover {
   background-color: var(--color-bg-elevated);
   color: var(--color-text-primary);
   border-color: var(--color-accent-border);
+}
+
+.graph-live-sim-btn.active {
+  background-color: rgba(16, 185, 129, 0.12);
+  border-color: var(--color-status-success);
+  color: var(--color-status-success);
+  font-weight: var(--font-weight-semibold);
+}
+
+.graph-live-sim-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--color-text-muted);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.graph-live-sim-dot.pulse {
+  background-color: var(--color-status-success);
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: simPulse 1.6s infinite;
+}
+
+@keyframes simPulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
 }
 
 /* ---------------------------------------------------------------------------

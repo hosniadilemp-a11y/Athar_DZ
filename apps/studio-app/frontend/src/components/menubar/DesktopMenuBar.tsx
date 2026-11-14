@@ -586,30 +586,20 @@ export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
               <span className="phase-badge">Phase 3</span>
             </button>
 
-            <div className="menu-category-header">Analyse Graphique SNA (16 Algorithmes)</div>
+            <div className="menu-category-header">Analyses Forensiques des Réseaux Criminels (16 Outils)</div>
+
+            {/* Catégorie 1 : Rôles & Cibles Clés (Centralité) */}
+            <div className="menu-category-subheader">Rôles &amp; Cibles Clés (Centralité) (5)</div>
             <button
               type="button"
               className="menu-dropdown-item"
               role="menuitem"
               onClick={() => {
                 closeDropdown();
-                onToggleSna('betweenness_centrality');
+                onToggleSna('betweenness');
               }}
             >
-              <span>Centralité d&apos;Intermédiarité (Betweenness)</span>
-              <span className="chip chip-neutral font-mono text-xs">Phase 1 Actif</span>
-            </button>
-            <button
-              type="button"
-              className="menu-dropdown-item"
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onToggleSna('louvain');
-              }}
-            >
-              <span>Détection de Communautés (Louvain)</span>
-              <span className="chip chip-neutral font-mono text-xs">Phase 1 Actif</span>
+              <span>Pivots &amp; Intermédiaires Clés (Betweenness)</span>
             </button>
             <button
               type="button"
@@ -620,8 +610,115 @@ export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
                 onToggleSna('pagerank');
               }}
             >
-              <span>Détection de Mules (PageRank Bipartite)</span>
-              <span className="chip chip-neutral font-mono text-xs">Phase 1 Actif</span>
+              <span>Têtes de Réseau &amp; Commanditaires (PageRank)</span>
+            </button>
+            <button
+              type="button"
+              className="menu-dropdown-item"
+              role="menuitem"
+              onClick={() => {
+                closeDropdown();
+                onToggleSna('personalized_pagerank');
+              }}
+            >
+              <span>Entourage Direct d&apos;une Cible (Personalized PR)</span>
+            </button>
+            <button
+              type="button"
+              className="menu-dropdown-item"
+              role="menuitem"
+              onClick={() => {
+                closeDropdown();
+                onToggleSna('degree_centrality');
+              }}
+            >
+              <span>Volume Global de Contacts (Degree Centrality)</span>
+            </button>
+            <button
+              type="button"
+              className="menu-dropdown-item"
+              role="menuitem"
+              onClick={() => {
+                closeDropdown();
+                onToggleSna('closeness_eigenvector');
+              }}
+            >
+              <span>Rapidité d&apos;Alerte &amp; Influence (Closeness)</span>
+            </button>
+
+            {/* Catégorie 2 : Cellules & Clans Détectés */}
+            <div className="menu-category-subheader">Cellules &amp; Clans Détectés (2)</div>
+            <button
+              type="button"
+              className="menu-dropdown-item"
+              role="menuitem"
+              onClick={() => {
+                closeDropdown();
+                onToggleSna('louvain');
+              }}
+            >
+              <span>Cartographie des Cellules &amp; Clans (Louvain)</span>
+            </button>
+            <button
+              type="button"
+              className="menu-dropdown-item"
+              role="menuitem"
+              onClick={() => {
+                closeDropdown();
+                onToggleSna('label_propagation');
+              }}
+            >
+              <span>Propagation de la Suspicion (Label Propagation)</span>
+            </button>
+
+            {/* Catégorie 3 : Points de Vulnérabilité du Réseau */}
+            <div className="menu-category-subheader">Points de Vulnérabilité du Réseau (3)</div>
+            <button
+              type="button"
+              className="menu-dropdown-item"
+              role="menuitem"
+              onClick={() => {
+                closeDropdown();
+                onToggleSna('articulation_points');
+              }}
+            >
+              <span>Points de Rupture &amp; Goulots (Articulation Points)</span>
+            </button>
+            <button
+              type="button"
+              className="menu-dropdown-item"
+              role="menuitem"
+              onClick={() => {
+                closeDropdown();
+                onToggleSna('k_core');
+              }}
+            >
+              <span>Noyau Dur Criminel (K-Core)</span>
+            </button>
+            <button
+              type="button"
+              className="menu-dropdown-item"
+              role="menuitem"
+              onClick={() => {
+                closeDropdown();
+                onToggleSna('shortest_path_dijkstra');
+              }}
+            >
+              <span>Chaîne de Liaison Directe (Dijkstra)</span>
+            </button>
+
+            {/* Catégorie 4 : Liaisons Suspectes Non Documentées */}
+            <div className="menu-category-subheader">Liaisons Suspectes Non Documentées (2)</div>
+            <button
+              type="button"
+              className="menu-dropdown-item"
+              role="menuitem"
+              onClick={() => {
+                closeDropdown();
+                onToggleSna('jaccard');
+              }}
+            >
+              <span>Détection de Complices Probables (Jaccard)</span>
             </button>
             <button
               type="button"
@@ -632,8 +729,60 @@ export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
                 onToggleSna('adamic_adar');
               }}
             >
-              <span>Prédiction de Liens (Adamic-Adar / Jaccard)</span>
-              <span className="chip chip-neutral font-mono text-xs">Phase 1 Actif</span>
+              <span>Canaux Clandestins Partagés (Adamic-Adar)</span>
+            </button>
+
+            {/* Catégorie 5 : Typologie & Profilage des Rôles */}
+            <div className="menu-category-subheader">Typologie &amp; Profilage des Rôles (1)</div>
+            <button
+              type="button"
+              className="menu-dropdown-item"
+              role="menuitem"
+              onClick={() => {
+                closeDropdown();
+                onToggleSna('node_classification');
+              }}
+            >
+              <span>Profilage par Rôle Judiciaire</span>
+            </button>
+
+            {/* Catégorie 6 : Filtrage Probatoire & Temporel */}
+            <div className="menu-category-subheader">Filtrage Probatoire &amp; Temporel (2)</div>
+            <button
+              type="button"
+              className="menu-dropdown-item"
+              role="menuitem"
+              onClick={() => {
+                closeDropdown();
+                onToggleSna('threshold_expand');
+              }}
+            >
+              <span>Filtrage par Seuil de Preuve</span>
+            </button>
+            <button
+              type="button"
+              className="menu-dropdown-item"
+              role="menuitem"
+              onClick={() => {
+                closeDropdown();
+                onToggleSna('temporal_subgraph');
+              }}
+            >
+              <span>Séquence Chronologique des Faits</span>
+            </button>
+
+            {/* Catégorie 7 : Canaux Géographiques & Télécoms */}
+            <div className="menu-category-subheader">Canaux Géographiques &amp; Télécoms (1)</div>
+            <button
+              type="button"
+              className="menu-dropdown-item"
+              role="menuitem"
+              onClick={() => {
+                closeDropdown();
+                onToggleSna('activity_sector');
+              }}
+            >
+              <span>Canaux Opérationnels &amp; Financiers</span>
             </button>
           </div>
         </div>

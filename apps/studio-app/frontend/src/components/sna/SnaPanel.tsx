@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useGraphStore } from '../../store/useGraphStore';
 import { API_BASE } from '../../config';
+import { useToast } from '../../context/ToastContext';
 import {
   BrainCircuit,
   Play,
@@ -10,6 +11,7 @@ import {
   ChevronDown,
   Sparkles,
   Link2,
+  FolderPlus,
 } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
 
@@ -223,9 +225,83 @@ const JUDICIAL_CATEGORIES: Record<string, { labelFr: string; labelAr: string; la
   },
 };
 
+/**
+ * Type-Aware Ontological Role Mapper
+ * Strictly prevents non-human entities from receiving human titles (phone != tête de réseau).
+ */
+export function getOntologicalSnaRole(
+  algoKey: string,
+  nodeType: string,
+  rankIndex: number,
+  rawScore?: unknown
+): string {
+  const isTop = rankIndex === 0;
+  const isKey = rankIndex < 3;
+
+  if (algoKey === 'pagerank' || algoKey === 'degree_centrality') {
+    if (nodeType === 'personne' || nodeType === 'entreprise') {
+      return isTop ? 'Tête de Réseau & Commanditaire présumé' : isKey ? 'Donneur d’ordre influent' : 'Acteur opérationnel';
+    }
+    if (nodeType === 'telephone') {
+      return isTop ? 'Ligne de coordination centrale' : 'Vecteur de communication';
+    }
+    if (nodeType === 'compte_bancaire') {
+      return isTop ? 'Pôle collecteur BaridiMob principal' : 'Compte collecteur secondaire';
+    }
+    if (nodeType === 'antenne_bts') {
+      return 'Zone de bornage névralgique';
+    }
+    if (nodeType === 'vehicule') {
+      return 'Vecteur de transport & logistique';
+    }
+    return 'Composant d’infrastructure critique';
+  }
+
+  if (algoKey === 'betweenness') {
+    if (nodeType === 'personne' || nodeType === 'entreprise') {
+      return isKey ? 'Intermédiaire clé / Pivot logistique' : 'Relais de transmission';
+    }
+    if (nodeType === 'telephone') {
+      return 'Ligne passerelle de liaison';
+    }
+    if (nodeType === 'compte_bancaire') {
+      return 'Compte de transit & blanchiment';
+    }
+    if (nodeType === 'antenne_bts') {
+      return 'Carrefour de couverture BTS';
+    }
+    return 'Point de pont d’infrastructure';
+  }
+
+  if (algoKey === 'articulation_points') {
+    if (nodeType === 'personne') {
+      return 'Point de rupture humain (Goulot d’étranglement)';
+    }
+    if (nodeType === 'telephone') {
+      return 'Ligne télécoms unique de liaison';
+    }
+    if (nodeType === 'compte_bancaire') {
+      return 'Compte financier unique de passage';
+    }
+    return 'Point d’étranglement système';
+  }
+
+  if (algoKey === 'k_core') {
+    return 'Membre du Noyau Dur Criminel (Cœur de Réseau)';
+  }
+
+  if (algoKey === 'louvain' || algoKey === 'label_propagation') {
+    return `Affilié Cellule ${String(rawScore ?? rankIndex)}`;
+  }
+
+  return `Rôle SNA (${algoKey})`;
+}
+
 export const SnaPanel: React.FC<SnaPanelProps> = () => {
   const { activeCase, selectedNodeId, selectNode, nodes } = useGraphStore();
   const { locale, tr } = useI18n();
+  const { success: toastSuccess, error: toastError } = useToast();
+  const [isInjecting, setIsInjecting] = useState(false);
   const [algorithms, setAlgorithms] = useState<SnaAlgorithmItem[]>([]);
   const [selectedAlgoKey, setSelectedAlgoKey] = useState<string>('betweenness');
   const [paramValues, setParamValues] = useState<Record<string, unknown>>({});
@@ -391,6 +467,72 @@ export const SnaPanel: React.FC<SnaPanelProps> = () => {
       setErrorMsg(err instanceof Error ? err.message : 'Erreur inconnue');
     } finally {
       setIsRunning(false);
+    }
+  };
+
+  const handleInjectSnaToNodes = async () => {
+    if (!activeCase || !result || !activeAlgo) return;
+    setIsInjecting(true);
+    try {
+      const topMetrics = result.node_metrics.slice(0, 30);
+      const injectedRoles: Record<string, string> = {};
+
+      topMetrics.forEach((m, idx) => {
+        const role = getOntologicalSnaRole(activeAlgo.key, m.node_type, idx, m.value);
+        injectedRoles[m.node_id] = role;
+      });
+
+      // 1. Optimistic store update
+      useGraphStore.setState((state) => ({
+        nodes: state.nodes.map((n) => {
+          const role = injectedRoles[n.id];
+          if (!role) return n;
+          return {
+            ...n,
+            properties: {
+              ...(n.properties || {}),
+              sna_role: role,
+              sna_score: result.node_metrics.find((m) => m.node_id === n.id)?.value,
+              sna_algorithm: activeAlgo.key,
+            },
+          };
+        }),
+      }));
+
+      // 2. Persist to Backend for top nodes
+      await Promise.all(
+        topMetrics.slice(0, 15).map(async (m) => {
+          const role = injectedRoles[m.node_id];
+          try {
+            await fetch(`${API_BASE}/api/v1/cases/${activeCase.id}/nodes/${m.node_id}`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Actor-Id': 'investigator_sna',
+              },
+              body: JSON.stringify({
+                properties: {
+                  sna_role: role,
+                  sna_score: m.value,
+                  sna_algorithm: activeAlgo.key,
+                },
+                reason: `Attribution rôle SNA : ${role} (${activeAlgo.label_fr})`,
+              }),
+            });
+          } catch {
+            // ignore individual fail
+          }
+        })
+      );
+
+      toastSuccess(
+        `Rôles SNA versés avec succès aux fiches de ${topMetrics.length} entités du dossier judiciaire.`,
+        'Versement Procédural Réussi'
+      );
+    } catch {
+      toastError('Erreur lors du versement des résultats SNA aux fiches des nœuds.');
+    } finally {
+      setIsInjecting(false);
     }
   };
 
@@ -732,29 +874,51 @@ export const SnaPanel: React.FC<SnaPanelProps> = () => {
                     <span>{result.method_disclaimer}</span>
                   </div>
 
-                  {/* Summary & Timing */}
+                  {/* Summary, Timing & Commit Button */}
                   <div
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      fontSize: 'var(--text-xs)',
-                      fontFamily: 'var(--font-mono)',
-                      color: 'var(--color-text-muted)',
+                      flexWrap: 'wrap',
+                      gap: '8px',
                     }}
                   >
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Clock size={12} />
-                      Temps d&apos;exécution : {result.execution_time_ms} ms
-                    </span>
-                    <span>Entités analysées : {result.node_metrics.length}</span>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        fontSize: 'var(--text-xs)',
+                        fontFamily: 'var(--font-mono)',
+                        color: 'var(--color-text-muted)',
+                      }}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Clock size={12} />
+                        Temps d&apos;exécution : {result.execution_time_ms} ms
+                      </span>
+                      <span>Entités analysées : {result.node_metrics.length}</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-xs"
+                      onClick={handleInjectSnaToNodes}
+                      disabled={isInjecting}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                      title="Enregistrer ces qualifications SNA dans les fiches de métadonnées permanentes du dossier"
+                    >
+                      <FolderPlus size={12} />
+                      <span>{isInjecting ? 'Enregistrement...' : 'Injecter dans les fiches (Verser au dossier)'}</span>
+                    </button>
                   </div>
 
-                  {/* Top Node Metrics Clean Table */}
+                  {/* Top Node Metrics Clean Table with Ontological Roles */}
                   {result.node_metrics.length > 0 && (
                     <div
                       style={{
-                        maxHeight: '260px',
+                        maxHeight: '280px',
                         overflowY: 'auto',
                         border: '1px solid var(--color-border-subtle)',
                         borderRadius: 'var(--radius-sm)',
@@ -770,6 +934,7 @@ export const SnaPanel: React.FC<SnaPanelProps> = () => {
                             }}
                           >
                             <th style={{ padding: '6px 8px', textAlign: 'left' }}>Entité Cible</th>
+                            <th style={{ padding: '6px 8px', textAlign: 'left' }}>Rôle Judiciaire Déduit</th>
                             <th style={{ padding: '6px 8px', textAlign: 'left' }}>Couche</th>
                             <th style={{ padding: '6px 8px', textAlign: 'right' }}>
                               {meta.roleLabelFr || 'Score'}
@@ -777,8 +942,9 @@ export const SnaPanel: React.FC<SnaPanelProps> = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {result.node_metrics.slice(0, 25).map((m) => {
+                          {result.node_metrics.slice(0, 25).map((m, idx) => {
                             const isSelected = selectedNodeId === m.node_id;
+                            const deducedRole = getOntologicalSnaRole(activeAlgo.key, m.node_type, idx, m.value);
                             return (
                               <tr
                                 key={m.node_id}
@@ -794,6 +960,20 @@ export const SnaPanel: React.FC<SnaPanelProps> = () => {
                                     <Sparkles size={12} className="text-accent" />
                                     <span>{m.node_label}</span>
                                   </div>
+                                </td>
+                                <td style={{ padding: '6px 8px' }}>
+                                  <span
+                                    className="chip"
+                                    style={{
+                                      fontSize: '10.5px',
+                                      backgroundColor: 'var(--color-bg-canvas)',
+                                      border: '1px solid var(--color-accent-border)',
+                                      color: 'var(--color-text-primary)',
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    {deducedRole}
+                                  </span>
                                 </td>
                                 <td style={{ padding: '6px 8px', color: 'var(--color-text-muted)' }}>
                                   <span className="chip chip-neutral" style={{ fontSize: '10px' }}>

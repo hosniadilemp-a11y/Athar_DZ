@@ -11,6 +11,7 @@ import {
   Undo2,
   Redo2,
   Play,
+  Pause,
   FileDown,
   Target,
   Share2,
@@ -95,169 +96,194 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     isImpactView,
     nodes,
     totalCaseNodes,
+    isLiveSimulationActive,
+    toggleLiveSimulation,
   } = useGraphStore();
   const { tr } = useI18n();
 
   return (
-    <header className="canvas-sub-header" role="region" aria-label={tr('Sous-barre de sélection de vue et actions de canevas')}>
-      {/* 1. Segmented View Switcher */}
-      <div className="canvas-segmented-tabs" role="tablist" aria-label={tr('Vues analytiques')}>
-        <button
-          type="button"
-          className={`canvas-segmented-btn ${activeView === 'graph' ? 'active' : ''}`}
-          role="tab"
-          aria-selected={activeView === 'graph'}
-          onClick={() => onChangeView('graph')}
-          title={tr('Vue Graphe de Rapprochement [Alt+1]')}
-        >
-          <Network size={13} />
-          <span>{tr('Graphe')}</span>
-        </button>
+    <div className="canvas-sub-header-container">
+      <header className="canvas-sub-header" role="region" aria-label={tr('Sous-barre de sélection de vue et actions de canevas')}>
+        {/* 1. Segmented View Switcher */}
+        <div className="canvas-segmented-tabs" role="tablist" aria-label={tr('Vues analytiques')}>
+          <button
+            type="button"
+            className={`canvas-segmented-btn ${activeView === 'graph' ? 'active' : ''}`}
+            role="tab"
+            aria-selected={activeView === 'graph'}
+            onClick={() => onChangeView('graph')}
+            title={tr('Vue Graphe de Rapprochement [Alt+1]')}
+          >
+            <Network size={13} />
+            <span>{tr('Graphe')}</span>
+          </button>
 
-        <button
-          type="button"
-          className={`canvas-segmented-btn ${activeView === 'map' ? 'active' : ''}`}
-          role="tab"
-          aria-selected={activeView === 'map'}
-          onClick={() => onChangeView('map')}
-          title={tr('Vue Cartographie SIG (8 types géolocalisés sur le territoire algérien) [Alt+3]')}
-        >
-          <MapPin size={13} />
-          <span>{tr('Carte SIG')}</span>
-        </button>
+          <button
+            type="button"
+            className={`canvas-segmented-btn ${activeView === 'map' ? 'active' : ''}`}
+            role="tab"
+            aria-selected={activeView === 'map'}
+            onClick={() => onChangeView('map')}
+            title={tr('Vue Cartographie SIG (8 types géolocalisés sur le territoire algérien) [Alt+3]')}
+          >
+            <MapPin size={13} />
+            <span>{tr('Carte SIG')}</span>
+          </button>
 
-        <button
-          type="button"
-          className={`canvas-segmented-btn ${activeView === 'timeline' ? 'active' : ''}`}
-          role="tab"
-          aria-selected={activeView === 'timeline'}
-          onClick={() => onChangeView('timeline')}
-          title={tr('Vue Chronologie Temporelle des Faits [Alt+2]')}
-        >
-          <Calendar size={13} />
-          <span>{tr('Chronologie')}</span>
-        </button>
+          <button
+            type="button"
+            className={`canvas-segmented-btn ${activeView === 'timeline' ? 'active' : ''}`}
+            role="tab"
+            aria-selected={activeView === 'timeline'}
+            onClick={() => onChangeView('timeline')}
+            title={tr('Vue Chronologie Temporelle des Faits [Alt+2]')}
+          >
+            <Calendar size={13} />
+            <span>{tr('Chronologie')}</span>
+          </button>
 
-        <button
-          type="button"
-          className={`canvas-segmented-btn ${activeView === 'table' ? 'active' : ''}`}
-          role="tab"
-          aria-selected={activeView === 'table'}
-          onClick={() => onChangeView('table')}
-          title={tr('Vue Tableau Accessible (WCAG AA) [Alt+4]')}
-        >
-          <Table size={13} />
-          <span>{tr('Tableau')}</span>
-        </button>
+          <button
+            type="button"
+            className={`canvas-segmented-btn ${activeView === 'table' ? 'active' : ''}`}
+            role="tab"
+            aria-selected={activeView === 'table'}
+            onClick={() => onChangeView('table')}
+            title={tr('Vue Tableau Accessible (WCAG AA) [Alt+4]')}
+          >
+            <Table size={13} />
+            <span>{tr('Tableau')}</span>
+          </button>
 
-        <button
-          type="button"
-          className={`canvas-segmented-btn ${activeView === 'audit' ? 'active' : ''}`}
-          role="tab"
-          aria-selected={activeView === 'audit'}
-          onClick={() => onChangeView('audit')}
-          title={tr("Vue Registre d'Audit Forensique ISO 27037 [Alt+5]")}
-        >
-          <ShieldCheck size={13} />
-          <span>{tr("Registre d'Audit")}</span>
-        </button>
-      </div>
+          <button
+            type="button"
+            className={`canvas-segmented-btn ${activeView === 'audit' ? 'active' : ''}`}
+            role="tab"
+            aria-selected={activeView === 'audit'}
+            onClick={() => onChangeView('audit')}
+            title={tr("Vue Registre d'Audit Forensique ISO 27037 [Alt+5]")}
+          >
+            <ShieldCheck size={13} />
+            <span>{tr("Registre d'Audit")}</span>
+          </button>
+        </div>
 
-      {/* 2. Graph Layout Switcher (Visible when in Graph view) */}
-      {activeView === 'graph' && (
-        <div className="toolbar-layouts-bar" role="group" aria-label={tr('Dispositions du graphe') || 'Graph layouts'}>
-          <span className="toolbar-layouts-label">{tr('Disposition :')}</span>
-          <div className="toolbar-layouts-pills">
-            {LAYOUT_OPTIONS.map((layout) => {
-              const isCurrent = activeLayout === layout.key;
-              return (
-                <button
-                  key={layout.key}
-                  type="button"
-                  className={`toolbar-layout-pill ${isCurrent ? 'active' : ''}`}
-                  onClick={() => applyLayout(layout.key)}
-                  title={tr(layout.tooltipFr)}
-                  aria-label={tr(layout.labelFr) || layout.labelFr}
-                  aria-pressed={isCurrent}
-                >
-                  <span className="toolbar-layout-icon">{layout.icon}</span>
-                  <span className="toolbar-layout-pill-name">{tr(layout.shortNameFr)}</span>
-                </button>
-              );
-            })}
+        {/* 2. Sub-Header Actions & Impact Badge */}
+        <div className="canvas-sub-header-actions">
+          {/* Impact View Toggle Button */}
+          {activeView === 'graph' && (
+            <button
+              type="button"
+              className={`btn btn-ghost btn-sm toolbar-impact-btn ${isImpactView ? 'active' : ''}`}
+              onClick={onToggleImpactView}
+              title={tr("Basculer entre la vue d'ensemble (100 nœuds) et la vue restreinte de préjudice (35 nœuds)")}
+              aria-label={tr('Vue Impact : {n} sur {total} nœuds', { n: nodes.length, total: totalCaseNodes || 100 })}
+            >
+              <Sparkles size={13} className={isImpactView ? 'text-accent' : 'text-muted'} />
+              <span className="font-mono text-xs">
+                {tr('Vue Impact : {n} / {total} nœuds', { n: nodes.length, total: totalCaseNodes || 100 })}
+              </span>
+            </button>
+          )}
+
+          {/* Undo / Redo */}
+          <div className="canvas-history-group" role="group" aria-label={tr('Historique des actions')}>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={undo}
+              disabled={undoStack.length === 0}
+              title={tr('Annuler la dernière action ({n}) [Ctrl+Z]', { n: undoStack.length })}
+              aria-label={tr('Annuler la dernière action')}
+            >
+              <Undo2 size={13} />
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={redo}
+              disabled={redoStack.length === 0}
+              title={tr("Rétablir l'action ({n}) [Ctrl+Y]", { n: redoStack.length })}
+              aria-label={tr('Rétablir la dernière action')}
+            >
+              <Redo2 size={13} />
+            </button>
           </div>
+
+          {/* Recommended Playbook CTA (Review-Run) */}
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm play-scenario-btn"
+            onClick={onRunRecommendedScenario}
+            title={tr("Lancer le scénario d'enquête déterministe recommandé pour l'affaire en cours")}
+            aria-label={tr('Lancer le Scénario Recommandé (Review-Run)')}
+          >
+            <Play size={13} className="text-accent" />
+            <span>{tr('Lancer le Scénario Recommandé')}</span>
+            <span className="chip chip-neutral font-mono text-xs">Review-Run</span>
+          </button>
+
+          {/* Case Export */}
+          {onOpenExport && (
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={onOpenExport}
+              title={tr('Exporter le dossier judiciaire en PDF ou archive JSON conforme')}
+              aria-label={tr('Exporter le Dossier Judiciaire')}
+            >
+              <FileDown size={13} />
+              <span>{tr('Exporter')}</span>
+            </button>
+          )}
+        </div>
+      </header>
+
+      {/* 3. Contextual Graph Layout Sub-Bar (Visible strictly when in Graph view) */}
+      {activeView === 'graph' && (
+        <div className="graph-sub-toolbar" role="toolbar" aria-label={tr('Dispositions du graphe')}>
+          <div className="graph-sub-toolbar-group">
+            <span className="graph-sub-toolbar-label">{tr('Dispositions :')}</span>
+            <div className="toolbar-layouts-pills">
+              {LAYOUT_OPTIONS.map((layout) => {
+                const isCurrent = activeLayout === layout.key;
+                return (
+                  <button
+                    key={layout.key}
+                    type="button"
+                    className={`toolbar-layout-pill ${isCurrent ? 'active' : ''}`}
+                    onClick={() => applyLayout(layout.key)}
+                    title={tr(layout.tooltipFr)}
+                    aria-label={tr(layout.labelFr) || layout.labelFr}
+                    aria-pressed={isCurrent}
+                  >
+                    <span className="toolbar-layout-icon">{layout.icon}</span>
+                    <span className="toolbar-layout-pill-name">{tr(layout.shortNameFr)}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="graph-sub-toolbar-separator" />
+
+          {/* Live Force Physics Simulation Toggle */}
+          <button
+            type="button"
+            className={`btn btn-xs graph-live-sim-btn ${isLiveSimulationActive ? 'active' : ''}`}
+            onClick={toggleLiveSimulation}
+            title={
+              isLiveSimulationActive
+                ? tr('Figer la simulation physique en direct')
+                : tr('Activer la simulation organique des forces en temps réel')
+            }
+            aria-pressed={isLiveSimulationActive}
+          >
+            <span className={`graph-live-sim-dot ${isLiveSimulationActive ? 'pulse' : ''}`} />
+            {isLiveSimulationActive ? <Pause size={12} /> : <Play size={12} />}
+            <span>{isLiveSimulationActive ? tr('Simulation Active (Figer)') : tr('Simulation en Direct')}</span>
+          </button>
         </div>
       )}
-
-      {/* 3. Sub-Header Actions & Impact Badge */}
-      <div className="canvas-sub-header-actions">
-        {/* Impact View Toggle Button */}
-        {activeView === 'graph' && (
-          <button
-            type="button"
-            className={`btn btn-ghost btn-sm toolbar-impact-btn ${isImpactView ? 'active' : ''}`}
-            onClick={onToggleImpactView}
-            title={tr("Basculer entre la vue d'ensemble (100 nœuds) et la vue restreinte de préjudice (35 nœuds)")}
-            aria-label={tr('Vue Impact : {n} sur {total} nœuds', { n: nodes.length, total: totalCaseNodes || 100 })}
-          >
-            <Sparkles size={13} className={isImpactView ? 'text-accent' : 'text-muted'} />
-            <span className="font-mono text-xs">
-              {tr('Vue Impact : {n} / {total} nœuds', { n: nodes.length, total: totalCaseNodes || 100 })}
-            </span>
-          </button>
-        )}
-
-        {/* Undo / Redo */}
-        <div className="canvas-history-group" role="group" aria-label={tr('Historique des actions')}>
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            onClick={undo}
-            disabled={undoStack.length === 0}
-            title={tr('Annuler la dernière action ({n}) [Ctrl+Z]', { n: undoStack.length })}
-            aria-label={tr('Annuler la dernière action')}
-          >
-            <Undo2 size={13} />
-          </button>
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            onClick={redo}
-            disabled={redoStack.length === 0}
-            title={tr("Rétablir l'action ({n}) [Ctrl+Y]", { n: redoStack.length })}
-            aria-label={tr('Rétablir la dernière action')}
-          >
-            <Redo2 size={13} />
-          </button>
-        </div>
-
-        {/* Recommended Playbook CTA (Review-Run) */}
-        <button
-          type="button"
-          className="btn btn-secondary btn-sm play-scenario-btn"
-          onClick={onRunRecommendedScenario}
-          title={tr("Lancer le scénario d'enquête déterministe recommandé pour l'affaire en cours")}
-          aria-label={tr('Lancer le Scénario Recommandé (Review-Run)')}
-        >
-          <Play size={13} className="text-accent" />
-          <span>{tr('Lancer le Scénario Recommandé')}</span>
-          <span className="chip chip-neutral font-mono text-xs">Review-Run</span>
-        </button>
-
-        {/* Case Export */}
-        {onOpenExport && (
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            onClick={onOpenExport}
-            title={tr('Exporter le dossier judiciaire en PDF ou archive JSON conforme')}
-            aria-label={tr('Exporter le Dossier Judiciaire')}
-          >
-            <FileDown size={13} />
-            <span>{tr('Exporter')}</span>
-          </button>
-        )}
-      </div>
-    </header>
+    </div>
   );
 };

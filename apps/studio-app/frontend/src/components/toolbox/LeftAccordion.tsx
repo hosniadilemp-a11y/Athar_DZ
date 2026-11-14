@@ -17,7 +17,6 @@ import {
   CircleDollarSign,
   Phone,
   Radio,
-  Star,
 } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
 
@@ -95,8 +94,6 @@ const ALL_37_NODES: NodeItemDef[] = [
   { key: 'scelle_numerique', domain: 'legal', dbBadge: 'Scellé Inaltérable' },
   { key: 'preuve_merkle', domain: 'legal', dbBadge: 'Horodatage RFC' },
 ];
-
-const FAVORITE_TYPES = ['personne', 'telephone', 'compte_bancaire', 'vehicule', 'compte_social', 'antenne_bts'];
 
 export const LeftAccordion: React.FC<LeftAccordionProps> = ({
   onAddNodeAtCenter,
@@ -323,35 +320,6 @@ export const LeftAccordion: React.FC<LeftAccordionProps> = ({
               <span>{t.linkModeLabel}</span>
               {isLinkMode && <Check size={12} />}
             </button>
-
-            {/* Feature 8: Favoris Judiciaires (Top 6 Quick-Add) */}
-            <div className="toolbox-favorites-bar">
-              <div className="toolbox-favorites-header">
-                <Star size={12} className="text-accent" />
-                <span>{tr('Favoris Judiciaires (Top 6)')}</span>
-              </div>
-              <div className="toolbox-favorites-grid">
-                {FAVORITE_TYPES.map((key) => {
-                  const typeDef = registry.node_types[key];
-                  const nodeLabel = labelHelper(typeDef, key);
-                  const iconName = typeDef?.icon || 'help-circle';
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      className="toolbox-favorite-chip"
-                      draggable={true}
-                      onDragStart={(e) => handleDragStart(e, key)}
-                      onClick={() => onAddNodeAtCenter(key)}
-                      title={tr('Cliquer pour ajouter ou glisser sur le canevas : {label}', { label: nodeLabel })}
-                    >
-                      <NodeIcon name={iconName} size={13} />
-                      <span>{nodeLabel}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
 
             {/* Domain Filter Chips */}
             <div className="toolbox-domain-selector" role="tablist" aria-label={tr('Filtrer les entités par domaine')}>

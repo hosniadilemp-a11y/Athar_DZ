@@ -6,6 +6,7 @@ import { EdgeLine } from './EdgeLine';
 import { CanvasFloatingPalette } from './CanvasFloatingPalette';
 import { CanvasMinimap } from './CanvasMinimap';
 import { useGraphStore } from '../../store/useGraphStore';
+import { stepLiveForcePhysics } from '../../utils/graphLayouts';
 import { Link2, Sparkles, X } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
 
@@ -64,6 +65,7 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
     createManualEdge,
     snaVisualOverlay,
     clearSnaVisualOverlay,
+    isLiveSimulationActive,
   } = useGraphStore();
 
   // Pan dragging state
@@ -97,6 +99,30 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
     observer.observe(containerRef.current);
     return () => observer.disconnect();
   }, []);
+
+  // Real-time Live Force Simulation Loop
+  useEffect(() => {
+    if (!isLiveSimulationActive || nodes.length === 0) return;
+
+    let animId: number;
+    const tick = () => {
+      const currentNodes = useGraphStore.getState().nodes;
+      const currentEdges = useGraphStore.getState().edges;
+      const stepMap = stepLiveForcePhysics(currentNodes, currentEdges, 600, 450, draggingNodeId);
+
+      useGraphStore.setState((state) => ({
+        nodes: state.nodes.map((n) => {
+          const pos = stepMap.get(n.id);
+          return pos ? { ...n, x: pos.x, y: pos.y } : n;
+        }),
+      }));
+
+      animId = requestAnimationFrame(tick);
+    };
+
+    animId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animId);
+  }, [isLiveSimulationActive, nodes.length, draggingNodeId]);
 
   // Handle Node Click (Selection or Link Creation Mode)
   const handleNodeClick = useCallback(

@@ -404,3 +404,103 @@ function computeGridLayout(nodes: GraphNode[], cx: number, cy: number): GraphNod
     };
   });
 }
+
+/**
+ * Single tick of live force simulation for real-time physics loop.
+ * Dampens displacements so nodes smoothly float towards organic equilibrium without jitter.
+ */
+export function stepLiveForcePhysics(
+  nodes: GraphNode[],
+  edges: GraphEdge[],
+  cx: number = DEFAULT_CENTER_X,
+  cy: number = DEFAULT_CENTER_Y,
+  fixedNodeId?: string | null
+): Map<string, { x: number; y: number }> {
+  const count = nodes.length;
+  const positions = new Map<string, { x: number; y: number; dx: number; dy: number }>();
+  nodes.forEach((n) => {
+    positions.set(n.id, { x: n.x ?? cx, y: n.y ?? cy, dx: 0, dy: 0 });
+  });
+
+  const k = Math.min(160, Math.max(100, Math.sqrt((850 * 650) / Math.max(count, 1))));
+
+  // 1. Repulsion between all node pairs
+  for (let i = 0; i < count; i++) {
+    const nodeA = nodes[i];
+    if (!nodeA) continue;
+    const posA = positions.get(nodeA.id);
+    if (!posA) continue;
+    for (let j = i + 1; j < count; j++) {
+      const nodeB = nodes[j];
+      if (!nodeB) continue;
+      const posB = positions.get(nodeB.id);
+      if (!posB) continue;
+      let deltaX = posA.x - posB.x;
+      let deltaY = posA.y - posB.y;
+      let dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      if (dist < 1) {
+        deltaX = (Math.sin(i * 13 + j) || 0.5) * 4;
+        deltaY = (Math.cos(i * 7 + j) || 0.5) * 4;
+        dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      }
+      const repForce = Math.min((k * k) / dist, 120);
+      const fx = (deltaX / dist) * repForce;
+      const fy = (deltaY / dist) * repForce;
+      posA.dx += fx;
+      posA.dy += fy;
+      posB.dx -= fx;
+      posB.dy -= fy;
+    }
+  }
+
+  // 2. Edge spring attraction
+  edges.forEach((edge) => {
+    const posSource = positions.get(edge.source_id);
+    const posTarget = positions.get(edge.target_id);
+    if (!posSource || !posTarget) return;
+    const deltaX = posSource.x - posTarget.x;
+    const deltaY = posSource.y - posTarget.y;
+    const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    if (dist < 1) return;
+    const attrForce = (dist * dist) / k;
+    const fx = (deltaX / dist) * attrForce;
+    const fy = (deltaY / dist) * attrForce;
+    posSource.dx -= fx;
+    posSource.dy -= fy;
+    posTarget.dx += fx;
+    posTarget.dy += fy;
+  });
+
+  // 3. Center gravity
+  const gravity = 0.025;
+  nodes.forEach((node) => {
+    const pos = positions.get(node.id);
+    if (!pos) return;
+    pos.dx += (cx - pos.x) * gravity;
+    pos.dy += (cy - pos.y) * gravity;
+  });
+
+  // 4. Dampen max step per tick for silky fluid motion
+  const maxStep = 2.5;
+  const result = new Map<string, { x: number; y: number }>();
+  nodes.forEach((node) => {
+    const pos = positions.get(node.id);
+    if (!pos) return;
+    if (node.id === fixedNodeId) {
+      result.set(node.id, { x: pos.x, y: pos.y });
+      return;
+    }
+    const dispDist = Math.sqrt(pos.dx * pos.dx + pos.dy * pos.dy);
+    if (dispDist > 0.01) {
+      const step = Math.min(dispDist, maxStep);
+      result.set(node.id, {
+        x: Math.round(pos.x + (pos.dx / dispDist) * step),
+        y: Math.round(pos.y + (pos.dy / dispDist) * step),
+      });
+    } else {
+      result.set(node.id, { x: pos.x, y: pos.y });
+    }
+  });
+
+  return result;
+}
