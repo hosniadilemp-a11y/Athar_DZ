@@ -138,7 +138,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
         ''
       );
     }
-  }, [selectedNodeId]);
+  }, [selectedNodeId, selectedNode]);
 
   const handleToggleAudio = (audioFile: string) => {
     if (isPlayingAudio) {
@@ -208,7 +208,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
         },
       });
       toast.success(tr('Fiche de l\'entité mise à jour dans le dossier judiciaire'), tr('Enregistrement OPJ'));
-    } catch (e) {
+    } catch {
       toast.error(tr('Échec de la mise à jour des informations'), tr('Erreur'));
     } finally {
       setIsSaving(false);
@@ -441,7 +441,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
     // Authentic Darija audio intercepts matching Candy Wheels case (Strictly connected entities)
     const getDarijaWiretap = () => {
-      const props = (selectedNode.properties || {}) as Record<string, any>;
+      const props = (selectedNode.properties || {}) as Record<string, unknown>;
       const explicitAudio = (props.audio_url || props.audioFile || props.audio) as string | undefined;
 
       // 1. Direct audio evidence node or node with explicit audio URL

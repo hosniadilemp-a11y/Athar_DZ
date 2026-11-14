@@ -75,3 +75,8 @@ Rapport/
 # Tools Installer downloaded binaries, venvs, and models
 .athar-tools/
 
+# Audio Evidence & Wiretaps (Air-gapped local storage, ignored from git)
+apps/studio-app/frontend/public/audio/
+*.wav
+
+
