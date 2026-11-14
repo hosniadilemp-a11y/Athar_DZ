@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { GraphEdge, GraphNode } from '../../types/graph';
 import type { LayerId } from '../../types/registry';
+import { useGraphStore } from '../../store/useGraphStore';
 
 interface EdgeLineProps {
   edge: GraphEdge;
@@ -26,6 +27,7 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
   onSelect,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const graphCustomization = useGraphStore((s) => s.graphCustomization);
 
   if (!sourceNode || !targetNode) return null;
   const x1 = sourceNode.x ?? 0;
@@ -53,14 +55,18 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
   const color = LAYER_EDGE_COLORS[edge.layer] || 'var(--color-border-default)';
   const isHypothesis = edge.layer === 'HYPOTHESIS';
 
-  // Feature 7: Dynamic thickness by confidence score
+  // Feature 7 & Customization: Dynamic thickness by confidence and user slider
   const conf = typeof edge.confidence === 'number' ? edge.confidence : 0.85;
-  const baseThickness = Math.max(1.5, Math.min(4.5, conf * 3.5));
+  const userThicknessMultiplier = (graphCustomization?.edgeThickness || 2) / 2;
+  const baseThickness = Math.max(1.5, Math.min(4.5, conf * 3.5)) * userThicknessMultiplier;
   const finalStrokeWidth = isSelected ? baseThickness + 1.8 : isHovered ? baseThickness + 1.0 : baseThickness;
 
+  const showLabels = graphCustomization?.showEdgeLabels !== false;
+  const labelFontSize = graphCustomization?.edgeLabelSize || 11;
   const confPercent = Math.round(conf * 100);
   const labelText = isHovered || isSelected ? `${edge.type} · ${confPercent}%` : edge.type;
-  const badgeWidth = Math.max(70, labelText.length * 7.5 + 16);
+  const badgeWidth = Math.max(70, labelText.length * (labelFontSize * 0.65) + 16);
+  const badgeHeight = Math.max(18, labelFontSize + 8);
 
   return (
     <g
@@ -79,7 +85,7 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
         x2={endX}
         y2={endY}
         stroke="transparent"
-        strokeWidth={18}
+        strokeWidth={Math.max(18, finalStrokeWidth * 3)}
       />
 
       {/* Visual Line */}
@@ -98,32 +104,37 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
         }}
       />
 
-      {/* Feature 7: Enhanced Edge Label Badge */}
-      <g transform={`translate(${midX}, ${midY})`} style={{ pointerEvents: 'none' }}>
-        <rect
-          x={-badgeWidth / 2}
-          y={-10}
-          width={badgeWidth}
-          height={20}
-          rx={4}
-          ry={4}
-          fill="rgba(15, 23, 42, 0.92)"
-          stroke={isSelected ? 'var(--color-accent-primary)' : isHovered ? 'var(--color-border-hover)' : 'rgba(255, 255, 255, 0.12)'}
-          strokeWidth={isSelected || isHovered ? 1.2 : 0.8}
-        />
-        <text
-          x={0}
-          y={4}
-          textAnchor="middle"
-          fontSize="11px"
-          fontFamily="var(--font-mono)"
-          fill={isSelected ? 'var(--color-accent-text)' : isHovered ? 'var(--color-text-primary)' : 'var(--color-text-secondary)'}
-          fontWeight={isSelected || isHovered ? 600 : 500}
-          style={{ userSelect: 'none' }}
-        >
-          {labelText}
-        </text>
-      </g>
+      {/* Feature 7 & Customization: Edge Label Badge with Light-Mode Fix */}
+      {showLabels && (
+        <g transform={`translate(${midX}, ${midY})`} style={{ pointerEvents: 'none' }}>
+          <rect
+            x={-badgeWidth / 2}
+            y={-badgeHeight / 2}
+            width={badgeWidth}
+            height={badgeHeight}
+            rx={4}
+            ry={4}
+            fill="var(--color-bg-elevated)"
+            stroke={isSelected ? 'var(--color-accent-primary)' : isHovered ? 'var(--color-border-hover)' : 'var(--color-border-default)'}
+            strokeWidth={isSelected || isHovered ? 1.4 : 0.8}
+            style={{
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))',
+            }}
+          />
+          <text
+            x={0}
+            y={badgeHeight / 4 - 1}
+            textAnchor="middle"
+            fontSize={`${labelFontSize}px`}
+            fontFamily="var(--font-mono)"
+            fill={isSelected ? 'var(--color-accent-text)' : isHovered ? 'var(--color-text-primary)' : 'var(--color-text-primary)'}
+            fontWeight={isSelected || isHovered ? 600 : 500}
+            style={{ userSelect: 'none' }}
+          >
+            {labelText}
+          </text>
+        </g>
+      )}
     </g>
   );
 });

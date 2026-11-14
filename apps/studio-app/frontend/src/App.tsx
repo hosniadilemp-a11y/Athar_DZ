@@ -19,6 +19,7 @@ import { CommandPalette } from './components/modals/CommandPalette';
 import { ToolInfoModal, type ToolSpec } from './components/modals/ToolInfoModal';
 import { CasePropertiesModal } from './components/modals/CasePropertiesModal';
 import { PhaseNoticeModal } from './components/modals/PhaseNoticeModal';
+import { AddNodeModal, type AddNodeData } from './components/modals/AddNodeModal';
 import { useToast } from './context/ToastContext';
 import type { CaseItem, GraphResponse } from './types/graph';
 import { API_BASE } from './config';
@@ -74,6 +75,17 @@ export function App() {
   const [phaseNoticeData, setPhaseNoticeData] = useState<{ name: string; phase: string }>({
     name: '',
     phase: 'Phase 2',
+  });
+
+  // Modal state for adding a new node with interactive form
+  const [pendingAddNode, setPendingAddNode] = useState<{
+    isOpen: boolean;
+    type: string;
+    position: { x: number; y: number } | null;
+  }>({
+    isOpen: false,
+    type: 'personne',
+    position: null,
   });
 
   // Load cases and initial graph
@@ -187,6 +199,23 @@ export function App() {
     };
   }, [isResizingLeft, isResizingRight]);
 
+  // Window resize listener to gracefully adapt panel widths on smaller displays
+  useEffect(() => {
+    const handleWindowResize = () => {
+      const w = window.innerWidth;
+      if (w < 1050) {
+        setLeftWidth((prev) => Math.min(prev, 220));
+        setRightWidth((prev) => Math.min(prev, 280));
+      } else if (w < 1250) {
+        setLeftWidth((prev) => Math.min(prev, 240));
+        setRightWidth((prev) => Math.min(prev, 310));
+      }
+    };
+    window.addEventListener('resize', handleWindowResize);
+    handleWindowResize();
+    return () => window.removeEventListener('resize', handleWindowResize);
+  }, []);
+
   // Handle Impact View Toggle
   const handleToggleImpactView = useCallback(() => {
     if (!activeCase) return;
@@ -231,53 +260,27 @@ export function App() {
   );
 
   // Handle Add Node at Center
-  const handleAddNodeAtCenter = useCallback(
-    (typeKey: string) => {
-      if (!activeCase) return;
-      const label = `Nouveau ${typeKey} ${nodes.length + 1}`;
-
-      fetch(`${API_BASE}/api/v1/cases/${activeCase.id}/nodes`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Actor-Id': 'investigator_front',
-        },
-        body: JSON.stringify({
-          type: typeKey,
-          label: label,
-          confidence: 0.85,
-          provenance: 'INVESTIGATOR_MANUAL',
-          properties: {},
-        }),
-      })
-        .then(async (r) => {
-          if (!r.ok) {
-            const errJson = await r.json().catch(() => ({}));
-            const msg = errJson.detail?.message || errJson.detail || `Erreur serveur (${r.status})`;
-            throw new Error(msg);
-          }
-          return r.json();
-        })
-        .then((createdNode) => {
-          if (!createdNode || !createdNode.id) return;
-          mergeExpandedNodes([createdNode], []);
-          selectNode(createdNode.id);
-          setIsInspectorOpen(true);
-          toast.success(`Entité "${createdNode.label}" ajoutée`, "Création d'entité");
-        })
-        .catch((err) => {
-          console.error('Erreur création nœud au centre:', err);
-          toast.error(err instanceof Error ? err.message : 'Erreur serveur', "Échec de création");
-        });
-    },
-    [activeCase, nodes.length, mergeExpandedNodes, selectNode, toast]
-  );
+  const handleAddNodeAtCenter = useCallback((typeKey: string) => {
+    setPendingAddNode({
+      isOpen: true,
+      type: typeKey,
+      position: { x: 500, y: 350 },
+    });
+  }, []);
 
   // Handle Add Node Dropped at specific Canvas Coordinates
-  const handleAddNodeAtPosition = useCallback(
-    (typeKey: string, x: number, y: number) => {
+  const handleAddNodeAtPosition = useCallback((typeKey: string, x: number, y: number) => {
+    setPendingAddNode({
+      isOpen: true,
+      type: typeKey,
+      position: { x, y },
+    });
+  }, []);
+
+  const handleConfirmAddNode = useCallback(
+    (data: AddNodeData) => {
       if (!activeCase) return;
-      const label = `Nouveau ${typeKey} ${nodes.length + 1}`;
+      setPendingAddNode((prev) => ({ ...prev, isOpen: false }));
 
       fetch(`${API_BASE}/api/v1/cases/${activeCase.id}/nodes`, {
         method: 'POST',
@@ -286,11 +289,11 @@ export function App() {
           'X-Actor-Id': 'investigator_front',
         },
         body: JSON.stringify({
-          type: typeKey,
-          label: label,
-          confidence: 0.85,
+          type: data.type,
+          label: data.label,
+          confidence: data.confidence,
           provenance: 'INVESTIGATOR_MANUAL',
-          properties: {},
+          properties: data.properties,
         }),
       })
         .then(async (r) => {
@@ -303,19 +306,20 @@ export function App() {
         })
         .then((createdNode) => {
           if (!createdNode || !createdNode.id) return;
-          createdNode.x = x;
-          createdNode.y = y;
+          createdNode.x = data.x;
+          createdNode.y = data.y;
+          if (data.layer) createdNode.layer = data.layer;
           mergeExpandedNodes([createdNode], []);
           selectNode(createdNode.id);
           setIsInspectorOpen(true);
-          toast.success(`Entité "${createdNode.label}" positionnée sur le graphe`, "Création d'entité");
+          toast.success(`Entité "${createdNode.label}" créée et positionnée sur le graphe`, "Création d'entité");
         })
         .catch((err) => {
-          console.error('Erreur création nœud à la position:', err);
+          console.error('Erreur création nœud:', err);
           toast.error(err instanceof Error ? err.message : 'Erreur serveur', "Échec de création");
         });
     },
-    [activeCase, nodes.length, mergeExpandedNodes, selectNode, toast]
+    [activeCase, mergeExpandedNodes, selectNode, toast]
   );
 
   const handleTriggerPhaseNotice = (name: string, phase: string) => {
@@ -648,6 +652,14 @@ export function App() {
         onClose={() => setIsPhaseNoticeOpen(false)}
         featureName={phaseNoticeData.name}
         targetPhase={phaseNoticeData.phase}
+      />
+
+      <AddNodeModal
+        isOpen={pendingAddNode.isOpen}
+        initialType={pendingAddNode.type}
+        position={pendingAddNode.position}
+        onClose={() => setPendingAddNode((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={handleConfirmAddNode}
       />
     </div>
   );

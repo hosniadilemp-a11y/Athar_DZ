@@ -18,6 +18,91 @@ export interface SnaVisualOverlay {
   legend: Array<{ label: string; color: string }>;
 }
 
+export type OntologyCategory =
+  | 'territoire'
+  | 'acteurs'
+  | 'telecoms'
+  | 'finances'
+  | 'socmint'
+  | 'cyber'
+  | 'biometrie'
+  | 'preuve';
+
+export const ONTOLOGY_CATEGORY_COLORS: Record<OntologyCategory, string> = {
+  territoire: '#10b981', // Émeraude / SIG & BTS
+  acteurs: '#3b82f6',    // Bleu royal / Personnes & Réseau
+  telecoms: '#6366f1',   // Indigo / Téléphonie
+  finances: '#f59e0b',   // Ambre or / BaridiMob
+  socmint: '#06b6d4',    // Cyan / Réseaux sociaux
+  cyber: '#e11d48',      // Cramoisi / C2 & Malware
+  biometrie: '#a855f7',  // Violet pourpre / Voix & Visages
+  preuve: '#ea580c',     // Terracotta / Procédures & Scellés
+};
+
+export const NODE_TYPE_TO_CATEGORY: Record<string, OntologyCategory> = {
+  antenne_bts: 'territoire',
+  adresse_physique: 'territoire',
+  point_geographique: 'territoire',
+  wilaya: 'territoire',
+  lieu: 'territoire',
+
+  personne: 'acteurs',
+  organisation: 'acteurs',
+  entreprise: 'acteurs',
+  groupe: 'acteurs',
+  vehicule: 'acteurs',
+
+  telephone: 'telecoms',
+  imei: 'telecoms',
+  imsi: 'telecoms',
+  canal_telegram: 'telecoms',
+
+  compte_bancaire: 'finances',
+  transaction_financiere: 'finances',
+  crypto_wallet: 'finances',
+  carte_paiement: 'finances',
+
+  compte_social: 'socmint',
+  publication_sociale: 'socmint',
+  message_chat: 'socmint',
+
+  serveur_c2: 'cyber',
+  fichier_apk: 'cyber',
+  certificat_tls: 'cyber',
+  artefact_dfir: 'cyber',
+  site_web: 'cyber',
+  identifiant_infrastructure: 'cyber',
+
+  enregistrement_vocal: 'biometrie',
+  empreinte_biometrique: 'biometrie',
+  profil_adn: 'biometrie',
+
+  document_judiciaire: 'preuve',
+  scelle: 'preuve',
+  proces_verbal: 'preuve',
+  piece_a_conviction: 'preuve',
+};
+
+export interface GraphCustomizationState {
+  nodeSize: number; // 40 - 96
+  nodeLabelSize: number; // 10 - 18
+  edgeThickness: number; // 1 - 6
+  edgeLabelSize: number; // 9 - 16
+  showEdgeLabels: boolean;
+  showNodePhotos: boolean;
+  colorMode: 'category' | 'layer';
+}
+
+export const DEFAULT_GRAPH_CUSTOMIZATION: GraphCustomizationState = {
+  nodeSize: 64,
+  nodeLabelSize: 12.5,
+  edgeThickness: 2,
+  edgeLabelSize: 11,
+  showEdgeLabels: true,
+  showNodePhotos: true,
+  colorMode: 'category',
+};
+
 export interface Command {
   id: string;
   description: string;
@@ -69,8 +154,21 @@ export interface GraphStoreState {
   toggleInvestigationMode: () => void;
   setInvestigationMode: (mode: 'investigator' | 'analyst') => void;
 
-  // Feature 2: Node Rename
+  // Graph Customization & Sizing (Sliders & Color Mode)
+  graphCustomization: GraphCustomizationState;
+  setGraphCustomization: (settings: Partial<GraphCustomizationState>) => void;
+  resetGraphCustomization: () => void;
+
+  // Feature 2: Node Rename & Details Update
   updateNodeLabel: (nodeId: string, label: string) => Promise<void>;
+  updateNodeDetails: (
+    nodeId: string,
+    updates: {
+      label?: string;
+      confidence?: number;
+      properties?: Record<string, any>;
+    }
+  ) => Promise<void>;
 
   // Context Menu state
   contextMenu: {
@@ -170,6 +268,14 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
       investigationMode: state.investigationMode === 'investigator' ? 'analyst' : 'investigator',
     })),
   setInvestigationMode: (mode) => set({ investigationMode: mode }),
+
+  graphCustomization: DEFAULT_GRAPH_CUSTOMIZATION,
+  setGraphCustomization: (settings) =>
+    set((state) => ({
+      graphCustomization: { ...state.graphCustomization, ...settings },
+    })),
+  resetGraphCustomization: () =>
+    set({ graphCustomization: DEFAULT_GRAPH_CUSTOMIZATION }),
 
   contextMenu: {
     isOpen: false,
@@ -326,6 +432,71 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
             body: JSON.stringify({ label: newLabel.trim(), reason: 'Rétablissement modification libellé' }),
           }).catch(() => {});
         }
+      },
+    });
+  },
+
+  updateNodeDetails: async (nodeId, updates) => {
+    const currentNodes = get().nodes;
+    const target = currentNodes.find((n) => n.id === nodeId);
+    if (!target) return;
+
+    const previousSnapshot = {
+      label: target.label,
+      confidence: target.confidence,
+      properties: { ...target.properties },
+    };
+
+    const newMergedProps = updates.properties
+      ? { ...target.properties, ...updates.properties }
+      : target.properties;
+
+    const updatedNode = {
+      ...target,
+      label: updates.label !== undefined ? updates.label.trim() : target.label,
+      confidence: updates.confidence !== undefined ? updates.confidence : target.confidence,
+      properties: newMergedProps,
+    };
+
+    // Optimistic store update
+    set({
+      nodes: currentNodes.map((n) => (n.id === nodeId ? updatedNode : n)),
+    });
+
+    const activeCase = get().activeCase;
+    if (activeCase) {
+      try {
+        await fetch(`/api/v1/cases/${activeCase.id}/nodes/${nodeId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Actor-Id': 'investigator_front',
+          },
+          body: JSON.stringify({
+            label: updatedNode.label,
+            confidence: updatedNode.confidence,
+            properties: updatedNode.properties,
+            reason: 'Mise à jour des informations de l\'entité par l\'enquêteur',
+          }),
+        });
+      } catch (err) {
+        console.error('Erreur mise à jour détails nœud:', err);
+      }
+    }
+
+    // Reversible command
+    get().executeCommand({
+      id: `edit-node-${nodeId}-${Date.now()}`,
+      description: `Mise à jour de "${updatedNode.label}"`,
+      undo: () => {
+        set({
+          nodes: get().nodes.map((n) => (n.id === nodeId ? { ...n, ...previousSnapshot } : n)),
+        });
+      },
+      redo: () => {
+        set({
+          nodes: get().nodes.map((n) => (n.id === nodeId ? updatedNode : n)),
+        });
       },
     });
   },

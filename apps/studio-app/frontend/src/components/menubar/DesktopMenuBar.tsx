@@ -4,7 +4,6 @@ import {
   Sun,
   Moon,
   ChevronDown,
-  FileText,
   User,
   Target,
   Share2,
@@ -15,6 +14,7 @@ import {
 import { useGraphStore } from '../../store/useGraphStore';
 import { useI18n } from '../../context/I18nContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useToast } from '../../context/ToastContext';
 import type { Locale } from '../../i18n/translations';
 import type { ActiveViewMode } from '../canvas/Toolbar';
 import type { ToolSpec } from '../modals/ToolInfoModal';
@@ -50,7 +50,18 @@ export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
 }) => {
   const { locale, setLocale, t, tr } = useI18n();
   const { theme, toggleTheme } = useTheme();
+  const toast = useToast();
   const { activeLayout, applyLayout, investigationMode, toggleInvestigationMode } = useGraphStore();
+
+  const handleToggleMode = () => {
+    toggleInvestigationMode();
+    const nextMode = investigationMode === 'investigator' ? 'analyst' : 'investigator';
+    if (nextMode === 'analyst') {
+      toast.info(tr('Mode Analyste actif : Rôles SNA, communautés mathématiques et hashes SHA-256 déverrouillés.'), tr('Profil Enquête'));
+    } else {
+      toast.success(tr('Mode Enquêteur actif : Procédure pénale, statuts judiciaires et fiches OPJ clarifiées.'), tr('Profil Enquête'));
+    }
+  };
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [appMode, setAppMode] = useState<'collect' | 'analyze' | 'report'>('analyze');
   const menubarRef = useRef<HTMLDivElement>(null);
@@ -1172,35 +1183,27 @@ export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
           </button>
         </nav>
 
-        {/* Specifications link */}
-        <button
-          type="button"
-          className="spec-link-chip"
-          onClick={() => {
-            window.open('/doc/SPECIFICATION.md', '_blank');
-          }}
-          title="Consulter la Spécification Technique & Architecture"
-        >
-          <FileText size={12} />
-          <span>Spécifications (8 Chap.)</span>
-        </button>
-
         {/* Feature 10: Mode Enquêteur vs Analyste Forensique Toggle */}
         <button
           type="button"
           className={`btn btn-xs ${investigationMode === 'analyst' ? 'btn-secondary' : 'btn-ghost'}`}
-          onClick={toggleInvestigationMode}
+          onClick={handleToggleMode}
           title={
             investigationMode === 'analyst'
-              ? tr('Mode Analyste : Détails forensiques, hashes SHA-256 et ancrage Merkle actifs')
-              : tr('Mode Enquêteur : Vue simplifiée pour magistrat et enquête de police judiciaire')
+              ? tr('Mode Analyste : Métriques forensiques, hashes SHA-256 et ancrage Merkle actifs (Cliquer pour basculer en Mode Enquêteur)')
+              : tr('Mode Enquêteur : Vue judiciaire simplifiée pour magistrat et police judiciaire (Cliquer pour basculer en Mode Analyste)')
           }
           aria-label={tr('Basculer entre Mode Enquêteur et Mode Analyste')}
-          style={{ gap: '4px', paddingInline: '6px' }}
+          style={{
+            gap: '5px',
+            paddingInline: '8px',
+            border: investigationMode === 'analyst' ? '1px solid var(--color-accent-primary)' : '1px solid var(--color-border-subtle)',
+            backgroundColor: investigationMode === 'analyst' ? 'var(--color-accent-subtle)' : 'var(--color-bg-elevated)',
+          }}
         >
           <Shield size={12} className={investigationMode === 'analyst' ? 'text-accent' : ''} />
-          <span style={{ fontSize: '11px', fontWeight: 600 }}>
-            {investigationMode === 'analyst' ? tr('Analyste') : tr('Enquêteur')}
+          <span style={{ fontSize: '11px', fontWeight: 700 }}>
+            {investigationMode === 'analyst' ? tr('Mode Analyste') : tr('Mode Enquêteur')}
           </span>
         </button>
 

@@ -4,8 +4,12 @@ import type { LayerId } from '../../types/registry';
 import { NodeIcon } from './NodeIcon';
 import registryDataRaw from '../../registry/registry.json';
 import type { RegistryData } from '../../types/registry';
-import { MoreHorizontal } from 'lucide-react';
-import { useGraphStore } from '../../store/useGraphStore';
+import { MoreHorizontal, Camera } from 'lucide-react';
+import {
+  useGraphStore,
+  ONTOLOGY_CATEGORY_COLORS,
+  NODE_TYPE_TO_CATEGORY,
+} from '../../store/useGraphStore';
 
 const registry = registryDataRaw as unknown as RegistryData;
 
@@ -44,6 +48,7 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
   const snaOverlay = useGraphStore((s) => s.snaVisualOverlay);
   const investigationMode = useGraphStore((s) => s.investigationMode);
   const updateNodeLabel = useGraphStore((s) => s.updateNodeLabel);
+  const graphCustomization = useGraphStore((s) => s.graphCustomization);
 
   // Inline rename state (Feature 2)
   const [isEditing, setIsEditing] = useState(false);
@@ -75,11 +80,29 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
   const snaColor = snaOverlay?.nodeColors?.[node.id];
   const snaBadge = snaOverlay?.nodeBadges?.[node.id];
 
+  // Dynamic Sizing & Colors from GraphCustomization
+  const baseNodeSize = graphCustomization?.nodeSize || 64;
+  const size = isSelected || node.radius === 34 ? Math.round(baseNodeSize * 1.15) : baseNodeSize;
+  const halfSize = size / 2;
+  const labelSize = graphCustomization?.nodeLabelSize || 12.5;
+
+  const isCategoryMode = graphCustomization?.colorMode !== 'layer';
+  const categoryKey = NODE_TYPE_TO_CATEGORY[node.type] || 'acteurs';
+  const categoryColor = ONTOLOGY_CATEGORY_COLORS[categoryKey] || '#3b82f6';
+
+  // Border strictly follows Calque (layer) or SNA overlay
   const defaultBorderColor = LAYER_BORDER_COLORS[node.layer] || 'var(--color-border-default)';
   const activeBorderColor = snaColor || defaultBorderColor;
+  const iconOrFillColor = isCategoryMode ? categoryColor : activeBorderColor;
   const isHypothesis = node.layer === 'HYPOTHESIS';
-  const size = isSelected || node.radius === 34 ? 76 : 64;
-  const halfSize = size / 2;
+
+  // Evidence / Forensic Portrait Photo
+  const photoUrl = (node.properties?.photo_url as string) || (node.properties?.photo as string);
+  const hasPhoto = Boolean(photoUrl);
+  const showPhoto = hasPhoto && (graphCustomization?.showNodePhotos !== false);
+
+  // Enquêteur Judicial Status
+  const statusJudiciaire = (node.properties?.status_judiciaire as string) || (node.properties?.role_judiciaire as string);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (isEditing) return;
@@ -146,8 +169,10 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
           width: `${size}px`,
           height: `${size}px`,
           borderRadius: 'var(--radius-full)',
-          backgroundColor: 'var(--color-bg-surface)',
-          borderWidth: isHypothesis ? '2.5px' : '2px',
+          background: isCategoryMode
+            ? `radial-gradient(circle, ${categoryColor}28 0%, var(--color-bg-surface) 72%)`
+            : `radial-gradient(circle, ${activeBorderColor}24 0%, var(--color-bg-surface) 72%)`,
+          borderWidth: isHypothesis ? '2.5px' : '2.5px',
           borderStyle: isHypothesis ? 'dashed' : 'solid',
           borderColor: isLinkSource ? 'var(--color-status-warning)' : activeBorderColor,
           boxShadow: isLinkSource
@@ -155,16 +180,62 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
             : snaColor
             ? `0 0 0 3px ${snaColor}44, 0 0 14px ${snaColor}88`
             : isSelected
-            ? '0 0 0 3px var(--color-accent-subtle), 0 0 12px rgba(37, 99, 235, 0.4)'
-            : '0 2px 4px rgba(0, 0, 0, 0.3)',
+            ? '0 0 0 3.5px var(--color-accent-subtle), 0 0 14px rgba(37, 99, 235, 0.45)'
+            : '0 2px 6px rgba(0, 0, 0, 0.28)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
+          overflow: 'visible',
           transition: 'transform 0.15s ease, box-shadow 0.15s ease',
         }}
       >
-        <NodeIcon name={iconName} size={size === 76 ? 30 : 26} style={{ color: activeBorderColor }} />
+        {/* Forensic Photo / Portrait if available */}
+        {showPhoto ? (
+          <img
+            src={photoUrl}
+            alt={node.label}
+            style={{
+              width: '100%',
+              height: '100%',
+              borderRadius: 'var(--radius-full)',
+              objectFit: 'cover',
+              display: 'block',
+              pointerEvents: 'none',
+            }}
+          />
+        ) : (
+          <NodeIcon
+            name={iconName}
+            size={Math.max(22, Math.round(size * 0.42))}
+            style={{ color: iconOrFillColor }}
+          />
+        )}
+
+        {/* Small badge icon indicating real photographic evidence attached */}
+        {hasPhoto && (
+          <span
+            title="Preuve photographique / portrait judiciaire certifié"
+            style={{
+              position: 'absolute',
+              bottom: '-3px',
+              left: '-3px',
+              width: '18px',
+              height: '18px',
+              borderRadius: 'var(--radius-full)',
+              backgroundColor: 'var(--color-bg-elevated)',
+              border: `1.5px solid ${categoryColor}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: categoryColor,
+              boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
+              zIndex: 3,
+            }}
+          >
+            <Camera size={10} />
+          </span>
+        )}
 
         {/* Feature 4: SNA Result Badge (Rank or Cluster) */}
         {snaBadge && (
@@ -183,13 +254,14 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
               borderRadius: 'var(--radius-full)',
               boxShadow: '0 2px 5px rgba(0,0,0,0.5)',
               whiteSpace: 'nowrap',
+              zIndex: 4,
             }}
           >
             {snaBadge}
           </span>
         )}
 
-        {/* Feature 10: Confidence chip in Analyst mode */}
+        {/* Confidence chip in Analyst mode */}
         {investigationMode === 'analyst' &&
           node.confidence !== null &&
           node.confidence !== undefined &&
@@ -206,6 +278,7 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
                 backgroundColor: 'var(--color-bg-elevated)',
                 border: '1px solid var(--color-border-default)',
                 color: 'var(--color-text-secondary)',
+                zIndex: 4,
               }}
             >
               {Math.round(node.confidence * 100)}%
@@ -231,6 +304,7 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
             cursor: 'pointer',
             padding: 0,
             color: 'var(--color-text-muted)',
+            zIndex: 4,
           }}
           onClick={(e) => {
             e.stopPropagation();
@@ -241,11 +315,41 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
         </button>
       </div>
 
+      {/* Feature 10: Enquêteur Mode Procedural Status Pill */}
+      {investigationMode === 'investigator' && statusJudiciaire && (
+        <div
+          style={{
+            marginTop: '4px',
+            fontSize: '9.5px',
+            fontWeight: 700,
+            letterSpacing: '0.3px',
+            textTransform: 'uppercase',
+            color: '#ffffff',
+            backgroundColor: statusJudiciaire.toLowerCase().includes('mandat')
+              ? '#dc2626'
+              : statusJudiciaire.toLowerCase().includes('examen')
+              ? '#ea580c'
+              : statusJudiciaire.toLowerCase().includes('garde')
+              ? '#d97706'
+              : 'var(--color-accent-primary)',
+            padding: '1px 6px',
+            borderRadius: 'var(--radius-full)',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+            whiteSpace: 'nowrap',
+            maxWidth: '140px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {statusJudiciaire}
+        </div>
+      )}
+
       {/* Feature 2: Node Label or Inline Rename Input */}
       {isEditing ? (
         <div
           style={{
-            marginTop: '6px',
+            marginTop: '4px',
             position: 'relative',
             zIndex: 30,
           }}
@@ -268,7 +372,7 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
               }
             }}
             style={{
-              fontSize: '12px',
+              fontSize: `${labelSize}px`,
               fontFamily: 'var(--font-sans)',
               padding: '2px 6px',
               backgroundColor: 'var(--color-bg-elevated)',
@@ -287,23 +391,25 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
         <div
           title={`${node.label} (Double-cliquer pour renommer)`}
           style={{
-            marginTop: '6px',
-            fontSize: '12.5px',
+            marginTop: '4px',
+            fontSize: `${labelSize}px`,
             lineHeight: '1.25',
             fontFamily: 'var(--font-sans)',
-            color: isSelected ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
-            fontWeight: isSelected ? 600 : 500,
+            color: isSelected ? 'var(--color-accent-text)' : 'var(--color-text-primary)',
+            fontWeight: isSelected ? 700 : 500,
             textAlign: 'center',
-            maxWidth: '150px',
+            maxWidth: '160px',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             pointerEvents: 'auto',
-            backgroundColor: 'rgba(15, 23, 42, 0.88)',
+            backgroundColor: 'var(--color-bg-elevated)',
             padding: '2px 8px',
             borderRadius: 'var(--radius-sm)',
-            border: isSelected ? '1px solid var(--color-accent-primary)' : '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.6)',
+            border: isSelected
+              ? '1px solid var(--color-accent-primary)'
+              : '1px solid var(--color-border-subtle)',
+            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.22)',
             backdropFilter: 'blur(4px)',
             cursor: 'text',
           }}

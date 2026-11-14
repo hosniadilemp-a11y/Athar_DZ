@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useGraphStore } from '../../store/useGraphStore';
 import { NodeIcon } from '../canvas/NodeIcon';
 import registryDataRaw from '../../registry/registry.json';
@@ -21,8 +21,11 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
   Sparkles,
+  Save,
+  Edit3,
 } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
+import { useToast } from '../../context/ToastContext';
 
 const registry = registryDataRaw as unknown as RegistryData;
 
@@ -61,11 +64,19 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
     mergeExpandedNodes,
     deleteNode,
     selectNode,
+    updateNodeDetails,
   } = useGraphStore();
 
+  const toast = useToast();
   const [copiedHash, setCopiedHash] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [editLabel, setEditLabel] = useState('');
+  const [editConfidence, setEditConfidence] = useState(0.85);
+  const [editStatus, setEditStatus] = useState('');
+  const [editNotes, setEditNotes] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
+
   const [inboxClues, setInboxClues] = useState<InboxClue[]>([
     {
       id: 'clue-1',
@@ -98,6 +109,65 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId);
   const selectedEdge = edges.find((e) => e.id === selectedEdgeId);
+
+  // Sync editing fields with selected node and pause audio on node switch
+  useEffect(() => {
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.pause();
+      setIsPlayingAudio(false);
+    }
+    if (selectedNode) {
+      setEditLabel(selectedNode.label || '');
+      setEditConfidence(selectedNode.confidence ?? 0.85);
+      const initialStatus =
+        (selectedNode.properties?.status_judiciaire as string) ||
+        (selectedNode.properties?.role_judiciaire as string) ||
+        '';
+      setEditStatus(initialStatus);
+      setEditNotes(
+        (selectedNode.properties?.notes as string) ||
+        (selectedNode.properties?.description as string) ||
+        ''
+      );
+    }
+  }, [selectedNodeId]);
+
+  const handleToggleAudio = (audioFile: string) => {
+    if (isPlayingAudio) {
+      audioPlayerRef.current?.pause();
+      setIsPlayingAudio(false);
+    } else {
+      if (!audioPlayerRef.current || !audioPlayerRef.current.src.endsWith(audioFile)) {
+        audioPlayerRef.current = new Audio(audioFile);
+        audioPlayerRef.current.onended = () => setIsPlayingAudio(false);
+      }
+      audioPlayerRef.current.play().catch((err) => {
+        console.warn('Audio playback error:', err);
+      });
+      setIsPlayingAudio(true);
+    }
+  };
+
+  const handleSaveNodeEdits = async () => {
+    if (!selectedNode) return;
+    setIsSaving(true);
+    try {
+      await updateNodeDetails(selectedNode.id, {
+        label: editLabel.trim() || selectedNode.label,
+        confidence: editConfidence,
+        properties: {
+          status_judiciaire: editStatus,
+          role_judiciaire: editStatus,
+          notes: editNotes,
+        },
+      });
+      toast.success(tr('Fiche de l\'entité mise à jour dans le dossier judiciaire'), tr('Enregistrement OPJ'));
+    } catch (e) {
+      toast.error(tr('Échec de la mise à jour des informations'), tr('Erreur'));
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleCopyHash = (text: string) => {
     navigator.clipboard.writeText(text).catch(() => {});
@@ -323,93 +393,71 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
       ? 'VÉHICULE EN FUITE — AVIS DE RECHERCHE'
       : 'SCIS-TIC / SOUS SURVEILLANCE';
 
-    // Authentic Darija audio intercepts matching Candy Wheels case
+    // Authentic Darija audio intercepts matching Candy Wheels case (Strictly connected entities)
     const getDarijaWiretap = () => {
-      if (lbl.includes('karim') || lbl.includes('amine') || selectedNode.type === 'enregistrement_vocal' || lbl.includes('555 019')) {
+      const explicitAudio = selectedNode.properties?.audio_url as string;
+      if (
+        explicitAudio ||
+        selectedNode.type === 'enregistrement_vocal' ||
+        lbl.includes('karim') ||
+        lbl.includes('zerrouki') ||
+        lbl.includes('amine') ||
+        lbl.includes('555 019')
+      ) {
         return {
           id: 'EVID-A01',
+          audioFile: '/audio/evid_a01.wav',
           speaker: 'Amine B. (Opérateur)',
           target: 'Karim Zerrouki (Victime)',
           time: '0:42',
-          audioUrl: '/audio/evid_a01.wav',
           darija: "Khouya Karim, salam alaykoum. Les quatre pneus Michelin rahoum réservés b'smitek fel dépôt taâ Boufarik. Bessah la promo hadhi fiha demande kbira. Versi les 64 000 da f'had le compte BaridiMob li b'ath'toulak, w b'athli le reçu f'WhatsApp...",
           french: "Frère Karim, salam alaykoum. Les 4 pneus Michelin sont réservés à ton nom au dépôt de Boufarik. Mais la promo a une forte demande. Verse les 64 000 DZD sur le compte BaridiMob et transmets le reçu...",
           match: '96.2%',
         };
       }
-      if (isBoss || lbl.includes('youcef')) {
+      if (isBoss || lbl.includes('tarek') || lbl.includes('hadj') || lbl.includes('youcef')) {
         return {
           id: 'EVID-A02',
+          audioFile: '/audio/evid_a02.wav',
           speaker: "Tarek H. (« El-Hadj »)",
           target: "Youcef R. (Lieutenant)",
           time: '0:35',
-          audioUrl: '/audio/evid_a02.wav',
           darija: "Youcef, smaâni mlih. La cellule pneus rahi t'dirlna 600 000 da par jour had la semaine, c’est bien bessah les plaintes b'daw y'kethrou f'Facebook. Ghleq les trois pages ghedwa s'bah, w khéli Sofiane y'lansi les trois nouveaux sites...",
           french: "Youcef, écoute-moi bien. La cellule pneus rapporte 600 000 DZD/jour mais les plaintes s'accumulent sur Facebook. Ferme les 3 pages demain matin et laisse Sofiane lancer les 3 nouveaux sites...",
           match: '98.7%',
         };
       }
-      if (lbl.includes('nadia') || lbl.includes('meriem')) {
+      if (lbl.includes('nadia') || lbl.includes('dina') || lbl.includes('meriem') || lbl.includes('sofiane')) {
         return {
           id: 'EVID-A03',
+          audioFile: '/audio/evid_a03.wav',
           speaker: "Nadia M. (« Dina »)",
           target: "Comité C2 Direction",
           time: '0:29',
-          audioUrl: '/audio/evid_a03.wav',
           darija: "Boss, el-hamdullah le nouveau script taâ Sofiane pour les rendez-vous TLS rah yemchi 10/10. Les opérateurs diali f'Constantine jawbou plus de 80 clients had sbeh. Derna 2,4 millions de dinars d'acomptes...",
           french: "Boss, le nouveau script de Sofiane pour les rendez-vous TLS marche à 100%. Mes opérateurs à Constantine ont répondu à 80 clients ce matin. Nous avons cumulé 2,4 millions de dinars d'acomptes...",
           match: '95.1%',
         };
       }
-      return {
-        id: 'EVID-A04',
-        speaker: 'Interception Réseau CCO',
-        target: 'Ligne Coordination',
-        time: '0:24',
-        audioUrl: '/audio/evid_a04.wav',
-        darija: "Allô Kamel, l'argent taâ Oran dkhoul fel BaridiMob... Jebed 200 000 da men la poste taâ Bab El Oued w khéli le reste pour Sofiane...",
-        french: "Allô Kamel, l'argent d'Oran est arrivé sur BaridiMob... Retire 200 000 DZD au bureau de poste de Bab El Oued et laisse le reste pour Sofiane...",
-        match: '94.0%',
-      };
+      if (lbl.includes('kamel') || lbl.includes('oran') || lbl.includes('bab el oued')) {
+        return {
+          id: 'EVID-A04',
+          audioFile: '/audio/evid_a04.wav',
+          speaker: 'Interception Réseau CCO',
+          target: 'Ligne Coordination',
+          time: '0:24',
+          darija: "Allô Kamel, l'argent taâ Oran dkhoul fel BaridiMob... Jebed 200 000 da men la poste taâ Bab El Oued w khéli le reste pour Sofiane...",
+          french: "Allô Kamel, l'argent d'Oran est arrivé sur BaridiMob... Retire 200 000 DZD au bureau de poste de Bab El Oued et laisse le reste pour Sofiane...",
+          match: '94.0%',
+        };
+      }
+      // Strictly null for all other entities (cars, ips, bts, accounts, etc.)
+      return null;
     };
 
     const wiretap = getDarijaWiretap();
     const snaRole = selectedNode.properties?.sna_role;
     const snaScore = selectedNode.properties?.sna_score;
-
-    // Rich Algerian judicial properties extracted from database
-    const photoUrl = selectedNode.properties?.photo_url as string | undefined;
-    const audioUrl = (selectedNode.properties?.audio_url as string) || wiretap.audioUrl;
-    const darijaTranscript = (selectedNode.properties?.transcript_darija as string) || wiretap.darija;
-    const frenchTranscript = (selectedNode.properties?.transcript_french as string) || wiretap.french;
-    const audioDuration = (selectedNode.properties?.audio_duration as string) || wiretap.time;
-    const voiceprintMatch = (selectedNode.properties?.voiceprint_match as string) || wiretap.match;
-
-    const fullName = (selectedNode.properties?.full_name as string) || (selectedNode.type === 'personne' ? (selectedNode.label.split('(')[0] || '').trim() : undefined);
-    const alias = selectedNode.properties?.alias as string | undefined;
-    const nin = (selectedNode.properties?.nin as string) || (selectedNode.type === 'personne' ? '1982 1601 0023 4851 22' : undefined);
-    const dob = selectedNode.properties?.date_of_birth as string | undefined;
-    const pob = selectedNode.properties?.birth_place as string | undefined;
-    const charges = selectedNode.properties?.charges as string | undefined;
-    const mandateRef = selectedNode.properties?.mandate_ref as string | undefined;
-    const seizedAssets = (selectedNode.properties?.seized_assets || selectedNode.properties?.prejudice || selectedNode.properties?.total_credits) as string | undefined;
-    const profession = selectedNode.properties?.profession as string | undefined;
-    const pvRef = (selectedNode.properties?.pv_reference || selectedNode.properties?.pv_audition) as string | undefined;
-    const matricule = (selectedNode.properties?.matricule as string) || (selectedNode.type === 'vehicule' ? '12345 126 16' : undefined);
-    const vin = selectedNode.properties?.vin as string | undefined;
-    const rip = (selectedNode.properties?.rip as string) || (selectedNode.type === 'compte_bancaire' ? '00799999002148593214' : undefined);
-    const statusJudiciaire = (selectedNode.properties?.procedural_status || selectedNode.properties?.status_judiciaire || proceduralStatus) as string;
-
-    const handleToggleAudio = () => {
-      if (!audioRef.current) return;
-      if (isPlayingAudio) {
-        audioRef.current.pause();
-        setIsPlayingAudio(false);
-      } else {
-        audioRef.current.play().catch(() => {});
-        setIsPlayingAudio(true);
-      }
-    };
 
     return (
       <aside
@@ -457,48 +505,8 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               borderRadius: 'var(--radius-sm)',
             }}
           >
-            {/* Real Photographic Forensic Portrait or SVG Avatar Fallback */}
-            {photoUrl ? (
-              <div
-                style={{
-                  position: 'relative',
-                  width: '68px',
-                  height: '68px',
-                  flexShrink: 0,
-                  borderRadius: 'var(--radius-sm)',
-                  overflow: 'hidden',
-                  border: '1px solid var(--color-border-subtle)',
-                  background: '#0f172a',
-                }}
-              >
-                <img
-                  src={photoUrl}
-                  alt={selectedNode.label}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
-                />
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                    padding: '1px 0',
-                    fontSize: '7.5px',
-                    fontWeight: 800,
-                    textAlign: 'center',
-                    color: isVictim ? '#60a5fa' : selectedNode.type === 'vehicule' ? '#38bdf8' : selectedNode.type === 'compte_bancaire' ? '#f59e0b' : '#ef4444',
-                    letterSpacing: '0.5px',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  {isVictim ? 'VICTIME' : selectedNode.type === 'vehicule' ? 'VÉHICULE' : selectedNode.type === 'compte_bancaire' ? 'BARIDIMOB' : 'SUSPECT'}
-                </div>
-              </div>
-            ) : selectedNode.type === 'personne' ? (
+            {/* SVG Forensic Avatar */}
+            {selectedNode.type === 'personne' ? (
               <svg width="68" height="68" viewBox="0 0 100 100" style={{ borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-subtle)', background: '#1e293b', flexShrink: 0 }}>
                 <line x1="8" y1="20" x2="92" y2="20" stroke="#334155" strokeWidth="1" strokeDasharray="2,2" />
                 <line x1="8" y1="35" x2="92" y2="35" stroke="#334155" strokeWidth="1" strokeDasharray="2,2" />
@@ -558,113 +566,23 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
               <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <span className="chip" style={{ fontSize: '10px', padding: '1px 5px', backgroundColor: isVictim ? 'rgba(59, 130, 246, 0.15)' : 'rgba(239, 68, 68, 0.15)', color: isVictim ? '#3b82f6' : '#ef4444', fontWeight: 600 }}>
-                  {statusJudiciaire}
+                  {proceduralStatus}
                 </span>
               </div>
 
               <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>
-                {nin
-                  ? `NIN ${nin}`
-                  : rip
-                  ? `RIP ${rip}`
-                  : matricule
-                  ? `Plaque : ${matricule}`
+                {selectedNode.type === 'personne'
+                  ? 'NIN 1982 1601 0023 4851 22'
+                  : selectedNode.type === 'compte_bancaire'
+                  ? 'RIP 00799999002148593214'
+                  : selectedNode.type === 'vehicule'
+                  ? 'Plaque : 12345 126 16'
                   : selectedNode.type === 'telephone'
-                  ? 'MSISDN +213 555 019 283 • Mobilis DZ'
+                  ? 'MSISDN +213 555 019 283 • Ooredoo DZ'
                   : selectedNode.id}
               </div>
             </div>
           </div>
-
-          {/* 1b. Procedural Judicial Legal File (Dossier Pénal & Constatations OPJ) */}
-          {(Boolean(fullName) || Boolean(charges) || Boolean(seizedAssets) || Boolean(mandateRef)) && (
-            <div
-              style={{
-                padding: 'var(--space-2) var(--space-3)',
-                backgroundColor: 'var(--color-bg-elevated)',
-                border: '1px solid var(--color-border-subtle)',
-                borderRadius: 'var(--radius-sm)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '5px',
-                fontSize: '11px',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border-subtle)', paddingBottom: '3px' }}>
-                <span style={{ fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', fontSize: '9.5px', letterSpacing: '0.4px' }}>
-                  Dossier Procédural &amp; Qualification OPJ
-                </span>
-                {mandateRef && (
-                  <span className="font-mono text-xs" style={{ color: '#ef4444', fontSize: '9.5px', fontWeight: 700 }}>
-                    {mandateRef}
-                  </span>
-                )}
-              </div>
-
-              {fullName && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ color: 'var(--color-text-muted)' }}>Identité Civile :</span>
-                  <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{fullName}</span>
-                </div>
-              )}
-
-              {alias && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ color: 'var(--color-text-muted)' }}>Pseudonyme / Alias :</span>
-                  <span className="chip chip-neutral font-mono" style={{ fontSize: '10px' }}>{alias}</span>
-                </div>
-              )}
-
-              {dob && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ color: 'var(--color-text-muted)' }}>Né(e) :</span>
-                  <span style={{ color: 'var(--color-text-secondary)' }}>{dob} {pob ? `à ${pob}` : ''}</span>
-                </div>
-              )}
-
-              {profession && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ color: 'var(--color-text-muted)' }}>Activité / Statut :</span>
-                  <span style={{ color: 'var(--color-text-secondary)' }}>{profession}</span>
-                </div>
-              )}
-
-              {vin && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ color: 'var(--color-text-muted)' }}>Châssis / VIN :</span>
-                  <span className="font-mono" style={{ color: 'var(--color-text-primary)' }}>{vin}</span>
-                </div>
-              )}
-
-              {seizedAssets && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ color: isVictim ? '#3b82f6' : '#f59e0b', fontWeight: 600 }}>
-                    {isVictim ? 'Préjudice Déclaré :' : 'Avoirs Criminels Saisis :'}
-                  </span>
-                  <span className="font-mono" style={{ fontWeight: 700, color: isVictim ? '#60a5fa' : '#fbbf24' }}>
-                    {seizedAssets}
-                  </span>
-                </div>
-              )}
-
-              {charges && (
-                <div style={{ marginTop: '2px', padding: '4px 6px', backgroundColor: 'rgba(239, 68, 68, 0.08)', borderRadius: '2px', borderLeft: '2px solid #ef4444' }}>
-                  <div style={{ fontSize: '9.5px', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', marginBottom: '1px' }}>
-                    Qualifications Pénales &amp; Infractions :
-                  </div>
-                  <div style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', lineHeight: 1.35 }}>
-                    {charges}
-                  </div>
-                </div>
-              )}
-
-              {pvRef && (
-                <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontStyle: 'italic', marginTop: '1px' }}>
-                  Réf. Scellé : {pvRef}
-                </div>
-              )}
-            </div>
-          )}
 
           {/* 2. Official SNA Forensic Qualification Ribbon */}
           {Boolean(snaRole) && (
@@ -724,7 +642,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             )}
           </div>
 
-          {/* 4. Audio Scellé Intercept Player with Darija Wiretap & French Translation */}
+          {/* 3b. Quick Interactive Entity Editor (Label, Status, Notes, Confidence) */}
           <div
             style={{
               padding: 'var(--space-3)',
@@ -736,89 +654,201 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               gap: 'var(--space-2)',
             }}
           >
-            {/* Hidden HTML5 Audio Element for Genuine Playback */}
-            <audio
-              ref={audioRef}
-              src={audioUrl}
-              onEnded={() => setIsPlayingAudio(false)}
-              onError={() => setIsPlayingAudio(false)}
-              style={{ display: 'none' }}
-            />
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Volume2 size={14} style={{ color: 'var(--color-accent-text)' }} />
-                <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>
-                  Scellé Audio &amp; Interception Vocale ({wiretap.id})
-                </span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border-subtle)', paddingBottom: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>
+                <Edit3 size={12} style={{ color: 'var(--color-accent-text)' }} />
+                <span>{tr('Édition Fiche Entité')}</span>
               </div>
-              <span className="chip font-mono" style={{ fontSize: '10px', backgroundColor: 'rgba(16, 185, 129, 0.15)', color: 'var(--color-status-success)' }}>
-                {voiceprintMatch} Concordance
-              </span>
+              <span className="chip chip-neutral font-mono text-xs">OPJ / Procédure</span>
             </div>
 
-            {/* Audio Waveform Player Bar */}
+            {/* Libellé */}
+            <div>
+              <label style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px' }}>
+                {tr('Nom / Libellé de l\'entité :')}
+              </label>
+              <input
+                type="text"
+                value={editLabel}
+                onChange={(e) => setEditLabel(e.target.value)}
+                style={{
+                  width: '100%',
+                  fontSize: '12px',
+                  padding: '4px 8px',
+                  backgroundColor: 'var(--color-bg-surface)',
+                  border: '1px solid var(--color-border-default)',
+                  borderRadius: 'var(--radius-sm)',
+                  color: 'var(--color-text-primary)',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+
+            {/* Statut Judiciaire / Procédural */}
+            <div>
+              <label style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px' }}>
+                {tr('Statut Judiciaire / Mandat :')}
+              </label>
+              <input
+                type="text"
+                value={editStatus}
+                placeholder="ex: Mandat d'arrêt Interpol, Garde à vue 48h, Scellé sous main de justice..."
+                onChange={(e) => setEditStatus(e.target.value)}
+                style={{
+                  width: '100%',
+                  fontSize: '11.5px',
+                  padding: '4px 8px',
+                  backgroundColor: 'var(--color-bg-surface)',
+                  border: '1px solid var(--color-border-default)',
+                  borderRadius: 'var(--radius-sm)',
+                  color: 'var(--color-text-primary)',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+
+            {/* Confiance Slider */}
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>
+                <span>{tr('Certitude Probatoire :')}</span>
+                <span className="font-mono">{Math.round(editConfidence * 100)}%</span>
+              </div>
+              <input
+                type="range"
+                min={0.1}
+                max={1.0}
+                step={0.05}
+                value={editConfidence}
+                onChange={(e) => setEditConfidence(Number(e.target.value))}
+                style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--color-accent-primary)' }}
+              />
+            </div>
+
+            {/* Notes d'enquête */}
+            <div>
+              <label style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px' }}>
+                {tr('Notes Judiciaires & Observations :')}
+              </label>
+              <textarea
+                rows={2}
+                value={editNotes}
+                placeholder="Observations des services d'enquête, pièces de procédure..."
+                onChange={(e) => setEditNotes(e.target.value)}
+                style={{
+                  width: '100%',
+                  fontSize: '11.5px',
+                  padding: '4px 8px',
+                  backgroundColor: 'var(--color-bg-surface)',
+                  border: '1px solid var(--color-border-default)',
+                  borderRadius: 'var(--radius-sm)',
+                  color: 'var(--color-text-primary)',
+                  resize: 'vertical',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+
+            {/* Bouton Sauvegarder */}
+            <button
+              type="button"
+              className="btn btn-primary btn-xs"
+              disabled={isSaving}
+              onClick={handleSaveNodeEdits}
+              style={{ gap: '6px', justifyContent: 'center', marginTop: '2px' }}
+            >
+              <Save size={12} />
+              <span>{isSaving ? tr('Enregistrement...') : tr('Enregistrer dans le Dossier')}</span>
+            </button>
+          </div>
+
+          {/* 4. Audio Scellé Intercept Player with Darija Wiretap (Rendered ONLY if audio evidence attached) */}
+          {wiretap && (
             <div
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '6px 8px',
-                backgroundColor: 'var(--color-bg-canvas)',
+                padding: 'var(--space-3)',
+                backgroundColor: 'var(--color-bg-elevated)',
+                border: '1px solid var(--color-border-subtle)',
                 borderRadius: 'var(--radius-sm)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'var(--space-2)',
               }}
             >
-              <button
-                type="button"
-                className="btn btn-primary btn-xs"
-                onClick={handleToggleAudio}
-                style={{ width: '26px', height: '26px', padding: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                title={isPlayingAudio ? 'Mettre en pause' : 'Écouter l\'interception vocale Darija'}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Volume2 size={14} style={{ color: 'var(--color-accent-text)' }} />
+                  <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>
+                    Scellé Audio &amp; Interception Vocale ({wiretap.id})
+                  </span>
+                </div>
+                <span className="chip font-mono" style={{ fontSize: '10px', backgroundColor: 'rgba(16, 185, 129, 0.15)', color: 'var(--color-status-success)' }}>
+                  {wiretap.match} Concordance
+                </span>
+              </div>
+
+              {/* Audio Waveform Player Bar */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '6px 8px',
+                  backgroundColor: 'var(--color-bg-canvas)',
+                  borderRadius: 'var(--radius-sm)',
+                }}
               >
-                {isPlayingAudio ? <Pause size={12} /> : <Play size={12} />}
-              </button>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-xs"
+                  onClick={() => handleToggleAudio(wiretap.audioFile)}
+                  style={{ width: '26px', height: '26px', padding: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  title={isPlayingAudio ? 'Mettre en pause' : 'Écouter l\'interception'}
+                >
+                  {isPlayingAudio ? <Pause size={12} /> : <Play size={12} />}
+                </button>
 
-              {/* Animated Waveform Bars */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flex: 1, height: '20px' }}>
-                {[6, 12, 18, 10, 16, 8, 20, 14, 9, 17, 11, 15, 7, 19, 13, 8, 16, 11, 5].map((h, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      width: '3px',
-                      height: isPlayingAudio ? `${Math.max(4, (h * (1 + Math.sin(Date.now() / 200 + i)))) % 20}px` : `${h}px`,
-                      backgroundColor: isPlayingAudio ? 'var(--color-accent-primary)' : 'var(--color-border-strong)',
-                      borderRadius: '1px',
-                      transition: 'height 0.1s ease',
-                    }}
-                  />
-                ))}
+                {/* Animated Waveform Bars */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flex: 1, height: '20px' }}>
+                  {[6, 12, 18, 10, 16, 8, 20, 14, 9, 17, 11, 15, 7, 19, 13, 8, 16, 11, 5].map((h, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        width: '3px',
+                        height: isPlayingAudio ? `${Math.max(4, (h * (1 + Math.sin(Date.now() / 200 + i)))) % 20}px` : `${h}px`,
+                        backgroundColor: isPlayingAudio ? 'var(--color-accent-primary)' : 'var(--color-border-strong)',
+                        borderRadius: '1px',
+                        transition: 'height 0.1s ease',
+                      }}
+                    />
+                  ))}
+                </div>
+
+                <span className="font-mono" style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                  {isPlayingAudio ? '0:18 / ' + wiretap.time : wiretap.time}
+                </span>
               </div>
 
-              <span className="font-mono" style={{ fontSize: '11px', color: isPlayingAudio ? 'var(--color-accent-primary)' : 'var(--color-text-muted)' }}>
-                {isPlayingAudio ? 'EN LECTURE • ' + audioDuration : audioDuration}
-              </span>
-            </div>
-
-            {/* Darija Transcript Card */}
-            <div style={{ padding: '6px 8px', backgroundColor: 'rgba(15, 23, 42, 0.6)', borderRadius: 'var(--radius-sm)', borderLeft: '3px solid var(--color-accent-primary)' }}>
-              <div style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--color-accent-text)', marginBottom: '2px' }}>
-                Transcription Originale (Darija algéroise) :
+              {/* Darija Transcript Card */}
+              <div style={{ padding: '6px 8px', backgroundColor: 'rgba(15, 23, 42, 0.6)', borderRadius: 'var(--radius-sm)', borderLeft: '3px solid var(--color-accent-primary)' }}>
+                <div style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--color-accent-text)', marginBottom: '2px' }}>
+                  Transcription Originale (Darija algéroise) :
+                </div>
+                <p style={{ margin: 0, fontSize: '11.5px', color: 'var(--color-text-primary)', fontStyle: 'italic', lineHeight: 1.4 }}>
+                  &ldquo;{wiretap.darija}&rdquo;
+                </p>
               </div>
-              <p style={{ margin: 0, fontSize: '11.5px', color: 'var(--color-text-primary)', fontStyle: 'italic', lineHeight: 1.4 }}>
-                &ldquo;{darijaTranscript}&rdquo;
-              </p>
-            </div>
 
-            {/* French Judicial Translation */}
-            <div style={{ padding: '6px 8px', backgroundColor: 'var(--color-bg-base)', borderRadius: 'var(--radius-sm)' }}>
-              <div style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: '2px' }}>
-                Traduction Judiciaire Assermentée (OPJ) :
+              {/* French Judicial Translation */}
+              <div style={{ padding: '6px 8px', backgroundColor: 'var(--color-bg-base)', borderRadius: 'var(--radius-sm)' }}>
+                <div style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: '2px' }}>
+                  Traduction Judiciaire Assermentée (OPJ) :
+                </div>
+                <p style={{ margin: 0, fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>
+                  &ldquo;{wiretap.french}&rdquo;
+                </p>
               </div>
-              <p style={{ margin: 0, fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>
-                &ldquo;{frenchTranscript}&rdquo;
-              </p>
             </div>
-          </div>
+          )}
 
           {/* 5. Direct Incident Relationships Table (Interactive Graph Navigation) */}
           <div
