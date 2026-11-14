@@ -455,3 +455,14 @@ async def seed_candy_wheels(
         "nodes_count": len(processed_nodes),
         "edges_count": len(processed_edges),
     }
+
+
+if __name__ == "__main__":
+    import asyncio
+    import sys
+    force_flag = "--force" in sys.argv or "-f" in sys.argv
+    logging.basicConfig(level=logging.INFO)
+    print(f"Executing seed_candy_wheels (force={force_flag})...")
+    res = asyncio.run(seed_candy_wheels(force=force_flag))
+    print("Seed result:", res)
+
