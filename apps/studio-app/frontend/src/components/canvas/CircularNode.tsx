@@ -4,7 +4,7 @@ import type { LayerId } from '../../types/registry';
 import { NodeIcon } from './NodeIcon';
 import registryDataRaw from '../../registry/registry.json';
 import type { RegistryData } from '../../types/registry';
-import { MoreHorizontal, Camera } from 'lucide-react';
+import { MoreHorizontal, Camera, Volume2 } from 'lucide-react';
 import {
   useGraphStore,
   ONTOLOGY_CATEGORY_COLORS,
@@ -234,6 +234,31 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
             }}
           >
             <Camera size={10} />
+          </span>
+        )}
+
+        {/* Small badge icon indicating audio wiretap / vocal evidence attached */}
+        {(Boolean(node.properties?.audio_url) || node.type === 'enregistrement_vocal') && (
+          <span
+            title="Scellé audio judiciaire (Darija algéroise disponible)"
+            style={{
+              position: 'absolute',
+              bottom: '-3px',
+              left: hasPhoto ? '18px' : '-3px',
+              width: '18px',
+              height: '18px',
+              borderRadius: 'var(--radius-full)',
+              backgroundColor: 'var(--color-bg-elevated)',
+              border: '1.5px solid #a855f7',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#a855f7',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
+              zIndex: 3,
+            }}
+          >
+            <Volume2 size={10} />
           </span>
         )}
 

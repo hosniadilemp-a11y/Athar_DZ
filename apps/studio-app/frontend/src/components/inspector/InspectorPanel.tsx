@@ -18,6 +18,8 @@ import {
   Play,
   Pause,
   Volume2,
+  RotateCcw,
+  Download,
   ArrowUpRight,
   ArrowDownLeft,
   Sparkles,
@@ -70,6 +72,10 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   const toast = useToast();
   const [copiedHash, setCopiedHash] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [audioCurrentTime, setAudioCurrentTime] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
+  const [copiedDarija, setCopiedDarija] = useState(false);
+  const [copiedFrench, setCopiedFrench] = useState(false);
   const [editLabel, setEditLabel] = useState('');
   const [editConfidence, setEditConfidence] = useState(0.85);
   const [editStatus, setEditStatus] = useState('');
@@ -115,6 +121,8 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
     if (audioPlayerRef.current) {
       audioPlayerRef.current.pause();
       setIsPlayingAudio(false);
+      setAudioCurrentTime(0);
+      setAudioDuration(0);
     }
     if (selectedNode) {
       setEditLabel(selectedNode.label || '');
@@ -138,14 +146,52 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
       setIsPlayingAudio(false);
     } else {
       if (!audioPlayerRef.current || !audioPlayerRef.current.src.endsWith(audioFile)) {
-        audioPlayerRef.current = new Audio(audioFile);
-        audioPlayerRef.current.onended = () => setIsPlayingAudio(false);
+        if (audioPlayerRef.current) {
+          audioPlayerRef.current.pause();
+        }
+        const audio = new Audio(audioFile);
+        audioPlayerRef.current = audio;
+        audio.ontimeupdate = () => {
+          setAudioCurrentTime(audio.currentTime);
+        };
+        audio.onloadedmetadata = () => {
+          if (audio.duration && !isNaN(audio.duration)) {
+            setAudioDuration(audio.duration);
+          }
+        };
+        audio.onended = () => {
+          setIsPlayingAudio(false);
+          setAudioCurrentTime(0);
+        };
       }
       audioPlayerRef.current.play().catch((err) => {
         console.warn('Audio playback error:', err);
       });
       setIsPlayingAudio(true);
     }
+  };
+
+  const handleSeek = (newTime: number) => {
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.currentTime = newTime;
+      setAudioCurrentTime(newTime);
+    }
+  };
+
+  const handleRestartAudio = () => {
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.currentTime = 0;
+      setAudioCurrentTime(0);
+      audioPlayerRef.current.play().catch(() => {});
+      setIsPlayingAudio(true);
+    }
+  };
+
+  const formatAudioTime = (seconds: number) => {
+    if (!seconds || isNaN(seconds) || seconds < 0) return '0:00';
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
   const handleSaveNodeEdits = async () => {
@@ -395,24 +441,98 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
     // Authentic Darija audio intercepts matching Candy Wheels case (Strictly connected entities)
     const getDarijaWiretap = () => {
-      const explicitAudio = selectedNode.properties?.audio_url as string;
-      if (
-        explicitAudio ||
-        selectedNode.type === 'enregistrement_vocal' ||
-        lbl.includes('karim') ||
-        lbl.includes('zerrouki') ||
-        lbl.includes('amine') ||
-        lbl.includes('555 019')
-      ) {
+      const props = (selectedNode.properties || {}) as Record<string, any>;
+      const explicitAudio = (props.audio_url || props.audioFile || props.audio) as string | undefined;
+
+      // 1. Direct audio evidence node or node with explicit audio URL
+      if (explicitAudio || selectedNode.type === 'enregistrement_vocal') {
+        const rawId = (props.raw_id || props.id || selectedNode.label || '') as string;
+        const lowRaw = rawId.toLowerCase();
+        const lowLbl = lbl.toLowerCase();
+        let pieceId = 'EVID-A01';
+        let defaultAudio = '/audio/evid_a01.wav';
+
+        if (lowRaw.includes('a02') || lowLbl.includes('a-02') || lowLbl.includes('a02') || (explicitAudio && explicitAudio.includes('a02'))) {
+          pieceId = 'EVID-A02';
+          defaultAudio = '/audio/evid_a02.wav';
+        } else if (lowRaw.includes('a03') || lowLbl.includes('a-03') || lowLbl.includes('a03') || (explicitAudio && explicitAudio.includes('a03'))) {
+          pieceId = 'EVID-A03';
+          defaultAudio = '/audio/evid_a03.wav';
+        } else if (lowRaw.includes('a04') || lowLbl.includes('a-04') || lowLbl.includes('a04') || (explicitAudio && explicitAudio.includes('a04'))) {
+          pieceId = 'EVID-A04';
+          defaultAudio = '/audio/evid_a04.wav';
+        } else {
+          pieceId = 'EVID-A01';
+          defaultAudio = '/audio/evid_a01.wav';
+        }
+
+        return {
+          id: pieceId,
+          audioFile: explicitAudio || defaultAudio,
+          speaker: (props.intercept_speaker as string) || (props.speaker as string) || (
+            pieceId === 'EVID-A01' ? 'Amine B. (Opérateur Commercial)' :
+            pieceId === 'EVID-A02' ? "Tarek H. (« El-Hadj »)" :
+            pieceId === 'EVID-A03' ? "Nadia M. (« Dina »)" :
+            'Interception Ligne Coordination'
+          ),
+          target: (props.intercept_target as string) || (props.target as string) || (
+            pieceId === 'EVID-A01' ? 'Karim Zerrouki (Victime)' :
+            pieceId === 'EVID-A02' ? 'Youcef R. (Lieutenant Pneus)' :
+            pieceId === 'EVID-A03' ? 'Comité C2 Direction' :
+            'Kamel V. (« Le Caissier »)'
+          ),
+          channel: (props.intercept_channel as string) || (
+            pieceId === 'EVID-A01' ? 'WhatsApp Audio / AMR-NB' :
+            pieceId === 'EVID-A02' ? 'Telegram Call / Interception CCO' :
+            pieceId === 'EVID-A03' ? 'Telegram Voice / Scellé S-03' :
+            'Interception Réseau CCO Algérie'
+          ),
+          time: (props.audio_duration as string) || (
+            pieceId === 'EVID-A01' ? '0:42' :
+            pieceId === 'EVID-A02' ? '0:35' :
+            pieceId === 'EVID-A03' ? '0:29' :
+            '0:24'
+          ),
+          darija: (props.transcript_darija as string) || (
+            pieceId === 'EVID-A01' ? "Khouya Karim, salam alaykoum. Les quatre pneus Michelin rahoum réservés b'smitek fel dépôt taâ Boufarik. Bessah la promo hadhi fiha demande kbira. Versi les 64 000 da f'had le compte BaridiMob li b'ath'toulak, w b'athli le reçu f'WhatsApp..." :
+            pieceId === 'EVID-A02' ? "Youcef, smaâni mlih. La cellule pneus rahi t'dirlna 600 000 da par jour had la semaine, c’est bien bessah les plaintes b'daw y'kethrou f'Facebook. Ghleq les trois pages ghedwa s'bah, w khéli Sofiane y'lansi les trois nouveaux sites..." :
+            pieceId === 'EVID-A03' ? "Boss, el-hamdullah le nouveau script taâ Sofiane pour les rendez-vous TLS rah yemchi 10/10. Les opérateurs diali f'Constantine jawbou plus de 80 clients had sbeh. Derna 2,4 millions de dinars d'acomptes..." :
+            "Allô Kamel, l'argent taâ Oran dkhoul fel BaridiMob... Jebed 200 000 da men la poste taâ Bab El Oued w khéli le reste pour Sofiane..."
+          ),
+          french: (props.transcript_french as string) || (
+            pieceId === 'EVID-A01' ? "Frère Karim, salam alaykoum. Les 4 pneus Michelin sont réservés à ton nom au dépôt de Boufarik. Mais la promo a une forte demande. Verse les 64 000 DZD sur le compte BaridiMob et transmets le reçu..." :
+            pieceId === 'EVID-A02' ? "Youcef, écoute-moi bien. La cellule pneus rapporte 600 000 DZD/jour mais les plaintes s'accumulent sur Facebook. Ferme les 3 pages demain matin et laisse Sofiane lancer les 3 nouveaux sites..." :
+            pieceId === 'EVID-A03' ? "Boss, le nouveau script de Sofiane pour les rendez-vous TLS marche à 100%. Mes opérateurs à Constantine ont répondu à 80 clients ce matin. Nous avons cumulé 2,4 millions de dinars d'acomptes..." :
+            "Allô Kamel, l'argent d'Oran est arrivé sur BaridiMob... Retire 200 000 DZD au bureau de poste de Bab El Oued et laisse le reste pour Sofiane..."
+          ),
+          match: (props.voiceprint_match as string) || (
+            pieceId === 'EVID-A01' ? '96.2%' :
+            pieceId === 'EVID-A02' ? '98.7%' :
+            pieceId === 'EVID-A03' ? '95.1%' :
+            '94.0%'
+          ),
+          sha256: (props.hash_sha256 as string) || (props.sha256 as string) || (
+            pieceId === 'EVID-A01' ? 'be9f4b192ae92f0f57ab7263bdb781458c935e1f6277793d29241220a9da6996' :
+            pieceId === 'EVID-A02' ? '350e7515324415d0982afa0314d6b6dea2de59871b70c6ff719fdca953f57552' :
+            pieceId === 'EVID-A03' ? '72c3d102eef519234857bdf82109283745a19283746192837461928374619283' :
+            '992a76b192837465910283746519283746519283746519283746519283746519'
+          ),
+        };
+      }
+
+      // 2. Interlocutors mapped when selected in graph
+      if (lbl.includes('karim') || lbl.includes('zerrouki') || lbl.includes('amine') || lbl.includes('555 019')) {
         return {
           id: 'EVID-A01',
           audioFile: '/audio/evid_a01.wav',
-          speaker: 'Amine B. (Opérateur)',
-          target: 'Karim Zerrouki (Victime)',
+          speaker: 'Amine B. (Opérateur Commercial)',
+          target: 'Karim Zerrouki (+213 661 44 12 89)',
+          channel: 'WhatsApp Audio / AMR-NB',
           time: '0:42',
           darija: "Khouya Karim, salam alaykoum. Les quatre pneus Michelin rahoum réservés b'smitek fel dépôt taâ Boufarik. Bessah la promo hadhi fiha demande kbira. Versi les 64 000 da f'had le compte BaridiMob li b'ath'toulak, w b'athli le reçu f'WhatsApp...",
           french: "Frère Karim, salam alaykoum. Les 4 pneus Michelin sont réservés à ton nom au dépôt de Boufarik. Mais la promo a une forte demande. Verse les 64 000 DZD sur le compte BaridiMob et transmets le reçu...",
           match: '96.2%',
+          sha256: 'be9f4b192ae92f0f57ab7263bdb781458c935e1f6277793d29241220a9da6996',
         };
       }
       if (isBoss || lbl.includes('tarek') || lbl.includes('hadj') || lbl.includes('youcef')) {
@@ -420,11 +540,13 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           id: 'EVID-A02',
           audioFile: '/audio/evid_a02.wav',
           speaker: "Tarek H. (« El-Hadj »)",
-          target: "Youcef R. (Lieutenant)",
+          target: "Youcef R. (Lieutenant Pneus)",
+          channel: 'Telegram Call / Interception CCO',
           time: '0:35',
           darija: "Youcef, smaâni mlih. La cellule pneus rahi t'dirlna 600 000 da par jour had la semaine, c’est bien bessah les plaintes b'daw y'kethrou f'Facebook. Ghleq les trois pages ghedwa s'bah, w khéli Sofiane y'lansi les trois nouveaux sites...",
           french: "Youcef, écoute-moi bien. La cellule pneus rapporte 600 000 DZD/jour mais les plaintes s'accumulent sur Facebook. Ferme les 3 pages demain matin et laisse Sofiane lancer les 3 nouveaux sites...",
           match: '98.7%',
+          sha256: '350e7515324415d0982afa0314d6b6dea2de59871b70c6ff719fdca953f57552',
         };
       }
       if (lbl.includes('nadia') || lbl.includes('dina') || lbl.includes('meriem') || lbl.includes('sofiane')) {
@@ -433,22 +555,26 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           audioFile: '/audio/evid_a03.wav',
           speaker: "Nadia M. (« Dina »)",
           target: "Comité C2 Direction",
+          channel: 'Telegram Voice / Scellé S-03',
           time: '0:29',
           darija: "Boss, el-hamdullah le nouveau script taâ Sofiane pour les rendez-vous TLS rah yemchi 10/10. Les opérateurs diali f'Constantine jawbou plus de 80 clients had sbeh. Derna 2,4 millions de dinars d'acomptes...",
           french: "Boss, le nouveau script de Sofiane pour les rendez-vous TLS marche à 100%. Mes opérateurs à Constantine ont répondu à 80 clients ce matin. Nous avons cumulé 2,4 millions de dinars d'acomptes...",
           match: '95.1%',
+          sha256: '72c3d102eef519234857bdf82109283745a19283746192837461928374619283',
         };
       }
       if (lbl.includes('kamel') || lbl.includes('oran') || lbl.includes('bab el oued')) {
         return {
           id: 'EVID-A04',
           audioFile: '/audio/evid_a04.wav',
-          speaker: 'Interception Réseau CCO',
-          target: 'Ligne Coordination',
+          speaker: 'Interception Ligne Coordination',
+          target: "Kamel V. (« Le Caissier »)",
+          channel: 'Interception Réseau CCO Algérie',
           time: '0:24',
           darija: "Allô Kamel, l'argent taâ Oran dkhoul fel BaridiMob... Jebed 200 000 da men la poste taâ Bab El Oued w khéli le reste pour Sofiane...",
           french: "Allô Kamel, l'argent d'Oran est arrivé sur BaridiMob... Retire 200 000 DZD au bureau de poste de Bab El Oued et laisse le reste pour Sofiane...",
           match: '94.0%',
+          sha256: '992a76b192837465910283746519283746519283746519283746519283746519',
         };
       }
       // Strictly null for all other entities (cars, ips, bts, accounts, etc.)
@@ -774,11 +900,11 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 gap: 'var(--space-2)',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '4px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Volume2 size={14} style={{ color: 'var(--color-accent-text)' }} />
                   <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>
-                    Scellé Audio &amp; Interception Vocale ({wiretap.id})
+                    Scellé Audio &amp; Interception ({wiretap.id})
                   </span>
                 </div>
                 <span className="chip font-mono" style={{ fontSize: '10px', backgroundColor: 'rgba(16, 185, 129, 0.15)', color: 'var(--color-status-success)' }}>
@@ -786,67 +912,184 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 </span>
               </div>
 
-              {/* Audio Waveform Player Bar */}
+              {/* Interlocutors and channel */}
+              <div style={{ padding: '6px 8px', backgroundColor: 'var(--color-bg-canvas)', borderRadius: 'var(--radius-sm)', display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '11px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Locuteur :</span>
+                  <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{wiretap.speaker}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Cible / Destinataire :</span>
+                  <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{wiretap.target}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>Canal d'interception :</span>
+                  <span style={{ color: 'var(--color-accent-text)', fontFamily: 'var(--font-mono)', fontSize: '10px' }}>{wiretap.channel}</span>
+                </div>
+              </div>
+
+              {/* Audio Interactive Player Bar */}
               <div
                 style={{
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '6px 8px',
+                  flexDirection: 'column',
+                  gap: '6px',
+                  padding: '8px',
                   backgroundColor: 'var(--color-bg-canvas)',
                   borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--color-border-subtle)',
                 }}
               >
-                <button
-                  type="button"
-                  className="btn btn-primary btn-xs"
-                  onClick={() => handleToggleAudio(wiretap.audioFile)}
-                  style={{ width: '26px', height: '26px', padding: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                  title={isPlayingAudio ? 'Mettre en pause' : 'Écouter l\'interception'}
-                >
-                  {isPlayingAudio ? <Pause size={12} /> : <Play size={12} />}
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {/* Play / Pause */}
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-xs"
+                    onClick={() => handleToggleAudio(wiretap.audioFile)}
+                    style={{ width: '28px', height: '28px', padding: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                    title={isPlayingAudio ? 'Mettre en pause' : 'Écouter l\'interception'}
+                  >
+                    {isPlayingAudio ? <Pause size={13} /> : <Play size={13} />}
+                  </button>
+
+                  {/* Replay */}
+                  <button
+                    type="button"
+                    className="btn btn-neutral btn-xs"
+                    onClick={handleRestartAudio}
+                    style={{ width: '26px', height: '26px', padding: 0, borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                    title="Recommencer depuis le début"
+                  >
+                    <RotateCcw size={12} />
+                  </button>
+
+                  {/* Interactive Seek Bar */}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                    <input
+                      type="range"
+                      min={0}
+                      max={audioDuration > 0 ? audioDuration : 35}
+                      step={0.1}
+                      value={audioCurrentTime}
+                      onChange={(e) => handleSeek(parseFloat(e.target.value))}
+                      style={{
+                        width: '100%',
+                        cursor: 'pointer',
+                        accentColor: 'var(--color-accent-primary)',
+                        height: '4px',
+                      }}
+                      title="Naviguer dans la bande son"
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>
+                      <span>{formatAudioTime(audioCurrentTime)}</span>
+                      <span>{audioDuration > 0 ? formatAudioTime(audioDuration) : wiretap.time}</span>
+                    </div>
+                  </div>
+
+                  {/* Download Scellé WAV */}
+                  <a
+                    href={wiretap.audioFile}
+                    download={wiretap.audioFile.split('/').pop()}
+                    className="btn btn-neutral btn-xs"
+                    style={{ padding: '2px 6px', fontSize: '10.5px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}
+                    title="Télécharger la pièce à conviction audio originale (WAV)"
+                  >
+                    <Download size={11} />
+                    <span>WAV</span>
+                  </a>
+                </div>
 
                 {/* Animated Waveform Bars */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flex: 1, height: '20px' }}>
-                  {[6, 12, 18, 10, 16, 8, 20, 14, 9, 17, 11, 15, 7, 19, 13, 8, 16, 11, 5].map((h, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        width: '3px',
-                        height: isPlayingAudio ? `${Math.max(4, (h * (1 + Math.sin(Date.now() / 200 + i)))) % 20}px` : `${h}px`,
-                        backgroundColor: isPlayingAudio ? 'var(--color-accent-primary)' : 'var(--color-border-strong)',
-                        borderRadius: '1px',
-                        transition: 'height 0.1s ease',
-                      }}
-                    />
-                  ))}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2px', height: '22px', padding: '2px 0' }}>
+                  {[6, 12, 18, 10, 16, 8, 20, 14, 9, 17, 11, 15, 7, 19, 13, 8, 16, 11, 18, 14, 10, 16, 12, 8, 15, 11, 7, 14].map((h, i) => {
+                    const totalBars = 28;
+                    const progressRatio = (audioDuration > 0 ? audioCurrentTime / audioDuration : audioCurrentTime / 35);
+                    const isPlayed = (i / totalBars) <= progressRatio;
+                    return (
+                      <div
+                        key={i}
+                        onClick={() => {
+                          const targetTime = ((i / totalBars) * (audioDuration || 35));
+                          handleSeek(targetTime);
+                        }}
+                        style={{
+                          flex: 1,
+                          height: isPlayingAudio ? `${Math.max(4, (h * (1 + 0.3 * Math.sin(Date.now() / 150 + i)))) % 22}px` : `${h}px`,
+                          backgroundColor: isPlayed ? 'var(--color-accent-primary)' : 'var(--color-border-strong)',
+                          borderRadius: '1px',
+                          cursor: 'pointer',
+                          transition: 'height 0.1s ease, background-color 0.15s ease',
+                        }}
+                        title={`Sauter à ${formatAudioTime((i / totalBars) * (audioDuration || 35))}`}
+                      />
+                    );
+                  })}
                 </div>
-
-                <span className="font-mono" style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                  {isPlayingAudio ? '0:18 / ' + wiretap.time : wiretap.time}
-                </span>
               </div>
 
-              {/* Darija Transcript Card */}
-              <div style={{ padding: '6px 8px', backgroundColor: 'rgba(15, 23, 42, 0.6)', borderRadius: 'var(--radius-sm)', borderLeft: '3px solid var(--color-accent-primary)' }}>
-                <div style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--color-accent-text)', marginBottom: '2px' }}>
-                  Transcription Originale (Darija algéroise) :
+              {/* Darija Transcript Card with Copy */}
+              <div style={{ padding: '8px', backgroundColor: 'rgba(15, 23, 42, 0.6)', borderRadius: 'var(--radius-sm)', borderLeft: '3px solid var(--color-accent-primary)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--color-accent-text)' }}>
+                    Transcription Originale (Darija algéroise) :
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-neutral btn-xs"
+                    style={{ padding: '1px 5px', fontSize: '10px' }}
+                    onClick={() => {
+                      navigator.clipboard.writeText(wiretap.darija);
+                      setCopiedDarija(true);
+                      setTimeout(() => setCopiedDarija(false), 2000);
+                      toast.info(tr('Transcription Darija copiée'));
+                    }}
+                    title="Copier la transcription"
+                  >
+                    {copiedDarija ? <Check size={10} style={{ color: 'var(--color-status-success)' }} /> : <Copy size={10} />}
+                    <span>{copiedDarija ? tr('Copié') : tr('Copier')}</span>
+                  </button>
                 </div>
-                <p style={{ margin: 0, fontSize: '11.5px', color: 'var(--color-text-primary)', fontStyle: 'italic', lineHeight: 1.4 }}>
+                <p style={{ margin: 0, fontSize: '11.5px', color: 'var(--color-text-primary)', fontStyle: 'italic', lineHeight: 1.45 }}>
                   &ldquo;{wiretap.darija}&rdquo;
                 </p>
               </div>
 
-              {/* French Judicial Translation */}
-              <div style={{ padding: '6px 8px', backgroundColor: 'var(--color-bg-base)', borderRadius: 'var(--radius-sm)' }}>
-                <div style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: '2px' }}>
-                  Traduction Judiciaire Assermentée (OPJ) :
+              {/* French Judicial Translation with Copy */}
+              <div style={{ padding: '8px', backgroundColor: 'var(--color-bg-base)', borderRadius: 'var(--radius-sm)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--color-text-muted)' }}>
+                    Traduction Judiciaire Assermentée (OPJ) :
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-neutral btn-xs"
+                    style={{ padding: '1px 5px', fontSize: '10px' }}
+                    onClick={() => {
+                      navigator.clipboard.writeText(wiretap.french);
+                      setCopiedFrench(true);
+                      setTimeout(() => setCopiedFrench(false), 2000);
+                      toast.info(tr('Traduction assermentée copiée'));
+                    }}
+                    title="Copier la traduction"
+                  >
+                    {copiedFrench ? <Check size={10} style={{ color: 'var(--color-status-success)' }} /> : <Copy size={10} />}
+                    <span>{copiedFrench ? tr('Copié') : tr('Copier')}</span>
+                  </button>
                 </div>
-                <p style={{ margin: 0, fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>
+                <p style={{ margin: 0, fontSize: '11.5px', color: 'var(--color-text-secondary)', lineHeight: 1.45 }}>
                   &ldquo;{wiretap.french}&rdquo;
                 </p>
               </div>
+
+              {/* Integrity Seal Fingerprint */}
+              {wiretap.sha256 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '9.5px', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)', overflow: 'hidden' }}>
+                  <ShieldCheck size={11} style={{ color: 'var(--color-status-success)', flexShrink: 0 }} />
+                  <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                    SHA-256 : {wiretap.sha256}
+                  </span>
+                </div>
+              )}
             </div>
           )}
 
