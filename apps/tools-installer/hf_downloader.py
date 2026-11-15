@@ -74,6 +74,76 @@ CURATED_HF_TOOLS = {
         "url": "https://huggingface.co/bartowski/Qwen2.5-32B-Instruct-GGUF/resolve/main/Qwen2.5-32B-Instruct-Q4_K_M.gguf",
         "size_mb": 18931,
         "role": "Near-frontier 32B model for complex multi-jurisdictional financial fraud and syndicate mapping"
+    },
+    "mixtral-8x7b-moe": {
+        "name": "Mixtral 8x7B Instruct v0.1 (Q3_K_M GGUF - MoE 32GB RAM)",
+        "repo": "TheBloke/Mixtral-8x7B-Instruct-v0.1-GGUF",
+        "file": "mixtral-8x7b-instruct-v0.1.Q3_K_M.gguf",
+        "dest": BASE_MODELS_DIR / "llm" / "mixtral-8x7b-instruct-v0.1.Q3_K_M.gguf",
+        "url": "https://huggingface.co/TheBloke/Mixtral-8x7B-Instruct-v0.1-GGUF/resolve/main/mixtral-8x7b-instruct-v0.1.Q3_K_M.gguf",
+        "size_mb": 20480,
+        "role": "Sparse Mixture-of-Experts 46.7B model (12.9B active) fitting comfortably in 32GB RAM"
+    },
+    "llama3-70b-iq2": {
+        "name": "Llama 3.1 70B Instruct (IQ2_M GGUF - 32GB RAM)",
+        "repo": "bartowski/Meta-Llama-3.1-70B-Instruct-GGUF",
+        "file": "Meta-Llama-3.1-70B-Instruct-IQ2_M.gguf",
+        "dest": BASE_MODELS_DIR / "llm" / "Meta-Llama-3.1-70B-Instruct-IQ2_M.gguf",
+        "url": "https://huggingface.co/bartowski/Meta-Llama-3.1-70B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-70B-Instruct-IQ2_M.gguf",
+        "size_mb": 23500,
+        "role": "70B parameter frontier model quantized to run entirely in 32GB RAM"
+    },
+    "deepseek-coder-v2-lite": {
+        "name": "DeepSeek Coder V2 Lite Instruct (Q4_K_M GGUF - MoE)",
+        "repo": "bartowski/DeepSeek-Coder-V2-Lite-Instruct-GGUF",
+        "file": "DeepSeek-Coder-V2-Lite-Instruct-Q4_K_M.gguf",
+        "dest": BASE_MODELS_DIR / "llm" / "DeepSeek-Coder-V2-Lite-Instruct-Q4_K_M.gguf",
+        "url": "https://huggingface.co/bartowski/DeepSeek-Coder-V2-Lite-Instruct-GGUF/resolve/main/DeepSeek-Coder-V2-Lite-Instruct-Q4_K_M.gguf",
+        "size_mb": 9600,
+        "role": "16B MoE (2.4B active) top-tier model for Cypher queries, Python and code auditing"
+    },
+    "qwen-72b-iq2": {
+        "name": "Qwen 2.5 72B Instruct (IQ2_M GGUF - 32GB RAM / AirLLM)",
+        "repo": "bartowski/Qwen2.5-72B-Instruct-GGUF",
+        "file": "Qwen2.5-72B-Instruct-IQ2_M.gguf",
+        "dest": BASE_MODELS_DIR / "llm" / "Qwen2.5-72B-Instruct-IQ2_M.gguf",
+        "url": "https://huggingface.co/bartowski/Qwen2.5-72B-Instruct-GGUF/resolve/main/Qwen2.5-72B-Instruct-IQ2_M.gguf",
+        "size_mb": 26200,
+        "role": "Flagship 72B multilingue (Arabe/Français) frontier reasoning for 32GB RAM & AirLLM"
+    },
+    "llama-405b-q2": {
+        "name": "Meta Llama 3.1 405B Instruct (Q2_K GGUF 4 Parts - AirLLM Colossus)",
+        "repo": "mradermacher/Meta-Llama-3.1-405B-Instruct-GGUF",
+        "files": [
+            "Meta-Llama-3.1-405B-Instruct.Q2_K.gguf.part1of4",
+            "Meta-Llama-3.1-405B-Instruct.Q2_K.gguf.part2of4",
+            "Meta-Llama-3.1-405B-Instruct.Q2_K.gguf.part3of4",
+            "Meta-Llama-3.1-405B-Instruct.Q2_K.gguf.part4of4"
+        ],
+        "dest_dir": BASE_MODELS_DIR / "llm" / "llama3_405b_q2",
+        "size_mb": 138000,
+        "role": "The 405B parameter frontier colossus run layer-by-layer via AirLLM on 32GB RAM"
+    },
+    "bitnet-b158-3b": {
+        "name": "BitNet b1.58 3B (1-bit / 1.58-bit Ternary LLM)",
+        "repo": "1bitLLM/bitnet_b1_58-3B",
+        "files": [
+            "config.json",
+            "generation_config.json",
+            "model.safetensors.index.json",
+            "model-00001-of-00003.safetensors",
+            "model-00002-of-00003.safetensors",
+            "model-00003-of-00003.safetensors",
+            "modeling_bitnet.py",
+            "configuration_bitnet.py",
+            "tokenization_bitnet.py",
+            "special_tokens_map.json",
+            "tokenizer.json",
+            "tokenizer_config.json"
+        ],
+        "dest_dir": HF_MODELS_DIR / "1bitLLM__bitnet_b1_58-3B",
+        "size_mb": 1200,
+        "role": "1.58-bit ternary weight LLM running via integer addition on CPU"
     }
 }
 

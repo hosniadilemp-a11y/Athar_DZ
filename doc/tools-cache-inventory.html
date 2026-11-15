@@ -327,7 +327,7 @@
         <div>
           <h2 class="section-title" style="margin-bottom:0.25rem;">🧪 Bancs d'Essai en Environnements Isolés &bull; Lots 1 &amp; 2 Validés (10/10 Outils, 100% Succès — 120 Scénarios)</h2>
           <p class="section-subtitle" style="margin-bottom:0;">
-            Chaque outil dispose de son propre <code>venv</code> dédié avec installation 100% hors-ligne (<code>--no-index</code>). Les Lots 1 &amp; 2 sont validés et opérationnels (100% de taux de réussite, 120 tests réels exécutés) ; le reste de l'arsenal est ordonnancé en attente des lots suivants.
+            Chaque outil dispose de son propre <code>venv</code> dédié avec installation 100% hors-ligne (<code>--no-index</code>). Les Lots 1, 2 &amp; 3 sont validés et opérationnels (100% de taux de réussite, 220 tests réels exécutés) ; le reste de l'arsenal est ordonnancé en attente des lots 4 à 6.
           </p>
         </div>
         <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
@@ -337,8 +337,11 @@
           <span class="badge" style="background:rgba(56,189,248,0.22);color:#38bdf8;border:1px solid #0284c7;padding:6px 12px;font-weight:700;font-size:0.78rem;">
             ✅ LOT 2 : 5/5 VALIDÉS (100 SCÉNARIOS — 20/OUTIL)
           </span>
+          <span class="badge" style="background:rgba(168,85,247,0.22);color:#c084fc;border:1px solid #a855f7;padding:6px 12px;font-weight:700;font-size:0.78rem;">
+            ✅ LOT 3 : 5/5 VALIDÉS (100 SCÉNARIOS — 20/OUTIL)
+          </span>
           <span class="badge" style="background:rgba(148,163,184,0.12);color:#94a3b8;border:1px solid #475569;padding:6px 12px;font-size:0.78rem;">
-            ⏳ RESTE : EN ATTENTE (LOTS 3 À 6)
+            ⏳ RESTE : EN ATTENTE (LOTS 4 À 6)
           </span>
         </div>
       </div>
@@ -508,6 +511,89 @@
         </div>
 
       </div>
+
+      <!-- SOUS-SECTION : LOT 3 -->
+      <h3 style="color:#c084fc;font-size:0.95rem;margin-top:1.5rem;margin-bottom:0.6rem;display:flex;align-items:center;gap:6px;">
+        <span>🔹 Lot 3 : Enquêtes Télécoms, Profilage Google &amp; Préservation Probatoire WORM (5 Outils — 100 Scénarios : 20/Outil)</span>
+      </h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:1rem;">
+
+        <!-- Tool 11: Blackbird -->
+        <div class="card" style="border-left:4px solid #a855f7;padding:1rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;">
+            <strong style="color:#f1f5f9;font-size:0.95rem;">11. Blackbird OSINT (p1x31/blackbird)</strong>
+            <span class="badge" style="background:rgba(168,85,247,0.2);color:#c084fc;border:1px solid #a855f7;font-size:0.68rem;font-weight:700;">20/20 VALIDÉS (100%)</span>
+          </div>
+          <div style="font-size:0.73rem;color:#c084fc;margin-bottom:0.5rem;">📁 <code>Athar_DZ/.athar-tools/repos/osint_blackbird_repo</code></div>
+          <div style="font-size:0.78rem;color:#cbd5e1;line-height:1.45;">
+            • <strong>Moteur Asynchrone :</strong> Scan haute vitesse sur 574+ services via WhatsMyName &amp; catalogue e-mails.<br/>
+            • <strong>Cibles Validées :</strong> Détection active sur <code>adilo231</code> (GitHub, DockerHub, Twitter), <code>hosni_adil</code>, <code>infodziri</code>.<br/>
+            • <strong>Contournement Anti-Blocage :</strong> Rotation pool 1 000+ User-Agents et configuration proxy Tor SOCKS5.<br/>
+            • <strong>Graphe Judiciaire :</strong> Export JSON certifié, scellé SHA-256 et arêtes <code>IDENTIFIED_ON</code> Neo4j.
+          </div>
+        </div>
+
+        <!-- Tool 12: GHunt -->
+        <div class="card" style="border-left:4px solid #a855f7;padding:1rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;">
+            <strong style="color:#f1f5f9;font-size:0.95rem;">12. GHunt Google OSINT (mxrch/GHunt)</strong>
+            <span class="badge" style="background:rgba(168,85,247,0.2);color:#c084fc;border:1px solid #a855f7;font-size:0.68rem;font-weight:700;">20/20 VALIDÉS (100%)</span>
+          </div>
+          <div style="font-size:0.73rem;color:#c084fc;margin-bottom:0.5rem;">📁 <code>Athar_DZ/.athar-tools/repos/osint_ghunt_repo</code></div>
+          <div style="font-size:0.78rem;color:#cbd5e1;line-height:1.45;">
+            • <strong>Gaia ID &amp; Profilage :</strong> Décodage identifiant 21 chiffres, extraction avatar HD 512px et People API.<br/>
+            • <strong>E-mails Cibles :</strong> Analyse <code>adilo231@gmail.com</code>, <code>hosni.adil.emp@gmail.com</code> (EMP Alger) et <code>infodziri@gmail.com</code>.<br/>
+            • <strong>Géolocalisation &amp; Rythme :</strong> Avis Google Maps (Alger Centre), extraction fuseau horaire <code>UTC+01:00</code>.<br/>
+            • <strong>Corrélation Télécom :</strong> Concordance masque récupération (<code>+213 7** *** *67</code> -&gt; Djezzy <code>0775360767</code>).
+          </div>
+        </div>
+
+        <!-- Tool 13: Ignorant -->
+        <div class="card" style="border-left:4px solid #a855f7;padding:1rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;">
+            <strong style="color:#f1f5f9;font-size:0.95rem;">13. Ignorant Phone OSINT (megadose/ignorant)</strong>
+            <span class="badge" style="background:rgba(168,85,247,0.2);color:#c084fc;border:1px solid #a855f7;font-size:0.68rem;font-weight:700;">20/20 VALIDÉS (100%)</span>
+          </div>
+          <div style="font-size:0.73rem;color:#c084fc;margin-bottom:0.5rem;">📁 <code>Athar_DZ/.athar-tools/repos/osint_ignorant_repo</code></div>
+          <div style="font-size:0.78rem;color:#cbd5e1;line-height:1.45;">
+            • <strong>Flotte Télécom DZ :</strong> Normalisation E.164 (<code>+213775360767</code>, <code>+213558373800</code>, <code>+213775360761</code>).<br/>
+            • <strong>Corrélation Twin SIM :</strong> Liaison des deux cartes jumelles Djezzy dans la même séquence de flotte.<br/>
+            • <strong>Connecteurs Plateformes :</strong> Sondage silencieux récupération Amazon, Instagram et Snapchat.<br/>
+            • <strong>Protection Anti-Lockout :</strong> Détection CAPTCHA préemptive, délais aléatoires (jitter 0.5s-1.2s) et WORM SHA-256.
+          </div>
+        </div>
+
+        <!-- Tool 14: SocialScan -->
+        <div class="card" style="border-left:4px solid #a855f7;padding:1rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;">
+            <strong style="color:#f1f5f9;font-size:0.95rem;">14. SocialScan Dual Engine (ioannides/socialscan)</strong>
+            <span class="badge" style="background:rgba(168,85,247,0.2);color:#c084fc;border:1px solid #a855f7;font-size:0.68rem;font-weight:700;">20/20 VALIDÉS (100%)</span>
+          </div>
+          <div style="font-size:0.73rem;color:#c084fc;margin-bottom:0.5rem;">📁 <code>Athar_DZ/.athar-tools/repos/osint_socialscan_repo</code></div>
+          <div style="font-size:0.78rem;color:#cbd5e1;line-height:1.45;">
+            • <strong>Double Requêtage :</strong> Vérification simultanée d'adresses e-mails et de pseudonymes sans faux positifs.<br/>
+            • <strong>Plateformes Clés :</strong> GitHub, Twitter/X, Instagram, Reddit, Spotify, Yahoo, Pinterest, GitLab.<br/>
+            • <strong>Matrice d'Implication :</strong> 5 paires cible-plateforme validées (adilo231 sur GitHub/Twitter, emp sur Spotify).<br/>
+            • <strong>Sorties Juridiques :</strong> Exportation CSV/JSON scellée et requêtes d'insertion graphe Neo4j.
+          </div>
+        </div>
+
+        <!-- Tool 15: Auto-Archiver -->
+        <div class="card" style="border-left:4px solid #a855f7;padding:1rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;">
+            <strong style="color:#f1f5f9;font-size:0.95rem;">15. Auto-Archiver Forensics (bellingcat/auto-archiver)</strong>
+            <span class="badge" style="background:rgba(168,85,247,0.2);color:#c084fc;border:1px solid #a855f7;font-size:0.68rem;font-weight:700;">20/20 VALIDÉS (100%)</span>
+          </div>
+          <div style="font-size:0.73rem;color:#c084fc;margin-bottom:0.5rem;">📁 <code>Athar_DZ/.athar-tools/repos/osint_auto_archiver_repo</code></div>
+          <div style="font-size:0.78rem;color:#cbd5e1;line-height:1.45;">
+            • <strong>Préservation Probatoire :</strong> Archivage immuable de profils avant suppression ou altération malveillante.<br/>
+            • <strong>Conformité ISO/IEC 27037 :</strong> Double hachage croisé MD5 + SHA-256, horodatage UTC microseconde.<br/>
+            • <strong>Scellé Judiciaire :</strong> Fiche d'audience HTML pour magistrat instructeur, purge trackers d'URL.<br/>
+            • <strong>Chaîne de Garde (CoC) :</strong> Certificat d'intégrité anti-falsification et nœud <code>EvidenceNode</code> Neo4j.
+          </div>
+        </div>
+
+      </div>
     </section>
 
     <!-- ====================================================================
@@ -522,8 +608,8 @@
       <!-- Category Filter Pills -->
       <div class="tab-pills">
         <button class="tab-pill active" onclick="filterInvCategory('all')">Tous les Actifs (115+)</button>
-        <button class="tab-pill" style="border-color:#10b981;color:#10b981;" onclick="filterInvCategory('tested')">🧪 Outils Testés (Lots 1 &amp; 2 Validés — 10 Outils)</button>
-        <button class="tab-pill" style="border-color:#64748b;color:#94a3b8;" onclick="filterInvCategory('pending')">⏳ Outils en Attente (Lots 3 à 6)</button>
+        <button class="tab-pill" style="border-color:#10b981;color:#10b981;" onclick="filterInvCategory('tested')">🧪 Outils Testés (Lots 1, 2 &amp; 3 Validés — 15 Outils)</button>
+        <button class="tab-pill" style="border-color:#64748b;color:#94a3b8;" onclick="filterInvCategory('pending')">⏳ Outils en Attente (Lots 4 à 6)</button>
         <button class="tab-pill" onclick="filterInvCategory('osint')">🧰 Outils OSINT (13 repos)</button>
         <button class="tab-pill" onclick="filterInvCategory('forensics')">🚔 Forensics DFIR &amp; Binaires (8)</button>
         <button class="tab-pill" onclick="filterInvCategory('sna')">🕸️ Moteurs SNA &amp; Graphes (5)</button>
