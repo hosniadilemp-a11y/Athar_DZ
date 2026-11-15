@@ -78,8 +78,9 @@ Rapport/
 # Isolated Tool Testing Lab (Local sandbox, ignored from git)
 tools_isolated_lab/
 
-# Audio Evidence & Wiretaps (Air-gapped local storage, ignored from git)
-apps/studio-app/frontend/public/audio/
+# Audio Evidence & Wiretaps
+!apps/studio-app/frontend/public/audio/
+!apps/studio-app/frontend/public/audio/*.wav
 *.wav
 
 
