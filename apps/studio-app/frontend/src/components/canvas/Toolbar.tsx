@@ -24,7 +24,12 @@ import {
   RotateCcw,
   Palette,
   Image as ImageIcon,
+  Eye,
+  EyeOff,
+  Search,
+  Tag,
 } from 'lucide-react';
+import { getEdgeCategory, EDGE_CATEGORY_LABELS, type EdgeCategory } from '../../i18n/phrases/relations';
 
 export type ActiveViewMode = 'graph' | 'map' | 'timeline' | 'table' | 'audit';
 
@@ -100,31 +105,79 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     applyLayout,
     isImpactView,
     nodes,
+    edges,
     totalCaseNodes,
     isLiveSimulationActive,
     toggleLiveSimulation,
     graphCustomization,
     setGraphCustomization,
     resetGraphCustomization,
+    visibleNodeLabelTypes,
+    forcedVisibleNodeLabelIds,
+    forcedHiddenNodeLabelIds,
+    edgeLabelMode,
+    edgeLabelConnectedNodeTypes,
+    hiddenEdgeCategories,
+    setNodeLabelPreset,
+    toggleForcedNodeLabelId,
+    setEdgeLabelMode,
+    toggleEdgeLabelConnectedNodeType,
+    toggleHiddenEdgeCategory,
   } = useGraphStore();
   const { tr } = useI18n();
 
   const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
 
+  const [isVisibilityOpen, setIsVisibilityOpen] = useState(false);
+  const [visibilityTab, setVisibilityTab] = useState<'nodes' | 'edges'>('nodes');
+  const [nodeSearchTerm, setNodeSearchTerm] = useState('');
+  const visibilityPopoverRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
         setIsCustomizationOpen(false);
       }
+      if (visibilityPopoverRef.current && !visibilityPopoverRef.current.contains(e.target as Node)) {
+        setIsVisibilityOpen(false);
+      }
     };
-    if (isCustomizationOpen) {
+    if (isCustomizationOpen || isVisibilityOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isCustomizationOpen]);
+  }, [isCustomizationOpen, isVisibilityOpen]);
+
+  // Compute edge count per category for visibility panel
+  const countPerEdgeCategory = React.useMemo(() => {
+    const counts: Record<EdgeCategory, number> = {
+      telecom: 0,
+      finance: 0,
+      socmint: 0,
+      legal: 0,
+      general: 0,
+    };
+    edges.forEach((e) => {
+      const cat = getEdgeCategory(e.type);
+      if (counts[cat] !== undefined) counts[cat]++;
+    });
+    return counts;
+  }, [edges]);
+
+  // Filtered nodes for the visibility manager table
+  const displayedNodesInTable = React.useMemo(() => {
+    if (!nodeSearchTerm.trim()) return nodes;
+    const term = nodeSearchTerm.toLowerCase();
+    return nodes.filter(
+      (n) =>
+        n.label.toLowerCase().includes(term) ||
+        n.type.toLowerCase().includes(term) ||
+        (n.properties?.status_judiciaire as string)?.toLowerCase().includes(term)
+    );
+  }, [nodes, nodeSearchTerm]);
 
   return (
     <div className="canvas-sub-header-container">
@@ -338,7 +391,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                   borderRadius: 'var(--radius-md)',
                   boxShadow: 'var(--shadow-lg)',
                   padding: 'var(--space-3)',
-                  zIndex: 40,
+                  zIndex: 100,
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 'var(--space-3)',
@@ -501,6 +554,410 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                     <span>{tr('Réinitialiser par défaut')}</span>
                   </button>
                 </div>
+              </div>
+            )}
+          </div>
+
+          {/* Visibilité & Étiquettes Popover (Placé directement à côté de Tailles & Affichage) */}
+          <div className="graph-visibility-wrapper" ref={visibilityPopoverRef} style={{ position: 'relative' }}>
+            <button
+              type="button"
+              className={`btn btn-xs ${isVisibilityOpen ? 'btn-secondary' : 'btn-ghost'}`}
+              onClick={() => setIsVisibilityOpen((prev) => !prev)}
+              title={tr('Gérer la visibilité des étiquettes des nœuds et le filtrage des liaisons')}
+              aria-label={tr('Visibilité & Étiquettes')}
+              aria-expanded={isVisibilityOpen}
+              style={{ gap: '5px', paddingInline: '8px' }}
+            >
+              <Eye size={12} />
+              <span>{tr('Visibilité & Étiquettes')}</span>
+            </button>
+
+            {isVisibilityOpen && (
+              <div
+                className="graph-visibility-popover"
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 6px)',
+                  insetInlineEnd: 0,
+                  width: '330px',
+                  backgroundColor: 'var(--color-bg-surface)',
+                  border: '1px solid var(--color-border-default)',
+                  borderRadius: 'var(--radius-md)',
+                  boxShadow: 'var(--shadow-lg)',
+                  padding: 'var(--space-3)',
+                  zIndex: 100,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 'var(--space-3)',
+                }}
+                role="dialog"
+                aria-label={tr('Panneau de visibilité des étiquettes et liaisons')}
+              >
+                {/* Header */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border-subtle)', paddingBottom: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, fontSize: '12px', color: 'var(--color-text-primary)' }}>
+                    <Eye size={13} style={{ color: 'var(--color-accent-text)' }} />
+                    <span>{tr('Visibilité & Étiquettes')}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsVisibilityOpen(false)}
+                    style={{ background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: '2px' }}
+                    aria-label="Fermer le panneau"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+
+                {/* Dual Tabs: Nœuds vs Liaisons */}
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '4px',
+                    backgroundColor: 'var(--color-bg-base)',
+                    padding: '3px',
+                    borderRadius: 'var(--radius-sm)',
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setVisibilityTab('nodes')}
+                    style={{
+                      padding: '4px 6px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      borderRadius: 'var(--radius-xs)',
+                      border: 'none',
+                      cursor: 'pointer',
+                      backgroundColor: visibilityTab === 'nodes' ? 'var(--color-bg-elevated)' : 'transparent',
+                      color: visibilityTab === 'nodes' ? 'var(--color-accent-text)' : 'var(--color-text-secondary)',
+                      boxShadow: visibilityTab === 'nodes' ? '0 1px 3px rgba(0,0,0,0.2)' : 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    <Tag size={12} />
+                    <span>{tr('Étiquettes Nœuds')}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setVisibilityTab('edges')}
+                    style={{
+                      padding: '4px 6px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      borderRadius: 'var(--radius-xs)',
+                      border: 'none',
+                      cursor: 'pointer',
+                      backgroundColor: visibilityTab === 'edges' ? 'var(--color-bg-elevated)' : 'transparent',
+                      color: visibilityTab === 'edges' ? 'var(--color-accent-text)' : 'var(--color-text-secondary)',
+                      boxShadow: visibilityTab === 'edges' ? '0 1px 3px rgba(0,0,0,0.2)' : 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    <Network size={12} />
+                    <span>{tr('Liaisons & Arêtes')}</span>
+                  </button>
+                </div>
+
+                {/* TAB 1: Nœuds & Étiquettes */}
+                {visibilityTab === 'nodes' && (
+                  <div>
+                    {/* Presets Bar */}
+                    <div style={{ display: 'flex', gap: '4px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-xs"
+                        style={{
+                          fontSize: '10.5px',
+                          padding: '2px 6px',
+                          backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                          color: 'var(--color-accent-text)',
+                          border: '1px solid rgba(59, 130, 246, 0.35)',
+                        }}
+                        onClick={() => setNodeLabelPreset('personne_only')}
+                        title={tr('Afficher uniquement les étiquettes des personnes')}
+                      >
+                        👤 {tr('Personnes')}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-xs"
+                        style={{ fontSize: '10.5px', padding: '2px 6px' }}
+                        onClick={() => setNodeLabelPreset('targets')}
+                        title={tr('Afficher personnes et entités judiciaires majeures')}
+                      >
+                        ⭐ {tr('Cibles')}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-xs"
+                        style={{ fontSize: '10.5px', padding: '2px 6px' }}
+                        onClick={() => setNodeLabelPreset('all')}
+                        title={tr('Afficher toutes les étiquettes')}
+                      >
+                        {tr('Tout')}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-xs"
+                        style={{ fontSize: '10.5px', padding: '2px 6px' }}
+                        onClick={() => setNodeLabelPreset('none')}
+                        title={tr('Masquer toutes les étiquettes (visible au survol)')}
+                      >
+                        {tr('Aucun')}
+                      </button>
+                    </div>
+
+                    {/* Search Bar */}
+                    <div style={{ position: 'relative', marginBottom: '8px' }}>
+                      <Search
+                        size={12}
+                        style={{
+                          position: 'absolute',
+                          left: '8px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          color: 'var(--color-text-muted)',
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={nodeSearchTerm}
+                        onChange={(e) => setNodeSearchTerm(e.target.value)}
+                        placeholder={tr('Filtrer les entités...')}
+                        style={{
+                          width: '100%',
+                          fontSize: '11px',
+                          padding: '3px 8px 3px 26px',
+                          backgroundColor: 'var(--color-bg-base)',
+                          border: '1px solid var(--color-border-default)',
+                          borderRadius: 'var(--radius-sm)',
+                          color: 'var(--color-text-primary)',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+
+                    {/* Table of Nodes on Canvas */}
+                    <div
+                      style={{
+                        maxHeight: '170px',
+                        overflowY: 'auto',
+                        border: '1px solid var(--color-border-subtle)',
+                        borderRadius: 'var(--radius-sm)',
+                        backgroundColor: 'var(--color-bg-base)',
+                      }}
+                    >
+                      {displayedNodesInTable.length === 0 ? (
+                        <div style={{ padding: '12px', textAlign: 'center', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                          {tr('Aucun nœud correspondant')}
+                        </div>
+                      ) : (
+                        displayedNodesInTable.map((n) => {
+                          const isPerson = n.type === 'personne';
+                          const statusJud = (n.properties?.status_judiciaire as string) || (n.properties?.role_judiciaire as string);
+                          const isKey = Boolean(
+                            statusJud?.toUpperCase().includes('MANDAT') || statusJud?.toUpperCase().includes('SUSPECT')
+                          );
+                          const isForcedVis = forcedVisibleNodeLabelIds.has(n.id);
+                          const isForcedHid = forcedHiddenNodeLabelIds.has(n.id);
+                          const isTypeVis = visibleNodeLabelTypes.has(n.type);
+                          const isVisible = isForcedVis || (!isForcedHid && (isPerson || isKey || isTypeVis));
+
+                          return (
+                            <div
+                              key={n.id}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                padding: '4px 8px',
+                                borderBottom: '1px solid var(--color-border-subtle)',
+                                fontSize: '11px',
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isVisible}
+                                onChange={() => toggleForcedNodeLabelId(n.id)}
+                                style={{ cursor: 'pointer' }}
+                                title={isVisible ? tr('Masquer le libellé') : tr('Afficher le libellé')}
+                              />
+                              <div
+                                style={{
+                                  flex: 1,
+                                  minWidth: 0,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '5px',
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    fontWeight: isVisible ? 600 : 400,
+                                    color: isVisible ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
+                                  }}
+                                  title={n.label}
+                                >
+                                  {n.label}
+                                </span>
+                                {isPerson && (
+                                  <span
+                                    style={{
+                                      fontSize: '9px',
+                                      padding: '0 4px',
+                                      backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                                      color: '#60a5fa',
+                                      borderRadius: '2px',
+                                    }}
+                                  >
+                                    {tr('Personne')}
+                                  </span>
+                                )}
+                              </div>
+                              <span className="font-mono text-xs text-muted" style={{ fontSize: '9.5px' }}>
+                                {n.type}
+                              </span>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 2: Liaisons & Relations */}
+                {visibilityTab === 'edges' && (
+                  <div>
+                    {/* Edge Label Display Mode */}
+                    <div style={{ marginBottom: '8px' }}>
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>
+                        {tr('Mode étiquettes des relations :')}
+                      </div>
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr 1fr 1fr',
+                          gap: '4px',
+                          backgroundColor: 'var(--color-bg-base)',
+                          padding: '2px',
+                          borderRadius: 'var(--radius-xs)',
+                        }}
+                      >
+                        {(['hover', 'always', 'none'] as const).map((mode) => (
+                          <button
+                            key={mode}
+                            type="button"
+                            onClick={() => setEdgeLabelMode(mode)}
+                            style={{
+                              fontSize: '10px',
+                              fontWeight: edgeLabelMode === mode ? 700 : 500,
+                              padding: '3px 4px',
+                              border: 'none',
+                              borderRadius: '2px',
+                              backgroundColor: edgeLabelMode === mode ? 'var(--color-bg-elevated)' : 'transparent',
+                              color: edgeLabelMode === mode ? 'var(--color-accent-text)' : 'var(--color-text-muted)',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {mode === 'hover' ? tr('Au survol') : mode === 'always' ? tr('Toujours') : tr('Masquées')}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Specific Node Type Edge Filter (Per user comment) */}
+                    <div style={{ marginBottom: '8px', padding: '6px 8px', backgroundColor: 'var(--color-bg-base)', borderRadius: 'var(--radius-sm)' }}>
+                      <div style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>
+                        {tr('Étiquettes des liens reliés aux types :')}
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', fontSize: '10.5px' }}>
+                        {[
+                          { key: 'personne', label: tr('Personnes') },
+                          { key: 'telephone', label: tr('Téléphones') },
+                          { key: 'compte_bancaire', label: tr('Comptes') },
+                          { key: 'vehicule', label: tr('Véhicules') },
+                        ].map(({ key, label }) => {
+                          const isChecked = edgeLabelConnectedNodeTypes.has(key);
+                          return (
+                            <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => toggleEdgeLabelConnectedNodeType(key)}
+                                style={{ cursor: 'pointer' }}
+                              />
+                              <span>{label}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Filter Edge Lines by Category */}
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>
+                        {tr('Familles de liaisons sur le canevas :')}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                        {(['telecom', 'finance', 'socmint', 'legal', 'general'] as EdgeCategory[]).map((cat) => {
+                          const def = EDGE_CATEGORY_LABELS[cat];
+                          const isHidden = hiddenEdgeCategories.has(cat);
+                          const count = countPerEdgeCategory[cat] || 0;
+                          return (
+                            <div
+                              key={cat}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: '3px 6px',
+                                borderRadius: 'var(--radius-xs)',
+                                backgroundColor: isHidden ? 'transparent' : 'var(--color-bg-base)',
+                                border: '1px solid var(--color-border-subtle)',
+                                opacity: isHidden ? 0.5 : 1,
+                              }}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => toggleHiddenEdgeCategory(cat)}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  background: 'none',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  color: 'inherit',
+                                  fontSize: '11px',
+                                }}
+                              >
+                                {isHidden ? <EyeOff size={12} className="text-muted" /> : <Eye size={12} className="text-secondary" />}
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: def.color }} />
+                                <span>{def.fr}</span>
+                              </button>
+                              <span className="font-mono text-xs text-muted" style={{ fontSize: '10px' }}>
+                                {count}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

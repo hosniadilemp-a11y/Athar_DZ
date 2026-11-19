@@ -18,6 +18,7 @@ interface CircularNodeProps {
   isSelected: boolean;
   isLinkSource?: boolean;
   isDragging?: boolean;
+  zoom?: number;
   onSelect: (id: string, isMulti: boolean) => void;
   onContextMenu: (e: React.MouseEvent | React.KeyboardEvent, nodeId: string) => void;
   onDragStart: (e: React.MouseEvent, nodeId: string) => void;
@@ -31,11 +32,45 @@ const LAYER_BORDER_COLORS: Record<LayerId, string> = {
   FLOWS: 'var(--color-layer-5-flows)',
 };
 
+/**
+ * Smart Short Label generator for uncluttered graph canvas:
+ * Returns a concise, compact identifier on canvas, while the full label
+ * is revealed on hover or selection.
+ */
+function getSmartShortLabel(label: string, type: string): string {
+  if (!label) return '';
+  const trimmed = label.trim();
+  if (type === 'personne') {
+    const parts = trimmed.split(/\s+/);
+    if (parts.length >= 2 && parts[0] && parts[1]) {
+      return `${parts[0].charAt(0)}. ${parts[1].slice(0, 10)}`;
+    }
+    return trimmed.length > 12 ? `${trimmed.slice(0, 10)}…` : trimmed;
+  }
+  if (type === 'telephone' || type === 'carte_sim' || type === 'appareil_mobile') {
+    if (trimmed.length > 8) {
+      return `…${trimmed.slice(-6)}`;
+    }
+    return trimmed;
+  }
+  if (type === 'compte_bancaire' || type === 'crypto_wallet') {
+    if (trimmed.length > 8) {
+      return `…${trimmed.slice(-6)}`;
+    }
+    return trimmed;
+  }
+  if (trimmed.length > 13) {
+    return `${trimmed.slice(0, 11)}…`;
+  }
+  return trimmed;
+}
+
 export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
   node,
   isSelected,
   isLinkSource = false,
   isDragging = false,
+  zoom,
   onSelect,
   onContextMenu,
   onDragStart,
@@ -44,11 +79,17 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
   const iconName = typeDef?.icon || 'help-circle';
   const layerDef = registry.layers[node.layer];
 
+  // Hover state for LOD override
+  const [isHovered, setIsHovered] = useState(false);
+
   // Global store states
   const snaOverlay = useGraphStore((s) => s.snaVisualOverlay);
   const investigationMode = useGraphStore((s) => s.investigationMode);
   const updateNodeLabel = useGraphStore((s) => s.updateNodeLabel);
   const graphCustomization = useGraphStore((s) => s.graphCustomization);
+  const visibleNodeLabelTypes = useGraphStore((s) => s.visibleNodeLabelTypes);
+  const forcedVisibleNodeLabelIds = useGraphStore((s) => s.forcedVisibleNodeLabelIds);
+  const forcedHiddenNodeLabelIds = useGraphStore((s) => s.forcedHiddenNodeLabelIds);
 
   // Inline rename state (Feature 2)
   const [isEditing, setIsEditing] = useState(false);
@@ -80,9 +121,16 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
   const snaColor = snaOverlay?.nodeColors?.[node.id];
   const snaBadge = snaOverlay?.nodeBadges?.[node.id];
 
-  // Dynamic Sizing & Colors from GraphCustomization
+  // Dynamic Sizing & Colors from GraphCustomization + Adaptive Zoom Scaling
   const baseNodeSize = graphCustomization?.nodeSize || 64;
-  const size = isSelected || node.radius === 34 ? Math.round(baseNodeSize * 1.15) : baseNodeSize;
+
+  let adaptiveMultiplier = 1.0;
+  if (zoom !== undefined) {
+    if (zoom < 0.5) adaptiveMultiplier = 0.85;
+    else if (zoom > 1.3) adaptiveMultiplier = 1.05;
+  }
+
+  const size = isSelected || node.radius === 34 ? Math.round(baseNodeSize * 1.15 * adaptiveMultiplier) : Math.round(baseNodeSize * adaptiveMultiplier);
   const halfSize = size / 2;
   const labelSize = graphCustomization?.nodeLabelSize || 12.5;
 
@@ -98,11 +146,44 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
 
   // Evidence / Forensic Portrait Photo
   const photoUrl = (node.properties?.photo_url as string) || (node.properties?.photo as string);
+  const [imgError, setImgError] = useState(false);
   const hasPhoto = Boolean(photoUrl);
-  const showPhoto = hasPhoto && (graphCustomization?.showNodePhotos !== false);
+  const showPhoto = hasPhoto && (graphCustomization?.showNodePhotos !== false) && !imgError;
 
   // Enquêteur Judicial Status
   const statusJudiciaire = (node.properties?.status_judiciaire as string) || (node.properties?.role_judiciaire as string);
+
+  // Level of Detail (LOD) Strategy based on Zoom & Label Density Mode
+  const labelDensityMode = graphCustomization?.labelDensityMode || 'smart';
+  const isKeyTarget = Boolean(
+    statusJudiciaire?.toUpperCase().includes('MANDAT') ||
+    statusJudiciaire?.toUpperCase().includes('SUSPECT') ||
+    snaBadge?.includes('#1') ||
+    snaBadge?.includes('#2') ||
+    snaBadge?.includes('#3')
+  );
+  const isExtremeZoom = zoom !== undefined && zoom < 0.35;
+  const isFarZoom = zoom !== undefined && zoom >= 0.35 && zoom < 0.55;
+
+  const isExplicitlyForcedVisible = forcedVisibleNodeLabelIds?.has(node.id);
+  const isExplicitlyForcedHidden = forcedHiddenNodeLabelIds?.has(node.id);
+  const isTypeVisible = visibleNodeLabelTypes?.has(node.type);
+  const isPerson = node.type === 'personne';
+
+  let showLabel = false;
+  if (isExplicitlyForcedHidden) {
+    showLabel = isHovered;
+  } else if (isHovered || isSelected || isExplicitlyForcedVisible) {
+    showLabel = true;
+  } else if (labelDensityMode === 'all') {
+    showLabel = !isExtremeZoom;
+  } else if (labelDensityMode === 'none') {
+    showLabel = false;
+  } else {
+    // Smart default per user requirements:
+    // Important nodes (personne, targets with warrants, top centralities, or user-selected types) always display labels!
+    showLabel = isPerson || isKeyTarget || Boolean(isTypeVisible);
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (isEditing) return;
@@ -140,7 +221,8 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
         transition: isDragging
           ? 'none'
           : 'left 0.45s cubic-bezier(0.16, 1, 0.3, 1), top 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
-        zIndex: isSelected ? 15 : isDragging ? 20 : 5,
+        // Elevate hovered node above all other nodes and edges
+        zIndex: isHovered ? 60 : isDragging ? 50 : isSelected ? 30 : 10,
       }}
       onClick={(e) => {
         e.stopPropagation();
@@ -161,32 +243,38 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
         }
       }}
       onKeyDown={handleKeyDown}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       className={`canvas-circular-node ${isDragging ? 'is-dragging' : ''}`}
     >
-      {/* Circular Body */}
+      {/* Circular Body (100% Solid Opaque, Non-transparent) */}
       <div
         style={{
           width: `${size}px`,
           height: `${size}px`,
           borderRadius: 'var(--radius-full)',
+          backgroundColor: '#182234', // Solid opaque base preventing underlying edges from showing through
           background: isCategoryMode
-            ? `radial-gradient(circle, ${categoryColor}28 0%, var(--color-bg-surface) 72%)`
-            : `radial-gradient(circle, ${activeBorderColor}24 0%, var(--color-bg-surface) 72%)`,
+            ? `radial-gradient(circle, ${categoryColor}3d 0%, #182234 85%)`
+            : `radial-gradient(circle, ${activeBorderColor}36 0%, #182234 85%)`,
           borderWidth: isHypothesis ? '2.5px' : '2.5px',
           borderStyle: isHypothesis ? 'dashed' : 'solid',
           borderColor: isLinkSource ? 'var(--color-status-warning)' : activeBorderColor,
-          boxShadow: isLinkSource
+          boxShadow: isHovered
+            ? `0 0 0 3.5px var(--color-accent-primary), 0 8px 24px rgba(0, 0, 0, 0.7)`
+            : isLinkSource
             ? '0 0 0 4px var(--color-status-warning), 0 0 16px rgba(245, 158, 11, 0.6)'
             : snaColor
             ? `0 0 0 3px ${snaColor}44, 0 0 14px ${snaColor}88`
             : isSelected
             ? '0 0 0 3.5px var(--color-accent-subtle), 0 0 14px rgba(37, 99, 235, 0.45)'
-            : '0 2px 6px rgba(0, 0, 0, 0.28)',
+            : '0 2px 8px rgba(0, 0, 0, 0.45)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
           overflow: 'visible',
+          opacity: 1,
           transition: 'transform 0.15s ease, box-shadow 0.15s ease',
         }}
       >
@@ -195,6 +283,7 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
           <img
             src={photoUrl}
             alt={node.label}
+            onError={() => setImgError(true)}
             style={{
               width: '100%',
               height: '100%',
@@ -370,77 +459,97 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
         </div>
       )}
 
-      {/* Feature 2: Node Label or Inline Rename Input */}
-      {isEditing ? (
-        <div
-          style={{
-            marginTop: '4px',
-            position: 'relative',
-            zIndex: 30,
-          }}
-          onClick={(e) => e.stopPropagation()}
-          onMouseDown={(e) => e.stopPropagation()}
-        >
-          <input
-            ref={inputRef}
-            type="text"
-            className="node-rename-input"
-            value={editingLabel}
-            onChange={(e) => setEditingLabel(e.target.value)}
-            onBlur={handleSaveLabel}
-            onKeyDown={(e) => {
-              e.stopPropagation();
-              if (e.key === 'Enter') handleSaveLabel();
-              if (e.key === 'Escape') {
-                setEditingLabel(node.label);
-                setIsEditing(false);
-              }
-            }}
+      {/* Feature 2: Node Label or Inline Rename Input with LOD zoom adaptation */}
+      {showLabel && (
+        isEditing ? (
+          <div
             style={{
-              fontSize: `${labelSize}px`,
-              fontFamily: 'var(--font-sans)',
-              padding: '2px 6px',
-              backgroundColor: 'var(--color-bg-elevated)',
-              color: 'var(--color-text-primary)',
-              border: '1px solid var(--color-accent-primary)',
-              borderRadius: 'var(--radius-sm)',
-              outline: 'none',
-              width: '140px',
-              textAlign: 'center',
-              boxShadow: '0 0 8px rgba(37, 99, 235, 0.5)',
+              marginTop: '4px',
+              position: 'relative',
+              zIndex: 30,
             }}
-            aria-label="Modifier le libellé du nœud"
-          />
-        </div>
-      ) : (
-        <div
-          title={`${node.label} (Double-cliquer pour renommer)`}
-          style={{
-            marginTop: '4px',
-            fontSize: `${labelSize}px`,
-            lineHeight: '1.25',
-            fontFamily: 'var(--font-sans)',
-            color: isSelected ? 'var(--color-accent-text)' : 'var(--color-text-primary)',
-            fontWeight: isSelected ? 700 : 500,
-            textAlign: 'center',
-            maxWidth: '160px',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            pointerEvents: 'auto',
-            backgroundColor: 'var(--color-bg-elevated)',
-            padding: '2px 8px',
-            borderRadius: 'var(--radius-sm)',
-            border: isSelected
-              ? '1px solid var(--color-accent-primary)'
-              : '1px solid var(--color-border-subtle)',
-            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.22)',
-            backdropFilter: 'blur(4px)',
-            cursor: 'text',
-          }}
-        >
-          {node.label}
-        </div>
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <input
+              ref={inputRef}
+              type="text"
+              className="node-rename-input"
+              value={editingLabel}
+              onChange={(e) => setEditingLabel(e.target.value)}
+              onBlur={handleSaveLabel}
+              onKeyDown={(e) => {
+                e.stopPropagation();
+                if (e.key === 'Enter') handleSaveLabel();
+                if (e.key === 'Escape') {
+                  setEditingLabel(node.label);
+                  setIsEditing(false);
+                }
+              }}
+              style={{
+                fontSize: `${labelSize}px`,
+                fontFamily: 'var(--font-sans)',
+                padding: '2px 6px',
+                backgroundColor: 'var(--color-bg-elevated)',
+                color: 'var(--color-text-primary)',
+                border: '1px solid var(--color-accent-primary)',
+                borderRadius: 'var(--radius-sm)',
+                outline: 'none',
+                width: '140px',
+                textAlign: 'center',
+                boxShadow: '0 0 8px rgba(37, 99, 235, 0.5)',
+              }}
+              aria-label="Modifier le libellé du nœud"
+            />
+          </div>
+        ) : (
+          <div
+            title={`${node.label} (Double-cliquer pour renommer)`}
+            style={{
+              marginTop: '4px',
+              fontSize: isHovered ? `${Math.max(11.5, labelSize)}px` : isFarZoom ? '9.5px' : '10.5px',
+              lineHeight: '1.25',
+              fontFamily: 'var(--font-sans)',
+              color: isSelected ? 'var(--color-accent-text)' : 'var(--color-text-primary)',
+              fontWeight: isSelected || isKeyTarget || isPerson ? 700 : 500,
+              textAlign: 'center',
+              maxWidth: isHovered ? '280px' : isSelected ? '180px' : isFarZoom ? '75px' : '95px',
+              whiteSpace: isHovered ? 'normal' : 'nowrap',
+              overflow: isHovered ? 'visible' : 'hidden',
+              textOverflow: isHovered ? 'clip' : 'ellipsis',
+              pointerEvents: 'auto',
+              backgroundColor: 'var(--color-bg-elevated, #182234)',
+              padding: isHovered ? '4px 10px' : '1.5px 7px',
+              borderRadius: isHovered ? 'var(--radius-sm)' : '10px',
+              border: isHovered
+                ? '1.5px solid var(--color-accent-primary)'
+                : isSelected
+                ? '1.5px solid var(--color-accent-primary)'
+                : isKeyTarget
+                ? '1.5px solid #eab308'
+                : isPerson
+                ? '1px solid rgba(59, 130, 246, 0.45)'
+                : '1px solid var(--color-border-subtle)',
+              boxShadow: isHovered
+                ? '0 6px 20px rgba(0, 0, 0, 0.85)'
+                : '0 2px 5px rgba(0, 0, 0, 0.3)',
+              opacity: 1,
+              cursor: 'text',
+              zIndex: isHovered ? 70 : 12,
+            }}
+          >
+            {isHovered ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
+                <span style={{ fontWeight: 700, color: 'var(--color-text-primary)' }}>{node.label}</span>
+                <span style={{ fontSize: '9.5px', color: categoryColor, textTransform: 'uppercase', letterSpacing: '0.3px', fontWeight: 600 }}>
+                  {typeDef?.label_fr || node.type}
+                </span>
+              </div>
+            ) : (
+              getSmartShortLabel(node.label, node.type)
+            )}
+          </div>
+        )
       )}
     </div>
   );

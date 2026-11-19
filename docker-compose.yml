@@ -120,6 +120,7 @@ services:
       VITE_APP_NAME: "${APP_NAME:-Athar}"
     volumes:
       - ./apps/studio-app/frontend/src:/app/src
+      - ./apps/studio-app/frontend/public:/app/public
       - ./apps/studio-app/frontend/package.json:/app/package.json
       - ./apps/studio-app/frontend/vite.config.ts:/app/vite.config.ts
     depends_on:

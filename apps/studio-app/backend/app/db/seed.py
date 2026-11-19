@@ -63,6 +63,58 @@ RAW_TYPE_TO_CANONICAL: dict[str, str] = {
     "SHELL_COMPANY": "entreprise",
 }
 
+# Comprehensive realistic coordinates for Algerian Communes, Daïras, and Wilayas
+ALGERIA_COMMUNES_LOCATIONS: list[tuple[str, str, str, float, float]] = [
+    # Alger Daïras & Communes
+    ("Bab Ezzouar", "Dar El Beïda", "Alger", 36.7214, 3.1828),
+    ("Chéraga", "Chéraga", "Alger", 36.7667, 2.9500),
+    ("Kouba", "Hussein Dey", "Alger", 36.7297, 3.0847),
+    ("Hydra", "Bir Mourad Raïs", "Alger", 36.7444, 3.0417),
+    ("Zéralda", "Zéralda", "Alger", 36.7139, 2.8417),
+    ("Rouïba", "Rouïba", "Alger", 36.7381, 3.2808),
+    ("Sidi M'Hamed", "Sidi M'Hamed", "Alger", 36.7525, 3.0544),
+    ("Bir Mourad Raïs", "Bir Mourad Raïs", "Alger", 36.7333, 3.0500),
+    ("Bab El Oued", "Bab El Oued", "Alger", 36.7906, 3.0533),
+    ("El Harrach", "El Harrach", "Alger", 36.7139, 3.1333),
+    ("Dély Ibrahim", "Chéraga", "Alger", 36.7536, 2.9839),
+    ("Birtouta", "Birtouta", "Alger", 36.6475, 3.0039),
+    # Oran Daïras & Communes
+    ("Es Sénia", "Es Sénia", "Oran", 35.6500, -0.6167),
+    ("Bir El Djir", "Bir El Djir", "Oran", 35.7167, -0.5500),
+    ("Oran Centre", "Oran", "Oran", 35.6987, -0.6349),
+    ("Ain El Turk", "Ain El Turk", "Oran", 35.7417, -0.7667),
+    # Blida Daïras & Communes
+    ("Boufarik", "Boufarik", "Blida", 36.5750, 2.9139),
+    ("Ouled Yaïch", "Ouled Yaïch", "Blida", 36.4958, 2.8611),
+    ("Blida Centre", "Blida", "Blida", 36.4700, 2.8300),
+    # Constantine Daïras & Communes
+    ("El Khroub", "El Khroub", "Constantine", 36.2639, 6.6917),
+    ("Constantine Centre", "Constantine", "Constantine", 36.3650, 6.6147),
+    ("Hamma Bouziane", "Hamma Bouziane", "Constantine", 36.4167, 6.5972),
+    # Sétif Daïras & Communes
+    ("El Eulma", "El Eulma", "Sétif", 36.1528, 5.6908),
+    ("Sétif Centre", "Sétif", "Sétif", 36.1911, 5.4137),
+    ("Ain Oulmene", "Ain Oulmene", "Sétif", 35.9167, 5.3000),
+    # Annaba Daïras & Communes
+    ("El Bouni", "El Bouni", "Annaba", 36.8500, 7.7333),
+    ("Annaba Centre", "Annaba", "Annaba", 36.9000, 7.7667),
+    # Batna Daïras & Communes
+    ("Tazoult", "Tazoult", "Batna", 35.4833, 6.2500),
+    ("Batna Centre", "Batna", "Batna", 35.5559, 6.1741),
+    # Tlemcen Daïras & Communes
+    ("Mansourah", "Mansourah", "Tlemcen", 34.8667, -1.3333),
+    ("Maghnia", "Maghnia", "Tlemcen", 34.8500, -1.7333),
+    # Béjaïa Daïras & Communes
+    ("Akbou", "Akbou", "Béjaïa", 36.4575, 4.5347),
+    ("Béjaïa Centre", "Béjaïa", "Béjaïa", 36.7500, 5.0667),
+    # Biskra & Ouargla
+    ("Biskra Centre", "Biskra", "Biskra", 34.8500, 5.7333),
+    ("Hassi Messaoud", "Hassi Messaoud", "Ouargla", 31.6800, 6.0728),
+    # Tipaza & Boumerdès
+    ("Koléa", "Koléa", "Tipaza", 36.6389, 2.7689),
+    ("Bordj Menaïel", "Bordj Menaïel", "Boumerdès", 36.7417, 3.7167),
+]
+
 # Coordinate centroids for Algerian Wilayas present in the seed
 WILAYA_GPS: dict[str, tuple[float, float]] = {
     "Alger": (36.7538, 3.0588),
@@ -199,12 +251,34 @@ async def seed_candy_wheels(
         lat, lon = None, None
         if node_def.has_gps:
             wilaya_val = clean_meta.get("wilaya", "")
-            for w_name, (w_lat, w_lon) in WILAYA_GPS.items():
-                if w_name.lower() in str(wilaya_val).lower():
-                    lat, lon = w_lat, w_lon
+            daira_val = clean_meta.get("daira", "")
+            commune_val = clean_meta.get("commune", "")
+
+            # 1. Search for matching commune or daira
+            search_str = f"{wilaya_val} {daira_val} {commune_val}".lower()
+            for c_name, d_name, w_name, c_lat, c_lon in ALGERIA_COMMUNES_LOCATIONS:
+                if (c_name.lower() in search_str) or (d_name.lower() in search_str):
+                    lat, lon = c_lat, c_lon
+                    clean_meta.setdefault("commune", c_name)
+                    clean_meta.setdefault("daira", d_name)
+                    clean_meta.setdefault("wilaya", w_name)
                     break
+
+            # 2. Search by wilaya
             if lat is None:
-                lat, lon = 36.7538, 3.0588  # Default Alger
+                for w_name, (w_lat, w_lon) in WILAYA_GPS.items():
+                    if w_name.lower() in str(wilaya_val).lower():
+                        lat, lon = w_lat, w_lon
+                        clean_meta.setdefault("wilaya", w_name)
+                        break
+
+            # 3. Deterministic distribution across Algerian Communes & Daïras
+            if lat is None:
+                idx = int(node_uuid.int) % len(ALGERIA_COMMUNES_LOCATIONS)
+                c_name, d_name, w_name, lat, lon = ALGERIA_COMMUNES_LOCATIONS[idx]
+                clean_meta.setdefault("commune", c_name)
+                clean_meta.setdefault("daira", d_name)
+                clean_meta.setdefault("wilaya", w_name)
 
         processed_nodes.append(
             {

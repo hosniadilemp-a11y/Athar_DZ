@@ -1,134 +1,80 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { useGraphStore } from '../../store/useGraphStore';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { useGraphStore, NODE_TYPE_TO_CATEGORY, ONTOLOGY_CATEGORY_COLORS } from '../../store/useGraphStore';
 import { useI18n } from '../../context/I18nContext';
+import { getRelationLabel } from '../../i18n/phrases/relations';
 import { NodeIcon } from '../canvas/NodeIcon';
+
+// Silence Firefox mozPressure / mozInputSource deprecation notices emitted by Leaflet
+if (typeof window !== 'undefined' && window.MouseEvent) {
+  try {
+    const proto = window.MouseEvent.prototype;
+    if ('mozPressure' in proto) {
+      Object.defineProperty(proto, 'mozPressure', { get: () => 0, configurable: true });
+    }
+    if ('mozInputSource' in proto) {
+      Object.defineProperty(proto, 'mozInputSource', { get: () => 0, configurable: true });
+    }
+  } catch {
+    // Ignore in non-configurable environments
+  }
+}
 import registryDataRaw from '../../registry/registry.json';
 import type { RegistryData, LayerId } from '../../types/registry';
 import type { GraphNode } from '../../types/graph';
 import {
   MapPin,
-  ZoomIn,
-  ZoomOut,
-  RotateCcw,
   AlertCircle,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   Search,
   Crosshair,
-  Compass,
+  Map as MapIcon,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 
 const registry = registryDataRaw as unknown as RegistryData;
 
 const LAYER_COLORS: Record<LayerId, string> = {
-  VERIFIED: 'var(--color-layer-1-verified)',
-  OSINT_RAW: 'var(--color-layer-2-osint)',
-  INFRA: 'var(--color-layer-3-infra)',
-  HYPOTHESIS: 'var(--color-layer-4-hypothesis)',
-  FLOWS: 'var(--color-layer-5-flows)',
+  VERIFIED: '#10b981',
+  OSINT_RAW: '#3b82f6',
+  INFRA: '#06b6d4',
+  HYPOTHESIS: '#eab308',
+  FLOWS: '#f59e0b',
 };
 
-// Bounding box for Algerian territory
-const ALGERIA_BOUNDS = {
-  minLon: -8.8,
-  maxLon: 12.2,
-  minLat: 18.8,
-  maxLat: 37.3,
+const OSM_TILE_LAYER = {
+  url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
+  label: 'Rues OSM',
 };
-
-// Canonical polygon vertices for Algerian national borders
-const ALGERIA_BORDER_GEO: [number, number][] = [
-  // North Coastline: West to East
-  [35.08, -2.21], // Marsa Ben M'hidi
-  [35.10, -1.86], // Ghazaouet
-  [35.30, -1.38], // Beni Saf
-  [35.77, -0.79], // Cap Falcon / Oran
-  [35.85, -0.31], // Arzew
-  [35.93, 0.09],  // Mostaganem
-  [36.51, 1.30],  // Tenes
-  [36.60, 2.19],  // Cherchell
-  [36.59, 2.44],  // Tipaza
-  [36.77, 3.06],  // Alger
-  [36.91, 3.91],  // Dellys
-  [36.76, 5.08],  // Bejaia
-  [36.82, 5.76],  // Jijel
-  [37.01, 6.57],  // Collo
-  [36.88, 6.91],  // Skikda
-  [36.90, 7.77],  // Annaba
-  [36.90, 8.44],  // El Kala / Cap Rosa
-  // Tunisia Border
-  [36.50, 8.40],
-  [36.28, 8.35],
-  [35.40, 8.30],
-  [34.30, 8.10],
-  [34.00, 8.30],
-  [33.15, 8.80],
-  [30.25, 9.60],  // Tripoint Tunisia-Libya-Algeria (Ghadames)
-  // Libya Border
-  [28.00, 9.80],
-  [26.00, 9.60],
-  [25.00, 10.20], // Ghat / Djanet border
-  [23.50, 11.99], // Tripoint Libya-Niger-Algeria
-  // Niger Border
-  [21.50, 8.50],
-  [19.57, 5.77],  // In Guezzam
-  // Mali Border
-  [19.95, 2.97],  // Tin Zaouatine
-  [20.50, 1.50],
-  [21.33, 0.95],  // Bordj Badji Mokhtar
-  [23.00, -1.50],
-  [25.00, -4.83], // Chenachane
-  // Mauritania Border
-  [25.80, -5.90],
-  [27.30, -8.67], // Tripoint Mauritania-Western Sahara-Algeria
-  // Western Sahara Border
-  [27.67, -8.67], // Tindouf border
-  // Morocco Border
-  [28.50, -8.67],
-  [29.50, -5.00],
-  [30.50, -4.00],
-  [31.60, -2.20], // Bechar border
-  [32.10, -1.25], // Beni Ounif / Figuig
-  [33.50, -1.50],
-  [34.85, -1.85], // Maghnia / Oujda
-  [35.08, -2.21], // Return to Marsa Ben M'hidi
-];
-
-// Major Algerian reference cities and wilaya hubs
-const MAJOR_WILAYA_HUBS = [
-  { name: 'Alger (16)', lat: 36.7538, lon: 3.0588, isCapitale: true },
-  { name: 'Oran (31)', lat: 35.6987, lon: -0.6349 },
-  { name: 'Constantine (25)', lat: 36.3650, lon: 6.6147 },
-  { name: 'Annaba (23)', lat: 36.9000, lon: 7.7667 },
-  { name: 'Blida (09)', lat: 36.4700, lon: 2.8300 },
-  { name: 'Sétif (19)', lat: 36.1911, lon: 5.4137 },
-  { name: 'Batna (05)', lat: 35.5559, lon: 6.1741 },
-  { name: 'Tlemcen (13)', lat: 34.8783, lon: -1.3150 },
-  { name: 'Mascara (29)', lat: 35.3964, lon: 0.1403 },
-  { name: 'Ouargla (30)', lat: 31.9530, lon: 5.3340 },
-  { name: 'Ghardaïa (47)', lat: 32.4909, lon: 3.6735 },
-  { name: 'Béchar (08)', lat: 31.6167, lon: -2.2167 },
-  { name: 'Tamanrasset (11)', lat: 22.7850, lon: 5.5228 },
-];
 
 export const MapView: React.FC = () => {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { nodes, edges, selectedNodeId, selectNode } = useGraphStore();
 
-  const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [isPanning, setIsPanning] = useState(false);
-  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markersGroupRef = useRef<L.LayerGroup | null>(null);
+  const linesGroupRef = useRef<L.LayerGroup | null>(null);
+  const posMapRef = useRef<Map<string, [number, number]>>(new Map());
+
+  const [showGeographicLinks, setShowGeographicLinks] = useState(true);
+  const [currentZoom, setCurrentZoom] = useState<number>(6);
 
   // Tree panel state
   const [isTreeOpen, setIsTreeOpen] = useState(true);
   const [treeSearch, setTreeSearch] = useState('');
+  const [selectedWilayaFilter, setSelectedWilayaFilter] = useState<string>('ALL');
   const [expandedBranches, setExpandedBranches] = useState<Record<string, boolean>>({
     root_algeria: true,
-    'wilaya_16_Alger': true,
-    'wilaya_31_Oran': true,
-    'wilaya_09_Blida': true,
-    'wilaya_25_Constantine': true,
+    'wilaya_Alger': true,
+    'wilaya_Oran': true,
+    'wilaya_Blida': true,
+    'wilaya_Constantine': true,
     skipped_root: false,
   });
 
@@ -141,7 +87,6 @@ export const MapView: React.FC = () => {
     nodes.forEach((n) => {
       const w = (n.properties?.wilaya as string) || 'Alger';
       all[`wilaya_${w}`] = true;
-      all[`cat_${w}_${n.type}`] = true;
     });
     setExpandedBranches(all);
   };
@@ -150,23 +95,7 @@ export const MapView: React.FC = () => {
     setExpandedBranches({ root_algeria: false, skipped_root: false });
   };
 
-  // Canvas dimensions
-  const canvasWidth = 1100;
-  const canvasHeight = 850;
-
-  // Project geographic coordinates to SVG canvas space (Equirectangular)
-  const projectGeo = useCallback((lat: number, lon: number, pad = 60) => {
-    const availW = canvasWidth - pad * 2;
-    const availH = canvasHeight - pad * 2;
-    const lonSpan = ALGERIA_BOUNDS.maxLon - ALGERIA_BOUNDS.minLon;
-    const latSpan = ALGERIA_BOUNDS.maxLat - ALGERIA_BOUNDS.minLat;
-
-    const x = pad + ((lon - ALGERIA_BOUNDS.minLon) / lonSpan) * availW;
-    const y = pad + ((ALGERIA_BOUNDS.maxLat - lat) / latSpan) * availH;
-    return { x, y };
-  }, [canvasWidth, canvasHeight]);
-
-  // Separate GPS-valid and skipped nodes
+  // Separate GPS-valid and non-geolocated nodes
   const { gpsNodes, skippedNodes } = useMemo(() => {
     const valid: GraphNode[] = [];
     const skipped: GraphNode[] = [];
@@ -177,10 +106,10 @@ export const MapView: React.FC = () => {
         n.longitude !== null &&
         !isNaN(n.latitude) &&
         !isNaN(n.longitude) &&
-        n.latitude >= -90 &&
-        n.latitude <= 90 &&
-        n.longitude >= -180 &&
-        n.longitude <= 180
+        n.latitude >= 18.0 &&
+        n.latitude <= 38.0 &&
+        n.longitude >= -9.0 &&
+        n.longitude <= 13.0
       ) {
         valid.push(n);
       } else {
@@ -191,147 +120,410 @@ export const MapView: React.FC = () => {
     return { gpsNodes: valid, skippedNodes: skipped };
   }, [nodes]);
 
-  // Node position map with overlap offset (radial fan for identical coordinates)
-  const nodePositionMap = useMemo(() => {
-    const coordGroups = new Map<string, GraphNode[]>();
-    gpsNodes.forEach((node) => {
-      const key = `${node.latitude!.toFixed(3)}_${node.longitude!.toFixed(3)}`;
-      const list = coordGroups.get(key) || [];
-      list.push(node);
-      coordGroups.set(key, list);
+  // Determine wilaya of a node
+  const getNodeWilaya = useCallback((node: GraphNode): string => {
+    let w = (node.properties?.wilaya as string) || (node.properties?.wilaya_activity as string) || '';
+    if (!w) {
+      if (node.latitude && node.longitude) {
+        if (node.latitude > 36.5 && node.longitude < 3.5) w = 'Alger';
+        else if (node.longitude < 0.5) w = 'Oran';
+        else if (node.longitude > 6.0) w = 'Constantine';
+        else w = 'Alger';
+      } else {
+        w = 'Alger';
+      }
+    }
+    return w;
+  }, []);
+
+  // Filtered nodes
+  const filteredGpsNodes = useMemo(() => {
+    return gpsNodes.filter((node) => {
+      if (selectedWilayaFilter !== 'ALL') {
+        const w = getNodeWilaya(node);
+        if (w !== selectedWilayaFilter) return false;
+      }
+
+      if (treeSearch.trim()) {
+        const q = treeSearch.toLowerCase();
+        if (!node.label.toLowerCase().includes(q) && !node.type.toLowerCase().includes(q)) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [gpsNodes, selectedWilayaFilter, treeSearch, getNodeWilaya]);
+
+  // Unique wilayas for tree sidebar
+  const availableWilayas = useMemo(() => {
+    const map = new Map<string, number>();
+    gpsNodes.forEach((n) => {
+      const w = getNodeWilaya(n);
+      map.set(w, (map.get(w) || 0) + 1);
+    });
+    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
+  }, [gpsNodes, getNodeWilaya]);
+
+  // 1. Initialize Leaflet Map (Runs once on mount)
+  useEffect(() => {
+    if (!mapContainerRef.current || mapRef.current) return;
+
+    // Centered on Algeria: Alger [36.75, 3.05], default view [35.2, 3.2], zoom 6
+    const map = L.map(mapContainerRef.current, {
+      center: [35.5, 3.2],
+      zoom: 6,
+      minZoom: 4,
+      maxZoom: 19,
+      zoomControl: false,
     });
 
-    const positions = new Map<string, { x: number; y: number }>();
+    // Add zoom controls to top-right
+    L.control.zoom({ position: 'topright' }).addTo(map);
 
-    coordGroups.forEach((group) => {
-      const first = group[0];
-      if (!first || first.latitude === null || first.longitude === null) return;
-      const baseLat = first.latitude;
-      const baseLon = first.longitude;
-      const basePos = projectGeo(baseLat, baseLon);
+    // Initial Street Tile Layer (Rues OpenStreetMap only)
+    L.tileLayer(OSM_TILE_LAYER.url, {
+      attribution: OSM_TILE_LAYER.attribution,
+      maxZoom: 19,
+      subdomains: 'abc',
+    }).addTo(map);
 
-      if (group.length === 1) {
-        positions.set(first.id, basePos);
-      } else {
-        // Distribute overlapping nodes radially around centroid
-        group.forEach((node, idx) => {
-          const angle = (idx / group.length) * 2 * Math.PI;
-          const radius = 24 + Math.floor(idx / 8) * 16;
-          positions.set(node.id, {
-            x: basePos.x + Math.cos(angle) * radius,
-            y: basePos.y + Math.sin(angle) * radius,
+    const markersGroup = L.layerGroup().addTo(map);
+    const linesGroup = L.layerGroup().addTo(map);
+
+    // Track dynamic zoom to toggle between regional clusters and street-level individual markers
+    map.on('zoomend', () => {
+      setCurrentZoom(map.getZoom());
+    });
+
+    mapRef.current = map;
+    markersGroupRef.current = markersGroup;
+    linesGroupRef.current = linesGroup;
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+    };
+  }, []);
+
+  // 3. Render Leaflet Markers & Forensic Polylines
+  useEffect(() => {
+    if (!mapRef.current || !markersGroupRef.current || !linesGroupRef.current) return;
+
+    const markersGroup = markersGroupRef.current;
+    const linesGroup = linesGroupRef.current;
+
+    markersGroup.clearLayers();
+    linesGroup.clearLayers();
+
+    const zoomLevel = mapRef.current ? mapRef.current.getZoom() : currentZoom;
+    const isClusteredMode = zoomLevel <= 11;
+
+    // Helper to render an individual forensic node marker
+    const renderNodeMarker = (node: GraphNode, lat: number, lon: number) => {
+      const isSelected = selectedNodeId === node.id;
+      const typeDef = registry.node_types[node.type];
+      const category = NODE_TYPE_TO_CATEGORY[node.type] || 'acteurs';
+      const categoryColor = ONTOLOGY_CATEGORY_COLORS[category] || '#3b82f6';
+      const layerColor = LAYER_COLORS[node.layer as LayerId] || '#3b82f6';
+      const photoUrl = (node.properties?.photo_url as string) || (node.properties?.photo as string);
+      const statusJudiciaire = (node.properties?.status_judiciaire as string) || '';
+
+      const markerHtml = `
+        <div class="sig-leaflet-marker ${isSelected ? 'is-selected' : ''}" style="
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: #0f172a;
+          border: 2.5px solid ${isSelected ? '#3b82f6' : layerColor};
+          box-shadow: 0 3px 10px rgba(0,0,0,0.55);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          cursor: pointer;
+        ">
+          ${isSelected ? `
+            <div style="
+              position: absolute;
+              inset: -7px;
+              border-radius: 50%;
+              border: 2px solid #3b82f6;
+              animation: sigPulse 1.6s infinite ease-out;
+            "></div>
+          ` : ''}
+
+          ${photoUrl ? `
+            <img src="${photoUrl}" style="
+              width: 100%;
+              height: 100%;
+              border-radius: 50%;
+              object-fit: cover;
+            " />
+          ` : `
+            <div style="color: ${categoryColor}; font-size: 13px; font-weight: 700;">
+              ${(node.label || 'N').charAt(0).toUpperCase()}
+            </div>
+          `}
+
+          <!-- Category Dot -->
+          <div style="
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: ${categoryColor};
+            border: 1.5px solid #0f172a;
+          "></div>
+        </div>
+      `;
+
+      const customIcon = L.divIcon({
+        html: markerHtml,
+        className: 'sig-custom-div-icon',
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+        popupAnchor: [0, -18],
+      });
+
+      const marker = L.marker([lat, lon], { icon: customIcon });
+
+      marker.on('click', () => {
+        selectNode(node.id);
+      });
+
+      const popupHtml = `
+        <div style="font-family: inherit; font-size: 11.5px; color: #f8fafc; min-width: 180px;">
+          <div style="font-weight: 700; font-size: 12.5px; color: #ffffff; margin-bottom: 2px;">
+            ${node.label}
+          </div>
+          <div style="color: ${categoryColor}; font-size: 10.5px; font-weight: 600; text-transform: uppercase;">
+            ${typeDef?.label_fr || node.type}
+          </div>
+          <div style="font-size: 10.5px; color: #94a3b8; margin: 4px 0;">
+            Wilaya: <strong>${getNodeWilaya(node)}</strong>
+          </div>
+          ${statusJudiciaire ? `
+            <div style="
+              display: inline-block;
+              font-size: 9.5px;
+              font-weight: 700;
+              padding: 1px 6px;
+              border-radius: 10px;
+              background: #dc262622;
+              color: #ef4444;
+              border: 1px solid #dc262644;
+            ">
+              ${statusJudiciaire}
+            </div>
+          ` : ''}
+          <div style="font-size: 9.5px; color: #64748b; font-family: monospace; margin-top: 4px;">
+            GPS: ${node.latitude!.toFixed(4)}°, ${node.longitude!.toFixed(4)}°
+          </div>
+        </div>
+      `;
+
+      marker.bindTooltip(popupHtml, {
+        direction: 'top',
+        className: 'sig-leaflet-tooltip',
+      });
+
+      markersGroup.addLayer(marker);
+    };
+
+    // Mode A: Clustered Mode when Zoomed Out (zoom <= 11)
+    if (isClusteredMode) {
+      const wilayaClusters = new Map<string, { lat: number; lon: number; nodes: GraphNode[]; wilaya: string }>();
+
+      filteredGpsNodes.forEach((node) => {
+        const w = getNodeWilaya(node);
+        if (!wilayaClusters.has(w)) {
+          wilayaClusters.set(w, {
+            lat: node.latitude!,
+            lon: node.longitude!,
+            nodes: [],
+            wilaya: w,
           });
+        }
+        wilayaClusters.get(w)!.nodes.push(node);
+      });
+
+      wilayaClusters.forEach((cluster) => {
+        const count = cluster.nodes.length;
+        if (count >= 2) {
+          const clusterHtml = `
+            <div class="sig-leaflet-cluster-badge" style="
+              width: 44px;
+              height: 44px;
+              border-radius: 50%;
+              background: radial-gradient(circle, #2563eb 0%, #1e3a8a 100%);
+              border: 3px solid #60a5fa;
+              box-shadow: 0 0 16px rgba(37, 99, 235, 0.6), 0 4px 12px rgba(0,0,0,0.5);
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              color: #ffffff;
+              font-family: var(--font-mono, monospace);
+              cursor: pointer;
+              transition: transform 0.15s ease;
+            ">
+              <span style="font-weight: 800; font-size: 14px; line-height: 1;">${count}</span>
+              <span style="font-size: 8px; text-transform: uppercase; font-weight: 700; opacity: 0.9;">Entités</span>
+            </div>
+          `;
+
+          const clusterIcon = L.divIcon({
+            html: clusterHtml,
+            className: 'sig-custom-div-icon',
+            iconSize: [44, 44],
+            iconAnchor: [22, 22],
+            popupAnchor: [0, -22],
+          });
+
+          const clusterMarker = L.marker([cluster.lat, cluster.lon], { icon: clusterIcon });
+          clusterMarker.on('click', () => {
+            if (mapRef.current) {
+              mapRef.current.flyTo([cluster.lat, cluster.lon], 13, { duration: 1.0 });
+            }
+          });
+
+          clusterMarker.bindTooltip(
+            `<div style="font-family: inherit; font-size: 11.5px; color: #ffffff; min-width: 150px;">
+              <div style="font-weight: 700; font-size: 12px; margin-bottom: 2px;">
+                Wilaya de ${cluster.wilaya}
+              </div>
+              <div style="color: #60a5fa; font-weight: 600; font-size: 11px;">
+                ${count} entités judiciaires actives
+              </div>
+              <div style="font-size: 10px; color: #94a3b8; margin-top: 4px;">
+                Cliquer pour zoomer au niveau des rues
+              </div>
+            </div>`,
+            { direction: 'top', className: 'sig-leaflet-tooltip' }
+          );
+
+          markersGroup.addLayer(clusterMarker);
+        } else if (count === 1) {
+          const n = cluster.nodes[0]!;
+          renderNodeMarker(n, n.latitude!, n.longitude!);
+        }
+      });
+      return;
+    }
+
+    // Mode B: Detailed Street Zoom (zoom >= 12) - Render individual markers & polylines
+    const clusterMap = new Map<string, GraphNode[]>();
+    filteredGpsNodes.forEach((node) => {
+      const lat = node.latitude!;
+      const lon = node.longitude!;
+      const key = `${lat.toFixed(3)},${lon.toFixed(3)}`;
+      if (!clusterMap.has(key)) {
+        clusterMap.set(key, []);
+      }
+      clusterMap.get(key)!.push(node);
+    });
+
+    const posMap = new Map<string, [number, number]>();
+    clusterMap.forEach((clusterNodes) => {
+      if (clusterNodes.length === 1) {
+        const n = clusterNodes[0]!;
+        posMap.set(n.id, [n.latitude!, n.longitude!]);
+      } else {
+        const centerLat = clusterNodes[0]!.latitude!;
+        const centerLon = clusterNodes[0]!.longitude!;
+        const count = clusterNodes.length;
+        const spreadRadius = 0.0022;
+
+        clusterNodes.forEach((n, idx) => {
+          const angle = (2 * Math.PI * idx) / count;
+          const latShift = spreadRadius * Math.cos(angle);
+          const lonShift = (spreadRadius * Math.sin(angle)) / Math.cos((centerLat * Math.PI) / 180);
+          posMap.set(n.id, [centerLat + latShift, centerLon + lonShift]);
         });
       }
     });
 
-    return positions;
-  }, [gpsNodes, projectGeo]);
+    posMapRef.current = posMap;
 
-  // Filter edges connecting two geolocated nodes
-  const gpsEdges = useMemo(() => {
-    const validIds = new Set(gpsNodes.map((n) => n.id));
-    return edges.filter((e) => validIds.has(e.source_id) && validIds.has(e.target_id));
-  }, [edges, gpsNodes]);
-
-  // Hierarchical Tree Data grouped by Wilaya and Category
-  const wilayaGroups = useMemo(() => {
-    const groups: Record<string, Record<string, GraphNode[]>> = {};
-
-    gpsNodes.forEach((node) => {
-      // Find wilaya from properties or closest hub
-      let wilaya = (node.properties?.wilaya as string) || (node.properties?.wilaya_activity as string) || '';
-      if (!wilaya) {
-        if (node.latitude && node.longitude) {
-          if (node.latitude > 36.5 && node.longitude < 3.5) wilaya = 'Alger';
-          else if (node.longitude < 0.5) wilaya = 'Oran';
-          else if (node.longitude > 6.0) wilaya = 'Constantine';
-          else wilaya = 'Alger';
-        } else {
-          wilaya = 'Alger';
-        }
-      }
-
-      // Group category
-      let category = 'Divers';
-      if (node.type === 'antenne_bts' || node.type === 'telephone' || node.type === 'carte_sim') {
-        category = 'Télécoms & BTS';
-      } else if (node.type === 'personne') {
-        category = "Personnes d'Intérêt";
-      } else if (node.type === 'entreprise' || node.type === 'adresse_physique' || node.type === 'vehicule') {
-        category = 'Sociétés & Biens';
-      } else if (node.type === 'compte_bancaire' || node.type === 'transaction_financiere' || node.type === 'crypto_wallet') {
-        category = 'Finances & Flux';
-      } else if (node.type === 'serveur_c2' || node.type === 'site_web' || node.type === 'compte_social') {
-        category = 'OSINT & Cyber';
-      } else {
-        category = 'Scellés & Pièces';
-      }
-
-      if (!groups[wilaya]) groups[wilaya] = {};
-      const currentWilaya = groups[wilaya];
-      if (currentWilaya) {
-        if (!currentWilaya[category]) currentWilaya[category] = [];
-        const currentCategory = currentWilaya[category];
-        if (currentCategory) {
-          currentCategory.push(node);
-        }
-      }
+    filteredGpsNodes.forEach((node) => {
+      const coords = posMap.get(node.id) || [node.latitude!, node.longitude!];
+      renderNodeMarker(node, coords[0], coords[1]);
     });
 
-    return groups;
-  }, [gpsNodes]);
+    // Render Forensic Polylines Connecting Geolocated Nodes
+    if (showGeographicLinks) {
+      edges.forEach((edge) => {
+        const srcPos = posMap.get(edge.source_id);
+        const tgtPos = posMap.get(edge.target_id);
+        if (!srcPos || !tgtPos) return;
 
-  // Center view on a specific node
-  const handleFocusNode = useCallback((node: GraphNode) => {
-    selectNode(node.id);
-    const pos = nodePositionMap.get(node.id);
-    if (pos) {
-      setZoom(1.8);
-      setPan({
-        x: canvasWidth / 2 - pos.x * 1.8,
-        y: canvasHeight / 2 - pos.y * 1.8,
+        const isConnected = selectedNodeId === edge.source_id || selectedNodeId === edge.target_id;
+        const layerColor = LAYER_COLORS[edge.layer as LayerId] || '#3b82f6';
+        const color = isConnected ? '#3b82f6' : layerColor;
+
+        const polyline = L.polyline([srcPos, tgtPos], {
+          color,
+          weight: isConnected ? 3.5 : 2.2,
+          dashArray: edge.layer === 'HYPOTHESIS' ? '6, 6' : undefined,
+          opacity: isConnected ? 1.0 : 0.75,
+        });
+
+        const humanLabel = getRelationLabel(edge.type, locale);
+        const confText = typeof edge.confidence === 'number' ? ` · ${Math.round(edge.confidence * 100)}%` : '';
+        polyline.bindTooltip(
+          `<div style="font-family: inherit; font-size: 11px; font-weight: 600; color: #ffffff; background: #0f172a; padding: 2px 6px; border-radius: 4px; border: 1px solid #334155;">
+            ${humanLabel}${confText}
+          </div>`,
+          { sticky: true, className: 'sig-leaflet-tooltip' }
+        );
+
+        polyline.on('click', () => {
+          selectNode(edge.source_id);
+        });
+
+        linesGroup.addLayer(polyline);
       });
     }
-  }, [nodePositionMap, selectNode, canvasWidth, canvasHeight]);
+  }, [filteredGpsNodes, edges, selectedNodeId, selectNode, showGeographicLinks, getNodeWilaya, locale, currentZoom]);
 
-  // Reset view to entire Algeria
-  const handleResetToAlgeria = () => {
-    setZoom(1);
-    setPan({ x: 0, y: 0 });
-  };
+  // Center / FlyTo Node
+  const handleFocusNode = useCallback((node: GraphNode) => {
+    selectNode(node.id);
+    const coords = posMapRef.current.get(node.id) || (node.latitude !== null && node.longitude !== null ? [node.latitude, node.longitude] : null);
+    if (coords && mapRef.current) {
+      mapRef.current.flyTo(coords as [number, number], 16, {
+        duration: 1.2,
+      });
+    }
+  }, [selectNode]);
 
-  // Precomputed SVG border path of Algeria
-  const algeriaBorderPath = useMemo(() => {
-    return ALGERIA_BORDER_GEO.map(([lat, lon], idx) => {
-      const pt = projectGeo(lat, lon);
-      return `${idx === 0 ? 'M' : 'L'} ${pt.x.toFixed(1)} ${pt.y.toFixed(1)}`;
-    }).join(' ') + ' Z';
-  }, [projectGeo]);
-
-  // Filtered tree nodes by search term
-  const matchesSearch = (str: string) => {
-    if (!treeSearch.trim()) return true;
-    return str.toLowerCase().includes(treeSearch.toLowerCase().trim());
+  // Reset to National Algerian Overview
+  const handleResetNational = () => {
+    if (mapRef.current) {
+      mapRef.current.flyTo([35.5, 3.2], 6, { duration: 1.0 });
+      setSelectedWilayaFilter('ALL');
+    }
   };
 
   return (
     <div className="map-view-shell" role="region" aria-label="Vue cartographique géographique judiciaire des entités">
-      {/* 1. Left Hierarchical Tree Sidebar (Arborescence Territoriale) */}
+      {/* 1. Left Hierarchical Tree Sidebar */}
       <aside
         className="map-tree-sidebar"
         style={{
-          width: isTreeOpen ? '300px' : '36px',
-          minWidth: isTreeOpen ? '300px' : '36px',
+          width: isTreeOpen ? '290px' : '36px',
+          minWidth: isTreeOpen ? '290px' : '36px',
         }}
         aria-label="Arborescence territoriale et classification des entités"
       >
         {isTreeOpen ? (
           <>
-            {/* Tree Header with Search & Controls */}
+            {/* Tree Header */}
             <div className="map-tree-header">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--font-weight-semibold)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <MapPin size={13} className="text-accent" />
                   <span>{t.mapTreeTitle}</span>
                 </span>
@@ -342,7 +534,7 @@ export const MapView: React.FC = () => {
                   title="Réduire l'arborescence"
                   aria-label="Réduire l'arborescence"
                 >
-                  ◀
+                  <ChevronLeft size={13} />
                 </button>
               </div>
 
@@ -381,441 +573,126 @@ export const MapView: React.FC = () => {
 
             {/* Tree Content Branches */}
             <div className="map-tree-scroll" role="tree" aria-label="Arborescence territoriale des entités">
-              {/* Root Branch: Algérie */}
-              <button
-                type="button"
-                className="map-tree-node-branch"
-                onClick={() => toggleBranch('root_algeria')}
-                aria-expanded={expandedBranches['root_algeria']}
-                style={{ fontWeight: 'var(--font-weight-semibold)' }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  {expandedBranches['root_algeria'] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                  <span>{t.mapNationalTerritory}</span>
-                </div>
-                <span className="chip chip-accent font-mono text-xs">{gpsNodes.length}</span>
-              </button>
+              {availableWilayas.map(([wilayaName, count]) => {
+                const isSelected = selectedWilayaFilter === wilayaName;
+                const wilayaKey = `wilaya_${wilayaName}`;
+                const isExpanded = expandedBranches[wilayaKey] ?? true;
+                const nodesInWilaya = gpsNodes.filter((n) => getNodeWilaya(n) === wilayaName);
 
-              {expandedBranches['root_algeria'] && (
-                <div style={{ paddingLeft: 'var(--space-2)' }}>
-                  {Object.entries(wilayaGroups).map(([wilayaName, categories]) => {
-                    const wilayaKey = `wilaya_${wilayaName}`;
-                    const isWilayaExpanded = expandedBranches[wilayaKey] ?? true;
-                    const totalInWilaya = Object.values(categories).reduce((sum, list) => sum + list.length, 0);
-
-                    return (
-                      <div key={wilayaKey} style={{ marginBottom: '2px' }}>
-                        {/* Wilaya Branch */}
-                        <button
-                          type="button"
-                          className="map-tree-node-branch"
-                          onClick={() => toggleBranch(wilayaKey)}
-                          aria-expanded={isWilayaExpanded}
-                          style={{ paddingLeft: 'var(--space-2)' }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            {isWilayaExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                            <span style={{ fontWeight: 'var(--font-weight-medium)' }}>Wilaya de {wilayaName}</span>
-                          </div>
-                          <span className="chip chip-neutral font-mono text-xs">{totalInWilaya}</span>
-                        </button>
-
-                        {/* Category Sub-Branches */}
-                        {isWilayaExpanded && (
-                          <div style={{ paddingLeft: 'var(--space-3)' }}>
-                            {Object.entries(categories).map(([catName, nodeList]) => {
-                              const catKey = `cat_${wilayaName}_${catName}`;
-                              const isCatExpanded = expandedBranches[catKey] ?? true;
-                              const filteredNodes = nodeList.filter((n) => matchesSearch(n.label) || matchesSearch(wilayaName) || matchesSearch(catName));
-                              if (filteredNodes.length === 0) return null;
-
-                              return (
-                                <div key={catKey} style={{ marginBottom: '2px' }}>
-                                  <button
-                                    type="button"
-                                    className="map-tree-node-branch"
-                                    onClick={() => toggleBranch(catKey)}
-                                    aria-expanded={isCatExpanded}
-                                    style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', padding: '3px 6px' }}
-                                  >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                      {isCatExpanded ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
-                                      <span>{catName}</span>
-                                    </div>
-                                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>({filteredNodes.length})</span>
-                                  </button>
-
-                                  {/* Leaf Items */}
-                                  {isCatExpanded && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-                                      {filteredNodes.map((node) => {
-                                        const isSelected = selectedNodeId === node.id;
-                                        const typeDef = registry.node_types[node.type];
-                                        return (
-                                          <button
-                                            type="button"
-                                            key={node.id}
-                                            className={`map-tree-leaf-item ${isSelected ? 'selected' : ''}`}
-                                            onClick={() => handleFocusNode(node)}
-                                            aria-label={`Centrer sur ${node.label} (${node.latitude?.toFixed(4)}, ${node.longitude?.toFixed(4)})`}
-                                            title={`Cliquer pour centrer sur la carte : ${node.label} (${node.latitude?.toFixed(4)}, ${node.longitude?.toFixed(4)})`}
-                                          >
-                                            <NodeIcon name={typeDef?.icon || 'map-pin'} size={13} style={{ color: LAYER_COLORS[node.layer as LayerId] || 'var(--color-accent-primary)' }} />
-                                            <div style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'start' }}>
-                                              <span>{node.label}</span>
-                                            </div>
-                                            <span style={{ fontSize: 'var(--text-xs)', fontFamily: 'var(--font-mono)', color: 'var(--color-text-muted)' }}>
-                                              {node.latitude?.toFixed(2)}°
-                                            </span>
-                                          </button>
-                                        );
-                                      })}
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
+                return (
+                  <div key={wilayaKey} style={{ marginBottom: '2px' }}>
+                    <button
+                      type="button"
+                      className={`map-tree-node-branch ${isSelected ? 'selected' : ''}`}
+                      onClick={() => {
+                        setSelectedWilayaFilter(isSelected ? 'ALL' : wilayaName);
+                        toggleBranch(wilayaKey);
+                        if (nodesInWilaya[0]?.latitude && nodesInWilaya[0]?.longitude && mapRef.current) {
+                          mapRef.current.flyTo([nodesInWilaya[0].latitude, nodesInWilaya[0].longitude], 13);
+                        }
+                      }}
+                      style={{
+                        paddingLeft: 'var(--space-2)',
+                        backgroundColor: isSelected ? 'var(--color-accent-subtle)' : undefined,
+                        borderInlineStart: isSelected ? '3px solid var(--color-accent-primary)' : undefined,
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                        <span style={{ fontWeight: 600 }}>Wilaya de {wilayaName}</span>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
+                      <span className="chip chip-neutral font-mono text-xs">{count}</span>
+                    </button>
 
-              {/* Branch: Entités Hors-Carte */}
-              <button
-                type="button"
-                className="map-tree-node-branch"
-                onClick={() => toggleBranch('skipped_root')}
-                aria-expanded={expandedBranches['skipped_root']}
-                style={{ marginTop: 'var(--space-3)', color: 'var(--color-text-secondary)' }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  {expandedBranches['skipped_root'] ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                  <AlertCircle size={13} style={{ color: 'var(--color-status-warning)' }} />
-                  <span>{t.mapSkippedNodes}</span>
-                </div>
-                <span className="chip chip-neutral font-mono text-xs">{skippedNodes.length}</span>
-              </button>
+                    {isExpanded && (
+                      <div style={{ paddingLeft: 'var(--space-3)', display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                        {nodesInWilaya.map((node) => {
+                          const isNodeSelected = selectedNodeId === node.id;
+                          const typeDef = registry.node_types[node.type];
+                          const catColor = ONTOLOGY_CATEGORY_COLORS[NODE_TYPE_TO_CATEGORY[node.type] || 'acteurs'];
 
-              {expandedBranches['skipped_root'] && (
-                <div style={{ paddingLeft: 'var(--space-3)' }}>
-                  {skippedNodes
-                    .filter((n) => matchesSearch(n.label) || matchesSearch(n.type))
-                    .slice(0, 30)
-                    .map((node) => {
-                      const isSelected = selectedNodeId === node.id;
-                      const typeDef = registry.node_types[node.type];
-                      return (
+                          return (
+                            <button
+                              type="button"
+                              key={node.id}
+                              className={`map-tree-leaf-item ${isNodeSelected ? 'selected' : ''}`}
+                              onClick={() => handleFocusNode(node)}
+                              title={`${node.label} (${node.latitude?.toFixed(4)}, ${node.longitude?.toFixed(4)})`}
+                            >
+                              <NodeIcon name={typeDef?.icon || 'map-pin'} size={12} style={{ color: catColor }} />
+                              <div style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'start' }}>
+                                <span>{node.label}</span>
+                              </div>
+                              <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--color-text-muted)' }}>
+                                {node.latitude?.toFixed(2)}°
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* Non-Geolocated Entities */}
+              {skippedNodes.length > 0 && (
+                <div>
+                  <button
+                    type="button"
+                    className="map-tree-node-branch"
+                    onClick={() => toggleBranch('skipped_root')}
+                    style={{ marginTop: 'var(--space-3)', color: 'var(--color-text-secondary)' }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      {expandedBranches['skipped_root'] ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                      <AlertCircle size={12} className="text-warning" />
+                      <span>{t.mapSkippedNodes}</span>
+                    </div>
+                    <span className="chip chip-neutral font-mono text-xs">{skippedNodes.length}</span>
+                  </button>
+
+                  {expandedBranches['skipped_root'] && (
+                    <div style={{ paddingLeft: 'var(--space-3)', display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                      {skippedNodes.map((node) => (
                         <button
-                          type="button"
                           key={node.id}
-                          className={`map-tree-leaf-item ${isSelected ? 'selected' : ''}`}
+                          type="button"
+                          className="map-tree-leaf-item"
                           onClick={() => selectNode(node.id)}
-                          aria-label={`Inspecter l'entité non géolocalisée ${node.label}`}
-                          title={`Entité non géolocalisée : ${node.label} (Cliquer pour inspecter)`}
+                          style={{ opacity: 0.7 }}
                         >
-                          <NodeIcon name={typeDef?.icon || 'help-circle'} size={13} style={{ color: 'var(--color-text-muted)' }} />
+                          <NodeIcon name={registry.node_types[node.type]?.icon || 'help-circle'} size={12} />
                           <div style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'start' }}>
                             <span>{node.label}</span>
                           </div>
-                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-status-warning)' }}>Sans GPS</span>
                         </button>
-                      );
-                    })}
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           </>
         ) : (
-          <div style={{ padding: '8px 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-            <button
-              type="button"
-              className="btn btn-ghost btn-xs"
-              onClick={() => setIsTreeOpen(true)}
-              title="Ouvrir l'arborescence territoriale"
-              aria-label="Ouvrir l'arborescence territoriale"
-            >
-              ▶
-            </button>
-            <button
-              type="button"
-              style={{
-                writingMode: 'vertical-rl',
-                fontSize: 'var(--text-xs)',
-                color: 'var(--color-text-muted)',
-                letterSpacing: '2px',
-                cursor: 'pointer',
-                background: 'transparent',
-                border: 'none',
-                padding: 'var(--space-2)',
-              }}
-              onClick={() => setIsTreeOpen(true)}
-              aria-label="Ouvrir l'arborescence SIG"
-            >
-              ARBORESCENCE SIG
-            </button>
-          </div>
+          <button
+            type="button"
+            className="btn btn-ghost btn-xs"
+            onClick={() => setIsTreeOpen(true)}
+            title="Ouvrir l'arborescence territoriale"
+            aria-label="Ouvrir l'arborescence territoriale"
+            style={{ width: '100%', height: '36px', padding: 0 }}
+          >
+            <ChevronRight size={13} />
+          </button>
         )}
       </aside>
 
-      {/* 2. Interactive Algerian Vector Map Area */}
-      <div
-        style={{
-          flex: 1,
-          position: 'relative',
-          height: '100%',
-          overflow: 'hidden',
-          backgroundColor: 'var(--color-bg-canvas)',
-          userSelect: 'none',
-        }}
-        onMouseDown={(e) => {
-          if (e.button === 0) {
-            setIsPanning(true);
-            setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
-          }
-        }}
-        onMouseMove={(e) => {
-          if (isPanning) {
-            setPan({ x: e.clientX - panStart.x, y: e.clientY - panStart.y });
-          }
-        }}
-        onMouseUp={() => setIsPanning(false)}
-        onWheel={(e) => {
-          e.preventDefault();
-          const factor = e.deltaY < 0 ? 1.15 : 0.87;
-          setZoom((prev) => Math.min(Math.max(prev * factor, 0.4), 5.0));
-        }}
-      >
-        {/* Map Canvas with SVG Layer */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-            transformOrigin: '50% 50%',
-            cursor: isPanning ? 'grabbing' : 'grab',
-          }}
-        >
-          <svg width="100%" height="100%" viewBox={`0 0 ${canvasWidth} ${canvasHeight}`}>
-            <defs>
-              {/* Judicial Background Grid */}
-              <pattern id="sig-grid" width="80" height="80" patternUnits="userSpaceOnUse">
-                <path d="M 80 0 L 0 0 0 80" fill="none" stroke="var(--color-border-subtle)" strokeWidth="0.5" opacity="0.3" />
-              </pattern>
+      {/* 2. Main OpenStreetMap Street View Container */}
+      <div style={{ flex: 1, height: '100%', position: 'relative', overflow: 'hidden' }}>
+        <div ref={mapContainerRef} style={{ width: '100%', height: '100%', zIndex: 1 }} />
 
-              {/* Mediterranean Sea gradient */}
-              <linearGradient id="mediterranean-grad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#081426" stopOpacity="0.8" />
-                <stop offset="100%" stopColor="#0f172a" stopOpacity="0.2" />
-              </linearGradient>
-
-              {/* Algeria land gradient */}
-              <linearGradient id="algeria-land-grad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#1e293b" stopOpacity="0.7" />
-                <stop offset="100%" stopColor="#0f172a" stopOpacity="0.9" />
-              </linearGradient>
-
-              {/* Glow filter for active nodes */}
-              <filter id="sig-glow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="3" result="blur" />
-                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-              </filter>
-            </defs>
-
-            {/* Canvas Base Grid */}
-            <rect width={canvasWidth} height={canvasHeight} fill="url(#sig-grid)" />
-
-            {/* Northern Maritime Zone (Mer Méditerranée) */}
-            <rect x="0" y="0" width={canvasWidth} height="130" fill="url(#mediterranean-grad)" />
-            <text
-              x={canvasWidth / 2 + 60}
-              y="40"
-              fill="var(--color-text-muted)"
-              opacity="0.35"
-              fontSize="13px"
-              fontWeight="600"
-              letterSpacing="6px"
-              textAnchor="middle"
-              fontFamily="var(--font-sans)"
-            >
-              MER MÉDITERRANÉE
-            </text>
-
-            {/* Graticule Latitude Lines (36°N, 32°N, 28°N, 24°N) */}
-            {[36, 32, 28, 24, 20].map((lat) => {
-              const pt = projectGeo(lat, 0);
-              return (
-                <g key={`lat-${lat}`}>
-                  <line x1="20" y1={pt.y} x2={canvasWidth - 20} y2={pt.y} stroke="var(--color-border-subtle)" strokeWidth="0.5" strokeDasharray="3 3" opacity="0.4" />
-                  <text x="30" y={pt.y - 4} fontSize="12px" fill="var(--color-text-muted)" opacity="0.5" fontFamily="var(--font-mono)">
-                    {lat}°00' N
-                  </text>
-                </g>
-              );
-            })}
-
-            {/* Graticule Longitude Lines (-4°W, 0°, 4°E, 8°E) */}
-            {[-4, 0, 4, 8].map((lon) => {
-              const pt = projectGeo(28, lon);
-              return (
-                <g key={`lon-${lon}`}>
-                  <line x1={pt.x} y1="20" x2={pt.x} y2={canvasHeight - 20} stroke="var(--color-border-subtle)" strokeWidth="0.5" strokeDasharray="3 3" opacity="0.4" />
-                  <text x={pt.x + 4} y={canvasHeight - 30} fontSize="12px" fill="var(--color-text-muted)" opacity="0.5" fontFamily="var(--font-mono)">
-                    {lon >= 0 ? `${lon}°00' E` : `${Math.abs(lon)}°00' O`}
-                  </text>
-                </g>
-              );
-            })}
-
-            {/* Algeria Sovereign National Border Polygon */}
-            <path
-              d={algeriaBorderPath}
-              fill="url(#algeria-land-grad)"
-              stroke="var(--color-border-strong)"
-              strokeWidth="1.8"
-              strokeLinejoin="round"
-            />
-
-            {/* Inner Border Glow */}
-            <path
-              d={algeriaBorderPath}
-              fill="none"
-              stroke="var(--color-accent-primary)"
-              strokeWidth="0.8"
-              opacity="0.25"
-            />
-
-            {/* Major Wilaya Reference Hubs on Map */}
-            {MAJOR_WILAYA_HUBS.map((hub) => {
-              const pt = projectGeo(hub.lat, hub.lon);
-              return (
-                <g key={hub.name} opacity="0.6">
-                  <circle cx={pt.x} cy={pt.y} r={hub.isCapitale ? 3.5 : 2} fill={hub.isCapitale ? 'var(--color-accent-text)' : 'var(--color-text-muted)'} />
-                  <text
-                    x={pt.x}
-                    y={pt.y - 6}
-                    textAnchor="middle"
-                    fontSize="12px"
-                    fontFamily="var(--font-sans)"
-                    fontWeight={hub.isCapitale ? 600 : 400}
-                    fill={hub.isCapitale ? 'var(--color-accent-text)' : 'var(--color-text-muted)'}
-                  >
-                    {hub.name}
-                  </text>
-                </g>
-              );
-            })}
-
-            {/* Forensic Links between geolocated nodes */}
-            {gpsEdges.map((edge) => {
-              const srcPos = nodePositionMap.get(edge.source_id);
-              const tgtPos = nodePositionMap.get(edge.target_id);
-              if (!srcPos || !tgtPos) return null;
-
-              const isConnectedToSelected = selectedNodeId === edge.source_id || selectedNodeId === edge.target_id;
-
-              return (
-                <g key={edge.id}>
-                  <line
-                    x1={srcPos.x}
-                    y1={srcPos.y}
-                    x2={tgtPos.x}
-                    y2={tgtPos.y}
-                    stroke={isConnectedToSelected ? 'var(--color-accent-primary)' : 'var(--color-border-default)'}
-                    strokeWidth={isConnectedToSelected ? 2.2 : 1.2}
-                    strokeDasharray={isConnectedToSelected ? 'none' : '4 3'}
-                    opacity={isConnectedToSelected ? 0.9 : 0.45}
-                  />
-                </g>
-              );
-            })}
-
-            {/* Geolocated Node Markers */}
-            {gpsNodes.map((node) => {
-              const pos = nodePositionMap.get(node.id);
-              if (!pos) return null;
-
-              const isSelected = selectedNodeId === node.id;
-              const typeDef = registry.node_types[node.type];
-              const color = LAYER_COLORS[node.layer as LayerId] || 'var(--color-accent-primary)';
-
-              return (
-                <g
-                  key={node.id}
-                  transform={`translate(${pos.x}, ${pos.y})`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    selectNode(node.id);
-                  }}
-                  style={{ cursor: 'pointer' }}
-                >
-                  {/* Selection Pulse Ring */}
-                  {isSelected && (
-                    <>
-                      <circle r={26} fill="none" stroke="var(--color-accent-primary)" strokeWidth={2} opacity={0.4} filter="url(#sig-glow)" />
-                      <circle r={20} fill="none" stroke="var(--color-accent-primary)" strokeWidth={1.5} opacity={0.8} />
-                    </>
-                  )}
-
-                  {/* Marker Circle Outer & Inner */}
-                  <circle
-                    r={15}
-                    fill="var(--color-bg-surface)"
-                    stroke={color}
-                    strokeWidth={isSelected ? 3 : 2}
-                    filter={isSelected ? 'url(#sig-glow)' : undefined}
-                  />
-
-                  {/* Icon */}
-                  <foreignObject x={-8} y={-8} width={16} height={16} style={{ pointerEvents: 'none' }}>
-                    <NodeIcon name={typeDef?.icon || 'map-pin'} size={16} style={{ color }} />
-                  </foreignObject>
-
-                  {/* Label Pill Backdrop */}
-                  <rect
-                    x={-((node.label.length * 6.5) / 2) - 6}
-                    y={18}
-                    width={node.label.length * 6.5 + 12}
-                    height={16}
-                    rx={3}
-                    fill="rgba(15, 23, 42, 0.9)"
-                    stroke={isSelected ? 'var(--color-accent-primary)' : 'var(--color-border-subtle)'}
-                    strokeWidth={isSelected ? 1 : 0.5}
-                  />
-
-                  {/* Label Text */}
-                  <text
-                    x={0}
-                    y={30}
-                    textAnchor="middle"
-                    fontSize="12px"
-                    fontFamily="var(--font-sans)"
-                    fontWeight={isSelected ? 600 : 500}
-                    fill={isSelected ? 'var(--color-text-primary)' : 'var(--color-text-secondary)'}
-                  >
-                    {node.label}
-                  </text>
-
-                  {/* Lat/Lon coordinates */}
-                  <text
-                    x={0}
-                    y={44}
-                    textAnchor="middle"
-                    fontSize="12px"
-                    fontFamily="var(--font-mono)"
-                    fill="var(--color-text-muted)"
-                  >
-                    {node.latitude!.toFixed(3)}°, {node.longitude!.toFixed(3)}°
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-        </div>
-
-        {/* Map Floating Controls (Top-Right) */}
+        {/* Floating Map Controls (Top Right — Rues OSM Exclusif) */}
         <div
           style={{
             position: 'absolute',
@@ -823,113 +700,82 @@ export const MapView: React.FC = () => {
             right: 'var(--space-3)',
             display: 'flex',
             flexDirection: 'column',
-            gap: '4px',
-            backgroundColor: 'var(--color-bg-surface)',
-            padding: '4px',
-            borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--color-border-default)',
-            boxShadow: 'var(--shadow-md)',
-            zIndex: 10,
+            gap: '6px',
+            zIndex: 1000,
           }}
         >
-          <button
-            type="button"
-            aria-label="Zoom avant"
-            title="Zoom avant"
-            onClick={() => setZoom((z) => Math.min(z * 1.25, 5.0))}
-            style={ctrlBtnStyle}
+          {/* Rues OSM Active Badge + Quick Actions Bar */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              backgroundColor: 'var(--color-bg-surface)',
+              border: '1px solid var(--color-border-default)',
+              borderRadius: 'var(--radius-sm)',
+              padding: '2px',
+              gap: '4px',
+              boxShadow: 'var(--shadow-md)',
+            }}
           >
-            <ZoomIn size={15} />
-          </button>
-          <button
-            type="button"
-            aria-label="Zoom arrière"
-            title="Zoom arrière"
-            onClick={() => setZoom((z) => Math.max(z * 0.8, 0.4))}
-            style={ctrlBtnStyle}
-          >
-            <ZoomOut size={15} />
-          </button>
-          <div style={{ height: '1px', backgroundColor: 'var(--color-border-subtle)', margin: '2px 0' }} />
-          <button
-            type="button"
-            aria-label="Recadrer sur l'Algérie entière"
-            title="Recadrer sur l'Algérie entière"
-            onClick={handleResetToAlgeria}
-            style={ctrlBtnStyle}
-          >
-            <RotateCcw size={15} />
-          </button>
-          {selectedNodeId && (
+            <span
+              className="btn btn-primary btn-xs"
+              style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'default' }}
+              title="Fond cartographique routier OpenStreetMap"
+            >
+              <MapIcon size={12} />
+              <span>Rues OSM</span>
+            </span>
+
+            {/* Center on Algeria */}
             <button
               type="button"
-              aria-label="Centrer sur l'entité sélectionnée"
-              title="Centrer sur l'entité sélectionnée"
-              onClick={() => {
-                const target = gpsNodes.find((n) => n.id === selectedNodeId);
-                if (target) handleFocusNode(target);
-              }}
-              style={ctrlBtnStyle}
+              className="btn btn-ghost btn-xs"
+              onClick={handleResetNational}
+              title="Recentrer sur l'Algérie entière"
+              style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
             >
-              <Crosshair size={15} style={{ color: 'var(--color-accent-text)' }} />
+              <Crosshair size={12} />
+              <span>Algérie</span>
             </button>
-          )}
+
+            {/* Toggle Polylines */}
+            <button
+              type="button"
+              className={`btn btn-xs ${showGeographicLinks ? 'btn-secondary' : 'btn-ghost'}`}
+              onClick={() => setShowGeographicLinks((v) => !v)}
+              title="Afficher/masquer les liens d'enquête entre les coordonnées"
+              style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
+            >
+              {showGeographicLinks ? <Eye size={12} /> : <EyeOff size={12} />}
+              <span>Liens</span>
+            </button>
+          </div>
         </div>
 
-        {/* Compass / Orientation Indicator (Top-Left inside Canvas) */}
+        {/* Bottom Legend Overlay */}
         <div
           style={{
             position: 'absolute',
-            top: 'var(--space-3)',
+            bottom: 'var(--space-3)',
             left: 'var(--space-3)',
+            zIndex: 1000,
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            padding: '4px 8px',
-            backgroundColor: 'rgba(15, 23, 42, 0.8)',
+            gap: '8px',
+            backgroundColor: 'rgba(15, 23, 42, 0.88)',
+            backdropFilter: 'blur(6px)',
             border: '1px solid var(--color-border-subtle)',
             borderRadius: 'var(--radius-sm)',
-            fontSize: 'var(--text-xs)',
-            fontFamily: 'var(--font-mono)',
-            color: 'var(--color-text-muted)',
-            zIndex: 5,
-            pointerEvents: 'none',
+            padding: '4px 10px',
+            fontSize: '10.5px',
+            color: 'var(--color-text-secondary)',
           }}
         >
-          <Compass size={13} className="text-accent" />
-          <span>N 0° (Nord Vrai)</span>
-        </div>
-
-        {/* Non-Blocking Floating Status Pill (Bottom-Left) */}
-        <div className="map-floating-status">
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-accent-text)' }}>
-            <MapPin size={13} />
-            <strong>{gpsNodes.length}</strong> {t.mapGeolocatedCount}
-          </span>
-          <span style={{ color: 'var(--color-border-default)' }}>|</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-text-muted)' }}>
-            <AlertCircle size={13} style={{ color: 'var(--color-status-warning)' }} />
-            <span>{skippedNodes.length} {t.mapSkippedNodes}</span>
-          </span>
-          <span style={{ color: 'var(--color-border-default)' }}>|</span>
-          <span style={{ color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>
-            {t.mapWgs84}
-          </span>
+          <span style={{ fontWeight: 700, color: '#f8fafc' }}>{filteredGpsNodes.length}</span> entités géolocalisées
+          <span style={{ opacity: 0.4 }}>|</span>
+          <span>Zoom routier jusqu'aux rues (Niveau 19)</span>
         </div>
       </div>
     </div>
   );
-};
-
-const ctrlBtnStyle: React.CSSProperties = {
-  width: '30px',
-  height: '30px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: 'transparent',
-  border: 'none',
-  borderRadius: 'var(--radius-sm)',
-  color: 'var(--color-text-primary)',
-  cursor: 'pointer',
 };

@@ -46,7 +46,7 @@ HEALTHY=false
 
 while [ $COUNT -lt $MAX_RETRIES ]; do
     if curl -s -f http://127.0.0.1:8000/health > /dev/null 2>&1; then
-        STATUS=$(curl -s http://127.0.0.1:8000/health | grep -o '"status":"[^"]*"' | cut -d'"' -f4 || echo "error")
+        STATUS=$(curl -s http://127.0.0.1:8000/health | grep -o '"status":"[^"]*"' | head -n1 | cut -d'"' -f4 || echo "error")
         if [ "$STATUS" = "ok" ]; then
             HEALTHY=true
             break

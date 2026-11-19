@@ -5,10 +5,12 @@ import { CircularNode } from './CircularNode';
 import { EdgeLine } from './EdgeLine';
 import { CanvasFloatingPalette } from './CanvasFloatingPalette';
 import { CanvasMinimap } from './CanvasMinimap';
+import { CreateRelationModal } from '../modals/CreateRelationModal';
 import { useGraphStore } from '../../store/useGraphStore';
 import { stepLiveForcePhysics } from '../../utils/graphLayouts';
 import { Link2, Sparkles, X } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
+import { getEdgeCategory } from '../../i18n/phrases/relations';
 
 export interface Viewport {
   panX: number;
@@ -82,6 +84,7 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
 
   // Mouse position in canvas space for link preview
   const [mouseCanvasPos, setMouseCanvasPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [pendingLink, setPendingLink] = useState<{ sourceId: string; targetId: string } | null>(null);
 
   // Container dimensions for minimap
   const [containerSize, setContainerSize] = useState({ w: 800, h: 600 });
@@ -131,13 +134,14 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
         if (!linkSourceNodeId) {
           setLinkSourceNodeId(nodeId);
         } else if (linkSourceNodeId !== nodeId) {
-          createManualEdge(linkSourceNodeId, nodeId);
+          // Open the relation qualifier modal to let the investigator choose relation type
+          setPendingLink({ sourceId: linkSourceNodeId, targetId: nodeId });
         }
         return;
       }
       onSelectNode(nodeId, isMulti);
     },
-    [isLinkMode, linkSourceNodeId, setLinkSourceNodeId, createManualEdge, onSelectNode]
+    [isLinkMode, linkSourceNodeId, setLinkSourceNodeId, onSelectNode]
   );
 
   // Fast node lookup for edge rendering
@@ -156,11 +160,20 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
     return nodes.filter((n) => activeLayers.has(n.layer));
   }, [nodes, activeLayers]);
 
-  // Filter visible edges (both endpoints must be visible)
+  // Filter visible edges (both endpoints must be visible and not hidden by category filter)
+  const hiddenEdgeCategories = useGraphStore((s) => s.hiddenEdgeCategories);
   const visibleEdges = React.useMemo(() => {
     const visibleIds = new Set(visibleNodes.map((n) => n.id));
-    return edges.filter((e) => visibleIds.has(e.source_id) && visibleIds.has(e.target_id));
-  }, [edges, visibleNodes]);
+    return edges.filter((e) => {
+      if (!visibleIds.has(e.source_id) || !visibleIds.has(e.target_id)) return false;
+      if (hiddenEdgeCategories && hiddenEdgeCategories.size > 0) {
+        if (hiddenEdgeCategories.has(e.type)) return false;
+        const cat = getEdgeCategory(e.type);
+        if (hiddenEdgeCategories.has(cat)) return false;
+      }
+      return true;
+    });
+  }, [edges, visibleNodes, hiddenEdgeCategories]);
 
   // Native Non-Passive Wheel Listener (strictly prevents browser zoom / page scrolling)
   useEffect(() => {
@@ -476,6 +489,7 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
               sourceNode={nodeMap.get(edge.source_id)}
               targetNode={nodeMap.get(edge.target_id)}
               isSelected={selectedEdgeId === edge.id}
+              zoom={viewport.zoom}
               onSelect={onSelectEdge}
             />
           ))}
@@ -509,6 +523,7 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
               isSelected={isSelected}
               isLinkSource={linkSourceNodeId === node.id}
               isDragging={draggingNodeId === node.id}
+              zoom={viewport.zoom}
               onSelect={handleNodeClick}
               onContextMenu={onNodeContextMenu}
               onDragStart={handleNodeDragStart}
@@ -601,6 +616,24 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
         onToggleSna={onToggleSna}
         isSnaOpen={isSnaOpen}
       />
+
+      {/* Modal to Choose Relation Type between Two Nodes */}
+      {pendingLink && (
+        <CreateRelationModal
+          isOpen={Boolean(pendingLink)}
+          sourceId={pendingLink.sourceId}
+          targetId={pendingLink.targetId}
+          onClose={() => {
+            setPendingLink(null);
+            setLinkMode(false);
+            setLinkSourceNodeId(null);
+          }}
+          onConfirm={(relationType, layer, confidence, notes) => {
+            createManualEdge(pendingLink.sourceId, pendingLink.targetId, relationType, layer, confidence, notes);
+            setPendingLink(null);
+          }}
+        />
+      )}
     </div>
   );
 };

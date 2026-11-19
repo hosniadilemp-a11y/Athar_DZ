@@ -1,0 +1,64 @@
+# Global Specification — Athar DZ / AegisInvestigate
+
+> **Scope:** Complete system architecture, polyglot data model, 3-server physical topology, 76 OSINT/DFIR capabilities, 16 SNA functions, and 6-phase delivery roadmap.  
+> **Normative References:** `doc/SPECIFICATION.md`, `.agent/ui-ux-rules.md`, `.agent/llm-no-mistakes-rules.md`, `DECISIONS.md`.
+
+---
+
+## 1. System Mission & Judicial Compliance
+Athar DZ / AegisInvestigate is a visual criminal investigation and digital forensics studio designed for Judicial Police Officers (OPJ), criminal analysts, brigade chiefs, and magistrates.
+- **Zero CS Jargon:** Investigators interact with legal concepts (cases, verified evidence, hypotheses, financial flows), never raw database or CLI internals.
+- **ISO 27037 Chain of Custody:** Every digital artifact is SHA-256 hashed, immutable once sealed (WORM), and tracked in an append-only hash-chained audit ledger.
+- **Human-in-the-Loop:** AI, SNA scores, and OSINT captures are always presented as **Candidate / Hypothesis** with method, parameters, and source. Only a human actor with a recorded reason can promote an item to **Verified**.
+
+---
+
+## 2. Three-Server Physical Topology
+1. **Server 1 — Studio App Server (`SRV-STUDIO-01`, VLAN 20):**
+   - Frontend Web Studio (`React 19` + `TypeScript`, WebGL/SVG canvas)
+   - Backend API & Orchestrator (`Python 3.12`, `FastAPI`, `Pydantic v2`, `Celery`)
+   - Local Sovereign AI (`Ollama` / `Llama-3-8B` Text-to-Cypher, `Faster-Whisper` Darija, `PyAnnote`, `ArcFace`)
+2. **Server 2 — Polyglot Data & Storage Server (`SRV-DATA-01`, VLAN 30):**
+   - **Neo4j 5.20+:** Master property graph topology & GDS projections (`Bolt TLS`)
+   - **PostgreSQL 16 + PostGIS (+ TimescaleDB in prod):** Judicial cases, users/RBAC, Wilaya RLS, audit logs, geospatial geometries, high-volume CDRs
+   - **Qdrant 1.9:** 512-d facial & 192-d voice biometric vector embeddings (`gRPC`)
+   - **MinIO S3 Enterprise:** Immutable WORM Object Lock (`COMPLIANCE` mode) + RFC 3161 timestamps
+   - **MongoDB 7.0 WiredTiger:** Raw schema-free OSINT dumps & web DOM snapshots
+   - **Redis 7.2 Stack:** Ephemeral session state, Pub/Sub WebSocket bus, token-bucket rate limiters
+3. **Server 3 — Phone Farm Automation Server (`SRV-FARM-01`, VLAN 40):**
+   - Physical Android device racks (`ADB` / `Scrcpy` WebRTC) and multi-SIM GSM modems (Djezzy, Mobilis, Ooredoo)
+   - Communicates with Studio App via **gRPC over mTLS**, **NATS/Redis Streams**, and **WebRTC**
+   - **Zero Direct Access** to `SRV-DATA-01` (all incoming raw data is sanitized and SHA-256 hashed by `SRV-STUDIO-01`)
+
+---
+
+## 3. Canonical Data Model (GFPG — Generalized Forensic Property Graph)
+- **37 Canonical Node Types** across **8 Operational Domains**:
+  1. *Judiciaire & Territoire DZ (6):* `wilaya`, `daira`, `commune`, `unite`, `affaire`, `magistrat`
+  2. *Acteurs Humains & Moraux (3):* `personne`, `entreprise`, `vehicule`
+  3. *Télécoms & Forensique Mobile (5):* `telephone`, `carte_sim`, `appareil_mobile`, `antenne_bts`, `telecom_cdr`
+  4. *Finances Criminelles & BaridiMob (5):* `compte_bancaire`, `transaction_financiere`, `guichet_gab`, `crypto_wallet`, `transaction_crypto`
+  5. *SOCMINT, Web & Trackers (7):* `compte_social`, `publication_sociale`, `canal_telegram`, `message_chat`, `adresse_email`, `site_web`, `identifiant_infrastructure`
+  6. *Cyber, Malwares & Forensique (5):* `fichier_apk`, `serveur_c2`, `certificat_tls`, `artefact_dfir`, `session_recherche`
+  7. *Biométrie & Médias Numériques (3):* `enregistrement_vocal`, `empreinte_faciale`, `image_preuve`
+  8. *Chaîne de Preuve & Scellés WORM (3):* `document_judiciaire`, `scelle_numerique`, `preuve_merkle`
+- **47 Directional Relationship Types** with strict allowed source/target types, timestamp, weight, and provenance.
+- **8 Geoplottable GPS Node Types:** `antenne_bts`, `telecom_cdr`, `guichet_gab`, `vehicule`, `image_preuve`, `unite`, `commune`, `personne` (WGS84 `gps_lat`/`gps_lon` synced with PostGIS).
+
+---
+
+## 4. Analytical & Investigative Capabilities
+- **16 Social Network Analysis (SNA) Algorithms (12 Core + 4 Complementary):**
+  - *12 Core:* Link Prediction (`adamic_adar`, `jaccard`), Betweenness Centrality (Brandes), Community Detection (`louvain`, `label_propagation`), Role Classification (`node_classification`), Top-K Nodes (`top_k`), Threshold Path Expansion (`threshold_expand`), Temporal Subgraph (`temporal_subgraph`), Territorial Profiling (`activity_sector`), Shortest Path (`shortest_path_dijkstra`), K-Core (`k_core`), Structural Embeddings (`structural_embeddings`), Personalized PageRank (`personalized_pagerank`).
+  - *4 Complementary:* Ego-Network N-Hop (`ego_network`), Articulation Points & Bridges (`articulation_points`), Closeness & Eigenvector Centrality (`closeness_eigenvector`), Temporal Diff (`temporal_diff`).
+- **76 OSINT & DFIR Tools** across phone, social, domain/IP, financial, media/biometrics, and mobile forensics (deployed incrementally in Phases 2–5).
+
+---
+
+## 5. Six-Phase Incremental Roadmap
+- **Phase 1 (`v0.1`):** Studio d'Enquête Visuel, Accordéon 37 nœuds, Nœuds Circulaires, Calques, 16 outils SNA, Socle FastAPI + Neo4j + PostgreSQL/PostGIS + Redis, Scénario 100 nœuds.
+- **Phase 2 (`v0.2`):** Coffre-fort MinIO S3 WORM, extraction automatique d'IOCs, horodatage RFC 3161.
+- **Phase 3 (`v0.3`):** Arsenal OSINT Dockerisé (76 briques) & intégration Phone Farm (`SRV-FARM-01`).
+- **Phase 4 (`v0.4`):** Biométrie multimodale (ArcFace 512-d, Qdrant) & bascule canevas WebGL haute volumétrie.
+- **Phase 5 (`v0.5`):** IA souveraine locale (Text-to-Cypher Llama-3, Faster-Whisper Darija, PyAnnote) & CDR massifs.
+- **Phase 6 (`v1.0`):** Multi-tenancy Wilayas (RLS), alertes inter-affaires, durcissement production.

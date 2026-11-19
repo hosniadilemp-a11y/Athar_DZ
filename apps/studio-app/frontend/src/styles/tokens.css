@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Athar Design Tokens (Dark default + Light print/accessibility theme)
  * Conforms to .agent/ui-ux-rules.md (8-pt spacing grid, WCAG 2.2 AA, D1 5-layer hues)
  */
@@ -67,6 +67,16 @@
   --color-layer-3-infra: #6366f1;
   --color-layer-4-hypothesis: #a855f7;
   --color-layer-5-flows: #d97706;
+
+  /* Eight Forensic Domain Colors */
+  --color-domain-territoire: #10b981;
+  --color-domain-acteurs: #3b82f6;
+  --color-domain-telecoms: #6366f1;
+  --color-domain-finances: #f59e0b;
+  --color-domain-socmint: #06b6d4;
+  --color-domain-cyber: #e11d48;
+  --color-domain-biometrie: #a855f7;
+  --color-domain-preuve: #ea580c;
 
   --color-hypothesis-bg: rgba(168, 85, 247, 0.08);
   --color-hypothesis-border: rgba(168, 85, 247, 0.35);

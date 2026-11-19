@@ -40,44 +40,68 @@ export const ONTOLOGY_CATEGORY_COLORS: Record<OntologyCategory, string> = {
 };
 
 export const NODE_TYPE_TO_CATEGORY: Record<string, OntologyCategory> = {
-  antenne_bts: 'territoire',
+  // 1. Territoire & Juridiction
+  wilaya: 'territoire',
+  daira: 'territoire',
+  commune: 'territoire',
+  unite: 'territoire',
+  affaire: 'territoire',
+  magistrat: 'territoire',
   adresse_physique: 'territoire',
   point_geographique: 'territoire',
-  wilaya: 'territoire',
   lieu: 'territoire',
 
+  // 2. Acteurs & Réseau Criminel
   personne: 'acteurs',
   organisation: 'acteurs',
   entreprise: 'acteurs',
   groupe: 'acteurs',
   vehicule: 'acteurs',
 
+  // 3. Télécommunications & Bornages
   telephone: 'telecoms',
+  carte_sim: 'telecoms',
+  appareil_mobile: 'telecoms',
+  antenne_bts: 'telecoms',
+  telecom_cdr: 'telecoms',
   imei: 'telecoms',
   imsi: 'telecoms',
-  canal_telegram: 'telecoms',
 
+  // 4. Finances & BaridiMob / Crypto
   compte_bancaire: 'finances',
   transaction_financiere: 'finances',
+  guichet_gab: 'finances',
   crypto_wallet: 'finances',
+  transaction_crypto: 'finances',
   carte_paiement: 'finances',
 
+  // 5. SOCMINT & Réseaux Sociaux
   compte_social: 'socmint',
   publication_sociale: 'socmint',
+  canal_telegram: 'socmint',
   message_chat: 'socmint',
+  adresse_email: 'socmint',
+  site_web: 'socmint',
+  identifiant_infrastructure: 'socmint',
 
-  serveur_c2: 'cyber',
+  // 6. Cyber & Infrastructure C2
   fichier_apk: 'cyber',
+  serveur_c2: 'cyber',
   certificat_tls: 'cyber',
   artefact_dfir: 'cyber',
-  site_web: 'cyber',
-  identifiant_infrastructure: 'cyber',
+  session_recherche: 'cyber',
 
+  // 7. Biométrie & Voix
   enregistrement_vocal: 'biometrie',
+  empreinte_faciale: 'biometrie',
   empreinte_biometrique: 'biometrie',
   profil_adn: 'biometrie',
+  image_preuve: 'biometrie',
 
+  // 8. Preuve & Scellés Judiciaires
   document_judiciaire: 'preuve',
+  scelle_numerique: 'preuve',
+  preuve_merkle: 'preuve',
   scelle: 'preuve',
   proces_verbal: 'preuve',
   piece_a_conviction: 'preuve',
@@ -91,6 +115,7 @@ export interface GraphCustomizationState {
   showEdgeLabels: boolean;
   showNodePhotos: boolean;
   colorMode: 'category' | 'layer';
+  labelDensityMode: 'smart' | 'all' | 'none'; // 'smart' (hover/selection/key), 'all', 'none'
 }
 
 export const DEFAULT_GRAPH_CUSTOMIZATION: GraphCustomizationState = {
@@ -98,9 +123,10 @@ export const DEFAULT_GRAPH_CUSTOMIZATION: GraphCustomizationState = {
   nodeLabelSize: 12.5,
   edgeThickness: 2,
   edgeLabelSize: 11,
-  showEdgeLabels: true,
+  showEdgeLabels: false, // Default to false: edge labels appear on hover only
   showNodePhotos: true,
   colorMode: 'category',
+  labelDensityMode: 'smart',
 };
 
 export interface Command {
@@ -159,6 +185,21 @@ export interface GraphStoreState {
   setGraphCustomization: (settings: Partial<GraphCustomizationState>) => void;
   resetGraphCustomization: () => void;
 
+  // Visibility & Display Management (Nodes & Edges)
+  visibleNodeLabelTypes: Set<string>; // Types whose labels are shown by default (e.g. 'personne')
+  forcedVisibleNodeLabelIds: Set<string>; // Node IDs explicitly forced to show label
+  forcedHiddenNodeLabelIds: Set<string>; // Node IDs explicitly forced to hide label
+  edgeLabelMode: 'hover' | 'always' | 'none'; // 'hover' (default), 'always', 'none'
+  edgeLabelConnectedNodeTypes: Set<string>; // Show edge labels if connected to these node types (e.g. 'personne')
+  hiddenEdgeCategories: Set<string>; // Categories of edges hidden from canvas
+
+  toggleVisibleNodeLabelType: (typeKey: string) => void;
+  setNodeLabelPreset: (preset: 'personne_only' | 'targets' | 'all' | 'none') => void;
+  toggleForcedNodeLabelId: (nodeId: string) => void;
+  setEdgeLabelMode: (mode: 'hover' | 'always' | 'none') => void;
+  toggleEdgeLabelConnectedNodeType: (typeKey: string) => void;
+  toggleHiddenEdgeCategory: (categoryKey: string) => void;
+
   // Feature 2: Node Rename & Details Update
   updateNodeLabel: (nodeId: string, label: string) => Promise<void>;
   updateNodeDetails: (
@@ -213,7 +254,14 @@ export interface GraphStoreState {
   applyLayout: (layoutType: GraphLayoutType) => void;
   setLinkMode: (active: boolean) => void;
   setLinkSourceNodeId: (id: string | null) => void;
-  createManualEdge: (sourceId: string, targetId: string) => void;
+  createManualEdge: (
+    sourceId: string,
+    targetId: string,
+    relationType?: string,
+    layer?: LayerId,
+    confidence?: number,
+    notes?: string
+  ) => void;
 
   // Canvas Node Position actions (with reversible command)
   updateNodePosition: (nodeId: string, x: number, y: number, recordHistory?: boolean) => void;
@@ -276,6 +324,86 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     })),
   resetGraphCustomization: () =>
     set({ graphCustomization: DEFAULT_GRAPH_CUSTOMIZATION }),
+
+  // Visibility & Display Management State & Actions
+  visibleNodeLabelTypes: new Set(['personne']),
+  forcedVisibleNodeLabelIds: new Set(),
+  forcedHiddenNodeLabelIds: new Set(),
+  edgeLabelMode: 'hover',
+  edgeLabelConnectedNodeTypes: new Set(),
+  hiddenEdgeCategories: new Set(),
+
+  toggleVisibleNodeLabelType: (typeKey) =>
+    set((state) => {
+      const next = new Set(state.visibleNodeLabelTypes);
+      if (next.has(typeKey)) next.delete(typeKey);
+      else next.add(typeKey);
+      return { visibleNodeLabelTypes: next };
+    }),
+
+  setNodeLabelPreset: (preset) =>
+    set((state) => {
+      if (preset === 'personne_only') {
+        return {
+          visibleNodeLabelTypes: new Set(['personne']),
+          forcedVisibleNodeLabelIds: new Set(),
+          forcedHiddenNodeLabelIds: new Set(),
+        };
+      }
+      if (preset === 'targets') {
+        return {
+          visibleNodeLabelTypes: new Set(['personne', 'entreprise', 'vehicule']),
+          forcedVisibleNodeLabelIds: new Set(),
+          forcedHiddenNodeLabelIds: new Set(),
+        };
+      }
+      if (preset === 'all') {
+        const allTypes = new Set(state.nodes.map((n) => n.type));
+        return {
+          visibleNodeLabelTypes: allTypes,
+          forcedVisibleNodeLabelIds: new Set(),
+          forcedHiddenNodeLabelIds: new Set(),
+        };
+      }
+      return {
+        visibleNodeLabelTypes: new Set(),
+        forcedVisibleNodeLabelIds: new Set(),
+        forcedHiddenNodeLabelIds: new Set(),
+      };
+    }),
+
+  toggleForcedNodeLabelId: (nodeId) =>
+    set((state) => {
+      const nextVis = new Set(state.forcedVisibleNodeLabelIds);
+      const nextHid = new Set(state.forcedHiddenNodeLabelIds);
+      if (nextVis.has(nodeId)) {
+        nextVis.delete(nodeId);
+        nextHid.add(nodeId);
+      } else if (nextHid.has(nodeId)) {
+        nextHid.delete(nodeId);
+      } else {
+        nextVis.add(nodeId);
+      }
+      return { forcedVisibleNodeLabelIds: nextVis, forcedHiddenNodeLabelIds: nextHid };
+    }),
+
+  setEdgeLabelMode: (mode) => set({ edgeLabelMode: mode }),
+
+  toggleEdgeLabelConnectedNodeType: (typeKey) =>
+    set((state) => {
+      const next = new Set(state.edgeLabelConnectedNodeTypes);
+      if (next.has(typeKey)) next.delete(typeKey);
+      else next.add(typeKey);
+      return { edgeLabelConnectedNodeTypes: next };
+    }),
+
+  toggleHiddenEdgeCategory: (categoryKey) =>
+    set((state) => {
+      const next = new Set(state.hiddenEdgeCategories);
+      if (next.has(categoryKey)) next.delete(categoryKey);
+      else next.add(categoryKey);
+      return { hiddenEdgeCategories: next };
+    }),
 
   contextMenu: {
     isOpen: false,
@@ -641,7 +769,7 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     set({ linkSourceNodeId: id });
   },
 
-  createManualEdge: (sourceId, targetId) => {
+  createManualEdge: (sourceId, targetId, relationType, layer, confidence, notes) => {
     const { nodes, edges } = get();
     const sourceNode = nodes.find((n) => n.id === sourceId);
     const targetNode = nodes.find((n) => n.id === targetId);
@@ -657,16 +785,20 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
       return;
     }
 
+    const finalType = relationType || 'CORRESPONDS_TO';
+    const finalLayer: LayerId = layer || 'HYPOTHESIS';
+    const finalConf = typeof confidence === 'number' ? confidence : 0.9;
+
     const newEdge: GraphEdge = {
       id: `edge-manual-${Date.now()}`,
       case_id: get().activeCase?.id || 'case-candy-wheels',
       source_id: sourceId,
       target_id: targetId,
-      type: 'CORRESPONDS_TO',
-      layer: 'HYPOTHESIS',
-      confidence: 1.0,
+      type: finalType,
+      layer: finalLayer,
+      confidence: finalConf,
       provenance: 'INVESTIGATOR_MANUAL',
-      properties: { label: 'Liaison directe' },
+      properties: { label: notes || finalType },
     };
 
     const previousEdges = edges;
@@ -679,7 +811,7 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
 
     get().executeCommand({
       id: `create-manual-edge-${newEdge.id}`,
-      description: `Créer liaison : ${sourceNode.label} -> ${targetNode.label}`,
+      description: `Créer liaison : ${sourceNode.label} -> ${targetNode.label} (${finalType})`,
       undo: () => {
         set({ edges: get().edges.filter((e) => e.id !== newEdge.id) });
       },

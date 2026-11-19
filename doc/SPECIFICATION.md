@@ -15,6 +15,8 @@
 - [Chapitre 06 : Outils Forensiques DFIR & Fonctions SOTA d'Analyse Réseau (SNA / SNS)](#chapitre-06--outils-forensiques-dfir--fonctions-sota-danalyse-réseau-sna--sns)
 - [Chapitre 07 : Feuille de Route Agile en 6 Phases Incrémentales](#chapitre-07--feuille-de-route-agile-en-6-phases-incrémentales)
 - [Chapitre 08 : Simulateur Interactif d'Application (Studio Maquette)](#chapitre-08--simulateur-interactif-dapplication-studio-maquette)
+- [Chapitre 09 : Topologie Physique 3 Serveurs, Attributs GPS & Panneaux Ajustables](#chapitre-09--topologie-physique-3-serveurs-attributs-gps--panneaux-ajustables)
+- [Chapitre 10 : Sources de Collecte (OSN, RSS, Streaming) & Fusion d'Entités Multi-Sources](#chapitre-10--sources-de-collecte-osn-rss-streaming--fusion-dentités-multi-sources)
 
 ---
 
@@ -188,3 +190,47 @@ Les entités suivantes portent des coordonnées géographiques (`gps_lat`, `gps_
 
 ### 9.4 Ergonomie des Panneaux Latéraux Coulissants & Ajustables
 Les panneaux gauche (Accordéon) et droit (Inspecteur contextuel) de l'application web sont **coulissants** (repliables via boutons ou raccourcis clavier `[` et `]`) et **ajustables** en largeur via des poignées séparatrices (`col-resize`, avec persistance `localStorage`), tout en garantissant au minimum 50% de largeur au canevas central.
+
+---
+
+## Chapitre 10 : Sources de Collecte (OSN, RSS, Streaming) & Fusion d'Entités Multi-Sources
+
+### 10.1 Sources de Données OSINT, Réseaux Sociaux (OSN), Flux RSS & Streaming Continu
+Le pipeline d'acquisition (Layer 1 & Layer 2) couvre trois familles de sources ouvertes et flux continus :
+
+1. **Réseaux Sociaux & Plateformes Communautaires (OSN)** :
+   - **Facebook** : Profils, Pages, Groupes publics/fermés, annonces *Facebook Marketplace* et *Meta Ad Library*.
+   - **Instagram** : Profils, publications, Reels, Stories archivées, graphes d'abonnés et commentaires.
+   - **X (Twitter)** : Flux de publications, threads, métadonnées de comptes, géolocalisations et discussions *Spaces*.
+   - **Telegram** : Chaînes publiques et groupes d'intérêt via protocole MTProto (messages, médias, listes de membres, transferts).
+   - **TikTok** : Profils utilisateurs (`secUid`), vidéos courtes, pistes audio associées et arbres de commentaires.
+   - **YouTube** : Chaînes, vidéos, commentaires, sous-titres et métadonnées de publication via crawler dédié.
+   - **Reddit** : Subreddits, fils de discussion, historiques d'auteurs et liens externes partagés.
+   - **4chan & Forums Anonymes** : Surveillance et archivage de boards/threads éphémères, extraction de médias et d'empreintes de fichiers.
+
+2. **Flux Syndiqués & Crawlers Web (Flux RSS / Atom)** :
+   - Collecte périodique automatisée de flux **RSS / Atom** (portails d'actualités nationaux et régionaux, communiqués officiels, blogs spécialisés, flux d'alertes cyber et moniteurs de fuites).
+   - Crawlers web ciblés avec archivage probatoire automatique au format **ISO 28500 WARC** et scellement SHA-256.
+
+3. **Surveillance de Chaînes & Plateformes de Streaming en Temps Réel (Streaming Collection)** :
+   - Connecteurs d'écoute continue pour les flux **Live & Streaming** (*YouTube Live, TikTok Live, Facebook Live, Twitch, flux HLS / RTMP / IPTV*).
+   - Segmentation temporelle automatique des flux audio/vidéo en fenêtres horodatées UTC, extraction des images clés (*keyframes*), transcription vocale à la volée (*Faster-Whisper Darija / Arabe / Français*), diarisation des locuteurs (*PyAnnote*) et indexation des chats en direct.
+
+### 10.2 Stratégie d'Unification et de Fusion des Entités (Data Fusion & Entity Resolution)
+Les données issues de sources hétérogènes (OSN, RSS, streaming, réquisitions télécoms, PV judiciaires) désignent souvent une même entité réelle sous des graphies ou identifiants différents. Le moteur de **Data Fusion (Entity Resolution)** applique un pipeline en 4 étapes :
+
+1. **Étape 1 — Normalisation Canonique Déterministe** :
+   - **Identifiants Techniques** : Numéros de téléphone convertis au format strict `E.164` (`+213...`) ; RIP/CCP Algérie Poste (20 chiffres) ; immatriculations véhicules DZ normalisées ; extraction des identifiants numériques immuables des plateformes (`platform_uid` Facebook, Telegram `peer_id`, TikTok `secUid`) indépendamment des changements de `@handle`.
+   - **Noms & Translittération Bilingue (Français / Arabe / Darija)** : Normalisation Unicode (`NFKC`), retrait du *tashkeel* (diacritiques arabes), table de correspondance phonétique et translittération bidirectionnelle Latin $\leftrightarrow$ Arabe pour unifier les variantes courantes (ex. `Mohamed` / `Mohammed` / `M'hamed` / `محمد` ; `Benali` / `Ben Ali` / `بن علي`).
+
+2. **Étape 2 — Calcul de Score d'Appariement Multi-Critères ($S_{\text{fusion}} \in [0, 1]$)** :
+   - **Clés Dures (Hard Identifiers)** : Correspondance exacte sur un identifiant technique vérifié (même E.164, même NIN, même RIP/IBAN, même `platform_uid`).
+   - **Clés Lexico-Phonétiques (Soft Identifiers)** : Combinaison pondérée de la similarité Jaro-Winkler sur les noms normalisés, de l'équivalence phonétique FR/AR et de la proximité des pseudonymes (`@handle`) inter-plateformes.
+   - **Signaux Graphiques & Biométriques** : Recoupement du voisinage relationnel (contacts/appareils communs en commun) et similarité biométrique (vecteurs faciaux ArcFace 512-d ou empreinte vocale) lorsque disponibles.
+
+3. **Étape 3 — Gouvernance Forensique ISO 27037 & Validation Humaine (Review-Run)** :
+   - **Aucune fusion automatique destructive sur le Calque 1 (`VERIFIED`)** : Conformément à la norme ISO/IEC 27037, une entité issue d'une source OSINT ne fusionne jamais silencieusement avec une identité judiciaire vérifiée.
+   - **File de Triage (`Clues Inbox / Review-Run`)** : Tout candidat à la fusion génère une proposition explicite (`ENTITY_MERGE_CANDIDATE`) affichant le score, la méthode de rapprochement et les sources comparées. L'enquêteur valide ou rejette la fusion avec motif obligatoire enregistré dans le registre d'audit chaîné SHA-256.
+
+4. **Étape 4 — Entité Unifiée (Golden Record) & Traçabilité Réversible (Lineage)** :
+   - L'entité fusionnée conserve un `canonical_label` principal, un tableau exhaustif `aliases[]` (toutes les variantes latines, arabes et pseudonymes observés) ainsi qu'un journal `provenance_sources[]` référençant chaque artefact d'origine, permettant la **dissociation (Unmerge / Split)** sans perte de données si un faux positif est découvert ultérieurement.

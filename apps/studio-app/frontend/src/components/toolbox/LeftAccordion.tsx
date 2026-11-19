@@ -34,6 +34,18 @@ const LAYER_KEYS: LayerId[] = ['VERIFIED', 'OSINT_RAW', 'INFRA', 'HYPOTHESIS', '
 
 type DomainType = 'all' | 'territory' | 'actors' | 'telecom' | 'finance' | 'socmint' | 'cyber' | 'biometrics' | 'legal';
 
+const DOMAIN_COLORS: Record<DomainType, string> = {
+  all: '#94a3b8',
+  territory: 'var(--color-domain-territoire, #10b981)',
+  actors: 'var(--color-domain-acteurs, #3b82f6)',
+  telecom: 'var(--color-domain-telecoms, #6366f1)',
+  finance: 'var(--color-domain-finances, #f59e0b)',
+  socmint: 'var(--color-domain-socmint, #06b6d4)',
+  cyber: 'var(--color-domain-cyber, #e11d48)',
+  biometrics: 'var(--color-domain-biometrie, #a855f7)',
+  legal: 'var(--color-domain-preuve, #ea580c)',
+};
+
 interface NodeItemDef {
   key: string;
   domain: DomainType;
@@ -321,18 +333,38 @@ export const LeftAccordion: React.FC<LeftAccordionProps> = ({
               {isLinkMode && <Check size={12} />}
             </button>
 
-            {/* Domain Filter Chips */}
+            {/* Domain Filter Chips with Distinct Hues */}
             <div className="toolbox-domain-selector" role="tablist" aria-label={tr('Filtrer les entités par domaine')}>
-              {domainChips.map(([domKey, domLabel]) => (
-                <button
-                  key={domKey}
-                  type="button"
-                  className={`toolbox-domain-chip ${selectedDomain === domKey ? 'active' : ''}`}
-                  onClick={() => setSelectedDomain(domKey)}
-                >
-                  {domLabel}
-                </button>
-              ))}
+              {domainChips.map(([domKey, domLabel]) => {
+                const isActive = selectedDomain === domKey;
+                const domColor = DOMAIN_COLORS[domKey];
+                return (
+                  <button
+                    key={domKey}
+                    type="button"
+                    className={`toolbox-domain-chip ${isActive ? 'active' : ''}`}
+                    onClick={() => setSelectedDomain(domKey)}
+                    style={{
+                      borderColor: isActive ? domColor : undefined,
+                      backgroundColor: isActive ? `color-mix(in srgb, ${domColor} 18%, transparent)` : undefined,
+                      color: isActive ? domColor : undefined,
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        width: '7px',
+                        height: '7px',
+                        borderRadius: 'var(--radius-full)',
+                        backgroundColor: domColor,
+                        marginInlineEnd: '5px',
+                        boxShadow: isActive ? `0 0 6px ${domColor}` : undefined,
+                      }}
+                    />
+                    <span>{domLabel}</span>
+                  </button>
+                );
+              })}
             </div>
 
             <div className="toolbox-grid-header">
@@ -340,12 +372,13 @@ export const LeftAccordion: React.FC<LeftAccordionProps> = ({
               <span className="font-mono text-muted">{tr('{n} types', { n: filteredNodes.length })}</span>
             </div>
 
-            {/* Auto-responsive Grid of Node Items (Icon + Type only) */}
+            {/* Auto-responsive Grid of Node Items (Icon + Type with Domain Colors) */}
             <div className="toolbox-nodes-grid" role="list">
               {filteredNodes.map((item) => {
                 const typeDef = registry.node_types[item.key];
                 const nodeLabel = labelHelper(typeDef, item.key);
                 const iconName = typeDef?.icon || 'help-circle';
+                const domColor = DOMAIN_COLORS[item.domain];
 
                 return (
                   <div
@@ -356,16 +389,22 @@ export const LeftAccordion: React.FC<LeftAccordionProps> = ({
                     onClick={() => onAddNodeAtCenter(item.key)}
                     role="listitem"
                     tabIndex={0}
+                    style={{
+                      borderInlineStart: `3px solid ${domColor}`,
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
                         onAddNodeAtCenter(item.key);
                       }
                     }}
-                    title={tr('Cliquer pour ajouter au centre ou glisser sur le canevas : {label}', { label: nodeLabel })}
+                    title={tr('Cliquer pour ajouter au centre ou glisser sur le canevas : {label} ({domain})', {
+                      label: nodeLabel,
+                      domain: item.domain,
+                    })}
                   >
                     <span className="node-drag-icon">
-                      <NodeIcon name={iconName} size={15} />
+                      <NodeIcon name={iconName} size={15} style={{ color: domColor }} />
                     </span>
                     <span className="node-drag-title">{nodeLabel}</span>
                   </div>

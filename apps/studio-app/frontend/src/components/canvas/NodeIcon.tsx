@@ -86,6 +86,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: 
 };
 
 export const NodeIcon: React.FC<NodeIconProps> = ({ name, size = 20, className, style }) => {
-  const Component = ICON_MAP[name.toLowerCase()] || HelpCircle;
+  const iconKey = (name || '').toLowerCase();
+  const Component = ICON_MAP[iconKey] || HelpCircle;
   return <Component size={size} className={className} style={style} aria-hidden="true" />;
 };

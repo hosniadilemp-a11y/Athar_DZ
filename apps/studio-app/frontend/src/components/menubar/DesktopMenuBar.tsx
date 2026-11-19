@@ -4,6 +4,7 @@ import {
   Sun,
   Moon,
   ChevronDown,
+  ChevronRight,
   User,
   Target,
   Share2,
@@ -24,6 +25,9 @@ interface DesktopMenuBarProps {
   onChangeView: (view: ActiveViewMode) => void;
   onOpenExport: () => void;
   onOpenCaseProps: () => void;
+  onNewCase?: () => void;
+  onOpenCaseList?: () => void;
+  onSaveCase?: () => void;
   onOpenToolInfo: (tool: ToolSpec) => void;
   onTriggerPhaseNotice: (featureName: string, targetPhase: string) => void;
   onAddNode: (typeKey: string) => void;
@@ -39,6 +43,9 @@ export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
   onChangeView,
   onOpenExport,
   onOpenCaseProps,
+  onNewCase,
+  onOpenCaseList,
+  onSaveCase,
   onOpenToolInfo,
   onTriggerPhaseNotice,
   onAddNode,
@@ -136,7 +143,8 @@ export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
               role="menuitem"
               onClick={() => {
                 closeDropdown();
-                onOpenCaseProps();
+                if (onNewCase) onNewCase();
+                else onOpenCaseProps();
               }}
             >
               <span>Nouveau Dossier d&apos;Enquête...</span>
@@ -148,7 +156,8 @@ export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
               role="menuitem"
               onClick={() => {
                 closeDropdown();
-                onOpenCaseProps();
+                if (onOpenCaseList) onOpenCaseList();
+                else onOpenCaseProps();
               }}
             >
               <span>Ouvrir un Dossier...</span>
@@ -160,7 +169,11 @@ export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
               role="menuitem"
               onClick={() => {
                 closeDropdown();
-                alert('Affaire enregistrée dans la base PostgreSQL/TimescaleDB.');
+                if (onSaveCase) {
+                  onSaveCase();
+                } else {
+                  toast.success(tr('Affaire enregistrée et scellée dans la base PostgreSQL / TimescaleDB.'), tr('Enregistrement'));
+                }
               }}
             >
               <span>Enregistrer</span>
@@ -546,7 +559,7 @@ export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
             <span>{t.menuOsna}</span>
             <ChevronDown size={11} />
           </button>
-          <div className={`menu-dropdown menu-dropdown-categorized ${openMenu === 'osns' ? 'is-open' : ''}`} role="menu">
+          <div className={`menu-dropdown menu-dropdown-categorized menu-dropdown-has-flyout ${openMenu === 'osns' ? 'is-open' : ''}`} role="menu">
             <div className="menu-category-header">Profilage Plateformes Sociales (SOCMINT)</div>
             <button
               type="button"
@@ -600,201 +613,285 @@ export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
             <div className="menu-category-header">Analyses Forensiques des Réseaux Criminels (16 Outils)</div>
 
             {/* Catégorie 1 : Rôles & Cibles Clés (Centralité) */}
-            <div className="menu-category-subheader">Rôles &amp; Cibles Clés (Centralité) (5)</div>
-            <button
-              type="button"
-              className="menu-dropdown-item"
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onToggleSna('betweenness');
-              }}
-            >
-              <span>Pivots &amp; Intermédiaires Clés (Betweenness)</span>
-            </button>
-            <button
-              type="button"
-              className="menu-dropdown-item"
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onToggleSna('pagerank');
-              }}
-            >
-              <span>Têtes de Réseau &amp; Commanditaires (PageRank)</span>
-            </button>
-            <button
-              type="button"
-              className="menu-dropdown-item"
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onToggleSna('personalized_pagerank');
-              }}
-            >
-              <span>Entourage Direct d&apos;une Cible (Personalized PR)</span>
-            </button>
-            <button
-              type="button"
-              className="menu-dropdown-item"
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onToggleSna('degree_centrality');
-              }}
-            >
-              <span>Volume Global de Contacts (Degree Centrality)</span>
-            </button>
-            <button
-              type="button"
-              className="menu-dropdown-item"
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onToggleSna('closeness_eigenvector');
-              }}
-            >
-              <span>Rapidité d&apos;Alerte &amp; Influence (Closeness)</span>
-            </button>
+            <div className="menu-nested-group">
+              <button
+                type="button"
+                className="menu-dropdown-item"
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                onClick={() => {
+                  closeDropdown();
+                  onToggleSna('betweenness');
+                }}
+              >
+                <span>1. Rôles &amp; Cibles Clés (Centralité)</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span className="phase-badge" style={{ backgroundColor: 'rgba(59, 130, 246, 0.2)', color: '#3b82f6' }}>5</span>
+                  <ChevronRight size={13} />
+                </span>
+              </button>
+              <div className="menu-flyout-panel">
+                <button
+                  type="button"
+                  className="menu-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    closeDropdown();
+                    onToggleSna('betweenness');
+                  }}
+                >
+                  <span>Pivots &amp; Intermédiaires Clés (Betweenness)</span>
+                </button>
+                <button
+                  type="button"
+                  className="menu-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    closeDropdown();
+                    onToggleSna('pagerank');
+                  }}
+                >
+                  <span>Têtes de Réseau &amp; Commanditaires (PageRank)</span>
+                </button>
+                <button
+                  type="button"
+                  className="menu-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    closeDropdown();
+                    onToggleSna('personalized_pagerank');
+                  }}
+                >
+                  <span>Entourage Direct d&apos;une Cible (Personalized PR)</span>
+                </button>
+                <button
+                  type="button"
+                  className="menu-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    closeDropdown();
+                    onToggleSna('degree_centrality');
+                  }}
+                >
+                  <span>Volume Global de Contacts (Degree Centrality)</span>
+                </button>
+                <button
+                  type="button"
+                  className="menu-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    closeDropdown();
+                    onToggleSna('closeness_eigenvector');
+                  }}
+                >
+                  <span>Rapidité d&apos;Alerte &amp; Influence (Closeness)</span>
+                </button>
+              </div>
+            </div>
 
             {/* Catégorie 2 : Cellules & Clans Détectés */}
-            <div className="menu-category-subheader">Cellules &amp; Clans Détectés (2)</div>
-            <button
-              type="button"
-              className="menu-dropdown-item"
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onToggleSna('louvain');
-              }}
-            >
-              <span>Cartographie des Cellules &amp; Clans (Louvain)</span>
-            </button>
-            <button
-              type="button"
-              className="menu-dropdown-item"
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onToggleSna('label_propagation');
-              }}
-            >
-              <span>Propagation de la Suspicion (Label Propagation)</span>
-            </button>
+            <div className="menu-nested-group">
+              <button
+                type="button"
+                className="menu-dropdown-item"
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                onClick={() => {
+                  closeDropdown();
+                  onToggleSna('louvain');
+                }}
+              >
+                <span>2. Cellules &amp; Clans Détectés</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span className="phase-badge" style={{ backgroundColor: 'rgba(16, 185, 129, 0.2)', color: '#10b981' }}>2</span>
+                  <ChevronRight size={13} />
+                </span>
+              </button>
+              <div className="menu-flyout-panel">
+                <button
+                  type="button"
+                  className="menu-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    closeDropdown();
+                    onToggleSna('louvain');
+                  }}
+                >
+                  <span>Cartographie des Cellules &amp; Clans (Louvain)</span>
+                </button>
+                <button
+                  type="button"
+                  className="menu-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    closeDropdown();
+                    onToggleSna('label_propagation');
+                  }}
+                >
+                  <span>Propagation de la Suspicion (Label Propagation)</span>
+                </button>
+              </div>
+            </div>
 
             {/* Catégorie 3 : Points de Vulnérabilité du Réseau */}
-            <div className="menu-category-subheader">Points de Vulnérabilité du Réseau (3)</div>
-            <button
-              type="button"
-              className="menu-dropdown-item"
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onToggleSna('articulation_points');
-              }}
-            >
-              <span>Points de Rupture &amp; Goulots (Articulation Points)</span>
-            </button>
-            <button
-              type="button"
-              className="menu-dropdown-item"
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onToggleSna('k_core');
-              }}
-            >
-              <span>Noyau Dur Criminel (K-Core)</span>
-            </button>
-            <button
-              type="button"
-              className="menu-dropdown-item"
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onToggleSna('shortest_path_dijkstra');
-              }}
-            >
-              <span>Chaîne de Liaison Directe (Dijkstra)</span>
-            </button>
+            <div className="menu-nested-group">
+              <button
+                type="button"
+                className="menu-dropdown-item"
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                onClick={() => {
+                  closeDropdown();
+                  onToggleSna('articulation_points');
+                }}
+              >
+                <span>3. Points de Vulnérabilité du Réseau</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span className="phase-badge" style={{ backgroundColor: 'rgba(239, 68, 68, 0.2)', color: '#ef4444' }}>3</span>
+                  <ChevronRight size={13} />
+                </span>
+              </button>
+              <div className="menu-flyout-panel">
+                <button
+                  type="button"
+                  className="menu-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    closeDropdown();
+                    onToggleSna('articulation_points');
+                  }}
+                >
+                  <span>Points de Rupture &amp; Goulots (Articulation Points)</span>
+                </button>
+                <button
+                  type="button"
+                  className="menu-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    closeDropdown();
+                    onToggleSna('k_core');
+                  }}
+                >
+                  <span>Noyau Dur Criminel (K-Core)</span>
+                </button>
+                <button
+                  type="button"
+                  className="menu-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    closeDropdown();
+                    onToggleSna('shortest_path_dijkstra');
+                  }}
+                >
+                  <span>Chaîne de Liaison Directe (Dijkstra)</span>
+                </button>
+              </div>
+            </div>
 
-            {/* Catégorie 4 : Liaisons Suspectes Non Documentées */}
-            <div className="menu-category-subheader">Liaisons Suspectes Non Documentées (2)</div>
-            <button
-              type="button"
-              className="menu-dropdown-item"
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onToggleSna('jaccard');
-              }}
-            >
-              <span>Détection de Complices Probables (Jaccard)</span>
-            </button>
-            <button
-              type="button"
-              className="menu-dropdown-item"
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onToggleSna('adamic_adar');
-              }}
-            >
-              <span>Canaux Clandestins Partagés (Adamic-Adar)</span>
-            </button>
+            {/* Catégorie 4 : Liaisons Suspectes & Prédiction */}
+            <div className="menu-nested-group">
+              <button
+                type="button"
+                className="menu-dropdown-item"
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                onClick={() => {
+                  closeDropdown();
+                  onToggleSna('jaccard');
+                }}
+              >
+                <span>4. Liaisons Suspectes &amp; Prédiction</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span className="phase-badge" style={{ backgroundColor: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b' }}>2</span>
+                  <ChevronRight size={13} />
+                </span>
+              </button>
+              <div className="menu-flyout-panel">
+                <button
+                  type="button"
+                  className="menu-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    closeDropdown();
+                    onToggleSna('jaccard');
+                  }}
+                >
+                  <span>Détection de Complices Probables (Jaccard)</span>
+                </button>
+                <button
+                  type="button"
+                  className="menu-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    closeDropdown();
+                    onToggleSna('adamic_adar');
+                  }}
+                >
+                  <span>Canaux Clandestins Partagés (Adamic-Adar)</span>
+                </button>
+              </div>
+            </div>
 
-            {/* Catégorie 5 : Typologie & Profilage des Rôles */}
-            <div className="menu-category-subheader">Typologie &amp; Profilage des Rôles (1)</div>
-            <button
-              type="button"
-              className="menu-dropdown-item"
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onToggleSna('node_classification');
-              }}
-            >
-              <span>Profilage par Rôle Judiciaire</span>
-            </button>
-
-            {/* Catégorie 6 : Filtrage Probatoire & Temporel */}
-            <div className="menu-category-subheader">Filtrage Probatoire &amp; Temporel (2)</div>
-            <button
-              type="button"
-              className="menu-dropdown-item"
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onToggleSna('threshold_expand');
-              }}
-            >
-              <span>Filtrage par Seuil de Preuve</span>
-            </button>
-            <button
-              type="button"
-              className="menu-dropdown-item"
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onToggleSna('temporal_subgraph');
-              }}
-            >
-              <span>Séquence Chronologique des Faits</span>
-            </button>
-
-            {/* Catégorie 7 : Canaux Géographiques & Télécoms */}
-            <div className="menu-category-subheader">Canaux Géographiques &amp; Télécoms (1)</div>
-            <button
-              type="button"
-              className="menu-dropdown-item"
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onToggleSna('activity_sector');
-              }}
-            >
-              <span>Canaux Opérationnels &amp; Financiers</span>
-            </button>
+            {/* Catégorie 5 : Profilage & Sous-Graphes Ciblés */}
+            <div className="menu-nested-group">
+              <button
+                type="button"
+                className="menu-dropdown-item"
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                onClick={() => {
+                  closeDropdown();
+                  onToggleSna('node_classification');
+                }}
+              >
+                <span>5. Profilage &amp; Sous-Graphes Ciblés</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span className="phase-badge" style={{ backgroundColor: 'rgba(139, 92, 246, 0.2)', color: '#8b5cf6' }}>4</span>
+                  <ChevronRight size={13} />
+                </span>
+              </button>
+              <div className="menu-flyout-panel">
+                <button
+                  type="button"
+                  className="menu-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    closeDropdown();
+                    onToggleSna('node_classification');
+                  }}
+                >
+                  <span>Profilage par Rôle Judiciaire</span>
+                </button>
+                <button
+                  type="button"
+                  className="menu-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    closeDropdown();
+                    onToggleSna('threshold_expand');
+                  }}
+                >
+                  <span>Filtrage par Seuil de Preuve</span>
+                </button>
+                <button
+                  type="button"
+                  className="menu-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    closeDropdown();
+                    onToggleSna('temporal_subgraph');
+                  }}
+                >
+                  <span>Séquence Chronologique des Faits</span>
+                </button>
+                <button
+                  type="button"
+                  className="menu-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    closeDropdown();
+                    onToggleSna('activity_sector');
+                  }}
+                >
+                  <span>Canaux Opérationnels &amp; Financiers</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 

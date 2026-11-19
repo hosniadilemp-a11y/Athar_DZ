@@ -25,6 +25,7 @@ import {
   Sparkles,
   Save,
   Edit3,
+  Camera,
 } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
 import { useToast } from '../../context/ToastContext';
@@ -582,6 +583,11 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
     };
 
     const wiretap = getDarijaWiretap();
+    const evidencePhoto =
+      (selectedNode.properties?.photo_url as string) ||
+      (selectedNode.properties?.photo as string) ||
+      (selectedNode.properties?.image_url as string) ||
+      null;
     const snaRole = selectedNode.properties?.sna_role;
     const snaScore = selectedNode.properties?.sna_score;
 
@@ -631,8 +637,23 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               borderRadius: 'var(--radius-sm)',
             }}
           >
-            {/* SVG Forensic Avatar */}
-            {selectedNode.type === 'personne' ? (
+            {/* Real Photographic Evidence or SVG Forensic Avatar */}
+            {evidencePhoto ? (
+              <img
+                src={evidencePhoto}
+                alt={selectedNode.label}
+                style={{
+                  width: '68px',
+                  height: '68px',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--color-border-subtle)',
+                  objectFit: 'cover',
+                  background: '#0f172a',
+                  flexShrink: 0,
+                  boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
+                }}
+              />
+            ) : selectedNode.type === 'personne' ? (
               <svg width="68" height="68" viewBox="0 0 100 100" style={{ borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-subtle)', background: '#1e293b', flexShrink: 0 }}>
                 <line x1="8" y1="20" x2="92" y2="20" stroke="#334155" strokeWidth="1" strokeDasharray="2,2" />
                 <line x1="8" y1="35" x2="92" y2="35" stroke="#334155" strokeWidth="1" strokeDasharray="2,2" />
@@ -709,6 +730,49 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Photographic Evidence Exhibit Card */}
+          {Boolean(evidencePhoto) && (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                padding: 'var(--space-2) var(--space-3)',
+                backgroundColor: 'var(--color-bg-surface)',
+                border: '1px solid var(--color-border-subtle)',
+                borderRadius: 'var(--radius-sm)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <Camera size={13} style={{ color: 'var(--color-accent-text)' }} />
+                  Cliché &amp; Pièce Photographique Scellée
+                </span>
+                <span className="chip chip-success" style={{ fontSize: '9.5px', padding: '1px 5px' }}>
+                  Certifié ISO 27037
+                </span>
+              </div>
+              <div style={{ width: '100%', maxHeight: '160px', overflow: 'hidden', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-subtle)' }}>
+                <img
+                  src={evidencePhoto!}
+                  alt={`Scellé photographique ${selectedNode.label}`}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
+              </div>
+              <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontFamily: 'var(--font-mono)' }}>Fichier : {evidencePhoto!.split('/').pop()}</span>
+                <a
+                  href={evidencePhoto!}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ color: 'var(--color-accent-text)', textDecoration: 'underline' }}
+                >
+                  Agrandir plein écran
+                </a>
+              </div>
+            </div>
+          )}
 
           {/* 2. Official SNA Forensic Qualification Ribbon */}
           {Boolean(snaRole) && (

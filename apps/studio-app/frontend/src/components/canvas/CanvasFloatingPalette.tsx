@@ -15,6 +15,7 @@ import {
   GitFork,
   Grid,
   Check,
+  Tag,
 } from 'lucide-react';
 import { useGraphStore, type GraphLayoutType } from '../../store/useGraphStore';
 import { useI18n } from '../../context/I18nContext';
@@ -81,10 +82,18 @@ export const CanvasFloatingPalette: React.FC<CanvasFloatingPaletteProps> = ({
     totalCaseNodes,
     activeLayout,
     applyLayout,
+    graphCustomization,
+    setGraphCustomization,
   } = useGraphStore();
 
   const [isLayoutMenuOpen, setIsLayoutMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const labelMode = graphCustomization?.labelDensityMode || 'smart';
+  const handleCycleLabelMode = () => {
+    const nextMode = labelMode === 'smart' ? 'all' : labelMode === 'all' ? 'none' : 'smart';
+    setGraphCustomization({ labelDensityMode: nextMode });
+  };
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -238,6 +247,26 @@ export const CanvasFloatingPalette: React.FC<CanvasFloatingPaletteProps> = ({
         <Sparkles size={14} className={isImpactView ? 'text-accent' : 'text-muted'} />
         <span className="font-mono text-xs">
           {nodes.length}/{totalCaseNodes || 100}
+        </span>
+      </button>
+
+      {/* Label Density Mode Selector (Anti-crowding) */}
+      <button
+        type="button"
+        className={`btn btn-ghost btn-sm palette-chip-btn ${labelMode !== 'all' ? 'active' : ''}`}
+        onClick={handleCycleLabelMode}
+        aria-label="Densité des libellés du graphe"
+        title={`Mode d'affichage des libellés : ${
+          labelMode === 'smart'
+            ? 'Intelligent (Cibles clés & Survol)'
+            : labelMode === 'all'
+            ? 'Tous les libellés affichés'
+            : 'Épuré (Nœuds seuls / Au clic)'
+        } [Cliquer pour changer]`}
+      >
+        <Tag size={13} className={labelMode === 'smart' ? 'text-accent' : 'text-muted'} />
+        <span className="text-xs" style={{ fontWeight: 600 }}>
+          {labelMode === 'smart' ? 'Survol' : labelMode === 'all' ? 'Tous' : 'Épuré'}
         </span>
       </button>
 

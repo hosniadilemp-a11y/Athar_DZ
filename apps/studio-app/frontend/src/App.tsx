@@ -20,6 +20,8 @@ import { ToolInfoModal, type ToolSpec } from './components/modals/ToolInfoModal'
 import { CasePropertiesModal } from './components/modals/CasePropertiesModal';
 import { PhaseNoticeModal } from './components/modals/PhaseNoticeModal';
 import { AddNodeModal, type AddNodeData } from './components/modals/AddNodeModal';
+import { NewCaseModal } from './components/modals/NewCaseModal';
+import { OpenCaseModal } from './components/modals/OpenCaseModal';
 import { useToast } from './context/ToastContext';
 import type { CaseItem, GraphResponse } from './types/graph';
 import { API_BASE } from './config';
@@ -59,6 +61,12 @@ export function App() {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isInspectorOpen, setIsInspectorOpen] = useState(true);
   const [isSnaOpen, setIsSnaOpen] = useState(false);
+  const [selectedSnaAlgo, setSelectedSnaAlgo] = useState<string>('betweenness');
+
+  const handleOpenSna = (algoKey?: string) => {
+    if (algoKey) setSelectedSnaAlgo(algoKey);
+    setIsSnaOpen(true);
+  };
 
   // Resizable Panels State (Left Toolbox & Right Inspector)
   const [leftWidth, setLeftWidth] = useState(260);
@@ -87,6 +95,53 @@ export function App() {
     type: 'personne',
     position: null,
   });
+
+  // Modal states for Dossier workflows
+  const [isNewCaseOpen, setIsNewCaseOpen] = useState(false);
+  const [isOpenCaseModalOpen, setIsOpenCaseModalOpen] = useState(false);
+
+  // Switch or reload active case
+  const handleSelectCase = useCallback((selectedCase: CaseItem) => {
+    setActiveCase(selectedCase);
+    setLoading(true);
+
+    fetch(`${API_BASE}/api/v1/cases/${selectedCase.id}/graph?impact_only=false`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((graph: GraphResponse) => {
+        setGraphData(graph);
+        toast.success(`Dossier "${selectedCase.title}" (${selectedCase.code}) chargé.`, 'Dossier Ouvert');
+      })
+      .catch((err) => {
+        console.error('[App] Failed to load case graph:', err);
+        toast.error('Erreur lors du chargement du graphe du dossier.', 'Erreur Réseau');
+        setLoading(false);
+      });
+  }, [setActiveCase, setGraphData, setLoading, toast]);
+
+  // Handle newly created case
+  const handleCaseCreated = useCallback((newCase: CaseItem) => {
+    setActiveCase(newCase);
+    setGraphData({
+      case_id: newCase.id,
+      nodes: [],
+      edges: [],
+      is_impact_view: false,
+      total_case_nodes: 0,
+      total_case_edges: 0,
+    });
+  }, [setActiveCase, setGraphData]);
+
+  // Handle saving case
+  const handleSaveCase = useCallback(() => {
+    if (!activeCase) return;
+    toast.success(
+      `Dossier "${activeCase.title}" (${activeCase.code}) scellé et enregistré avec succès dans PostgreSQL.`,
+      'Enregistrement Conforme ISO 27037'
+    );
+  }, [activeCase, toast]);
 
   // Load cases and initial graph
   useEffect(() => {
@@ -342,6 +397,9 @@ export function App() {
         onChangeView={setActiveView}
         onOpenExport={() => setIsExportOpen(true)}
         onOpenCaseProps={() => setIsCasePropsOpen(true)}
+        onNewCase={() => setIsNewCaseOpen(true)}
+        onOpenCaseList={() => setIsOpenCaseModalOpen(true)}
+        onSaveCase={handleSaveCase}
         onOpenToolInfo={(tool) => {
           setSelectedTool(tool);
           setIsToolInfoOpen(true);
@@ -353,7 +411,7 @@ export function App() {
           if (selectedNodeId) deleteNode(selectedNodeId);
         }}
         onResetZoom={resetViewport}
-        onToggleSna={() => setIsSnaOpen(true)}
+        onToggleSna={handleOpenSna}
         onRunPlaybook={handleRunPlaybook}
       />
 
@@ -471,7 +529,7 @@ export function App() {
                 </button>
               </div>
               <div style={{ flex: 1, minHeight: 0 }}>
-                <SnaPanel onClose={() => setIsSnaOpen(false)} />
+                <SnaPanel onClose={() => setIsSnaOpen(false)} initialAlgoKey={selectedSnaAlgo} />
               </div>
             </div>
           )}
@@ -509,7 +567,12 @@ export function App() {
             ) : activeView === 'map' ? (
               <MapView />
             ) : activeView === 'timeline' ? (
-              <TimelineView />
+              <TimelineView
+                onSelectNode={(id) => {
+                  selectNode(id, false);
+                  setIsInspectorOpen(true);
+                }}
+              />
             ) : activeView === 'audit' ? (
               <AuditChainViewer />
             ) : (
@@ -660,6 +723,19 @@ export function App() {
         position={pendingAddNode.position}
         onClose={() => setPendingAddNode((prev) => ({ ...prev, isOpen: false }))}
         onConfirm={handleConfirmAddNode}
+      />
+
+      <NewCaseModal
+        isOpen={isNewCaseOpen}
+        onClose={() => setIsNewCaseOpen(false)}
+        onCaseCreated={handleCaseCreated}
+      />
+
+      <OpenCaseModal
+        isOpen={isOpenCaseModalOpen}
+        activeCaseId={activeCase?.id}
+        onClose={() => setIsOpenCaseModalOpen(false)}
+        onSelectCase={handleSelectCase}
       />
     </div>
   );

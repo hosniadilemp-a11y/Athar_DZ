@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import type { GraphEdge, GraphNode } from '../../types/graph';
 import type { LayerId } from '../../types/registry';
 import { useGraphStore } from '../../store/useGraphStore';
+import { useI18n } from '../../context/I18nContext';
+import { getRelationLabel } from '../../i18n/phrases/relations';
 
 interface EdgeLineProps {
   edge: GraphEdge;
   sourceNode: GraphNode | undefined;
   targetNode: GraphNode | undefined;
   isSelected: boolean;
+  zoom?: number;
   onSelect: (edgeId: string) => void;
 }
 
@@ -24,10 +27,13 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
   sourceNode,
   targetNode,
   isSelected,
+  zoom,
   onSelect,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const graphCustomization = useGraphStore((s) => s.graphCustomization);
+  const selectedNodeId = useGraphStore((s) => s.selectedNodeId);
+  const { locale } = useI18n();
 
   if (!sourceNode || !targetNode) return null;
   const x1 = sourceNode.x ?? 0;
@@ -40,9 +46,12 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
   const dist = Math.sqrt(dx * dx + dy * dy);
   if (dist === 0) return null;
 
-  // Shorten line to node edge boundaries (radius ~ 28px)
-  const rSrc = (sourceNode.radius ?? 28) + 2;
-  const rTgt = (targetNode.radius ?? 28) + 4;
+  // Dynamically adapt arrow endpoint to actual node radius
+  const baseNodeSize = graphCustomization?.nodeSize || 64;
+  const srcBaseRadius = (sourceNode.radius && sourceNode.radius !== 28 ? sourceNode.radius : baseNodeSize / 2);
+  const tgtBaseRadius = (targetNode.radius && targetNode.radius !== 28 ? targetNode.radius : baseNodeSize / 2);
+  const rSrc = srcBaseRadius + 2;
+  const rTgt = tgtBaseRadius + 4;
 
   const startX = x1 + (dx * rSrc) / dist;
   const startY = y1 + (dy * rSrc) / dist;
@@ -59,14 +68,45 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
   const conf = typeof edge.confidence === 'number' ? edge.confidence : 0.85;
   const userThicknessMultiplier = (graphCustomization?.edgeThickness || 2) / 2;
   const baseThickness = Math.max(1.5, Math.min(4.5, conf * 3.5)) * userThicknessMultiplier;
-  const finalStrokeWidth = isSelected ? baseThickness + 1.8 : isHovered ? baseThickness + 1.0 : baseThickness;
+  const edgeLabelMode = useGraphStore((s) => s.edgeLabelMode);
+  const edgeLabelConnectedNodeTypes = useGraphStore((s) => s.edgeLabelConnectedNodeTypes);
 
-  const showLabels = graphCustomization?.showEdgeLabels !== false;
+  // Link to specific node types if chosen by user (e.g. user selected 'personne'):
+  const isConnectedToMonitoredType = Boolean(
+    (sourceNode && edgeLabelConnectedNodeTypes?.has(sourceNode.type)) ||
+    (targetNode && edgeLabelConnectedNodeTypes?.has(targetNode.type))
+  );
+
+  const isEndpointSelected = Boolean(selectedNodeId && (selectedNodeId === edge.source_id || selectedNodeId === edge.target_id));
+  const finalStrokeWidth = isSelected ? baseThickness + 1.8 : (isHovered || isEndpointSelected) ? baseThickness + 1.0 : baseThickness;
+
+  const isFarZoom = zoom !== undefined && zoom < 0.65;
+
+  // Strict decluttering per user request:
+  // Edge labels are HIDDEN by default, and displayed:
+  // - strictly on hover (isHovered)
+  // - on direct edge click (isSelected)
+  // - if edge connects to a node type chosen by user in visibility manager (isConnectedToMonitoredType)
+  // - or if user explicitly chose edgeLabelMode === 'always'
+  // Crucially: NOT automatically displayed for all edges when merely clicking a node
+  let showLabels = false;
+  if (edgeLabelMode === 'always') {
+    showLabels = !isFarZoom;
+  } else if (edgeLabelMode === 'none') {
+    showLabels = isHovered || isSelected;
+  } else {
+    // default 'hover'
+    showLabels = isHovered || isSelected || isConnectedToMonitoredType;
+  }
+
   const labelFontSize = graphCustomization?.edgeLabelSize || 11;
   const confPercent = Math.round(conf * 100);
-  const labelText = isHovered || isSelected ? `${edge.type} · ${confPercent}%` : edge.type;
-  const badgeWidth = Math.max(70, labelText.length * (labelFontSize * 0.65) + 16);
-  const badgeHeight = Math.max(18, labelFontSize + 8);
+
+  // Human-readable relation name in active language
+  const humanLabel = getRelationLabel(edge.type, locale);
+  const labelText = isHovered || isSelected ? `${humanLabel} · ${confPercent}%` : humanLabel;
+  const badgeWidth = Math.max(76, labelText.length * (labelFontSize * 0.68) + 18);
+  const badgeHeight = Math.max(20, labelFontSize + 8);
 
   return (
     <g
@@ -76,7 +116,7 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      style={{ cursor: 'pointer' }}
+      style={{ cursor: 'pointer', pointerEvents: 'auto' }}
     >
       {/* Invisible wider hit area for easy hover/selection */}
       <line
@@ -85,7 +125,8 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
         x2={endX}
         y2={endY}
         stroke="transparent"
-        strokeWidth={Math.max(18, finalStrokeWidth * 3)}
+        strokeWidth={Math.max(22, finalStrokeWidth * 3.5)}
+        style={{ pointerEvents: 'stroke' }}
       />
 
       {/* Visual Line */}

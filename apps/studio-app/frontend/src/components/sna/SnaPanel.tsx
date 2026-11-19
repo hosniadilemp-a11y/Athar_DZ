@@ -66,6 +66,7 @@ interface SnaResultData {
 
 interface SnaPanelProps {
   onClose?: () => void;
+  initialAlgoKey?: string;
 }
 
 // Judicial/Operational Mapping for Non-CS Investigators
@@ -297,17 +298,26 @@ export function getOntologicalSnaRole(
   return `Rôle SNA (${algoKey})`;
 }
 
-export const SnaPanel: React.FC<SnaPanelProps> = () => {
+export const SnaPanel: React.FC<SnaPanelProps> = ({ onClose: _onClose, initialAlgoKey }) => {
   const { activeCase, selectedNodeId, selectNode, nodes } = useGraphStore();
   const { locale, tr } = useI18n();
   const { success: toastSuccess, error: toastError } = useToast();
   const [isInjecting, setIsInjecting] = useState(false);
   const [algorithms, setAlgorithms] = useState<SnaAlgorithmItem[]>([]);
-  const [selectedAlgoKey, setSelectedAlgoKey] = useState<string>('betweenness');
+  const [selectedAlgoKey, setSelectedAlgoKey] = useState<string>(initialAlgoKey || 'betweenness');
   const [paramValues, setParamValues] = useState<Record<string, unknown>>({});
   const [isRunning, setIsRunning] = useState(false);
   const [result, setResult] = useState<SnaResultData | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Sync when initialAlgoKey changes from menu navigation
+  useEffect(() => {
+    if (initialAlgoKey) {
+      setSelectedAlgoKey(initialAlgoKey);
+      setResult(null);
+      setErrorMsg(null);
+    }
+  }, [initialAlgoKey]);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
     centrality: true,
     community: true,
@@ -638,64 +648,105 @@ export const SnaPanel: React.FC<SnaPanelProps> = () => {
             padding: 'var(--space-2)',
           }}
         >
-          {Object.entries(categories).map(([catKey, algos]) => (
-            <div key={catKey} style={{ marginBottom: 'var(--space-2)' }}>
-              <button
-                type="button"
-                onClick={() => toggleCategory(catKey)}
+          {Object.entries(categories).map(([catKey, algos], catIndex) => {
+            const isExpanded = expandedCategories[catKey];
+            const CATEGORY_COLORS = ['#3b82f6', '#10b981', '#ef4444', '#f59e0b', '#8b5cf6', '#06b6d4'];
+            const catColor = CATEGORY_COLORS[catIndex % CATEGORY_COLORS.length];
+
+            return (
+              <div
+                key={catKey}
                 style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  padding: '4px 6px',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  fontSize: 'var(--text-xs)',
-                  fontWeight: 700,
-                  color: 'var(--color-text-muted)',
-                  cursor: 'pointer',
-                  textAlign: 'left',
+                  marginBottom: 'var(--space-2)',
+                  border: '1px solid var(--color-border-subtle)',
+                  borderRadius: 'var(--radius-sm)',
+                  overflow: 'hidden',
+                  backgroundColor: 'var(--color-bg-surface)',
                 }}
               >
-                {expandedCategories[catKey] ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                <span>
-                  {getCategoryTitle(catKey)} ({algos.length})
-                </span>
-              </button>
+                {/* Category Header Banner */}
+                <button
+                  type="button"
+                  onClick={() => toggleCategory(catKey)}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '7px 10px',
+                    backgroundColor: 'var(--color-bg-elevated)',
+                    border: 'none',
+                    borderLeft: `3.5px solid ${catColor}`,
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: 'var(--color-text-primary)',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    userSelect: 'none',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {isExpanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+                    <span>{getCategoryTitle(catKey)}</span>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: '9.5px',
+                      padding: '1px 5px',
+                      borderRadius: '8px',
+                      backgroundColor: `${catColor}20`,
+                      color: catColor,
+                      fontWeight: 800,
+                    }}
+                  >
+                    {algos.length}
+                  </span>
+                </button>
 
-              {expandedCategories[catKey] && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '2px' }}>
-                  {algos.map((algo) => {
-                    const isSelected = selectedAlgoKey === algo.key;
-                    const algoTitle = getAlgoTitle(algo.key, algo.label_fr);
-                    return (
-                      <button
-                        key={algo.key}
-                        type="button"
-                        onClick={() => setSelectedAlgoKey(algo.key)}
-                        style={{
-                          padding: '6px 8px',
-                          borderRadius: 'var(--radius-sm)',
-                          backgroundColor: isSelected ? 'var(--color-accent-primary)' : 'transparent',
-                          color: isSelected ? 'var(--color-text-on-accent)' : 'var(--color-text-secondary)',
-                          border: 'none',
-                          cursor: 'pointer',
-                          fontSize: '12px',
-                          textAlign: 'left',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '2px',
-                        }}
-                      >
-                        <span style={{ fontWeight: isSelected ? 600 : 500 }}>{algoTitle}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          ))}
+                {/* Subordinate Tools List */}
+                {isExpanded && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '1px',
+                      padding: '4px',
+                      backgroundColor: 'var(--color-bg-base)',
+                    }}
+                  >
+                    {algos.map((algo) => {
+                      const isSelected = selectedAlgoKey === algo.key;
+                      const algoTitle = getAlgoTitle(algo.key, algo.label_fr);
+                      return (
+                        <button
+                          key={algo.key}
+                          type="button"
+                          onClick={() => setSelectedAlgoKey(algo.key)}
+                          style={{
+                            padding: '6px 8px 6px 12px',
+                            borderRadius: 'var(--radius-sm)',
+                            backgroundColor: isSelected ? 'var(--color-accent-primary)' : 'transparent',
+                            color: isSelected ? 'var(--color-text-on-accent)' : 'var(--color-text-secondary)',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontSize: '11px',
+                            textAlign: 'left',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            transition: 'background-color 0.1s ease',
+                          }}
+                        >
+                          <span style={{ fontWeight: isSelected ? 700 : 500 }}>{algoTitle}</span>
+                          {isSelected && <Sparkles size={11} />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Right Details & Execution */}
