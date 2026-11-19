@@ -56,7 +56,7 @@ L'application est structurée en 6 couches étanches et hautement résilientes :
 - **Layer 3 : Tier de Stockage Polyglotte Spécialisé** :
   - *Neo4j 5.20+ Enterprise* : Graphe de relations, index-free adjacency $O(k)$, requêtes Cypher.
   - *PostgreSQL 16 + TimescaleDB* : État transactionnel ACID, RLS multi-wilayas, hyper-tables CDRs télécoms, journal d'audit Merkle SHA-256.
-  - *MongoDB 7.0 (WiredTiger)* : Dépôt BSON polymorphe sans schéma pour dumps de scrapers, compression Snappy 70%.
+  - *Elasticsearch 8.14 (Lucene Inverted Index & BM25)* : Moteur d'indexation plein-texte multilingue (analyseurs morphologiques Arabe/Darija/Français, recherche floue `fuzzy` et phonétique pour la Data Fusion), stockage JSON polymorphe (`flattened`) des dumps de scrapers OSN, flux RSS et transcriptions de streaming.
   - *MinIO S3 Enterprise (WORM)* : Coffre-fort de scellés immuables, Object Lock en mode COMPLIANCE, RFC 3161.
   - *Qdrant 1.9 (Rust)* : Moteur vectoriel HNSW, recherche faciale et vocale sub-8ms avec filtrage par dossier pénal.
   - *Redis 7.2 Stack* : Bus de messages temps-réel, Pub/Sub WebSockets vers le Studio, token-bucket anti-ban.
@@ -176,7 +176,7 @@ Accessible directement via [`doc/maquette.html`](maquette.html) :
 ### 9.1 Architecture Physique en 3 Serveurs Séparés
 L'infrastructure de production est physiquement isolée en 3 serveurs indépendants sur des VLANs cloisonnés :
 1. **Serveur 1 : Studio App Server (`SRV-STUDIO-01`, VLAN 20)** : Interface Web Studio NVL WebGL, passerelle API FastAPI & RBAC, orchestrateur Celery, moteur d'IA locale (Llama-3-8B Text-to-Cypher), et passerelle d'ingestion SHA-256.
-2. **Serveur 2 : Polyglot Data & Storage Server (`SRV-DATA-01`, VLAN 30)** : Entrepôt de données hébergeant Neo4j 5.20+ Enterprise, PostgreSQL 16 + TimescaleDB + PostGIS, Qdrant 1.9 Rust, MinIO Enterprise S3 (WORM Compliance), MongoDB 7.0 et Redis 7.2.
+2. **Serveur 2 : Polyglot Data & Storage Server (`SRV-DATA-01`, VLAN 30)** : Entrepôt de données hébergeant Neo4j 5.20+ Enterprise, PostgreSQL 16 + TimescaleDB + PostGIS, Qdrant 1.9 Rust, MinIO Enterprise S3 (WORM Compliance), Elasticsearch 8.14 et Redis 7.2.
 3. **Serveur 3 : Phone Farm Automation Server (`SRV-FARM-01`, VLAN 40)** : Appliance physique dédiée aux racks USB 3.0 industriels, flotte de smartphones Android (ADB / Scrcpy), banques de cartes SIM DZ (Djezzy, Mobilis, Ooredoo) et démon d'interception SMS/OTP.
 
 ### 9.2 Protocoles de Communication Inter-Applicative
@@ -216,21 +216,54 @@ Le pipeline d'acquisition (Layer 1 & Layer 2) couvre trois familles de sources o
    - Connecteurs d'écoute continue pour les flux **Live & Streaming** (*YouTube Live, TikTok Live, Facebook Live, Twitch, flux HLS / RTMP / IPTV*).
    - Segmentation temporelle automatique des flux audio/vidéo en fenêtres horodatées UTC, extraction des images clés (*keyframes*), transcription vocale à la volée (*Faster-Whisper Darija / Arabe / Français*), diarisation des locuteurs (*PyAnnote*) et indexation des chats en direct.
 
-### 10.2 Stratégie d'Unification et de Fusion des Entités (Data Fusion & Entity Resolution)
-Les données issues de sources hétérogènes (OSN, RSS, streaming, réquisitions télécoms, PV judiciaires) désignent souvent une même entité réelle sous des graphies ou identifiants différents. Le moteur de **Data Fusion (Entity Resolution)** applique un pipeline en 4 étapes :
+### 10.2 Stratégie de Data Fusion : Harmonisation des Noms d'Attributs (Schema Mapping) & Résolution d'Entités
+Lors de l'ingestion multi-sources (OSN Facebook/Instagram/Reddit/4chan/X/Telegram/YouTube/TikTok, Flux RSS, Streaming, réquisitions CDR et fichiers CSV/JSON), chaque outil ou plateforme nomme ses champs différemment (ex. `num`, `tele`, `phone`, `phone_number`, `msisdn` pour un numéro de téléphone). Le moteur de **Data Fusion** unifie d'abord **la nomenclature des attributs (Schema Harmonization)** avant de fusionner **les entités (Entity Resolution)**.
 
-1. **Étape 1 — Normalisation Canonique Déterministe** :
-   - **Identifiants Techniques** : Numéros de téléphone convertis au format strict `E.164` (`+213...`) ; RIP/CCP Algérie Poste (20 chiffres) ; immatriculations véhicules DZ normalisées ; extraction des identifiants numériques immuables des plateformes (`platform_uid` Facebook, Telegram `peer_id`, TikTok `secUid`) indépendamment des changements de `@handle`.
-   - **Noms & Translittération Bilingue (Français / Arabe / Darija)** : Normalisation Unicode (`NFKC`), retrait du *tashkeel* (diacritiques arabes), table de correspondance phonétique et translittération bidirectionnelle Latin $\leftrightarrow$ Arabe pour unifier les variantes courantes (ex. `Mohamed` / `Mohammed` / `M'hamed` / `محمد` ; `Benali` / `Ben Ali` / `بن علي`).
+#### A. Dictionnaire Canonique d'Unification des Attributs (Attribute Alias Mapping)
+Le pipeline d'ingestion (Layer 2 — Pydantic v2 `AliasChoices` + Normaliseur Canonique) applique la table de correspondance déterministe suivante pour projeter tout JSON/CSV externe vers les attributs canoniques du modèle GFPG :
 
-2. **Étape 2 — Calcul de Score d'Appariement Multi-Critères ($S_{\text{fusion}} \in [0, 1]$)** :
-   - **Clés Dures (Hard Identifiers)** : Correspondance exacte sur un identifiant technique vérifié (même E.164, même NIN, même RIP/IBAN, même `platform_uid`).
-   - **Clés Lexico-Phonétiques (Soft Identifiers)** : Combinaison pondérée de la similarité Jaro-Winkler sur les noms normalisés, de l'équivalence phonétique FR/AR et de la proximité des pseudonymes (`@handle`) inter-plateformes.
-   - **Signaux Graphiques & Biométriques** : Recoupement du voisinage relationnel (contacts/appareils communs en commun) et similarité biométrique (vecteurs faciaux ArcFace 512-d ou empreinte vocale) lorsque disponibles.
+| Concept Forensique | Noms d'Attributs Bruts Hétérogènes (Sources OSN, Scrapers, CDR, APIs) | Attribut Canonique Unifié (GFPG) | Règle de Normalisation & Validation |
+| :--- | :--- | :--- | :--- |
+| **Numéro de Téléphone** | `num`, `tele`, `tel`, `phone`, `phone_number`, `msisdn`, `mobile`, `contact_phone`, `whatsapp_num`, `caller_id`, `numero_telephone`, `gsm` | **`numero_e164`** | Format international strict `E.164` (`+213555019283`), retrait des espaces, tirets et préfixes `00213`/`0`. |
+| **Identité / Nom Personne** | `nom`, `name`, `full_name`, `fullname`, `person_name`, `display_name`, `author_name`, `suspect_name`, `victim_name`, `nom_prenom` | **`nom_complet`** | Normalisation Unicode `NFKC`, retrait du *tashkeel* arabe, translittération bidirectionnelle Latin $\leftrightarrow$ Arabe. |
+| **Pseudonyme Réseau Social** | `username`, `handle`, `screen_name`, `user_login`, `nick`, `nickname`, `pseudo`, `social_handle`, `tg_username`, `ig_handle`, `tiktok_id` | **`pseudo_reseau`** | Minuscules canoniques sans `@` préfixe + conservation de la plateforme source (`platform`). |
+| **ID Immuable Plateforme** | `uid`, `user_id`, `author_id`, `account_id`, `peer_id`, `sec_uid`, `fb_id`, `channel_id`, `pk`, `external_id` | **`platform_uid`** | Chaîne ASCII immuable identifiant le compte même après changement de `@handle`. |
+| **Compte Bancaire / CCP** | `rip`, `ccp`, `iban`, `account_num`, `account_number`, `bank_account`, `baridimob_rip`, `rib`, `num_compte`, `wallet_id` | **`rip_algerie_poste`** / **`iban`** | Normalisation sur 20 chiffres (RIP Algérie Poste `00799999...`) avec vérification de clé modulo 97. |
+| **Adresse Crypto** | `wallet`, `crypto_address`, `btc_addr`, `usdt_address`, `trc20_addr`, `eth_address`, `deposit_address`, `addr` | **`adresse_wallet`** | Validation de checksum (Tron Base58 `T...`, EVM `0x...`, Bitcoin Bech32). |
+| **Coordonnées GPS** | `lat`, `latitude`, `gps_lat`, `y`, `coord_lat`, `geo_lat`, `exif_lat` / `lon`, `lng`, `long`, `longitude`, `gps_lon`, `x`, `coord_lon` | **`gps_lat`**, **`gps_lon`** | Flottants WGS84 validés (`lat` $\in [-90, 90]$, `lon` $\in [-180, 180]$) synchronisés avec PostGIS `POINT`. |
+| **Localisation Algérie** | `wilaya`, `province`, `state`, `gov`, `wiliya_activiti` / `daira`, `district` / `commune`, `city`, `ville`, `municipality`, `localite` | **`wilaya`**, **`daira`**, **`commune`** | Résolution sur le référentiel officiel des 58 Wilayas, Daïras et 1541 Communes d'Algérie. |
+| **Horodatage d'Événement** | `date`, `time`, `timestamp`, `created_at`, `published_at`, `post_date`, `datetime`, `time_utc`, `event_time`, `call_date` | **`horodatage_utc`** | Conversion systématique en **ISO 8601 UTC** (`YYYY-MM-DDTHH:mm:ssZ`). |
+| **Contenu Textuel / Transcription** | `text`, `body`, `content`, `message`, `msg`, `caption`, `post_text`, `description`, `comment_body`, `transcript`, `darija_text` | **`contenu_texte`** | Indexation plein-texte dans **Elasticsearch 8.14** (analyseurs Arabe, Darija et Français). |
+| **Appareil & Réseau** | `imei`, `device_id`, `tac` / `imsi`, `iccid`, `sim_id` / `ip`, `ip_address`, `src_ip`, `remote_ip`, `host_ip` | **`imei`**, **`imsi`**, **`adresse_ip`** | Validation Luhn sur IMEI (15 chiffres), normalisation IPv4/IPv6. |
+| **Immatriculation Véhicule** | `plate`, `license_plate`, `matricule`, `immatriculation`, `veh_plate`, `num_chassis`, `vin` | **`immatriculation_dz`** | Format canonique algérien (`XXXXX-XXX-WW`) avec extraction du code wilaya (`01`–`58`). |
+| **Empreinte Cryptographique** | `hash`, `sha256`, `file_hash`, `hash_sha256`, `digest`, `checksum_sha256`, `evidence_hash` | **`empreinte_sha256`** | Chaîne hexadécimale 64 caractères minuscules vérifiée côté serveur. |
 
-3. **Étape 3 — Gouvernance Forensique ISO 27037 & Validation Humaine (Review-Run)** :
-   - **Aucune fusion automatique destructive sur le Calque 1 (`VERIFIED`)** : Conformément à la norme ISO/IEC 27037, une entité issue d'une source OSINT ne fusionne jamais silencieusement avec une identité judiciaire vérifiée.
-   - **File de Triage (`Clues Inbox / Review-Run`)** : Tout candidat à la fusion génère une proposition explicite (`ENTITY_MERGE_CANDIDATE`) affichant le score, la méthode de rapprochement et les sources comparées. L'enquêteur valide ou rejette la fusion avec motif obligatoire enregistré dans le registre d'audit chaîné SHA-256.
+#### B. Pipeline de Résolution d'Entités (Entity Resolution en 4 Étapes)
+Une fois les noms d'attributs harmonisés :
+1. **Étape 1 — Normalisation des Valeurs & Translittération Bilingue (FR/AR/Darija)** : Unification phonétique et orthographique (`Mohamed` / `Mohammed` / `M'hamed` / `محمد` ; `Benali` / `Ben Ali` / `بن علي`).
+2. **Étape 2 — Appariement Hybride via Elasticsearch 8.14 ($S_{\text{fusion}} \in [0, 1]$)** :
+   - *Clés Dures (Hard Keys)* : Match exact sur `numero_e164`, `rip_algerie_poste`, `platform_uid`, `empreinte_sha256`.
+   - *Clés Souples (Soft Keys)* : Requête Elasticsearch `bool` combinant `fuzzy` (distance de Levenshtein), analyseur phonétique franco-arabe sur `nom_complet` et similarité sur `pseudo_reseau`.
+3. **Étape 3 — Gouvernance Forensique ISO 27037 (Validation Humaine Review-Run)** : Aucune fusion automatique n'écrase un nœud du Calque 1 (`VERIFIED`). Les candidats à la fusion sont présentés dans la file **Clues Inbox (Review-Run)** pour arbitrage OPJ avec inscription au registre d'audit SHA-256.
+4. **Étape 4 — Golden Record & Lineage Réversible** : Conservation de tous les alias (`aliases[]`) et des attributs bruts d'origine (`raw_attributes_lineage[]`) permettant la dissociation (`Split`) à tout moment.
 
-4. **Étape 4 — Entité Unifiée (Golden Record) & Traçabilité Réversible (Lineage)** :
-   - L'entité fusionnée conserve un `canonical_label` principal, un tableau exhaustif `aliases[]` (toutes les variantes latines, arabes et pseudonymes observés) ainsi qu'un journal `provenance_sources[]` référençant chaque artefact d'origine, permettant la **dissociation (Unmerge / Split)** sans perte de données si un faux positif est découvert ultérieurement.
+---
+
+### 10.3 Étude Comparative & Justification : Elasticsearch 8.14 vs MongoDB 7.0
+Dans le Tier de Stockage Polyglotte (Layer 3 / `SRV-DATA-01`), **Elasticsearch 8.14** remplace MongoDB pour l'indexation des collectes OSINT, des flux RSS, des transcriptions de streaming et le moteur de Data Fusion :
+
+| Critère Technique & Opérationnel | **Elasticsearch 8.14 (Choix Retenu)** | **MongoDB 7.0 (Écarté)** | Justification pour Athar DZ |
+| :--- | :--- | :--- | :--- |
+| **Recherche Plein-Texte Arabe, Darija & Français** | **Natif & Avancé** : Tokenizers morphologiques arabes (racines, normalisation hamza/ya/tashkeel), elision/stemming français, scoring **BM25**. | **Limité en On-Premise** : Pas d'analyse morphologique arabe avancée hors MongoDB Atlas Cloud (incompatible avec l'exigence 100 % air-gapped). | Indispensable pour fouiller des millions de posts Facebook/Telegram et transcriptions vocales en Darija. |
+| **Data Fusion & Résolution Floue (`Fuzzy` / Phonétique)** | **Natif** : Requêtes `fuzzy` (automates de Levenshtein rapides), filtres phonétiques et scoring multi-attributs pondéré en $< 15\text{ ms}$. | Nécessite des expressions régulières (`$regex`) provoquant des scans complets de collection (`COLLSCAN`). | Accélère drastiquement le rapprochement des variantes de noms et pseudonymes inter-OSN. |
+| **Flux Continus (RSS, Streaming, Logs DFIR)** | **Architecture Data Streams / ILM** : Ingestion quasi temps-réel (NRT) et agrégations temporelles (`date_histogram`) instantanées. | Moins performant sur les agrégations textuelles et temporelles combinées à grande échelle. | Idéal pour la veille temps réel sur chaînes YouTube/TikTok/Telegram et flux RSS. |
+| **Dumps JSON Hétérogènes des 76 Outils** | Type **`flattened`** + `_source` compressé (ZSTD/LZ4) acceptant tout JSON imbriqué sans explosion de mapping. | Stockage BSON sans schéma. | Elasticsearch offre à la fois la flexibilité JSON sans schéma (`flattened`) et la puissance d'un moteur de recherche inversé Lucene. |
+
+---
+
+### 10.4 Architecture Logique : Patron Clean Architecture (Ports & Adapters)
+Pour garantir l'indépendance totale de la logique d'enquête vis-à-vis des moteurs de bases de données (Neo4j, PostgreSQL/TimescaleDB, Elasticsearch, Qdrant, MinIO, Redis), le backend et le frontend suivent les principes de la **Clean Architecture** en 4 cercles concentriques (règle d'inversion de dépendance orientée vers le centre) :
+1. **Cercle 1 — Enterprise Domain (`domain/`)** : Entités forensiques pures, registre unique des 37 types de nœuds et 47 relations, dictionnaire canonique de Data Fusion des attributs, règles d'immuabilité ISO 27037 et interfaces abstraites (**Ports** : `GraphRepositoryPort`, `AuditLedgerPort`, `SearchEnginePort`, `EvidenceStoragePort`). Zéro dépendance externe.
+2. **Cercle 2 — Application Use Cases (`services/`)** : Orchestration des cas d'usage métier (`ExpandPersonNetworkUseCase`, `RunSnaAlgorithmUseCase`, `FuseMultiSourceEntityUseCase`, `PromoteToVerifiedUseCase`, `VerifyAuditChainUseCase`) + 16 algorithmes SNA purs (`services/sna/`). Ne dépend que du Cercle 1 (`domain/`).
+3. **Cercle 3 — Interface Adapters (`api/v1/`, `schemas/`)** : Contrôleurs HTTP FastAPI, schémas de validation et d'harmonisation d'attributs Pydantic v2 (`AliasChoices`), sérialiseurs JSON/Cypher et côté Frontend l'adaptateur `GraphCanvasAdapter` isolant le moteur de rendu graphique.
+4. **Cercle 4 — Frameworks & Drivers (`db/`, `core/`)** : Adaptateurs concrets implémentant les Ports du domaine (`Neo4jGraphAdapter`, `PostgresAuditAdapter`, `ElasticsearchSearchAdapter`, `RedisCacheAdapter`).

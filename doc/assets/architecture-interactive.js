@@ -52,7 +52,7 @@ const ARCHITECTURE_SPEC_NODES = {
     "postgres": "postgresql+asyncpg://pg-cluster:5432/athar",
     "minio": "s3://minio:9000/scelles-compliance",
     "qdrant": "grpc://qdrant:6334",
-    "mongodb": "mongodb://mongo:27017/osint_raw",
+    "elasticsearch": "https://es-cluster:9200/osint_data_fusion",
     "redis": "redis://redis-stack:6379"
   }
 }`
@@ -211,24 +211,30 @@ ORDER BY timestamp_call ASC;`
 }`
   },
 
-  // Layer 3: Polyglot Storage — MongoDB Raw Scraping
+  // Layer 3: Polyglot Storage — Elasticsearch 8.14 Full-Text & Data Fusion
   storage_mongodb: {
-    layer: 'Layer 3: Stockage Polyglotte Spécialisé — Dépôt Document BSON Brut Polymorphe',
-    name: 'MongoDB 7.0 WiredTiger (Ingestion sans schéma des dumps des 76 briques OSINT)',
-    tech: 'MongoDB 7.0 BSON Document Engine, Moteur WiredTiger, Compression de blocs Snappy (gain 70%)',
-    protocol: 'MongoDB Wire Protocol over TCP',
-    port: '27017 (Wire Port Interne)',
-    throughput: '35 000 écritures BSON sans schéma / seconde • Ingestion instantanée sans migration DDL',
-    resilience: 'Replica Set 3 membres avec élection Raft • Change Streams déclenchant l\'extraction d\'IOCs',
+    layer: 'Layer 3: Stockage Polyglotte Spécialisé — Moteur Plein-Texte & Data Fusion JSON',
+    name: 'Elasticsearch 8.14 (Lucene BM25, Analyseurs Arabe/Darija/FR, Fuzzy Data Fusion & JSON Flattened)',
+    tech: 'Elasticsearch 8.14, Index Inversé Apache Lucene, Analyseurs Morphologiques & Phonétiques Franco-Arabes, Type JSON Flattened, Compression ZSTD',
+    protocol: 'Elasticsearch REST API over HTTPS (TLS 1.3)',
+    port: '9200 (REST HTTPS Interne), 9300 (Transport Cluster)',
+    throughput: 'Recherche floue (Levenshtein / Phonétique) < 12ms • Indexation NRT Data Streams (OSN, RSS, Streaming)',
+    resilience: 'Cluster multi-nœuds avec Shards primaires/réplicas • Snapshots incrémentaux vers MinIO S3',
     payload: `{
-  "_id": "672f9a10c8b4a100129b4412",
-  "toolSource": "tool_web_warc_snapshot",
-  "urlTarget": "https://boutique-pneus-dz.shop",
+  "_index": "athar_osint_data_fusion_v1",
+  "_id": "es_doc_672f9a10c8b4",
+  "toolSource": "tool_osn_multi_collector",
+  "platform": "facebook_marketplace",
   "ingestedAt": "2026-11-02T14:22:08Z",
-  "rawDomAst": {
-    "forms": [{ "action": "/payer_baridimob", "method": "POST" }],
-    "metaPixels": ["88419203314"],
-    "trackingIds": ["GA-9812401-2"]
+  "canonicalAttributes": {
+    "numero_e164": "+213555019283",
+    "nom_complet": "Mohamed Benali",
+    "pseudo_reseau": "candy_wheels_dz",
+    "contenu_texte": "Promo 4 pneus Michelin livraison Alger Blida Oran"
+  },
+  "rawAttributesLineage": {
+    "tele": "0555 01 92 83",
+    "author_name": "Med Benali"
   },
   "warcRef": "s3://scelles-judiciaires-2026/affaire_089/boutique.warc.gz"
 }`
@@ -293,10 +299,10 @@ const ARCHITECTURE_FLOWS = {
     activeEdges: ['e_ui_gw', 'e_gw_phone_cmd', 'e_phone_gw_stream', 'e_phone_minio_worm', 'e_gw_ai_trigger', 'e_ai_qdrant_vec', 'e_gw_storage_direct', 'e_redis_websocket']
   },
   web_scam: {
-    name: 'Flux 2 : Capture Web WORM, DOM BSON & Pivot Neo4j',
-    badge: 'Forensique Web',
+    name: 'Flux 2 : Capture Web WORM, Indexation Elasticsearch 8.14 & Pivot Neo4j',
+    badge: 'Forensique Web & Data Fusion',
     color: '#06b6d4',
-    desc: 'Pistage d\'une boutique frauduleuse. Layer 2 déclenche un snapshot ArchiveBox dans Layer 1. L\'archive WARC est déposée dans MinIO WORM (Layer 3), le DOM HTML brut dans MongoDB (Layer 3), et les IOCs extraits (téléphones, pixels) sont écrits directement dans Neo4j (Layer 3) par Layer 2.',
+    desc: 'Pistage d\'une boutique frauduleuse. Layer 2 déclenche un snapshot ArchiveBox dans Layer 1. L\'archive WARC est déposée dans MinIO WORM (Layer 3), le JSON brut et le texte multilingue sont indexés dans Elasticsearch 8.14 (Layer 3) après harmonisation des attributs (Data Fusion), et les IOCs extraits sont écrits directement dans Neo4j (Layer 3).',
     activeNodes: ['ui_client', 'gateway_api', 'phone_farm', 'storage_minio', 'storage_mongodb', 'storage_graph', 'storage_redis'],
     activeEdges: ['e_ui_gw', 'e_gw_phone_cmd', 'e_phone_minio_worm', 'e_phone_mongo_raw', 'e_phone_gw_stream', 'e_gw_storage_direct', 'e_redis_websocket']
   },

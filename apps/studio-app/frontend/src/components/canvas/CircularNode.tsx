@@ -19,6 +19,8 @@ interface CircularNodeProps {
   isLinkSource?: boolean;
   isDragging?: boolean;
   zoom?: number;
+  hiddenNeighborsCount?: number;
+  expandedNeighborsCount?: number;
   onSelect: (id: string, isMulti: boolean) => void;
   onContextMenu: (e: React.MouseEvent | React.KeyboardEvent, nodeId: string) => void;
   onDragStart: (e: React.MouseEvent, nodeId: string) => void;
@@ -71,6 +73,8 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
   isLinkSource = false,
   isDragging = false,
   zoom,
+  hiddenNeighborsCount = 0,
+  expandedNeighborsCount = 0,
   onSelect,
   onContextMenu,
   onDragStart,
@@ -90,6 +94,7 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
   const visibleNodeLabelTypes = useGraphStore((s) => s.visibleNodeLabelTypes);
   const forcedVisibleNodeLabelIds = useGraphStore((s) => s.forcedVisibleNodeLabelIds);
   const forcedHiddenNodeLabelIds = useGraphStore((s) => s.forcedHiddenNodeLabelIds);
+  const toggleExpandNodeConnections = useGraphStore((s) => s.toggleExpandNodeConnections);
 
   // Inline rename state (Feature 2)
   const [isEditing, setIsEditing] = useState(false);
@@ -180,9 +185,8 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
   } else if (labelDensityMode === 'none') {
     showLabel = false;
   } else {
-    // Smart default per user requirements:
-    // Important nodes (personne, targets with warrants, top centralities, or user-selected types) always display labels!
-    showLabel = isPerson || isKeyTarget || Boolean(isTypeVisible);
+    // Strictly obeys the user's node label selection in Visibilité & Étiquettes
+    showLabel = Boolean(isTypeVisible);
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -399,6 +403,56 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
             </span>
           )}
 
+        {/* Clickable Granular Expansion Badge (+N hidden connected entities / -N collapse) */}
+        {(hiddenNeighborsCount > 0 || expandedNeighborsCount > 0) && (
+          <button
+            type="button"
+            title={
+              hiddenNeighborsCount > 0
+                ? `Cliquer pour déplier ${hiddenNeighborsCount} entité(s) cachée(s) liée(s) à ${node.label}`
+                : `Cliquer pour replier ${expandedNeighborsCount} entité(s) liée(s) à ${node.label}`
+            }
+            aria-label={
+              hiddenNeighborsCount > 0
+                ? `Déplier ${hiddenNeighborsCount} entités liées`
+                : `Replier ${expandedNeighborsCount} entités liées`
+            }
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleExpandNodeConnections(node.id);
+            }}
+            style={{
+              position: 'absolute',
+              top: '-6px',
+              left: '-6px',
+              minWidth: '20px',
+              height: '20px',
+              borderRadius: 'var(--radius-full)',
+              backgroundColor:
+                hiddenNeighborsCount > 0
+                  ? 'var(--color-accent-primary)'
+                  : 'var(--color-bg-elevated)',
+              color:
+                hiddenNeighborsCount > 0
+                  ? 'var(--color-text-on-accent)'
+                  : 'var(--color-text-secondary)',
+              border: '1.5px solid var(--color-border-default)',
+              fontSize: '10px',
+              fontFamily: 'var(--font-mono)',
+              fontWeight: 700,
+              padding: '0 4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              boxShadow: 'var(--shadow-xs)',
+              zIndex: 6,
+            }}
+          >
+            {hiddenNeighborsCount > 0 ? `+${hiddenNeighborsCount}` : `-${expandedNeighborsCount}`}
+          </button>
+        )}
+
         {/* Context Menu Button */}
         <button
           type="button"
@@ -539,12 +593,7 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
             }}
           >
             {isHovered ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
-                <span style={{ fontWeight: 700, color: 'var(--color-text-primary)' }}>{node.label}</span>
-                <span style={{ fontSize: '9.5px', color: categoryColor, textTransform: 'uppercase', letterSpacing: '0.3px', fontWeight: 600 }}>
-                  {typeDef?.label_fr || node.type}
-                </span>
-              </div>
+              <span style={{ fontWeight: 700, color: 'var(--color-text-primary)' }}>{node.label}</span>
             ) : (
               getSmartShortLabel(node.label, node.type)
             )}

@@ -70,6 +70,12 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
   const baseThickness = Math.max(1.5, Math.min(4.5, conf * 3.5)) * userThicknessMultiplier;
   const edgeLabelMode = useGraphStore((s) => s.edgeLabelMode);
   const edgeLabelConnectedNodeTypes = useGraphStore((s) => s.edgeLabelConnectedNodeTypes);
+  const expandMediatedEdgeNodes = useGraphStore((s) => s.expandMediatedEdgeNodes);
+
+  const isMediated = Boolean(edge.properties?.is_mediated);
+  const mediatedCount = (edge.properties?.mediated_count as number) || 0;
+  const intermediateNodeIds = (edge.properties?.intermediate_node_ids as string[]) || [];
+  const confidentialityLevel = (edge.properties?.confidentiality_level as string) || '';
 
   // Link to specific node types if chosen by user (e.g. user selected 'personne'):
   const isConnectedToMonitoredType = Boolean(
@@ -78,24 +84,23 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
   );
 
   const isEndpointSelected = Boolean(selectedNodeId && (selectedNodeId === edge.source_id || selectedNodeId === edge.target_id));
-  const finalStrokeWidth = isSelected ? baseThickness + 1.8 : (isHovered || isEndpointSelected) ? baseThickness + 1.0 : baseThickness;
+  const finalStrokeWidth = isSelected
+    ? baseThickness + 1.8
+    : isHovered || isEndpointSelected
+    ? baseThickness + 1.0
+    : isMediated
+    ? baseThickness + 0.6
+    : baseThickness;
 
   const isFarZoom = zoom !== undefined && zoom < 0.65;
 
-  // Strict decluttering per user request:
-  // Edge labels are HIDDEN by default, and displayed:
-  // - strictly on hover (isHovered)
-  // - on direct edge click (isSelected)
-  // - if edge connects to a node type chosen by user in visibility manager (isConnectedToMonitoredType)
-  // - or if user explicitly chose edgeLabelMode === 'always'
-  // Crucially: NOT automatically displayed for all edges when merely clicking a node
   let showLabels = false;
   if (edgeLabelMode === 'always') {
     showLabels = !isFarZoom;
   } else if (edgeLabelMode === 'none') {
     showLabels = isHovered || isSelected;
   } else {
-    // default 'hover'
+    // default 'hover' (or mediated counter pill on hover/select)
     showLabels = isHovered || isSelected || isConnectedToMonitoredType;
   }
 
@@ -103,9 +108,20 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
   const confPercent = Math.round(conf * 100);
 
   // Human-readable relation name in active language
-  const humanLabel = getRelationLabel(edge.type, locale);
-  const labelText = isHovered || isSelected ? `${humanLabel} · ${confPercent}%` : humanLabel;
-  const badgeWidth = Math.max(76, labelText.length * (labelFontSize * 0.68) + 18);
+  const baseLabel = isMediated
+    ? ((edge.properties?.summary_label as string) || `Lien médié (+${mediatedCount})`)
+    : getRelationLabel(edge.type, locale);
+
+  const confShortTag =
+    confidentialityLevel === 'SECRET_JUDICIAIRE'
+      ? ' [SECRET]'
+      : confidentialityLevel === 'CONFIDENTIEL_INSTRUCTION'
+      ? ' [CONF.]'
+      : '';
+
+  const labelText =
+    isHovered || isSelected ? `${baseLabel} · ${confPercent}%${confShortTag}` : baseLabel;
+  const badgeWidth = Math.max(78, labelText.length * (labelFontSize * 0.66) + 20);
   const badgeHeight = Math.max(20, labelFontSize + 8);
 
   return (
@@ -113,6 +129,12 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
       onClick={(e) => {
         e.stopPropagation();
         onSelect(edge.id);
+      }}
+      onDoubleClick={(e) => {
+        e.stopPropagation();
+        if (isMediated && intermediateNodeIds.length > 0) {
+          expandMediatedEdgeNodes(intermediateNodeIds);
+        }
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -137,13 +159,48 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
         y2={endY}
         stroke={isSelected ? 'var(--color-accent-primary)' : isHovered ? 'var(--color-accent-subtle)' : color}
         strokeWidth={finalStrokeWidth}
-        strokeDasharray={isHypothesis ? '4,4' : undefined}
-        strokeOpacity={isSelected ? 1.0 : isHovered ? 0.95 : 0.65}
+        strokeDasharray={isMediated ? '8,4' : isHypothesis ? '4,4' : undefined}
+        strokeOpacity={isSelected ? 1.0 : isHovered ? 0.95 : 0.72}
         markerEnd={`url(#arrow-${edge.layer})`}
         style={{
           transition: 'stroke-width 0.15s ease, stroke 0.15s ease, stroke-opacity 0.15s ease',
         }}
       />
+
+      {/* Compact Mediated Counter Dot when not hovered so user sees indirect connection count */}
+      {isMediated && !showLabels && (
+        <g
+          transform={`translate(${midX}, ${midY})`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelect(edge.id);
+          }}
+        >
+          <rect
+            x={-16}
+            y={-9}
+            width={32}
+            height={18}
+            rx={9}
+            ry={9}
+            fill="var(--color-bg-elevated)"
+            stroke={color}
+            strokeWidth={1.2}
+          />
+          <text
+            x={0}
+            y={3.5}
+            textAnchor="middle"
+            fontSize="10px"
+            fontFamily="var(--font-mono)"
+            fill="var(--color-text-primary)"
+            fontWeight={700}
+            style={{ userSelect: 'none' }}
+          >
+            +{mediatedCount}
+          </text>
+        </g>
+      )}
 
       {/* Feature 7 & Customization: Edge Label Badge with Light-Mode Fix */}
       {showLabels && (

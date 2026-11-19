@@ -504,3 +504,237 @@ export function stepLiveForcePhysics(
 
   return result;
 }
+
+const ADMINISTRATIVE_CONTAINER_TYPES = new Set([
+  'wilaya',
+  'daira',
+  'commune',
+  'affaire',
+  'unite',
+]);
+
+export interface PersonGraphProjectionResult {
+  visibleNodes: GraphNode[];
+  visibleEdges: GraphEdge[];
+  hiddenNeighborCountByNode: Map<string, number>;
+  expandedNeighborCountByNode: Map<string, number>;
+}
+
+export function isPersonEntity(node: GraphNode): boolean {
+  const t = (node.type || '').toLowerCase();
+  return t === 'personne' || t === 'person';
+}
+
+/**
+ * Computes the Person-Centric Graph Projection (Option A):
+ * - Displays only `Person` nodes plus any non-person entities explicitly expanded by the user.
+ * - Synthesizes one aggregated mediated link between each pair of Person nodes connected
+ *   through 1 to 3 hidden operational intermediate entities (e.g. shared voice call, phone, bank transfer).
+ */
+export function computePersonGraphProjection(
+  layerFilteredNodes: GraphNode[],
+  allEdges: GraphEdge[],
+  isPersonOnlyGraph: boolean,
+  expandedHiddenNodeIds: Set<string>,
+  mediatedEdgeOverrides: Record<
+    string,
+    { confidence?: number; layer?: LayerId; confidentiality_level?: string; notes?: string }
+  > = {}
+): PersonGraphProjectionResult {
+  const hiddenNeighborCountByNode = new Map<string, number>();
+  const expandedNeighborCountByNode = new Map<string, number>();
+
+  if (!isPersonOnlyGraph) {
+    return {
+      visibleNodes: layerFilteredNodes,
+      visibleEdges: allEdges,
+      hiddenNeighborCountByNode,
+      expandedNeighborCountByNode,
+    };
+  }
+
+  const nodeById = new Map<string, GraphNode>();
+  layerFilteredNodes.forEach((n) => nodeById.set(n.id, n));
+
+  const visibleNodeIds = new Set<string>();
+  layerFilteredNodes.forEach((n) => {
+    if (isPersonEntity(n) || expandedHiddenNodeIds.has(n.id)) {
+      visibleNodeIds.add(n.id);
+    }
+  });
+
+  const visibleNodes = layerFilteredNodes.filter((n) => visibleNodeIds.has(n.id));
+
+  // Build adjacency for nodes in active layers
+  const adj = new Map<string, Array<{ neighborId: string; edge: GraphEdge }>>();
+  layerFilteredNodes.forEach((n) => adj.set(n.id, []));
+
+  allEdges.forEach((edge) => {
+    if (nodeById.has(edge.source_id) && nodeById.has(edge.target_id)) {
+      adj.get(edge.source_id)?.push({ neighborId: edge.target_id, edge });
+      adj.get(edge.target_id)?.push({ neighborId: edge.source_id, edge });
+    }
+  });
+
+  // Count hidden & expanded non-person neighbors for every visible node
+  visibleNodes.forEach((vNode) => {
+    const neighbors = adj.get(vNode.id) || [];
+    const hiddenSet = new Set<string>();
+    const expandedSet = new Set<string>();
+
+    neighbors.forEach(({ neighborId }) => {
+      const target = nodeById.get(neighborId);
+      if (!target || isPersonEntity(target)) return;
+      if (visibleNodeIds.has(neighborId)) {
+        expandedSet.add(neighborId);
+      } else {
+        hiddenSet.add(neighborId);
+      }
+    });
+
+    hiddenNeighborCountByNode.set(vNode.id, hiddenSet.size);
+    expandedNeighborCountByNode.set(vNode.id, expandedSet.size);
+  });
+
+  // 1. Direct edges between currently visible nodes
+  const directEdges = allEdges.filter(
+    (e) => visibleNodeIds.has(e.source_id) && visibleNodeIds.has(e.target_id)
+  );
+
+  // 2. Synthesize aggregated mediated edges between pairs of visible Person nodes
+  // connected via 1..3 hidden operational entities (excluding generic administrative containers)
+  const personNodes = visibleNodes.filter(isPersonEntity);
+  const pairMediationMap = new Map<
+    string,
+    {
+      personA: string;
+      personB: string;
+      intermediateNodes: Map<string, GraphNode>;
+      underlyingEdges: Map<string, GraphEdge>;
+    }
+  >();
+
+  personNodes.forEach((startPerson) => {
+    // BFS through hidden operational nodes up to 3 intermediate nodes (total path length <= 4 edges)
+    interface QueueItem {
+      currId: string;
+      intermediateIds: string[];
+      edgeIds: string[];
+    }
+
+    const queue: QueueItem[] = [
+      { currId: startPerson.id, intermediateIds: [], edgeIds: [] },
+    ];
+
+    while (queue.length > 0) {
+      const { currId, intermediateIds, edgeIds } = queue.shift()!;
+      const neighbors = adj.get(currId) || [];
+
+      for (const { neighborId, edge } of neighbors) {
+        if (neighborId === startPerson.id) continue;
+        if (intermediateIds.includes(neighborId)) continue;
+
+        const neighborNode = nodeById.get(neighborId);
+        if (!neighborNode) continue;
+
+        // Reached another visible Person node via >= 1 hidden intermediates!
+        if (visibleNodeIds.has(neighborId) && isPersonEntity(neighborNode)) {
+          if (intermediateIds.length >= 1) {
+            const [pA, pB] =
+              startPerson.id < neighborId
+                ? [startPerson.id, neighborId]
+                : [neighborId, startPerson.id];
+            const pairKey = `mediated__${pA}__${pB}`;
+
+            if (!pairMediationMap.has(pairKey)) {
+              pairMediationMap.set(pairKey, {
+                personA: pA,
+                personB: pB,
+                intermediateNodes: new Map(),
+                underlyingEdges: new Map(),
+              });
+            }
+
+            const entry = pairMediationMap.get(pairKey)!;
+            intermediateIds.forEach((hid) => {
+              const hNode = nodeById.get(hid);
+              if (hNode) entry.intermediateNodes.set(hid, hNode);
+            });
+            [...edgeIds, edge.id].forEach((eid) => {
+              const foundEdge = allEdges.find((ae) => ae.id === eid);
+              if (foundEdge) entry.underlyingEdges.set(eid, foundEdge);
+            });
+          }
+          continue;
+        }
+
+        // Only traverse through hidden operational entities (max 3 intermediate nodes)
+        if (
+          !visibleNodeIds.has(neighborId) &&
+          !ADMINISTRATIVE_CONTAINER_TYPES.has(neighborNode.type.toLowerCase()) &&
+          intermediateIds.length < 3
+        ) {
+          queue.push({
+            currId: neighborId,
+            intermediateIds: [...intermediateIds, neighborId],
+            edgeIds: [...edgeIds, edge.id],
+          });
+        }
+      }
+    }
+  });
+
+  const mediatedEdges: GraphEdge[] = [];
+  pairMediationMap.forEach((entry, pairKey) => {
+    const intermediates = Array.from(entry.intermediateNodes.values());
+    const underlying = Array.from(entry.underlyingEdges.values());
+    if (intermediates.length === 0) return;
+
+    const avgConf =
+      underlying.length > 0
+        ? underlying.reduce((acc, e) => acc + (typeof e.confidence === 'number' ? e.confidence : 0.85), 0) /
+          underlying.length
+        : 0.85;
+
+    const override = mediatedEdgeOverrides[pairKey];
+    const firstIntermediate = intermediates[0]!;
+    const summaryLabel =
+      intermediates.length === 1
+        ? `Via ${firstIntermediate.label}`
+        : `Via ${firstIntermediate.label} (+${intermediates.length - 1})`;
+
+    mediatedEdges.push({
+      id: pairKey,
+      case_id: firstIntermediate.case_id || 'active',
+      source_id: entry.personA,
+      target_id: entry.personB,
+      type: 'RELATION_MEDIEE',
+      layer: override?.layer || underlying[0]?.layer || 'FLOWS',
+      confidence: override?.confidence !== undefined ? override.confidence : Number(avgConf.toFixed(2)),
+      provenance: 'PROJECTION_PERSONNES',
+      properties: {
+        is_mediated: true,
+        mediated_count: intermediates.length,
+        summary_label: summaryLabel,
+        intermediate_node_ids: intermediates.map((n) => n.id),
+        intermediate_nodes: intermediates.map((n) => ({
+          id: n.id,
+          label: n.label,
+          type: n.type,
+          layer: n.layer,
+        })),
+        underlying_edge_ids: underlying.map((e) => e.id),
+        confidentiality_level: override?.confidentiality_level || 'RESTREINT_ENQUETE',
+        notes: override?.notes || '',
+      },
+    });
+  });
+
+  return {
+    visibleNodes,
+    visibleEdges: [...directEdges, ...mediatedEdges],
+    hiddenNeighborCountByNode,
+    expandedNeighborCountByNode,
+  };
+}
+

@@ -27,6 +27,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ onExpand, onInspect })
     updateNodePosition,
     setLinkMode,
     setLinkSourceNodeId,
+    isPersonOnlyGraph,
+    toggleExpandNodeConnections,
   } = useGraphStore();
   const { tr, dir } = useI18n();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -161,6 +163,21 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ onExpand, onInspect })
         <Compass size={16} />
         <span>{tr('Explorer voisinage (1 bond)')}</span>
       </button>
+
+      {isPersonOnlyGraph && (
+        <button
+          type="button"
+          role="menuitem"
+          style={{ ...menuItemStyle, color: 'var(--color-accent-text)' }}
+          onClick={() => {
+            closeContextMenu();
+            toggleExpandNodeConnections(targetNode.id);
+          }}
+        >
+          <GitBranch size={16} />
+          <span>{tr('Déplier / Replier ses entités cachées liées')}</span>
+        </button>
+      )}
 
       <button
         type="button"

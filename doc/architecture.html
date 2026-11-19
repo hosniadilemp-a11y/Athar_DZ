@@ -381,7 +381,7 @@
               <text x="60" y="562" fill="#f59e0b" font-size="8" font-family="monospace">Dépôt Scellé WORM (MinIO)</text>
 
               <path id="e_phone_mongo_raw" data-edge="e_phone_mongo_raw" class="arch-flow-edge animated" d="M 320 540 L 320 580" stroke="#10b981" stroke-width="2" marker-end="url(#arr-emerald)"/>
-              <text x="325" y="562" fill="#10b981" font-size="8" font-family="monospace">Dépôt BSON Brut (MongoDB)</text>
+              <text x="325" y="562" fill="#10b981" font-size="8" font-family="monospace">Index JSON &amp; Plein-Texte (Elasticsearch 8.14)</text>
 
               <!-- ============================================================ -->
               <!-- RIGHT WING: INTELLIGENCE & ANALYTICS (LAYER 4 & LAYER 5)    -->
@@ -520,19 +520,19 @@
                   <text x="12" y="185" fill="#34d399" font-size="7.5">● Immuabilité ISO 27037</text>
                 </g>
 
-                <!-- Database 5: MongoDB 7.0 WiredTiger -->
+                <!-- Database 5: Elasticsearch 8.14 Lucene BM25 -->
                 <g class="svg-node" data-node="storage_mongodb" onclick="selectArchNode('storage_mongodb')" transform="translate(670, 635)">
                   <rect x="0" y="0" width="140" height="195" rx="6" fill="#0d1f17" stroke="#10b981" stroke-width="1.4"/>
-                  <text x="12" y="24" fill="#10b981" font-size="11" font-weight="bold">🍃 MongoDB 7.0</text>
-                  <text x="12" y="40" fill="#94a3b8" font-size="8.5">Dépôt Document BSON</text>
-                  <text x="12" y="60" fill="#cbd5e1" font-size="8">• Dumps scrapers bruts</text>
-                  <text x="12" y="75" fill="#cbd5e1" font-size="8">• DOM HTML polymorphe</text>
-                  <text x="12" y="90" fill="#cbd5e1" font-size="8">• Compression Snappy 70%</text>
-                  <text x="12" y="105" fill="#cbd5e1" font-size="8">• Schema-on-read rapide</text>
-                  <text x="12" y="120" fill="#cbd5e1" font-size="8">• Change streams temps réel</text>
+                  <text x="12" y="24" fill="#10b981" font-size="11" font-weight="bold">🔎 Elasticsearch 8.14</text>
+                  <text x="12" y="40" fill="#94a3b8" font-size="8.5">Index Lucene BM25 &amp; JSON</text>
+                  <text x="12" y="60" fill="#cbd5e1" font-size="8">• Plein-texte Arabe/Darija/FR</text>
+                  <text x="12" y="75" fill="#cbd5e1" font-size="8">• Data Fusion Fuzzy/Phonetic</text>
+                  <text x="12" y="90" fill="#cbd5e1" font-size="8">• Dumps OSN JSON Flattened</text>
+                  <text x="12" y="105" fill="#cbd5e1" font-size="8">• Flux RSS &amp; Live Streaming</text>
+                  <text x="12" y="120" fill="#cbd5e1" font-size="8">• Scoring multi-champs BM25</text>
                   <rect x="10" y="145" width="120" height="22" rx="3" fill="#143323"/>
-                  <text x="15" y="160" fill="#10b981" font-size="8" font-family="monospace">Wire TCP Port 27017</text>
-                  <text x="12" y="185" fill="#34d399" font-size="7.5">● 35k writes/sec</text>
+                  <text x="15" y="160" fill="#10b981" font-size="8" font-family="monospace">REST HTTPS Port 9200</text>
+                  <text x="12" y="185" fill="#34d399" font-size="7.5">● Recherche Floue &lt;12ms</text>
                 </g>
 
                 <!-- Database 6: Redis 7.2 Stack -->
@@ -595,7 +595,7 @@
               <td><strong>Acquisition Forensique &amp; Phone Farm</strong></td>
               <td>ReDroid Android 13, Modems USB SIM 4G DZ, Scrcpy WebRTC, Mitmproxy</td>
               <td>Infiltration de messageries chiffrées (WhatsApp/TG), réception d'OTP SMS, flux vidéo 60 FPS &lt;30ms</td>
-              <td>Périphérie d'acquisition : pousse les flux vers Layer 2 et scelle les preuves brutes dans MinIO/MongoDB</td>
+              <td>Périphérie d'acquisition : pousse les flux vers Layer 2 et scelle les preuves brutes dans MinIO/Elasticsearch</td>
             </tr>
             <tr>
               <td><span class="badge badge-purple">Layer 4</span></td>
@@ -614,7 +614,7 @@
             <tr>
               <td><span class="badge badge-rose">Layer 3</span></td>
               <td><strong>Tier de Stockage Polyglotte (6 Moteurs)</strong></td>
-              <td>Neo4j, PostgreSQL/TimescaleDB, Qdrant, MinIO WORM, MongoDB, Redis Stack</td>
+              <td>Neo4j, PostgreSQL/TimescaleDB, Qdrant, MinIO WORM, Elasticsearch 8.14, Redis Stack</td>
               <td>Persistance immuable WORM, relations graphe sans index, séries temporelles CDR, indexation vectorielle HNSW</td>
               <td>Desservi directement par Layer 2, Layer 4 et Layer 5 selon les besoins spécifiques de chaque moteur</td>
             </tr>
@@ -662,7 +662,7 @@
             <text x="360" y="108" fill="#cbd5e1" font-size="11">• PostgreSQL 16 + TimescaleDB + PostGIS</text>
             <text x="360" y="128" fill="#cbd5e1" font-size="11">• Qdrant 1.9 Rust (Vecteurs 512-d)</text>
             <text x="360" y="148" fill="#cbd5e1" font-size="11">• MinIO S3 Enterprise (WORM Compliance)</text>
-            <text x="360" y="168" fill="#cbd5e1" font-size="11">• MongoDB 7.0 &amp; Redis 7.2 Stack</text>
+            <text x="360" y="168" fill="#cbd5e1" font-size="11">• Elasticsearch 8.14 &amp; Redis 7.2 Stack</text>
             <rect x="360" y="190" width="250" height="62" rx="4" fill="#070a0f" stroke="#1e293b"/>
             <text x="370" y="210" fill="#94a3b8" font-size="10" font-family="monospace">VLAN 30 • 64 vCPU / 256 Go RAM</text>
             <text x="370" y="228" fill="#34d399" font-size="10" font-family="monospace">8x NVMe RAID-10 + 48 To ZFS WORM</text>
@@ -992,7 +992,7 @@
           <h3 style="color:#0ea5e9;margin-bottom:0.5rem;">🎯 Mission Opérationnelle du Layer 2 &amp; Règle d'Accès Direct au Stockage</h3>
           <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.55;">
             Les données récoltées sur le terrain ou par scraping OSINT arrivent sous des formats chaotiques : chaînes brutes, pages HTML volumineuses, numéros de téléphone mal formatés (ex: <code>0555019283</code> vs <code>+213 555 01 92 83</code>), reçus bancaires froissés. Layer 2 garantit la validation cryptographique de l'enquêteur (JWT + RBAC), distribue les charges sur des files asynchrones Celery/Redis, normalise chaque entité dans son format canonique E.164 / SHA-256 et scelle les preuves au format WORM ISO 28500.<br/>
-            <strong>Règle d'accès direct au stockage :</strong> Layer 2 persiste et interroge <strong>DIRECTEMENT</strong> les 6 moteurs du <strong>Layer 3</strong> (PostgreSQL, Neo4j, MinIO, MongoDB, Qdrant, Redis) via des pilotes natifs asynchrones (asyncpg, Bolt, boto3, Motor, gRPC), <strong>sans jamais transiter par Layer 1 ni par Layer 4/5</strong> pour les opérations CRUD ou la restitution au Studio d'Enquête (Layer 6).
+            <strong>Règle d'accès direct au stockage :</strong> Layer 2 persiste et interroge <strong>DIRECTEMENT</strong> les 6 moteurs du <strong>Layer 3</strong> (PostgreSQL, Neo4j, MinIO, Elasticsearch, Qdrant, Redis) via des pilotes natifs asynchrones (asyncpg, Bolt, boto3, AsyncElasticsearch, gRPC), <strong>sans jamais transiter par Layer 1 ni par Layer 4/5</strong> pour les opérations CRUD ou la restitution au Studio d'Enquête (Layer 6).
           </p>
         </div>
 
@@ -1117,14 +1117,14 @@
                 <text x="10" y="70" fill="#34d399" font-size="7">● Dépôt scellés légaux</text>
               </g>
 
-              <!-- Connector 5: MongoDB Motor -->
+              <!-- Connector 5: Elasticsearch Async -->
               <g transform="translate(615, 55)">
                 <rect x="0" y="0" width="135" height="75" rx="5" fill="#0d1f17" stroke="#10b981" stroke-width="1"/>
-                <text x="10" y="18" fill="#10b981" font-size="9.5" font-weight="bold">MongoDB Motor</text>
-                <text x="10" y="32" fill="#cbd5e1" font-size="7.5">motor.motor_asyncio</text>
-                <text x="10" y="45" fill="#94a3b8" font-size="7.5">BSON non-bloquant</text>
-                <text x="10" y="58" fill="#10b981" font-size="7.5">Port 27017 • Wire</text>
-                <text x="10" y="70" fill="#34d399" font-size="7">● Dumps scrapers bruts</text>
+                <text x="10" y="18" fill="#10b981" font-size="9.5" font-weight="bold">Elasticsearch 8.14</text>
+                <text x="10" y="32" fill="#cbd5e1" font-size="7.5">AsyncElasticsearch</text>
+                <text x="10" y="45" fill="#94a3b8" font-size="7.5">Lucene BM25 &amp; Flattened</text>
+                <text x="10" y="58" fill="#10b981" font-size="7.5">Port 9200 • REST TLS</text>
+                <text x="10" y="70" fill="#34d399" font-size="7">● Dumps OSN &amp; Data Fusion</text>
               </g>
 
               <!-- Connector 6: Redis RESP3 -->
@@ -1351,19 +1351,19 @@
               <text x="15" y="178" fill="#34d399" font-size="8">● Non-répudiation ISO 27037 garantie</text>
             </g>
 
-            <!-- ENGINE 5: MONGODB -->
+            <!-- ENGINE 5: ELASTICSEARCH 8.14 -->
             <g transform="translate(330, 230)">
               <rect x="0" y="0" width="280" height="190" rx="8" fill="#0d1f17" stroke="#10b981" stroke-width="1.8"/>
-              <text x="15" y="24" fill="#10b981" font-size="12" font-weight="bold">5. MONGODB 7.0 WIREDTIGER</text>
-              <text x="15" y="40" fill="#94a3b8" font-size="8.5">Dépôt Polymorphe BSON &amp; Scraping Brut</text>
-              <text x="15" y="60" fill="#cbd5e1" font-size="8">• Dépôt sans schéma pour les 76 briques OSINT</text>
-              <text x="15" y="75" fill="#cbd5e1" font-size="8">• Arbres DOM HTML et réponses d'APIs tierces</text>
-              <text x="15" y="90" fill="#cbd5e1" font-size="8">• Compression par bloc Snappy (gain 70% disque)</text>
-              <text x="15" y="105" fill="#cbd5e1" font-size="8">• Ingestion haute vélocité sans migration</text>
-              <text x="15" y="120" fill="#cbd5e1" font-size="8">• Change Streams pour extraction en continu</text>
+              <text x="15" y="24" fill="#10b981" font-size="12" font-weight="bold">5. ELASTICSEARCH 8.14 (LUCENE BM25)</text>
+              <text x="15" y="40" fill="#94a3b8" font-size="8.5">Recherche Plein-Texte Arabe/FR &amp; Data Fusion</text>
+              <text x="15" y="60" fill="#cbd5e1" font-size="8">• Analyseurs morphologiques Arabe, Darija &amp; Français</text>
+              <text x="15" y="75" fill="#cbd5e1" font-size="8">• Dépôt JSON polymorphe (type flattened) des 76 outils</text>
+              <text x="15" y="90" fill="#cbd5e1" font-size="8">• Requêtes Fuzzy (Levenshtein) &amp; Phonétiques (Data Fusion)</text>
+              <text x="15" y="105" fill="#cbd5e1" font-size="8">• Indexation temps réel OSN, Flux RSS &amp; Live Streaming</text>
+              <text x="15" y="120" fill="#cbd5e1" font-size="8">• Compression ZSTD / LZ4 sur documents bruts</text>
               <rect x="15" y="138" width="250" height="22" rx="4" fill="#143323"/>
-              <text x="22" y="153" fill="#10b981" font-size="8.5" font-family="monospace">Mongo Wire Protocol • Port 27017</text>
-              <text x="15" y="178" fill="#34d399" font-size="8">● Ingestion de 35 000 docs BSON / sec</text>
+              <text x="22" y="153" fill="#10b981" font-size="8.5" font-family="monospace">Elasticsearch REST HTTPS • Port 9200</text>
+              <text x="15" y="178" fill="#34d399" font-size="8">● Recherche floue &amp; résolution d'entités &lt;12ms</text>
             </g>
 
             <!-- ENGINE 6: REDIS STACK -->
@@ -1428,11 +1428,11 @@
               <td>&lt; 15 ms (Streaming)</td>
             </tr>
             <tr>
-              <td><strong>MongoDB 7.0</strong></td>
-              <td>Dump JSON brut des métadonnées de messagerie extraites par Mitmproxy</td>
-              <td>Document BSON non structuré avec logs réseau</td>
-              <td>Reconstitution technique exhaustive en cas de contestation</td>
-              <td>&lt; 2 ms (Wire)</td>
+              <td><strong>Elasticsearch 8.14</strong></td>
+              <td>Transcription plein-texte Darija/Arabe/FR, posts OSN, flux RSS/Streaming et dump JSON brut (<code>flattened</code>)</td>
+              <td>Index inversé Lucene BM25 + analyseurs morphologiques &amp; phonétiques</td>
+              <td>Recherche floue (Fuzzy Data Fusion) et fouille textuelle multilingue instantanée</td>
+              <td>&lt; 10 ms (REST TLS)</td>
             </tr>
             <tr>
               <td><strong>Redis 7.2</strong></td>
@@ -1440,6 +1440,48 @@
               <td>Message Pub/Sub diffusé sur WebSocket NVL</td>
               <td>Apparition instantanée du nœud sur l'écran de l'enquêteur (60 FPS)</td>
               <td>&lt; 0.5 ms (RESP3)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Comparative Study: Elasticsearch 8.14 vs MongoDB 7.0 -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin:1.75rem 0 0.6rem;">Étude Comparative &amp; Décision Architecturale : Elasticsearch 8.14 vs MongoDB 7.0</h3>
+        <p style="font-size:0.82rem;color:var(--text-secondary);line-height:1.55;margin-bottom:0.8rem;">
+          Dans le cadre d'un déploiement 100 % souverain et <em>air-gapped</em> (sans accès au cloud MongoDB Atlas), <strong>Elasticsearch 8.14</strong> a été retenu en remplacement de MongoDB pour le stockage des collectes OSINT brutes, l'indexation des flux RSS/Streaming et le moteur de <strong>Data Fusion (Entity Resolution)</strong> :
+        </p>
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Critère Forensique &amp; OSINT</th>
+              <th>Elasticsearch 8.14 (Moteur Retenu)</th>
+              <th>MongoDB 7.0 Community (Écarté)</th>
+              <th>Impact Opérationnel pour Athar DZ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Recherche Plein-Texte Multilingue (Arabe, Darija, Français)</strong></td>
+              <td><span class="badge badge-emerald">Natif &amp; SOTA</span> Analyseurs morphologiques arabes (racines, normalisation <em>hamza / tashkeel</em>), stemming français et scoring <strong>BM25</strong>.</td>
+              <td>Index texte basique en version on-premise (pas d'analyse morphologique arabe avancée hors Atlas Cloud).</td>
+              <td>Fouille instantanée sur des millions de publications Facebook, Telegram, TikTok et transcriptions vocales Darija.</td>
+            </tr>
+            <tr>
+              <td><strong>Data Fusion &amp; Résolution d'Entités Floue (Fuzzy / Phonetic)</strong></td>
+              <td><span class="badge badge-emerald">Automates Levenshtein</span> Requêtes <code>fuzzy</code>, filtres phonétiques franco-arabes et scoring multi-attributs pondéré (<code>bool.should</code>) en &lt; 12 ms.</td>
+              <td>Nécessite des expressions régulières (<code>$regex</code>) provoquant un balayage complet de collection (<code>COLLSCAN</code>).</td>
+              <td>Unification ultra-rapide des variantes orthographiques (<em>Mohamed Benali / Med Benali / محمد بن علي</em>).</td>
+            </tr>
+            <tr>
+              <td><strong>Flux Continus (RSS, Live Streaming, Logs DFIR)</strong></td>
+              <td><span class="badge badge-emerald">Data Streams &amp; ILM</span> Indexation quasi temps-réel (NRT) et agrégations temporelles (<code>date_histogram</code>) natives.</td>
+              <td>Agrégations analytiques textuelles et temporelles combinées nettement plus coûteuses.</td>
+              <td>Surveillance en continu des chaînes YouTube Live, TikTok Live, Telegram et flux RSS d'actualité/cyber.</td>
+            </tr>
+            <tr>
+              <td><strong>Dumps JSON Polymorphes des 76 Outils OSINT</strong></td>
+              <td><span class="badge badge-blue">Type Flattened + _source ZSTD</span> Accepte tout payload JSON imbriqué sans explosion de mapping.</td>
+              <td>Stockage BSON sans schéma natif.</td>
+              <td>Conserve 100 % de la flexibilité JSON sans schéma tout en offrant la puissance d'indexation Lucene.</td>
             </tr>
           </tbody>
         </table>
@@ -2109,6 +2151,72 @@
         </table>
       </section>
     </div>
+
+    <!-- ====================================================================
+         CLEAN ARCHITECTURE (4 CERCLES CONCENTRIQUES) & SOURCES OSN / STREAMING
+         ==================================================================== -->
+    <section style="margin-top:2.5rem;">
+      <h2 class="section-title">7. Architecture Logique : Patron Clean Architecture (4 Cercles — Ports &amp; Adapters) &amp; Collecte Multi-Plateformes</h2>
+      <p class="section-subtitle">
+        Isolation stricte du domaine forensique ISO 27037 par inversion de dépendance (Ports &amp; Adapters) et couverture exhaustive des sources OSN, Flux RSS et plateformes de Streaming en continu.
+      </p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:1rem;margin-bottom:1.5rem;">
+        <div class="card" style="border-left:4px solid #10b981;">
+          <h3 style="font-size:0.95rem;color:#10b981;margin-bottom:0.4rem;">1. Cercle 1 — Enterprise Domain (<code>domain/</code>)</h3>
+          <p style="font-size:0.81rem;color:var(--text-secondary);line-height:1.5;">
+            Noyau pur sans aucune dépendance externe : Registre canonique des <strong>37 types de nœuds</strong> et <strong>47 relations</strong>, dictionnaire de <strong>Data Fusion des attributs</strong>, règles d'immuabilité probatoire ISO 27037 et interfaces abstraites (<code>GraphRepositoryPort</code>, <code>AuditLedgerPort</code>, <code>SearchEnginePort</code>).
+          </p>
+        </div>
+        <div class="card" style="border-left:4px solid #38bdf8;">
+          <h3 style="font-size:0.95rem;color:#38bdf8;margin-bottom:0.4rem;">2. Cercle 2 — Application Use Cases (<code>services/</code>)</h3>
+          <p style="font-size:0.81rem;color:var(--text-secondary);line-height:1.5;">
+            Cas d'usage métier orchestrant les règles d'investigation : <code>ProjectPersonNetworkUseCase</code> (vue centrée Personnes &amp; liens médiés), <code>FuseMultiSourceEntityUseCase</code>, <code>PromoteToVerifiedUseCase</code>, et les <strong>16 algorithmes SNA purs</strong> (<code>services/sna/</code>).
+          </p>
+        </div>
+        <div class="card" style="border-left:4px solid #a855f7;">
+          <h3 style="font-size:0.95rem;color:#a855f7;margin-bottom:0.4rem;">3. Cercle 3 — Interface Adapters (<code>api/v1/</code>, <code>schemas/</code>)</h3>
+          <p style="font-size:0.81rem;color:var(--text-secondary);line-height:1.5;">
+            Routeurs HTTP FastAPI, schémas Pydantic v2 avec <code>AliasChoices</code> pour l'harmonisation automatique des noms d'attributs (<code>num/tele/phone/phone_number &rarr; numero_e164</code>), et adaptateur Frontend <code>GraphCanvasAdapter</code>.
+          </p>
+        </div>
+        <div class="card" style="border-left:4px solid #f43f5e;">
+          <h3 style="font-size:0.95rem;color:#f43f5e;margin-bottom:0.4rem;">4. Cercle 4 — Frameworks &amp; Drivers (<code>db/</code>, <code>core/</code>)</h3>
+          <p style="font-size:0.81rem;color:var(--text-secondary);line-height:1.5;">
+            Implémentations concrètes des Ports : <code>Neo4jGraphAdapter</code> (Bolt), <code>PostgresAuditAdapter</code> (SQLAlchemy 2.0 + TimescaleDB/PostGIS), <code>ElasticsearchSearchAdapter</code> (REST 9200 BM25) et <code>RedisCacheAdapter</code>.
+          </p>
+        </div>
+      </div>
+
+      <div class="card" style="border-left:4px solid #06b6d4;">
+        <h3 style="font-size:1rem;color:#06b6d4;margin-bottom:0.5rem;">🌐 Sources de Données Surveillées : OSN, Flux RSS &amp; Collecte Streaming en Continu</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;font-size:0.81rem;color:var(--text-secondary);line-height:1.55;">
+          <div>
+            <strong style="color:#f8fafc;">1. Réseaux Sociaux &amp; Forums (OSN — 8 Plateformes) :</strong>
+            <ul style="padding-left:1.1rem;margin-top:0.3rem;">
+              <li><strong>Facebook</strong> : Pages, Groupes, Marketplace, Meta Ad Library.</li>
+              <li><strong>Instagram</strong> : Profils, Reels, Stories, graphes d'abonnés.</li>
+              <li><strong>X (Twitter)</strong> : Flux, Threads, métadonnées, Spaces.</li>
+              <li><strong>Telegram</strong> : Chaînes &amp; Groupes via MTProto (messages, médias, membres).</li>
+              <li><strong>TikTok &amp; YouTube</strong> : Crawlers de chaînes, vidéos, pistes audio et arbres de commentaires.</li>
+              <li><strong>Reddit &amp; 4chan</strong> : Subreddits, boards anonymes et threads éphémères archivés.</li>
+            </ul>
+          </div>
+          <div>
+            <strong style="color:#f8fafc;">2. Flux RSS / Atom &amp; Crawlers Web :</strong>
+            <ul style="padding-left:1.1rem;margin-top:0.3rem;">
+              <li>Agrégation continue de flux RSS/Atom (presse, communiqués, alertes cyber, paste monitors).</li>
+              <li>Scellement probatoire systématique en conteneur <strong>ISO 28500 WARC</strong> + empreinte SHA-256.</li>
+            </ul>
+            <strong style="color:#f8fafc;display:block;margin-top:0.5rem;">3. Collecte de Chaînes &amp; Plateformes de Streaming Live :</strong>
+            <ul style="padding-left:1.1rem;margin-top:0.3rem;">
+              <li>Surveillance temps réel : <strong>YouTube Live, TikTok Live, Facebook Live, Twitch, flux HLS/RTMP/IPTV</strong>.</li>
+              <li>Segmentation horodatée UTC, transcription vocale Darija/FR/AR (<em>Faster-Whisper</em>), diarisation (<em>PyAnnote</em>) et extraction de <em>keyframes</em>.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script src="assets/app.js"></script>

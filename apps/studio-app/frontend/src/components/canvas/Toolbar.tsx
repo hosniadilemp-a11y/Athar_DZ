@@ -123,6 +123,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     setEdgeLabelMode,
     toggleEdgeLabelConnectedNodeType,
     toggleHiddenEdgeCategory,
+    isPersonOnlyGraph,
+    expandedHiddenNodeIds,
+    togglePersonOnlyGraph,
+    setPersonOnlyGraph,
   } = useGraphStore();
   const { tr } = useI18n();
 
@@ -959,6 +963,43 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                   </div>
                 )}
               </div>
+            )}
+          </div>
+
+          {/* Expand Full Graph / Person-Centric Projection Toggle Button (Next to Visibilité & Étiquettes) */}
+          <div className="graph-sub-toolbar-group">
+            <button
+              type="button"
+              className={`btn btn-xs ${!isPersonOnlyGraph ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={togglePersonOnlyGraph}
+              title={
+                isPersonOnlyGraph
+                  ? tr('Déplier tout le graphe pour afficher l\'ensemble des entités et relations intermédiaires')
+                  : tr('Replier le graphe pour afficher uniquement les Personnes et leurs relations directes ou médiées')
+              }
+            >
+              <Network size={12} />
+              <span>
+                {isPersonOnlyGraph
+                  ? tr('Déplier tout le graphe')
+                  : tr('Vue Personnes (Replier)')}
+              </span>
+            </button>
+
+            {isPersonOnlyGraph && expandedHiddenNodeIds.size > 0 && (
+              <button
+                type="button"
+                className="btn btn-xs btn-ghost"
+                onClick={() => setPersonOnlyGraph(true)}
+                title={tr('Refermer les {n} entités intermédiaires dépliées', {
+                  n: expandedHiddenNodeIds.size,
+                })}
+              >
+                <RotateCcw size={11} />
+                <span>
+                  {tr('Replier ({n})', { n: expandedHiddenNodeIds.size })}
+                </span>
+              </button>
             )}
           </div>
         </div>

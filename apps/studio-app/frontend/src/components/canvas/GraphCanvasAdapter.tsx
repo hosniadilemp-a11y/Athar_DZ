@@ -7,7 +7,7 @@ import { CanvasFloatingPalette } from './CanvasFloatingPalette';
 import { CanvasMinimap } from './CanvasMinimap';
 import { CreateRelationModal } from '../modals/CreateRelationModal';
 import { useGraphStore } from '../../store/useGraphStore';
-import { stepLiveForcePhysics } from '../../utils/graphLayouts';
+import { stepLiveForcePhysics, computePersonGraphProjection } from '../../utils/graphLayouts';
 import { Link2, Sparkles, X } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
 import { getEdgeCategory } from '../../i18n/phrases/relations';
@@ -154,18 +154,36 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
     return map;
   }, [nodes, livePositions]);
 
-  // Filter visible nodes by active layer
-  const visibleNodes = React.useMemo(() => {
+  // Filter nodes by active layer first
+  const layerFilteredNodes = React.useMemo(() => {
     if (!activeLayers) return nodes;
     return nodes.filter((n) => activeLayers.has(n.layer));
   }, [nodes, activeLayers]);
 
-  // Filter visible edges (both endpoints must be visible and not hidden by category filter)
+  // Person-Centric Projection & Granular Node/Relation Expansion
+  const isPersonOnlyGraph = useGraphStore((s) => s.isPersonOnlyGraph);
+  const expandedHiddenNodeIds = useGraphStore((s) => s.expandedHiddenNodeIds);
+  const mediatedEdgeOverrides = useGraphStore((s) => s.mediatedEdgeOverrides);
   const hiddenEdgeCategories = useGraphStore((s) => s.hiddenEdgeCategories);
+
+  const {
+    visibleNodes,
+    visibleEdges: projectedEdges,
+    hiddenNeighborCountByNode,
+    expandedNeighborCountByNode,
+  } = React.useMemo(() => {
+    return computePersonGraphProjection(
+      layerFilteredNodes,
+      edges,
+      isPersonOnlyGraph,
+      expandedHiddenNodeIds,
+      mediatedEdgeOverrides
+    );
+  }, [layerFilteredNodes, edges, isPersonOnlyGraph, expandedHiddenNodeIds, mediatedEdgeOverrides]);
+
+  // Filter visible edges by user edge category visibility
   const visibleEdges = React.useMemo(() => {
-    const visibleIds = new Set(visibleNodes.map((n) => n.id));
-    return edges.filter((e) => {
-      if (!visibleIds.has(e.source_id) || !visibleIds.has(e.target_id)) return false;
+    return projectedEdges.filter((e) => {
       if (hiddenEdgeCategories && hiddenEdgeCategories.size > 0) {
         if (hiddenEdgeCategories.has(e.type)) return false;
         const cat = getEdgeCategory(e.type);
@@ -173,7 +191,7 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
       }
       return true;
     });
-  }, [edges, visibleNodes, hiddenEdgeCategories]);
+  }, [projectedEdges, hiddenEdgeCategories]);
 
   // Native Non-Passive Wheel Listener (strictly prevents browser zoom / page scrolling)
   useEffect(() => {
@@ -524,6 +542,8 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
               isLinkSource={linkSourceNodeId === node.id}
               isDragging={draggingNodeId === node.id}
               zoom={viewport.zoom}
+              hiddenNeighborsCount={hiddenNeighborCountByNode.get(node.id) || 0}
+              expandedNeighborsCount={expandedNeighborCountByNode.get(node.id) || 0}
               onSelect={handleNodeClick}
               onContextMenu={onNodeContextMenu}
               onDragStart={handleNodeDragStart}

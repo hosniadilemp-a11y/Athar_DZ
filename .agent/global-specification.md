@@ -23,7 +23,7 @@ Athar DZ / AegisInvestigate is a visual criminal investigation and digital foren
    - **PostgreSQL 16 + PostGIS (+ TimescaleDB in prod):** Judicial cases, users/RBAC, Wilaya RLS, audit logs, geospatial geometries, high-volume CDRs
    - **Qdrant 1.9:** 512-d facial & 192-d voice biometric vector embeddings (`gRPC`)
    - **MinIO S3 Enterprise:** Immutable WORM Object Lock (`COMPLIANCE` mode) + RFC 3161 timestamps
-   - **MongoDB 7.0 WiredTiger:** Raw schema-free OSINT dumps & web DOM snapshots
+   - **Elasticsearch 8.14:** Full-text multilingual search engine (Arabic/Darija/French morphological & phonetic analyzers, BM25, fuzzy entity resolution) & flattened JSON OSINT dump store
    - **Redis 7.2 Stack:** Ephemeral session state, Pub/Sub WebSocket bus, token-bucket rate limiters
 3. **Server 3 — Phone Farm Automation Server (`SRV-FARM-01`, VLAN 40):**
    - Physical Android device racks (`ADB` / `Scrcpy` WebRTC) and multi-SIM GSM modems (Djezzy, Mobilis, Ooredoo)

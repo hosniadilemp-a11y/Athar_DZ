@@ -153,7 +153,7 @@
       <div class="page-eyebrow">Chapitre 04 &bull; Modèle de Données Universel (GFPG) &amp; Ontologie Judiciaire</div>
       <h1>Graphe des Métadonnées, Ontologie Complète des Nœuds &amp; Persistance Polyglotte</h1>
       <p>
-        Spécification formelle exhaustive des <strong>37 types de nœuds d'investigation</strong>, des <strong>47 types de relations directionnelles</strong>, de la hiérarchie territoriale algérienne et de la matrice d'attribution physique aux <strong>6 moteurs de bases de données</strong> de la plateforme (Neo4j, PostgreSQL/TimescaleDB, Qdrant, MinIO WORM, MongoDB, Redis).
+        Spécification formelle exhaustive des <strong>37 types de nœuds d'investigation</strong>, des <strong>47 types de relations directionnelles</strong>, de la hiérarchie territoriale algérienne, du <strong>moteur de Data Fusion des attributs</strong> et de la matrice d'attribution physique aux <strong>6 moteurs de bases de données</strong> de la plateforme (Neo4j, PostgreSQL/TimescaleDB, Qdrant, MinIO WORM, Elasticsearch 8.14, Redis).
       </p>
     </header>
     <!-- ====================================================================
@@ -214,7 +214,7 @@
         </button><button class="onto-btn onto-db-btn" data-db="minio" onclick="filterOntoDatabase('minio')">
           <span style="color:#f43f5e;">●</span> MinIO Enterprise S3 (Scellés WORM)
         </button><button class="onto-btn onto-db-btn" data-db="mongodb" onclick="filterOntoDatabase('mongodb')">
-          <span style="color:#10b981;">●</span> MongoDB 7.0 WiredTiger (Documents BSON)
+          <span style="color:#10b981;">●</span> Elasticsearch 8.14 (Lucene BM25 &amp; JSON Flattened)
         </button><button class="onto-btn onto-db-btn" data-db="redis" onclick="filterOntoDatabase('redis')">
           <span style="color:#f59e0b;">●</span> Redis 7.2 Stack (In-Memory Pub/Sub & Cache)
         </button>
@@ -627,7 +627,7 @@
     
     <!-- Primary DB Badge -->
     <rect x="903" y="356" width="161" height="15" rx="3" fill="#0b111c" stroke="#22c55e" stroke-width="0.7"/>
-    <text x="907" y="367" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / MongoDB 7.0</text>
+    <text x="907" y="367" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / Elasticsearch 8.14</text>
   </g>
   <g class="onto-node-g onto-node-socmint onto-db-neo4j" data-node="publication_sociale" data-domain="socmint" data-db="neo4j" onclick="selectOntologyEntity('publication_sociale')" style="cursor:pointer;" filter="url(#shadow-node)">
     <rect x="1095" y="330" width="220" height="48" rx="6" fill="#131c2b" stroke="#06b6d4" stroke-width="1.5" class="onto-node-rect"/>
@@ -636,7 +636,7 @@
     
     <!-- Primary DB Badge -->
     <rect x="1123" y="356" width="186" height="15" rx="3" fill="#0b111c" stroke="#22c55e" stroke-width="0.7"/>
-    <text x="1127" y="367" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / MinIO / MongoDB</text>
+    <text x="1127" y="367" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / MinIO / Elasticsearch</text>
   </g>
   <g class="onto-node-g onto-node-socmint onto-db-neo4j" data-node="canal_telegram" data-domain="socmint" data-db="neo4j" onclick="selectOntologyEntity('canal_telegram')" style="cursor:pointer;" filter="url(#shadow-node)">
     <rect x="875" y="415" width="195" height="48" rx="6" fill="#131c2b" stroke="#06b6d4" stroke-width="1.5" class="onto-node-rect"/>
@@ -645,7 +645,7 @@
     
     <!-- Primary DB Badge -->
     <rect x="903" y="441" width="161" height="15" rx="3" fill="#0b111c" stroke="#22c55e" stroke-width="0.7"/>
-    <text x="907" y="452" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / MongoDB 7.0</text>
+    <text x="907" y="452" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / Elasticsearch 8.14</text>
   </g>
   <g class="onto-node-g onto-node-socmint onto-db-mongodb" data-node="message_chat" data-domain="socmint" data-db="mongodb" onclick="selectOntologyEntity('message_chat')" style="cursor:pointer;" filter="url(#shadow-node)">
     <rect x="1095" y="415" width="220" height="48" rx="6" fill="#131c2b" stroke="#06b6d4" stroke-width="1.5" class="onto-node-rect"/>
@@ -654,7 +654,7 @@
     
     <!-- Primary DB Badge -->
     <rect x="1123" y="441" width="186" height="15" rx="3" fill="#0b111c" stroke="#22c55e" stroke-width="0.7"/>
-    <text x="1127" y="452" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">MongoDB 7.0 (BSON Snappy)</text>
+    <text x="1127" y="452" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">Elasticsearch 8.14 (Lucene BM25)</text>
   </g>
   <g class="onto-node-g onto-node-socmint onto-db-neo4j" data-node="adresse_email" data-domain="socmint" data-db="neo4j" onclick="selectOntologyEntity('adresse_email')" style="cursor:pointer;" filter="url(#shadow-node)">
     <rect x="875" y="500" width="195" height="48" rx="6" fill="#131c2b" stroke="#06b6d4" stroke-width="1.5" class="onto-node-rect"/>
@@ -672,7 +672,7 @@
     
     <!-- Primary DB Badge -->
     <rect x="1123" y="526" width="186" height="15" rx="3" fill="#0b111c" stroke="#22c55e" stroke-width="0.7"/>
-    <text x="1127" y="537" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / MinIO / MongoDB</text>
+    <text x="1127" y="537" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / MinIO / Elasticsearch</text>
   </g>
   <g class="onto-node-g onto-node-socmint onto-db-neo4j" data-node="identifiant_infrastructure" data-domain="socmint" data-db="neo4j" onclick="selectOntologyEntity('identifiant_infrastructure')" style="cursor:pointer;" filter="url(#shadow-node)">
     <rect x="985" y="555" width="220" height="44" rx="6" fill="#131c2b" stroke="#06b6d4" stroke-width="1.5" class="onto-node-rect"/>
@@ -690,7 +690,7 @@
     
     <!-- Primary DB Badge -->
     <rect x="63" y="691" width="131" height="15" rx="3" fill="#0b111c" stroke="#22c55e" stroke-width="0.7"/>
-    <text x="67" y="702" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">MinIO WORM / MongoDB / Neo4j</text>
+    <text x="67" y="702" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">MinIO WORM / Elasticsearch / Neo4j</text>
   </g>
   <g class="onto-node-g onto-node-cyber onto-db-neo4j" data-node="serveur_c2" data-domain="cyber" data-db="neo4j" onclick="selectOntologyEntity('serveur_c2')" style="cursor:pointer;" filter="url(#shadow-node)">
     <rect x="220" y="665" width="165" height="50" rx="6" fill="#131c2b" stroke="#22c55e" stroke-width="1.5" class="onto-node-rect"/>
@@ -708,7 +708,7 @@
     
     <!-- Primary DB Badge -->
     <rect x="433" y="691" width="141" height="15" rx="3" fill="#0b111c" stroke="#22c55e" stroke-width="0.7"/>
-    <text x="437" y="702" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / MongoDB 7.0</text>
+    <text x="437" y="702" fill="#22c55e" font-size="7.5" font-family="monospace" font-weight="600">Neo4j / Elasticsearch 8.14</text>
   </g>
   <g class="onto-node-g onto-node-cyber onto-db-minio" data-node="artefact_dfir" data-domain="cyber" data-db="minio" onclick="selectOntologyEntity('artefact_dfir')" style="cursor:pointer;" filter="url(#shadow-node)">
     <rect x="120" y="755" width="175" height="48" rx="6" fill="#131c2b" stroke="#22c55e" stroke-width="1.5" class="onto-node-rect"/>
@@ -854,12 +854,12 @@
             <td>Débit continu jusqu'à 2.5 Go/s<br/>Erasure Coding 16 disques</td>
           </tr>
           <tr>
-            <td><strong>MongoDB 7.0 WiredTiger</strong><br/><span class="badge-ver">Document BSON Store</span></td>
-            <td>Dépotoir sans schéma des 76 briques OSINT, arbres syntaxiques DOM des fausses boutiques, réponses brutes d'APIs tierces, profils Telegram</td>
-            <td>Dépôt polymorphe BSON avec compression par bloc Snappy (gain de 70% d'espace disque) et Change Streams réactifs.</td>
-            <td>MongoDB Wire Protocol TCP<br/><code>Port 27017</code></td>
-            <td>Absorbe les variations imprévisibles de structure des données extraites du web sans jamais faire échouer le pipeline d'ingestion.</td>
-            <td>35 000 écritures BSON / sec<br/>Schema-on-read instantané</td>
+            <td><strong>Elasticsearch 8.14 (Lucene BM25)</strong><br/><span class="badge-ver">Full-Text Search &amp; JSON Store</span></td>
+            <td>Publications OSN (Facebook, Instagram, Reddit, 4chan, Twitter/X, Telegram, YouTube, TikTok), flux RSS, transcriptions de streaming en Darija/Arabe/FR, dumps JSON des 76 briques OSINT</td>
+            <td>Index inversé Lucene BM25 avec analyseurs morphologiques et phonétiques franco-arabes, requêtes floues (<code>fuzzy</code> Levenshtein) pour la Data Fusion et champs JSON <code>flattened</code>.</td>
+            <td>Elasticsearch REST HTTPS<br/><code>Port 9200</code></td>
+            <td>Permet la recherche plein-texte multilingue instantanée et le rapprochement flou d'entités (Entity Resolution) sur des millions de collectes sans explosion de schéma.</td>
+            <td>Recherche floue &lt;12ms<br/>Indexation NRT Data Streams</td>
           </tr>
           <tr>
             <td><strong>Redis 7.2 Stack</strong><br/><span class="badge-ver">In-Memory Cache &amp; Bus</span></td>
@@ -1046,28 +1046,28 @@
           <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#06b6d4;border:1px solid #06b6d4;font-size:0.7rem;">5. SOCMINT, Web & Trackers</span></td>
           <td>Profil en ligne sur Facebook, Instagram, Telegram, TikTok ou WhatsApp utilisé pour diffuser les arnaques ou appâter les victimes.</td>
           <td><code>id_profil</code>, <code>plateforme</code>, <code>pseudo_handle</code> <em>(+1 autres)</em></td>
-          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / MongoDB 7.0</span></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / Elasticsearch 8.14</span></td>
           <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
         </tr>        <tr data-category="socmint">
           <td><strong>📢 Publication_Sociale</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Publication_Sociale)</span></td>
           <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#06b6d4;border:1px solid #06b6d4;font-size:0.7rem;">5. SOCMINT, Web & Trackers</span></td>
           <td>Message public, annonce sponsorisée Facebook Ads ou vidéo TikTok constituant le support matériel de l'escroquerie.</td>
           <td><code>id_post</code>, <code>texte_integral</code>, <code>date_publication</code> <em>(+1 autres)</em></td>
-          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / MinIO / MongoDB</span></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / MinIO / Elasticsearch</span></td>
           <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
         </tr>        <tr data-category="socmint">
           <td><strong>📣 Canal_Telegram</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Canal_Telegram)</span></td>
           <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#06b6d4;border:1px solid #06b6d4;font-size:0.7rem;">5. SOCMINT, Web & Trackers</span></td>
           <td>Espace de discussion collectif privé ou public où les escrocs coordonnent leurs actions ou diffusent des catalogues de marchandises fictives.</td>
           <td><code>id_canal</code>, <code>titre_canal</code>, <code>nb_membres</code></td>
-          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / MongoDB 7.0</span></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / Elasticsearch 8.14</span></td>
           <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
         </tr>        <tr data-category="socmint">
           <td><strong>💬 Message_Chat</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Message_Chat)</span></td>
           <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#06b6d4;border:1px solid #06b6d4;font-size:0.7rem;">5. SOCMINT, Web & Trackers</span></td>
           <td>Message texte ou vocal unitaire échangé sur WhatsApp ou Telegram contenant des aveux, des ordres ou des coordonnées bancaires.</td>
           <td><code>message_id</code>, <code>texte_brut</code>, <code>horodatage_iso</code></td>
-          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">MongoDB 7.0 (BSON Snappy)</span></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Elasticsearch 8.14 (Lucene BM25)</span></td>
           <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
         </tr>        <tr data-category="socmint">
           <td><strong>📧 Adresse_Email</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Adresse_Email)</span></td>
@@ -1081,7 +1081,7 @@
           <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#06b6d4;border:1px solid #06b6d4;font-size:0.7rem;">5. SOCMINT, Web & Trackers</span></td>
           <td>Site de commerce électronique fictif, fausse plateforme de paiement ou portail d'hameçonnage ciblant les usagers algériens.</td>
           <td><code>fqdn_domaine</code>, <code>ip_hebergeur</code>, <code>date_depot_whois</code></td>
-          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / MinIO / MongoDB</span></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / MinIO / Elasticsearch</span></td>
           <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
         </tr>        <tr data-category="socmint">
           <td><strong>🏷️ Identifiant_Infrastructure</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Identifiant_Infrastructure)</span></td>
@@ -1095,7 +1095,7 @@
           <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#22c55e;border:1px solid #22c55e;font-size:0.7rem;">6. Cyber, Malwares & Forensique</span></td>
           <td>Fichier d'installation Android (.apk) vérolé usurpant l'identité d'Algérie Poste ou d'un service public pour voler les codes secrets et SMS OTP.</td>
           <td><code>sha256_hash</code>, <code>package_name</code>, <code>certificat_signature</code></td>
-          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">MinIO WORM / MongoDB / Neo4j</span></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">MinIO WORM / Elasticsearch / Neo4j</span></td>
           <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
         </tr>        <tr data-category="cyber">
           <td><strong>🖥️ Serveur_C2</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Serveur_C2)</span></td>
@@ -1109,7 +1109,7 @@
           <td><span class="badge" style="background:rgba(255,255,255,0.06);color:#22c55e;border:1px solid #22c55e;font-size:0.7rem;">6. Cyber, Malwares & Forensique</span></td>
           <td>Certificat cryptographique sécurisant un site frauduleux, dont l'empreinte JARM révèle la configuration exacte du serveur sous-jacent.</td>
           <td><code>sha256_cert</code>, <code>jarm_hash</code></td>
-          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / MongoDB 7.0</span></td>
+          <td><span class="badge badge-blue" style="font-size:0.7rem;font-family:monospace;">Neo4j / Elasticsearch 8.14</span></td>
           <td><span style="color:#34d399;font-weight:600;font-size:0.75rem;">&lt; 5 ms</span></td>
         </tr>        <tr data-category="cyber">
           <td><strong>🔬 Artefact_DFIR</strong><br/><span style="color:#94a3b8;font-size:0.73rem;font-family:monospace;">(:Artefact_DFIR)</span></td>
@@ -1726,6 +1726,109 @@ MATCH (mule_personne:Personne)-[:DETIENT_COMPTE_BANCAIRE]->(mule_compte)
 MATCH (mule_personne)-[:COMMUNIQUE_AVEC*1..2]->(leader:Personne {_class: 'leader'})
 RETURN post, site, pixel, twin_site, apk, compte, mule_compte, mule_personne, leader;</code></pre>
       </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 7: STRATÉGIE DE DATA FUSION & HARMONISATION DES ATTRIBUTS
+         ==================================================================== -->
+    <section>
+      <h2 class="section-title">7. Stratégie de Data Fusion : Harmonisation des Noms d'Attributs (Schema Mapping) &amp; Sources OSN / Streaming</h2>
+      <p class="section-subtitle">
+        Unification automatique de la nomenclature des attributs issus de sources hétérogènes (ex. <code>num</code>, <code>tele</code>, <code>phone</code>, <code>phone_number</code>, <code>msisdn</code> &rarr; <code>numero_e164</code>) avant indexation dans Elasticsearch 8.14 et Neo4j 5.20+.
+      </p>
+
+      <div class="card" style="border-left:4px solid #10b981;margin-bottom:1.5rem;">
+        <div class="card-title"><span>🧬</span> 7.1 Problématique de l'Hétérogénéité des Schémas Multi-Sources &amp; Moteur d'Harmonisation</div>
+        <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.55;">
+          Lorsqu'Athar DZ collecte des preuves depuis <strong>Facebook, Instagram, Reddit, 4chan, Twitter (X), Telegram, YouTube Crawler, TikTok, des Flux RSS/Atom, des chaînes de Streaming Live</strong> ou des réquisitions télécoms/bancaires, chaque source utilise ses propres clés JSON/CSV pour désigner le même concept (par exemple <code>num</code>, <code>tele</code>, <code>phone</code>, <code>phone_number</code>, <code>msisdn</code>, <code>contact_phone</code>).<br/>
+          Le moteur de <strong>Data Fusion (Layer 2 — Pydantic v2 <code>AliasChoices</code> + Canonical Schema Mapper)</strong> intercepte chaque payload à l'entrée et traduit tous les alias d'attributs vers le <strong>Dictionnaire Canonique GFPG</strong> tout en conservant la trace exacte du champ d'origine dans <code>raw_attributes_lineage</code>.
+        </p>
+      </div>
+
+      <table class="tech-table" style="margin-bottom:1.5rem;">
+        <thead>
+          <tr>
+            <th>Concept Forensique</th>
+            <th>Noms d'Attributs Bruts Observés dans les Sources (OSN, RSS, Streaming, CDR, Scrapers)</th>
+            <th>Attribut Canonique Unifié (GFPG)</th>
+            <th>Normalisation de Valeur &amp; Indexation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>📱 Numéro de Téléphone</strong></td>
+            <td><code>num</code>, <code>tele</code>, <code>tel</code>, <code>phone</code>, <code>phone_number</code>, <code>msisdn</code>, <code>mobile</code>, <code>contact_phone</code>, <code>whatsapp_num</code>, <code>caller_id</code>, <code>numero_telephone</code>, <code>gsm</code></td>
+            <td><code style="color:#10b981;font-weight:700;">numero_e164</code></td>
+            <td>Conversion stricte au standard <strong>E.164</strong> (<code>+213555019283</code>), retrait des espaces/tirets et remplacement de <code>00213</code>/<code>0</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>👤 Identité / Nom Personne</strong></td>
+            <td><code>nom</code>, <code>name</code>, <code>full_name</code>, <code>fullname</code>, <code>person_name</code>, <code>display_name</code>, <code>author_name</code>, <code>suspect_name</code>, <code>victim_name</code>, <code>nom_prenom</code></td>
+            <td><code style="color:#10b981;font-weight:700;">nom_complet</code></td>
+            <td>Normalisation Unicode <code>NFKC</code>, retrait du <em>tashkeel</em> arabe, translittération bidirectionnelle Latin &harr; Arabe et index phonétique Elasticsearch.</td>
+          </tr>
+          <tr>
+            <td><strong>🌐 Pseudonyme Réseau (OSN)</strong></td>
+            <td><code>username</code>, <code>handle</code>, <code>screen_name</code>, <code>user_login</code>, <code>nick</code>, <code>nickname</code>, <code>pseudo</code>, <code>social_handle</code>, <code>tg_username</code>, <code>ig_handle</code>, <code>tiktok_id</code></td>
+            <td><code style="color:#10b981;font-weight:700;">pseudo_reseau</code></td>
+            <td>Minuscules canoniques sans préfixe <code>@</code> + étiquette de plateforme (<code>facebook</code>, <code>instagram</code>, <code>telegram</code>, <code>tiktok</code>, <code>x</code>, <code>reddit</code>, <code>4chan</code>, <code>youtube</code>).</td>
+          </tr>
+          <tr>
+            <td><strong>🆔 Identifiant Immuable</strong></td>
+            <td><code>uid</code>, <code>user_id</code>, <code>author_id</code>, <code>account_id</code>, <code>peer_id</code>, <code>sec_uid</code>, <code>fb_id</code>, <code>channel_id</code>, <code>pk</code>, <code>external_id</code></td>
+            <td><code style="color:#10b981;font-weight:700;">platform_uid</code></td>
+            <td>Clé dure (<em>Hard Key</em>) invariante permettant de suivre un suspect même s'il renomme son <code>@handle</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>💳 Compte Postal / Bancaire</strong></td>
+            <td><code>rip</code>, <code>ccp</code>, <code>iban</code>, <code>account_num</code>, <code>account_number</code>, <code>bank_account</code>, <code>baridimob_rip</code>, <code>rib</code>, <code>num_compte</code></td>
+            <td><code style="color:#10b981;font-weight:700;">rip_algerie_poste</code></td>
+            <td>Validation sur 20 chiffres (<code>00799999...</code>) et contrôle de clé Algérie Poste / modulo 97.</td>
+          </tr>
+          <tr>
+            <td><strong>🪙 Portefeuille Crypto</strong></td>
+            <td><code>wallet</code>, <code>crypto_address</code>, <code>btc_addr</code>, <code>usdt_address</code>, <code>trc20_addr</code>, <code>eth_address</code>, <code>deposit_address</code>, <code>addr</code></td>
+            <td><code style="color:#10b981;font-weight:700;">adresse_wallet</code></td>
+            <td>Vérification du checksum Base58 (Tron TRC-20), hexadécimal (EVM) ou Bech32 (Bitcoin).</td>
+          </tr>
+          <tr>
+            <td><strong>📍 Coordonnées Géographiques</strong></td>
+            <td><code>lat</code>, <code>latitude</code>, <code>gps_lat</code>, <code>y</code>, <code>coord_lat</code>, <code>geo_lat</code> / <code>lon</code>, <code>lng</code>, <code>long</code>, <code>longitude</code>, <code>gps_lon</code>, <code>x</code>, <code>coord_lon</code></td>
+            <td><code style="color:#10b981;font-weight:700;">gps_lat</code>, <code style="color:#10b981;font-weight:700;">gps_lon</code></td>
+            <td>Flottants WGS84 validés et synchronisés avec une géométrie PostGIS <code>POINT(lon lat)</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>🏛️ Découpage Territorial DZ</strong></td>
+            <td><code>wilaya</code>, <code>province</code>, <code>state</code>, <code>gov</code>, <code>wiliya_activiti</code> / <code>daira</code>, <code>district</code> / <code>commune</code>, <code>city</code>, <code>ville</code>, <code>municipality</code>, <code>localite</code></td>
+            <td><code style="color:#10b981;font-weight:700;">wilaya</code>, <code style="color:#10b981;font-weight:700;">daira</code>, <code style="color:#10b981;font-weight:700;">commune</code></td>
+            <td>Projection sur le référentiel officiel des 58 Wilayas, Daïras et 1 541 Communes algériennes.</td>
+          </tr>
+          <tr>
+            <td><strong>🕒 Date &amp; Horodatage</strong></td>
+            <td><code>date</code>, <code>time</code>, <code>timestamp</code>, <code>created_at</code>, <code>published_at</code>, <code>post_date</code>, <code>datetime</code>, <code>time_utc</code>, <code>event_time</code>, <code>call_date</code></td>
+            <td><code style="color:#10b981;font-weight:700;">horodatage_utc</code></td>
+            <td>Conversion systématique au format <strong>ISO 8601 UTC</strong> (<code>YYYY-MM-DDTHH:mm:ssZ</code>).</td>
+          </tr>
+          <tr>
+            <td><strong>📝 Texte &amp; Transcription</strong></td>
+            <td><code>text</code>, <code>body</code>, <code>content</code>, <code>message</code>, <code>msg</code>, <code>caption</code>, <code>post_text</code>, <code>description</code>, <code>comment_body</code>, <code>transcript</code>, <code>darija_text</code></td>
+            <td><code style="color:#10b981;font-weight:700;">contenu_texte</code></td>
+            <td>Indexé dans <strong>Elasticsearch 8.14</strong> avec analyseurs morphologiques Arabe, Darija et Français (BM25).</td>
+          </tr>
+          <tr>
+            <td><strong>🚗 Immatriculation Véhicule</strong></td>
+            <td><code>plate</code>, <code>license_plate</code>, <code>matricule</code>, <code>immatriculation</code>, <code>veh_plate</code>, <code>num_chassis</code>, <code>vin</code></td>
+            <td><code style="color:#10b981;font-weight:700;">immatriculation_dz</code></td>
+            <td>Normalisation au format algérien <code>XXXXX-XXX-WW</code> avec extraction automatique de la wilaya.</td>
+          </tr>
+          <tr>
+            <td><strong>🔏 Scellé Cryptographique</strong></td>
+            <td><code>hash</code>, <code>sha256</code>, <code>file_hash</code>, <code>hash_sha256</code>, <code>digest</code>, <code>checksum_sha256</code>, <code>evidence_hash</code></td>
+            <td><code style="color:#10b981;font-weight:700;">empreinte_sha256</code></td>
+            <td>Chaîne hexadécimale 64 caractères vérifiée côté serveur à l'ingestion (norme ISO/IEC 27037).</td>
+          </tr>
+        </tbody>
+      </table>
     </section>
   </main>
 

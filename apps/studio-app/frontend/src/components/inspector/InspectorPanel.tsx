@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useGraphStore } from '../../store/useGraphStore';
+import { computePersonGraphProjection } from '../../utils/graphLayouts';
 import { NodeIcon } from '../canvas/NodeIcon';
 import registryDataRaw from '../../registry/registry.json';
-import type { RegistryData } from '../../types/registry';
+import type { RegistryData, LayerId } from '../../types/registry';
 import {
   GitBranch,
   ShieldCheck,
@@ -61,6 +62,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   const {
     nodes,
     edges,
+    activeLayers,
     selectedNodeId,
     selectedEdgeId,
     openLayerChangeModal,
@@ -68,6 +70,12 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
     deleteNode,
     selectNode,
     updateNodeDetails,
+    isPersonOnlyGraph,
+    expandedHiddenNodeIds,
+    mediatedEdgeOverrides,
+    toggleExpandNodeConnections,
+    expandMediatedEdgeNodes,
+    updateEdgeDetails,
   } = useGraphStore();
 
   const toast = useToast();
@@ -82,6 +90,12 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   const [editStatus, setEditStatus] = useState('');
   const [editNotes, setEditNotes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+
+  // Edge editing state (Confidence + Judicial Confidentiality + Layer + Notes)
+  const [editEdgeConfidence, setEditEdgeConfidence] = useState<number>(0.85);
+  const [editEdgeConfidentiality, setEditEdgeConfidentiality] = useState<string>('RESTREINT_ENQUETE');
+  const [editEdgeLayer, setEditEdgeLayer] = useState<LayerId>('FLOWS');
+  const [editEdgeNotes, setEditEdgeNotes] = useState<string>('');
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
   const [inboxClues, setInboxClues] = useState<InboxClue[]>([
@@ -114,8 +128,35 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
     },
   ]);
 
+  const projection = React.useMemo(() => {
+    const layerNodes = activeLayers ? nodes.filter((n) => activeLayers.has(n.layer)) : nodes;
+    return computePersonGraphProjection(
+      layerNodes,
+      edges,
+      isPersonOnlyGraph,
+      expandedHiddenNodeIds,
+      mediatedEdgeOverrides
+    );
+  }, [nodes, edges, activeLayers, isPersonOnlyGraph, expandedHiddenNodeIds, mediatedEdgeOverrides]);
+
   const selectedNode = nodes.find((n) => n.id === selectedNodeId);
-  const selectedEdge = edges.find((e) => e.id === selectedEdgeId);
+  const selectedEdge =
+    edges.find((e) => e.id === selectedEdgeId) ||
+    projection.visibleEdges.find((e) => e.id === selectedEdgeId);
+
+  // Sync editing fields with selected edge
+  useEffect(() => {
+    if (selectedEdge) {
+      setEditEdgeConfidence(
+        typeof selectedEdge.confidence === 'number' ? selectedEdge.confidence : 0.85
+      );
+      setEditEdgeConfidentiality(
+        (selectedEdge.properties?.confidentiality_level as string) || 'RESTREINT_ENQUETE'
+      );
+      setEditEdgeLayer(selectedEdge.layer);
+      setEditEdgeNotes((selectedEdge.properties?.notes as string) || '');
+    }
+  }, [selectedEdgeId, selectedEdge]);
 
   // Sync editing fields with selected node and pause audio on node switch
   useEffect(() => {
@@ -1334,6 +1375,29 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               <span>{tr('Changer de Calque (Justification Obligatoire)')}</span>
             </button>
 
+            {/* Granular Hidden Entities Expansion Button for this Node */}
+            {isPersonOnlyGraph &&
+              ((projection.hiddenNeighborCountByNode.get(selectedNode.id) || 0) > 0 ||
+                (projection.expandedNeighborCountByNode.get(selectedNode.id) || 0) > 0) && (
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={() => toggleExpandNodeConnections(selectedNode.id)}
+                  style={{ width: '100%' }}
+                >
+                  <GitBranch size={13} />
+                  <span>
+                    {(projection.hiddenNeighborCountByNode.get(selectedNode.id) || 0) > 0
+                      ? tr('Déplier toutes ses connexions cachées (+{n})', {
+                          n: projection.hiddenNeighborCountByNode.get(selectedNode.id) || 0,
+                        })
+                      : tr('Replier ses connexions intermédiaires ({n})', {
+                          n: projection.expandedNeighborCountByNode.get(selectedNode.id) || 0,
+                        })}
+                  </span>
+                </button>
+              )}
+
             <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
               <button
                 type="button"
@@ -1407,10 +1471,38 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
     );
   }
 
-  // 3. Edge Inspector Mode
+  // 3. Edge Inspector Mode (Direct & Mediated Relations + Confidence & Judicial Confidentiality Update)
   if (selectedEdge) {
+    const isMediated = Boolean(selectedEdge.properties?.is_mediated);
+    const intermediateNodes =
+      (selectedEdge.properties?.intermediate_nodes as Array<{
+        id: string;
+        label: string;
+        type: string;
+        layer: LayerId;
+      }>) || [];
+    const intermediateNodeIds =
+      (selectedEdge.properties?.intermediate_node_ids as string[]) || [];
     const relTypeDef = registry.relation_types?.[selectedEdge.type];
-    const layerDef = registry.layers[selectedEdge.layer];
+    const layerDef = registry.layers[editEdgeLayer] || registry.layers[selectedEdge.layer];
+    const sourceNode = nodes.find((n) => n.id === selectedEdge.source_id);
+    const targetNode = nodes.find((n) => n.id === selectedEdge.target_id);
+
+    const handleSaveEdgeUpdates = () => {
+      updateEdgeDetails(selectedEdge.id, {
+        confidence: editEdgeConfidence,
+        confidentiality_level: editEdgeConfidentiality,
+        layer: editEdgeLayer,
+        notes: editEdgeNotes,
+      });
+      toast.success(
+        tr('Confiance ({pct}%) et confidentialité de la liaison enregistrées', {
+          pct: Math.round(editEdgeConfidence * 100),
+        }),
+        tr('Qualification de Liaison')
+      );
+    };
+
     return (
       <aside
         className="panel-right"
@@ -1430,7 +1522,9 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
             <GitBranch size={16} style={{ color: layerDef?.color }} />
             <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600 }}>
-              {label(relTypeDef, selectedEdge.type)}
+              {isMediated
+                ? (selectedEdge.properties?.summary_label as string) || tr('Relation Médiée')
+                : label(relTypeDef, selectedEdge.type)}
             </span>
           </div>
           <button
@@ -1443,40 +1537,240 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           </button>
         </div>
 
-        <div style={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-          <div>
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginBottom: '2px', textTransform: 'uppercase' }}>
-              {tr('Type de relation : {type}', { type: label(relTypeDef, selectedEdge.type) })}
+        <div
+          style={{
+            padding: 'var(--space-4)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--space-3)',
+            overflowY: 'auto',
+          }}
+        >
+          {/* Endpoints Card */}
+          <div
+            style={{
+              backgroundColor: 'var(--color-bg-elevated)',
+              border: '1px solid var(--color-border-subtle)',
+              borderRadius: 'var(--radius-sm)',
+              padding: 'var(--space-2) var(--space-3)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--space-1)',
+              fontSize: 'var(--text-xs)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span className="text-muted">{tr('Source :')}</span>
+              <button
+                type="button"
+                className="btn btn-ghost btn-xs"
+                onClick={() => sourceNode && selectNode(sourceNode.id, false)}
+              >
+                <span style={{ fontWeight: 600 }}>{sourceNode?.label || selectedEdge.source_id}</span>
+              </button>
             </div>
-            <div style={{ fontSize: 'var(--text-md)', fontWeight: 600, color: 'var(--color-text-primary)' }}>
-              {selectedEdge.type}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span className="text-muted">{tr('Cible :')}</span>
+              <button
+                type="button"
+                className="btn btn-ghost btn-xs"
+                onClick={() => targetNode && selectNode(targetNode.id, false)}
+              >
+                <span style={{ fontWeight: 600 }}>{targetNode?.label || selectedEdge.target_id}</span>
+              </button>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-            <span
-              className="chip"
+          {/* If Mediated Link: List Intermediate Hidden Entities & Expand Relation Button */}
+          {isMediated && intermediateNodes.length > 0 && (
+            <div
               style={{
                 backgroundColor: 'var(--color-bg-elevated)',
-                borderColor: layerDef?.color || 'var(--color-border-default)',
-                color: layerDef?.color,
-                fontWeight: 600,
-                fontSize: 'var(--text-xs)',
+                border: '1px solid var(--color-accent-border)',
+                borderRadius: 'var(--radius-sm)',
+                padding: 'var(--space-3)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'var(--space-2)',
               }}
             >
-              {tr('COUCHE : {layer}', { layer: label(layerDef, selectedEdge.layer) })}
-            </span>
+              <div style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--color-accent-text)' }}>
+                {tr('Entités intermédiaires repliées ({n})', { n: intermediateNodes.length })}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+                {intermediateNodes.map((inNode) => {
+                  const tDef = registry.node_types[inNode.type];
+                  return (
+                    <div
+                      key={inNode.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '4px 6px',
+                        backgroundColor: 'var(--color-bg-surface)',
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid var(--color-border-subtle)',
+                        fontSize: 'var(--text-xs)',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <NodeIcon name={tDef?.icon || 'help-circle'} size={13} />
+                        <span style={{ fontWeight: 600 }}>{inNode.label}</span>
+                      </div>
+                      <span className="chip chip-neutral font-mono text-xs">
+                        {label(tDef, inNode.type)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => expandMediatedEdgeNodes(intermediateNodeIds)}
+                style={{ width: '100%' }}
+              >
+                <GitBranch size={13} />
+                <span>
+                  {tr('Déplier cette relation ({n} entités)', { n: intermediateNodes.length })}
+                </span>
+              </button>
+            </div>
+          )}
+
+          {/* 1. Edge Confidence Score (0% - 100%) */}
+          <div
+            style={{
+              backgroundColor: 'var(--color-bg-elevated)',
+              border: '1px solid var(--color-border-subtle)',
+              borderRadius: 'var(--radius-sm)',
+              padding: 'var(--space-3)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--space-2)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600 }}>
+                {tr('Score de Confiance du Lien')}
+              </span>
+              <span className="chip chip-neutral font-mono text-xs">
+                {Math.round(editEdgeConfidence * 100)}%
+              </span>
+            </div>
+            <input
+              type="range"
+              className="timeline-range-input"
+              min={0}
+              max={100}
+              step={1}
+              value={Math.round(editEdgeConfidence * 100)}
+              onChange={(e) => setEditEdgeConfidence(Number(e.target.value) / 100)}
+              aria-label={tr('Modifier le score de confiance du lien')}
+            />
+            <div style={{ display: 'flex', gap: 'var(--space-1)', justifyContent: 'space-between' }}>
+              {[0.25, 0.5, 0.75, 0.9, 1.0].map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  className={`btn btn-xs ${
+                    Math.abs(editEdgeConfidence - preset) < 0.02 ? 'btn-primary' : 'btn-secondary'
+                  }`}
+                  onClick={() => setEditEdgeConfidence(preset)}
+                  style={{ flex: 1 }}
+                >
+                  {Math.round(preset * 100)}%
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <div>
-              <span style={{ color: 'var(--color-text-muted)' }}>{tr('De : {src}', { src: '' })}</span>
-              <span className="font-mono">{selectedEdge.source_id}</span>
-            </div>
-            <div>
-              <span style={{ color: 'var(--color-text-muted)' }}>{tr('Vers : {dst}', { dst: '' })}</span>
-              <span className="font-mono">{selectedEdge.target_id}</span>
-            </div>
+          {/* 2. Judicial Confidentiality Level & Forensic Layer */}
+          <div
+            style={{
+              backgroundColor: 'var(--color-bg-elevated)',
+              border: '1px solid var(--color-border-subtle)',
+              borderRadius: 'var(--radius-sm)',
+              padding: 'var(--space-3)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--space-2)',
+            }}
+          >
+            <label
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+                fontSize: 'var(--text-xs)',
+                fontWeight: 600,
+              }}
+            >
+              <span>{tr('Niveau de Confidentialité Judiciaire')}</span>
+              <select
+                className="select select-xs"
+                value={editEdgeConfidentiality}
+                onChange={(e) => setEditEdgeConfidentiality(e.target.value)}
+              >
+                <option value="PUBLIC_OSINT">{tr('Public / Source Ouverte (OSINT)')}</option>
+                <option value="RESTREINT_ENQUETE">{tr('Restreint Enquête (Police Judiciaire)')}</option>
+                <option value="CONFIDENTIEL_INSTRUCTION">{tr('Confidentiel Instruction (Magistrat)')}</option>
+                <option value="SECRET_JUDICIAIRE">{tr('Secret Judiciaire Scellé (ISO 27037)')}</option>
+              </select>
+            </label>
+
+            <label
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+                fontSize: 'var(--text-xs)',
+                fontWeight: 600,
+              }}
+            >
+              <span>{tr('Calque Probatoire de la Relation')}</span>
+              <select
+                className="select select-xs"
+                value={editEdgeLayer}
+                onChange={(e) => setEditEdgeLayer(e.target.value as LayerId)}
+              >
+                <option value="VERIFIED">{tr('1. Preuve Vérifiée (VERIFIED)')}</option>
+                <option value="OSINT_RAW">{tr('2. Renseignement OSINT (OSINT_RAW)')}</option>
+                <option value="INFRA">{tr('3. Infrastructures & Forensique (INFRA)')}</option>
+                <option value="HYPOTHESIS">{tr('4. Hypothèse Analytique (HYPOTHESIS)')}</option>
+                <option value="FLOWS">{tr('5. Flux Financiers & Télécoms (FLOWS)')}</option>
+              </select>
+            </label>
+
+            <label
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+                fontSize: 'var(--text-xs)',
+                fontWeight: 600,
+              }}
+            >
+              <span>{tr('Notes & Justification Probatoire')}</span>
+              <input
+                type="text"
+                className="input input-xs"
+                placeholder={tr('Motif ou référence de pièce...')}
+                value={editEdgeNotes}
+                onChange={(e) => setEditEdgeNotes(e.target.value)}
+              />
+            </label>
+
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={handleSaveEdgeUpdates}
+              style={{ width: '100%', marginTop: 'var(--space-1)' }}
+            >
+              <Save size={13} />
+              <span>{tr('Enregistrer Confiance & Confidentialité')}</span>
+            </button>
           </div>
         </div>
       </aside>

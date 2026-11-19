@@ -360,6 +360,92 @@
         </a>
       </div>
     </section>
+
+    <!-- 4. Complete Platform Specification: OSN/RSS/Streaming Sources, Attribute Data Fusion, Elasticsearch 8.14 & Clean Architecture -->
+    <section style="margin-top:2rem;">
+      <h2 class="section-title">4. Sources OSN / Streaming, Stratégie de Data Fusion des Attributs, Elasticsearch 8.14 &amp; Clean Architecture</h2>
+      <p class="section-subtitle">
+        Synthèse normative du Chapitre 10 de la spécification technique (<code>doc/SPECIFICATION.md</code>) : acquisition multi-plateformes, harmonisation automatique des noms d'attributs, moteur plein-texte Elasticsearch 8.14 et architecture hexagonale (Clean Architecture).
+      </p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(310px, 1fr));gap:1rem;margin-bottom:1.5rem;">
+        <div class="card" style="border-left:4px solid #06b6d4;">
+          <h3 style="font-size:0.95rem;color:#06b6d4;margin-bottom:0.4rem;">🌐 1. Sources de Collecte : OSN, Flux RSS &amp; Streaming Continu</h3>
+          <p style="font-size:0.81rem;color:var(--text-secondary);line-height:1.5;">
+            <strong>• 8 Réseaux Sociaux &amp; Forums (OSN) :</strong> Facebook (Pages, Groupes, Marketplace), Instagram (Profils, Reels, Stories), Reddit (Subreddits, Threads), 4chan (Boards anonymes), Twitter/X (Flux, Spaces), Telegram (Chaînes &amp; Groupes MTProto), YouTube Crawler (Chaînes, Commentaires, Sous-titres) et TikTok (Profils, Vidéos, Commentaires).<br/>
+            <strong>• Flux RSS / Atom :</strong> Veille automatisée de portails web, communiqués et alertes cyber avec scellement WARC ISO 28500.<br/>
+            <strong>• Streaming &amp; Chaînes Live :</strong> Capture temps réel (YouTube Live, TikTok Live, Facebook Live, Twitch, flux HLS/RTMP/IPTV) avec transcription Darija/Arabe/FR à la volée (<em>Faster-Whisper</em>) et diarisation (<em>PyAnnote</em>).
+          </p>
+        </div>
+
+        <div class="card" style="border-left:4px solid #10b981;">
+          <h3 style="font-size:0.95rem;color:#10b981;margin-bottom:0.4rem;">🔎 2. Elasticsearch 8.14 en Remplacement de MongoDB</h3>
+          <p style="font-size:0.81rem;color:var(--text-secondary);line-height:1.5;">
+            <strong>• Moteur Lucene BM25 Souverain :</strong> Remplace MongoDB dans le Layer 3 (<code>SRV-DATA-01</code>) pour offrir une indexation plein-texte multilingue (analyseurs morphologiques Arabe, Darija et Français) 100 % <em>on-premise</em>.<br/>
+            <strong>• Recherche Floue &amp; Phonétique (&lt; 12 ms) :</strong> Automates de Levenshtein (<code>fuzzy</code>) et filtres phonétiques franco-arabes accélérant la résolution d'entités sans scan complet.<br/>
+            <strong>• Dumps JSON Polymorphes :</strong> Utilisation du type <code>flattened</code> et de <code>_source</code> compressé ZSTD pour absorber tous les JSON bruts des 76 outils OSINT sans explosion de schéma.
+          </p>
+        </div>
+
+        <div class="card" style="border-left:4px solid #a855f7;">
+          <h3 style="font-size:0.95rem;color:#a855f7;margin-bottom:0.4rem;">🏛️ 3. Clean Architecture &amp; Vue Graphe Centrée Personnes</h3>
+          <p style="font-size:0.81rem;color:var(--text-secondary);line-height:1.5;">
+            <strong>• 4 Cercles Concentriques (Ports &amp; Adapters) :</strong> (1) <em>Enterprise Domain</em> (<code>domain/</code> — 37 nœuds, 47 relations, règles ISO 27037, Ports abstraits), (2) <em>Application Use Cases</em> (<code>services/</code> &amp; 16 algorithmes SNA purs), (3) <em>Interface Adapters</em> (FastAPI, Pydantic v2, <code>GraphCanvasAdapter</code>), (4) <em>Drivers</em> (Neo4j, Postgres/TimescaleDB, Elasticsearch, Redis).<br/>
+            <strong>• Projection Centrée Personnes :</strong> Affichage par défaut des <code>Personnes</code> avec liens directs ou médiés (repli des appels/comptes intermédiaires en un lien agrégé dépliable au clic, bouton global <em>Déplier tout le graphe</em> et édition de la confiance/confidentialité des liens).
+          </p>
+        </div>
+      </div>
+
+      <!-- Canonical Attribute Name Harmonization Table -->
+      <div class="card" style="border-left:4px solid #f59e0b;">
+        <h3 style="font-size:0.98rem;color:#f59e0b;margin-bottom:0.5rem;">🧬 4. Stratégie de Data Fusion : Harmonisation des Noms d'Attributs Multi-Sources (Schema Mapping)</h3>
+        <p style="font-size:0.81rem;color:var(--text-secondary);line-height:1.5;margin-bottom:0.75rem;">
+          Avant toute fusion d'entités, le moteur d'ingestion (Pydantic v2 <code>AliasChoices</code> + Canonical Schema Mapper) unifie les noms d'attributs hétérogènes provenant des différentes plateformes vers les clés canoniques du modèle GFPG :
+        </p>
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Concept Forensique</th>
+              <th>Exemples de Noms d'Attributs Bruts (OSN, RSS, Streaming, Scrapers, CDR)</th>
+              <th>Attribut Canonique Unifié (GFPG)</th>
+              <th>Normalisation &amp; Règle de Fusion</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Numéro de Téléphone</strong></td>
+              <td><code>num</code>, <code>tele</code>, <code>tel</code>, <code>phone</code>, <code>phone_number</code>, <code>msisdn</code>, <code>mobile</code>, <code>contact_phone</code>, <code>whatsapp_num</code></td>
+              <td><code style="color:#10b981;font-weight:700;">numero_e164</code></td>
+              <td>Standard international <strong>E.164</strong> (<code>+213555019283</code>) — Clé dure d'appariement.</td>
+            </tr>
+            <tr>
+              <td><strong>Nom &amp; Identité</strong></td>
+              <td><code>nom</code>, <code>name</code>, <code>full_name</code>, <code>fullname</code>, <code>display_name</code>, <code>author_name</code>, <code>suspect_name</code></td>
+              <td><code style="color:#10b981;font-weight:700;">nom_complet</code></td>
+              <td>Unicode <code>NFKC</code> + Translittération Latin &harr; Arabe + Index phonétique Elasticsearch.</td>
+            </tr>
+            <tr>
+              <td><strong>Compte / Pseudonyme OSN</strong></td>
+              <td><code>username</code>, <code>handle</code>, <code>screen_name</code>, <code>user_login</code>, <code>nick</code>, <code>pseudo</code>, <code>tg_username</code></td>
+              <td><code style="color:#10b981;font-weight:700;">pseudo_reseau</code></td>
+              <td>Minuscules canoniques + ID immuable (<code>uid</code>, <code>peer_id</code>, <code>sec_uid</code> &rarr; <code>platform_uid</code>).</td>
+            </tr>
+            <tr>
+              <td><strong>Compte Bancaire / CCP</strong></td>
+              <td><code>rip</code>, <code>ccp</code>, <code>iban</code>, <code>account_num</code>, <code>account_number</code>, <code>baridimob_rip</code>, <code>rib</code></td>
+              <td><code style="color:#10b981;font-weight:700;">rip_algerie_poste</code></td>
+              <td>Normalisation sur 20 chiffres Algérie Poste avec contrôle de clé modulo 97.</td>
+            </tr>
+            <tr>
+              <td><strong>Géolocalisation &amp; Dates</strong></td>
+              <td><code>lat</code>, <code>latitude</code>, <code>y</code> / <code>lon</code>, <code>lng</code>, <code>longitude</code>, <code>x</code> / <code>date</code>, <code>time</code>, <code>created_at</code>, <code>timestamp</code></td>
+              <td><code style="color:#10b981;font-weight:700;">gps_lat</code>, <code style="color:#10b981;font-weight:700;">gps_lon</code>, <code style="color:#10b981;font-weight:700;">horodatage_utc</code></td>
+              <td>Coordonnées WGS84 synchronisées PostGIS &amp; dates converties en ISO 8601 UTC.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
     <!-- Modal Fiche Suspect 1-Clic -->
     <div id="studio-suspect-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:9999;align-items:center;justify-content:center;padding:1.5rem;">
       <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:12px;max-width:680px;width:100%;max-height:90vh;overflow-y:auto;padding:1.5rem;box-shadow:0 20px 40px rgba(0,0,0,0.6);">

@@ -200,6 +200,29 @@ export interface GraphStoreState {
   toggleEdgeLabelConnectedNodeType: (typeKey: string) => void;
   toggleHiddenEdgeCategory: (categoryKey: string) => void;
 
+  // Person-Centric Graph Projection & Granular Node/Relation Expansion
+  isPersonOnlyGraph: boolean;
+  expandedHiddenNodeIds: Set<string>;
+  mediatedEdgeOverrides: Record<
+    string,
+    { confidence?: number; layer?: LayerId; confidentiality_level?: string; notes?: string }
+  >;
+  togglePersonOnlyGraph: () => void;
+  setPersonOnlyGraph: (active: boolean) => void;
+  toggleExpandNodeConnections: (nodeId: string) => void;
+  expandMediatedEdgeNodes: (intermediateNodeIds: string[]) => void;
+
+  // Edge / Link Confidence & Confidentiality Update
+  updateEdgeDetails: (
+    edgeId: string,
+    updates: {
+      confidence?: number;
+      layer?: LayerId;
+      confidentiality_level?: string;
+      notes?: string;
+    }
+  ) => void;
+
   // Feature 2: Node Rename & Details Update
   updateNodeLabel: (nodeId: string, label: string) => Promise<void>;
   updateNodeDetails: (
@@ -404,6 +427,116 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
       else next.add(categoryKey);
       return { hiddenEdgeCategories: next };
     }),
+
+  // Person-Centric Projection (Option A: Person-only by default, expandable per node, per mediated relation, or full graph)
+  isPersonOnlyGraph: true,
+  expandedHiddenNodeIds: new Set(),
+  mediatedEdgeOverrides: {},
+
+  togglePersonOnlyGraph: () =>
+    set((state) => ({
+      isPersonOnlyGraph: !state.isPersonOnlyGraph,
+      expandedHiddenNodeIds: new Set(),
+    })),
+
+  setPersonOnlyGraph: (active) =>
+    set({
+      isPersonOnlyGraph: active,
+      expandedHiddenNodeIds: new Set(),
+    }),
+
+  toggleExpandNodeConnections: (nodeId) =>
+    set((state) => {
+      const neighborIds: string[] = [];
+      state.edges.forEach((e) => {
+        if (e.source_id === nodeId) neighborIds.push(e.target_id);
+        else if (e.target_id === nodeId) neighborIds.push(e.source_id);
+      });
+
+      const hiddenNeighborIds = neighborIds.filter((id) => {
+        const n = state.nodes.find((node) => node.id === id);
+        return n && n.type !== 'personne' && n.type.toLowerCase() !== 'person';
+      });
+
+      if (hiddenNeighborIds.length === 0) return {};
+
+      const nextExpanded = new Set(state.expandedHiddenNodeIds);
+      const allAlreadyExpanded = hiddenNeighborIds.every((id) => nextExpanded.has(id));
+
+      if (allAlreadyExpanded) {
+        hiddenNeighborIds.forEach((id) => nextExpanded.delete(id));
+      } else {
+        hiddenNeighborIds.forEach((id) => nextExpanded.add(id));
+      }
+
+      return { expandedHiddenNodeIds: nextExpanded };
+    }),
+
+  expandMediatedEdgeNodes: (intermediateNodeIds) =>
+    set((state) => {
+      const nextExpanded = new Set(state.expandedHiddenNodeIds);
+      intermediateNodeIds.forEach((id) => nextExpanded.add(id));
+      return {
+        expandedHiddenNodeIds: nextExpanded,
+        selectedEdgeId: null,
+      };
+    }),
+
+  updateEdgeDetails: (edgeId, updates) => {
+    const state = get();
+    if (edgeId.startsWith('mediated__')) {
+      const prevOverrides = { ...state.mediatedEdgeOverrides };
+      const existing = prevOverrides[edgeId] || {};
+      const nextForEdge = { ...existing, ...updates };
+      set({
+        mediatedEdgeOverrides: {
+          ...prevOverrides,
+          [edgeId]: nextForEdge,
+        },
+      });
+      return;
+    }
+
+    const targetEdge = state.edges.find((e) => e.id === edgeId);
+    if (!targetEdge) return;
+
+    const previousEdge: GraphEdge = {
+      ...targetEdge,
+      properties: { ...(targetEdge.properties || {}) },
+    };
+
+    const updatedEdge: GraphEdge = {
+      ...targetEdge,
+      confidence: updates.confidence !== undefined ? updates.confidence : targetEdge.confidence,
+      layer: updates.layer !== undefined ? updates.layer : targetEdge.layer,
+      properties: {
+        ...(targetEdge.properties || {}),
+        ...(updates.confidentiality_level !== undefined
+          ? { confidentiality_level: updates.confidentiality_level }
+          : {}),
+        ...(updates.notes !== undefined ? { notes: updates.notes } : {}),
+      },
+    };
+
+    set({
+      edges: state.edges.map((e) => (e.id === edgeId ? updatedEdge : e)),
+    });
+
+    get().executeCommand({
+      id: `update-edge-${edgeId}-${Date.now()}`,
+      description: `Mise à jour de la liaison ${targetEdge.type}`,
+      undo: () => {
+        set({
+          edges: get().edges.map((e) => (e.id === edgeId ? previousEdge : e)),
+        });
+      },
+      redo: () => {
+        set({
+          edges: get().edges.map((e) => (e.id === edgeId ? updatedEdge : e)),
+        });
+      },
+    });
+  },
 
   contextMenu: {
     isOpen: false,

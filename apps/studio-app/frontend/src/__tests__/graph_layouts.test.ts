@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { computeGraphLayout, type GraphLayoutType } from '../utils/graphLayouts';
+import {
+  computeGraphLayout,
+  computePersonGraphProjection,
+  type GraphLayoutType,
+} from '../utils/graphLayouts';
 import { useGraphStore } from '../store/useGraphStore';
 import type { GraphNode, GraphEdge } from '../types/graph';
 
@@ -215,6 +219,62 @@ describe('Graph Layout Algorithms & Edge Cases', () => {
       // Redo -> reapplies grid layout
       useGraphStore.getState().redo();
       expect(useGraphStore.getState().activeLayout).toBe('grid');
+    });
+  });
+
+  describe('Person-Centric Graph Projection & Edge Confidence/Confidentiality', () => {
+    it('projects only Person nodes with aggregated mediated link and expands intermediate entities on demand', () => {
+      const p1 = createMockNode('p1', 'VERIFIED', 'personne');
+      const p2 = createMockNode('p2', 'HYPOTHESIS', 'personne');
+      const callNode = createMockNode('voice1', 'FLOWS', 'enregistrement_vocal');
+      const phoneNode = createMockNode('tel1', 'FLOWS', 'telephone');
+
+      const edges: GraphEdge[] = [
+        createMockEdge('p1', 'voice1'),
+        createMockEdge('voice1', 'p2'),
+        createMockEdge('p1', 'tel1'),
+        createMockEdge('tel1', 'p2'),
+      ];
+
+      // 1. Default folded Person view (Option A)
+      const folded = computePersonGraphProjection(
+        [p1, p2, callNode, phoneNode],
+        edges,
+        true,
+        new Set()
+      );
+      expect(folded.visibleNodes.map((n) => n.id)).toEqual(['p1', 'p2']);
+      expect(folded.visibleEdges).toHaveLength(1);
+      expect(folded.visibleEdges[0]?.id).toBe('mediated__p1__p2');
+      expect(folded.visibleEdges[0]?.properties?.is_mediated).toBe(true);
+      expect(folded.visibleEdges[0]?.properties?.mediated_count).toBe(2);
+      expect(folded.hiddenNeighborCountByNode.get('p1')).toBe(2);
+
+      // 2. Expand mediated relation -> intermediate nodes become visible
+      const expanded = computePersonGraphProjection(
+        [p1, p2, callNode, phoneNode],
+        edges,
+        true,
+        new Set(['voice1', 'tel1'])
+      );
+      expect(expanded.visibleNodes).toHaveLength(4);
+      expect(expanded.visibleEdges).toHaveLength(4);
+    });
+
+    it('updates both confidence and judicial confidentiality level on an edge', () => {
+      const e1 = createMockEdge('p1', 'p2');
+      useGraphStore.setState({ edges: [e1] });
+
+      useGraphStore.getState().updateEdgeDetails(e1.id, {
+        confidence: 0.96,
+        confidentiality_level: 'SECRET_JUDICIAIRE',
+        layer: 'VERIFIED',
+      });
+
+      const updated = useGraphStore.getState().edges[0];
+      expect(updated?.confidence).toBe(0.96);
+      expect(updated?.layer).toBe('VERIFIED');
+      expect(updated?.properties?.confidentiality_level).toBe('SECRET_JUDICIAIRE');
     });
   });
 });
