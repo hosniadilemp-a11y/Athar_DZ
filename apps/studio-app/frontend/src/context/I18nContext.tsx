@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { TRANSLATIONS, type Locale, type TranslationDictionary } from '../i18n/translations';
 import {
   translatePhrase,
+  translateEntityLabel,
   localizedLabel,
   type PhraseVars,
   type LocalizedLabelSource,
@@ -14,6 +15,8 @@ interface I18nContextValue {
   t: TranslationDictionary;
   /** Translate a French source phrase into the active locale. */
   tr: (fr: string, vars?: PhraseVars) => string;
+  /** Translate a dynamic entity/node label or subtitle into the active locale. */
+  trLabel: (raw: string) => string;
   /** Pick label_ar / label_en / label_fr from a registry definition. */
   label: (def: LocalizedLabelSource | undefined | null, fallback?: string) => string;
 }
@@ -30,14 +33,15 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, [locale, dir]);
 
   const tr = useCallback((fr: string, vars?: PhraseVars) => translatePhrase(fr, locale, vars), [locale]);
+  const trLabel = useCallback((raw: string) => translateEntityLabel(raw, locale), [locale]);
   const label = useCallback(
     (def: LocalizedLabelSource | undefined | null, fallback = '') => localizedLabel(def, locale, fallback),
     [locale],
   );
 
   const value = useMemo(
-    () => ({ locale, dir, setLocale, t: TRANSLATIONS[locale], tr, label }),
-    [locale, dir, tr, label],
+    () => ({ locale, dir, setLocale, t: TRANSLATIONS[locale], tr, trLabel, label }),
+    [locale, dir, tr, trLabel, label],
   );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;

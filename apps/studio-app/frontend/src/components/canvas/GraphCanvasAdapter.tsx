@@ -483,20 +483,20 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
           }}
         >
           <defs>
-            <marker id="arrow-VERIFIED" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--color-layer-1-verified)" />
+            <marker id="arrow-VERIFIED" markerUnits="userSpaceOnUse" viewBox="0 0 8 7" refX="6.5" refY="3.5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+              <path d="M 0 1 L 6.5 3.5 L 0 6 z" fill="var(--color-layer-1-verified)" />
             </marker>
-            <marker id="arrow-OSINT_RAW" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--color-layer-2-osint)" />
+            <marker id="arrow-OSINT_RAW" markerUnits="userSpaceOnUse" viewBox="0 0 8 7" refX="6.5" refY="3.5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+              <path d="M 0 1 L 6.5 3.5 L 0 6 z" fill="var(--color-layer-2-osint)" />
             </marker>
-            <marker id="arrow-INFRA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--color-layer-3-infra)" />
+            <marker id="arrow-INFRA" markerUnits="userSpaceOnUse" viewBox="0 0 8 7" refX="6.5" refY="3.5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+              <path d="M 0 1 L 6.5 3.5 L 0 6 z" fill="var(--color-layer-3-infra)" />
             </marker>
-            <marker id="arrow-HYPOTHESIS" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--color-layer-4-hypothesis)" />
+            <marker id="arrow-HYPOTHESIS" markerUnits="userSpaceOnUse" viewBox="0 0 8 7" refX="6.5" refY="3.5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+              <path d="M 0 1 L 6.5 3.5 L 0 6 z" fill="var(--color-layer-4-hypothesis)" />
             </marker>
-            <marker id="arrow-FLOWS" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 1 L 9 5 L 0 9 z" fill="var(--color-layer-5-flows)" />
+            <marker id="arrow-FLOWS" markerUnits="userSpaceOnUse" viewBox="0 0 8 7" refX="6.5" refY="3.5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+              <path d="M 0 1 L 6.5 3.5 L 0 6 z" fill="var(--color-layer-5-flows)" />
             </marker>
           </defs>
 

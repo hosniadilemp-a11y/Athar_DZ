@@ -53,7 +53,7 @@ const OSM_TILE_LAYER = {
 };
 
 export const MapView: React.FC = () => {
-  const { t, locale } = useI18n();
+  const { t, tr, trLabel, locale } = useI18n();
   const { nodes, edges, selectedNodeId, selectNode } = useGraphStore();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -599,7 +599,7 @@ export const MapView: React.FC = () => {
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                        <span style={{ fontWeight: 600 }}>Wilaya de {wilayaName}</span>
+                        <span style={{ fontWeight: 600 }}>{tr('Wilaya de {name}', { name: trLabel(wilayaName) })}</span>
                       </div>
                       <span className="chip chip-neutral font-mono text-xs">{count}</span>
                     </button>
@@ -617,11 +617,11 @@ export const MapView: React.FC = () => {
                               key={node.id}
                               className={`map-tree-leaf-item ${isNodeSelected ? 'selected' : ''}`}
                               onClick={() => handleFocusNode(node)}
-                              title={`${node.label} (${node.latitude?.toFixed(4)}, ${node.longitude?.toFixed(4)})`}
+                              title={`${trLabel(node.label)} (${node.latitude?.toFixed(4)}, ${node.longitude?.toFixed(4)})`}
                             >
                               <NodeIcon name={typeDef?.icon || 'map-pin'} size={12} style={{ color: catColor }} />
                               <div style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'start' }}>
-                                <span>{node.label}</span>
+                                <span>{trLabel(node.label)}</span>
                               </div>
                               <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--color-text-muted)' }}>
                                 {node.latitude?.toFixed(2)}°
@@ -664,7 +664,7 @@ export const MapView: React.FC = () => {
                         >
                           <NodeIcon name={registry.node_types[node.type]?.icon || 'help-circle'} size={12} />
                           <div style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'start' }}>
-                            <span>{node.label}</span>
+                            <span>{trLabel(node.label)}</span>
                           </div>
                         </button>
                       ))}
@@ -679,8 +679,8 @@ export const MapView: React.FC = () => {
             type="button"
             className="btn btn-ghost btn-xs"
             onClick={() => setIsTreeOpen(true)}
-            title="Ouvrir l'arborescence territoriale"
-            aria-label="Ouvrir l'arborescence territoriale"
+            title={tr("Ouvrir l'arborescence territoriale")}
+            aria-label={tr("Ouvrir l'arborescence territoriale")}
             style={{ width: '100%', height: '36px', padding: 0 }}
           >
             <ChevronRight size={13} />
@@ -720,10 +720,10 @@ export const MapView: React.FC = () => {
             <span
               className="btn btn-primary btn-xs"
               style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'default' }}
-              title="Fond cartographique routier OpenStreetMap"
+              title={tr('Fond cartographique routier OpenStreetMap')}
             >
               <MapIcon size={12} />
-              <span>Rues OSM</span>
+              <span>{tr('Rues OSM')}</span>
             </span>
 
             {/* Center on Algeria */}
@@ -731,11 +731,11 @@ export const MapView: React.FC = () => {
               type="button"
               className="btn btn-ghost btn-xs"
               onClick={handleResetNational}
-              title="Recentrer sur l'Algérie entière"
+              title={tr("Recentrer sur l'Algérie entière")}
               style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
             >
               <Crosshair size={12} />
-              <span>Algérie</span>
+              <span>{tr('Algérie')}</span>
             </button>
 
             {/* Toggle Polylines */}
@@ -743,11 +743,11 @@ export const MapView: React.FC = () => {
               type="button"
               className={`btn btn-xs ${showGeographicLinks ? 'btn-secondary' : 'btn-ghost'}`}
               onClick={() => setShowGeographicLinks((v) => !v)}
-              title="Afficher/masquer les liens d'enquête entre les coordonnées"
+              title={tr("Afficher/masquer les liens d'enquête entre les coordonnées")}
               style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
             >
               {showGeographicLinks ? <Eye size={12} /> : <EyeOff size={12} />}
-              <span>Liens</span>
+              <span>{tr('Liens')}</span>
             </button>
           </div>
         </div>
@@ -771,9 +771,9 @@ export const MapView: React.FC = () => {
             color: 'var(--color-text-secondary)',
           }}
         >
-          <span style={{ fontWeight: 700, color: '#f8fafc' }}>{filteredGpsNodes.length}</span> entités géolocalisées
+          <span style={{ fontWeight: 700, color: '#f8fafc' }}>{filteredGpsNodes.length}</span> {t.mapGeolocatedCount}
           <span style={{ opacity: 0.4 }}>|</span>
-          <span>Zoom routier jusqu'aux rues (Niveau 19)</span>
+          <span>{tr("Zoom routier jusqu'aux rues (Niveau 19)")}</span>
         </div>
       </div>
     </div>

@@ -23,11 +23,13 @@ import { AddNodeModal, type AddNodeData } from './components/modals/AddNodeModal
 import { NewCaseModal } from './components/modals/NewCaseModal';
 import { OpenCaseModal } from './components/modals/OpenCaseModal';
 import { useToast } from './context/ToastContext';
+import { useI18n } from './context/I18nContext';
 import type { CaseItem, GraphResponse } from './types/graph';
 import { API_BASE } from './config';
 
 export function App() {
   const toast = useToast();
+  const { tr, trLabel } = useI18n();
   const {
     nodes,
     edges,
@@ -287,31 +289,50 @@ export function App() {
       });
   }, [activeCase, isImpactView, setGraphData, setError, setLoading]);
 
-  // Handle 1-hop or 2-hop Expansion
+  // Handle 1-hop or 2-hop Expansion (reveals hidden connections immediately + merges from backend)
   const handleExpand = useCallback(
     (hops: number) => {
-      if (!activeCase || !selectedNodeId) return;
+      const store = useGraphStore.getState();
+      const targetNodeId = store.contextMenu.targetNodeId || selectedNodeId;
+      if (!targetNodeId) return;
+
+      // 1. Immediately expand 1-hop / 2-hop neighborhood in local store & reveal hidden nodes
+      const localRevealedCount = store.expandNodeNeighborhood(targetNodeId, hops);
+      const targetNode = store.nodes.find((n) => n.id === targetNodeId);
+      if (localRevealedCount > 0) {
+        toast.info(
+          tr('Voisinage à {hops} bond(s) développé : {n} entité(s) révélée(s) autour de {name}', {
+            hops,
+            n: localRevealedCount,
+            name: targetNode ? trLabel(targetNode.label) : targetNodeId,
+          }),
+          tr('Exploration Réseau')
+        );
+      }
+
+      if (!activeCase) return;
       setLoading(true);
 
       fetch(`${API_BASE}/api/v1/cases/${activeCase.id}/graph/expand`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          node_ids: [selectedNodeId],
+          node_ids: [targetNodeId],
           hops: hops,
         }),
       })
         .then((r) => r.json())
         .then((expandedData: GraphResponse) => {
-          mergeExpandedNodes(expandedData.nodes, expandedData.edges);
+          if (expandedData && Array.isArray(expandedData.nodes)) {
+            mergeExpandedNodes(expandedData.nodes, expandedData.edges || []);
+          }
           setLoading(false);
         })
-        .catch((err) => {
-          setError(err instanceof Error ? err.message : "Erreur d'expansion");
+        .catch(() => {
           setLoading(false);
         });
     },
-    [activeCase, selectedNodeId, mergeExpandedNodes, setError, setLoading]
+    [activeCase, selectedNodeId, mergeExpandedNodes, setLoading, toast, tr]
   );
 
   // Handle Add Node at Center
@@ -434,20 +455,45 @@ export function App() {
             if (cat === 'all') {
               clearSelection();
             } else {
-              const matching = nodes.find((n) => n.type.toLowerCase().includes(cat));
-              if (matching) selectNode(matching.id, false);
+              const typeMap: Record<string, string[]> = {
+                phone: ['telephone', 'carte_sim', 'appareil_mobile', 'telecom_cdr'],
+                social: ['compte_social', 'publication_sociale', 'canal_telegram', 'message_chat'],
+                web: ['site_web', 'serveur_c2', 'identifiant_infrastructure', 'fichier_apk'],
+                person: ['personne', 'entreprise'],
+              };
+              const targetTypes = typeMap[cat] || [cat];
+              const matches = nodes.filter((n) =>
+                targetTypes.some((t) => n.type.toLowerCase().includes(t))
+              );
+              if (matches.length > 0) {
+                const nextExpanded = new Set(useGraphStore.getState().expandedHiddenNodeIds);
+                matches.forEach((m) => nextExpanded.add(m.id));
+                useGraphStore.setState({
+                  expandedHiddenNodeIds: nextExpanded,
+                  selectedNodeIds: matches.map((m) => m.id),
+                  selectedNodeId: matches[0]?.id ?? null,
+                });
+                setIsInspectorOpen(true);
+              }
             }
           }}
           onRunQuery={(q) => {
-            if (q === 'money') {
-              const target = nodes.find((n) => n.type === 'compte_bancaire');
-              if (target) selectNode(target.id, false);
-            } else if (q === 'phones') {
-              const target = nodes.find((n) => n.type === 'telephone');
-              if (target) selectNode(target.id, false);
-            } else if (q === 'bts') {
-              const target = nodes.find((n) => n.type === 'antenne_bts');
-              if (target) selectNode(target.id, false);
+            const queryTypeMap: Record<string, string[]> = {
+              money: ['compte_bancaire', 'transaction_financiere', 'crypto_wallet'],
+              phones: ['telephone', 'enregistrement_vocal', 'telecom_cdr'],
+              bts: ['antenne_bts'],
+            };
+            const targetTypes = queryTypeMap[q] || [];
+            const matches = nodes.filter((n) => targetTypes.includes(n.type));
+            if (matches.length > 0) {
+              const nextExpanded = new Set(useGraphStore.getState().expandedHiddenNodeIds);
+              matches.forEach((m) => nextExpanded.add(m.id));
+              useGraphStore.setState({
+                expandedHiddenNodeIds: nextExpanded,
+                selectedNodeIds: matches.map((m) => m.id),
+                selectedNodeId: matches[0]?.id ?? null,
+              });
+              setIsInspectorOpen(true);
             }
           }}
         />
@@ -556,7 +602,7 @@ export function App() {
               }}
             >
               <div className="animate-spin">●</div>
-              <span>Chargement du graphe forensique...</span>
+              <span>{tr('Chargement du graphe forensique...')}</span>
             </div>
           )}
 
@@ -662,26 +708,26 @@ export function App() {
       </main>
 
       {/* 4. Forensic Audit Status Bar (24px) */}
-      <footer className="status-bar" role="contentinfo" aria-label="Barre d'état judiciaire et intégrité forensique">
+      <footer className="status-bar" role="contentinfo" aria-label={tr("Barre d'état judiciaire et intégrité forensique")}>
         <div className="status-bar-left">
-          <span>Affaire : {activeCase?.code || '—'}</span>
-          <span>Nœuds affichés : {nodes.length}</span>
-          <span>Relations : {edges.length}</span>
+          <span>{tr('Affaire : {code}', { code: activeCase?.code || '—' })}</span>
+          <span>{tr('Nœuds affichés : {n}', { n: nodes.length })}</span>
+          <span>{tr('Relations : {n}', { n: edges.length })}</span>
         </div>
 
         <div className="status-bar-right">
           <span className="status-indicator-item">
             <ShieldCheck size={12} className="text-success" />
-            <span>Scellé WORM : Inaltérable (SHA-256)</span>
+            <span>{tr('Scellé WORM : Inaltérable (SHA-256)')}</span>
           </span>
           <span className="status-divider">•</span>
           <span className="status-indicator-item">
             <FileText size={12} className="text-accent" />
-            <span>Registre d'Audit : Actif ISO 27037</span>
+            <span>{tr("Registre d'Audit : Actif ISO 27037")}</span>
           </span>
           <span className="status-divider">•</span>
           <span className="status-indicator-item font-mono text-muted">
-            Données d'exercice judiciaires
+            {tr("Données d'exercice judiciaires")}
           </span>
         </div>
       </footer>

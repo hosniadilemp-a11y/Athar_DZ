@@ -972,6 +972,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               type="button"
               className={`btn btn-xs ${!isPersonOnlyGraph ? 'btn-primary' : 'btn-secondary'}`}
               onClick={togglePersonOnlyGraph}
+              style={{ minWidth: '172px', justifyContent: 'center' }}
               title={
                 isPersonOnlyGraph
                   ? tr('Déplier tout le graphe pour afficher l\'ensemble des entités et relations intermédiaires')
@@ -991,6 +992,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                 type="button"
                 className="btn btn-xs btn-ghost"
                 onClick={() => setPersonOnlyGraph(true)}
+                style={{ minWidth: '88px', justifyContent: 'center' }}
                 title={tr('Refermer les {n} entités intermédiaires dépliées', {
                   n: expandedHiddenNodeIds.size,
                 })}

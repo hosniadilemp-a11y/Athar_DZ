@@ -216,36 +216,32 @@ Le pipeline d'acquisition (Layer 1 & Layer 2) couvre trois familles de sources o
    - Connecteurs d'écoute continue pour les flux **Live & Streaming** (*YouTube Live, TikTok Live, Facebook Live, Twitch, flux HLS / RTMP / IPTV*).
    - Segmentation temporelle automatique des flux audio/vidéo en fenêtres horodatées UTC, extraction des images clés (*keyframes*), transcription vocale à la volée (*Faster-Whisper Darija / Arabe / Français*), diarisation des locuteurs (*PyAnnote*) et indexation des chats en direct.
 
-### 10.2 Stratégie de Data Fusion : Harmonisation des Noms d'Attributs (Schema Mapping) & Résolution d'Entités
-Lors de l'ingestion multi-sources (OSN Facebook/Instagram/Reddit/4chan/X/Telegram/YouTube/TikTok, Flux RSS, Streaming, réquisitions CDR et fichiers CSV/JSON), chaque outil ou plateforme nomme ses champs différemment (ex. `num`, `tele`, `phone`, `phone_number`, `msisdn` pour un numéro de téléphone). Le moteur de **Data Fusion** unifie d'abord **la nomenclature des attributs (Schema Harmonization)** avant de fusionner **les entités (Entity Resolution)**.
+### 10.2 Stratégie Générale de Gestion des Étiquetages Hétérogènes Multi-Sources (Schema Mapping & Data Fusion)
+Lorsque la plateforme ingère des données issues de sources hétérogènes (OSN Facebook/Instagram/Reddit/4chan/X/Telegram/YouTube/TikTok, Flux RSS, Streaming, réquisitions opérateurs ou imports CSV/JSON), un même concept forensique est étiqueté sous des noms d'attributs très différents selon la source (à titre d'exemple : un numéro de téléphone peut apparaître sous les clés `num`, `tele`, `tel`, `phone`, `phone_number` ou `msisdn` alors que le modèle interne attend `numero_e164`).
 
-#### A. Dictionnaire Canonique d'Unification des Attributs (Attribute Alias Mapping)
-Le pipeline d'ingestion (Layer 2 — Pydantic v2 `AliasChoices` + Normaliseur Canonique) applique la table de correspondance déterministe suivante pour projeter tout JSON/CSV externe vers les attributs canoniques du modèle GFPG :
+Pour résoudre ce problème de manière générique lors de l'implémentation du pipeline d'ingestion (Layer 2), l'architecture retient une stratégie en **4 mécanismes complémentaires** :
 
-| Concept Forensique | Noms d'Attributs Bruts Hétérogènes (Sources OSN, Scrapers, CDR, APIs) | Attribut Canonique Unifié (GFPG) | Règle de Normalisation & Validation |
-| :--- | :--- | :--- | :--- |
-| **Numéro de Téléphone** | `num`, `tele`, `tel`, `phone`, `phone_number`, `msisdn`, `mobile`, `contact_phone`, `whatsapp_num`, `caller_id`, `numero_telephone`, `gsm` | **`numero_e164`** | Format international strict `E.164` (`+213555019283`), retrait des espaces, tirets et préfixes `00213`/`0`. |
-| **Identité / Nom Personne** | `nom`, `name`, `full_name`, `fullname`, `person_name`, `display_name`, `author_name`, `suspect_name`, `victim_name`, `nom_prenom` | **`nom_complet`** | Normalisation Unicode `NFKC`, retrait du *tashkeel* arabe, translittération bidirectionnelle Latin $\leftrightarrow$ Arabe. |
-| **Pseudonyme Réseau Social** | `username`, `handle`, `screen_name`, `user_login`, `nick`, `nickname`, `pseudo`, `social_handle`, `tg_username`, `ig_handle`, `tiktok_id` | **`pseudo_reseau`** | Minuscules canoniques sans `@` préfixe + conservation de la plateforme source (`platform`). |
-| **ID Immuable Plateforme** | `uid`, `user_id`, `author_id`, `account_id`, `peer_id`, `sec_uid`, `fb_id`, `channel_id`, `pk`, `external_id` | **`platform_uid`** | Chaîne ASCII immuable identifiant le compte même après changement de `@handle`. |
-| **Compte Bancaire / CCP** | `rip`, `ccp`, `iban`, `account_num`, `account_number`, `bank_account`, `baridimob_rip`, `rib`, `num_compte`, `wallet_id` | **`rip_algerie_poste`** / **`iban`** | Normalisation sur 20 chiffres (RIP Algérie Poste `00799999...`) avec vérification de clé modulo 97. |
-| **Adresse Crypto** | `wallet`, `crypto_address`, `btc_addr`, `usdt_address`, `trc20_addr`, `eth_address`, `deposit_address`, `addr` | **`adresse_wallet`** | Validation de checksum (Tron Base58 `T...`, EVM `0x...`, Bitcoin Bech32). |
-| **Coordonnées GPS** | `lat`, `latitude`, `gps_lat`, `y`, `coord_lat`, `geo_lat`, `exif_lat` / `lon`, `lng`, `long`, `longitude`, `gps_lon`, `x`, `coord_lon` | **`gps_lat`**, **`gps_lon`** | Flottants WGS84 validés (`lat` $\in [-90, 90]$, `lon` $\in [-180, 180]$) synchronisés avec PostGIS `POINT`. |
-| **Localisation Algérie** | `wilaya`, `province`, `state`, `gov`, `wiliya_activiti` / `daira`, `district` / `commune`, `city`, `ville`, `municipality`, `localite` | **`wilaya`**, **`daira`**, **`commune`** | Résolution sur le référentiel officiel des 58 Wilayas, Daïras et 1541 Communes d'Algérie. |
-| **Horodatage d'Événement** | `date`, `time`, `timestamp`, `created_at`, `published_at`, `post_date`, `datetime`, `time_utc`, `event_time`, `call_date` | **`horodatage_utc`** | Conversion systématique en **ISO 8601 UTC** (`YYYY-MM-DDTHH:mm:ssZ`). |
-| **Contenu Textuel / Transcription** | `text`, `body`, `content`, `message`, `msg`, `caption`, `post_text`, `description`, `comment_body`, `transcript`, `darija_text` | **`contenu_texte`** | Indexation plein-texte dans **Elasticsearch 8.14** (analyseurs Arabe, Darija et Français). |
-| **Appareil & Réseau** | `imei`, `device_id`, `tac` / `imsi`, `iccid`, `sim_id` / `ip`, `ip_address`, `src_ip`, `remote_ip`, `host_ip` | **`imei`**, **`imsi`**, **`adresse_ip`** | Validation Luhn sur IMEI (15 chiffres), normalisation IPv4/IPv6. |
-| **Immatriculation Véhicule** | `plate`, `license_plate`, `matricule`, `immatriculation`, `veh_plate`, `num_chassis`, `vin` | **`immatriculation_dz`** | Format canonique algérien (`XXXXX-XXX-WW`) avec extraction du code wilaya (`01`–`58`). |
-| **Empreinte Cryptographique** | `hash`, `sha256`, `file_hash`, `hash_sha256`, `digest`, `checksum_sha256`, `evidence_hash` | **`empreinte_sha256`** | Chaîne hexadécimale 64 caractères minuscules vérifiée côté serveur. |
+1. **Mécanisme 1 — Registre Déclaratif d'Alias par Source (Canonical Schema Mapping Registry)** :
+   - Chaque attribut canonique de l'ontologie GFPG définit une liste extensible d'alias reconnus (`AliasChoices` dans Pydantic v2).
+   - *Exemples illustratifs* :
+     - Téléphonie : `{num, tele, tel, phone, phone_number, msisdn, mobile, contact_phone, whatsapp_num}` $\rightarrow$ **`numero_e164`**
+     - Identité : `{nom, name, full_name, fullname, display_name, author_name, nom_prenom}` $\rightarrow$ **`nom_complet`**
+     - Compte OSN : `{username, handle, screen_name, user_login, nick, pseudo}` $\rightarrow$ **`pseudo_reseau`**
+     - Identifiant technique : `{uid, user_id, author_id, peer_id, sec_uid, fb_id}` $\rightarrow$ **`platform_uid`**
+     - Coordonnées & Temps : `{lat, latitude, y}` / `{lon, lng, longitude, x}` $\rightarrow$ **`gps_lat`, `gps_lon`** ; `{date, time, timestamp, created_at}` $\rightarrow$ **`horodatage_utc`**.
 
-#### B. Pipeline de Résolution d'Entités (Entity Resolution en 4 Étapes)
-Une fois les noms d'attributs harmonisés :
-1. **Étape 1 — Normalisation des Valeurs & Translittération Bilingue (FR/AR/Darija)** : Unification phonétique et orthographique (`Mohamed` / `Mohammed` / `M'hamed` / `محمد` ; `Benali` / `Ben Ali` / `بن علي`).
-2. **Étape 2 — Appariement Hybride via Elasticsearch 8.14 ($S_{\text{fusion}} \in [0, 1]$)** :
-   - *Clés Dures (Hard Keys)* : Match exact sur `numero_e164`, `rip_algerie_poste`, `platform_uid`, `empreinte_sha256`.
-   - *Clés Souples (Soft Keys)* : Requête Elasticsearch `bool` combinant `fuzzy` (distance de Levenshtein), analyseur phonétique franco-arabe sur `nom_complet` et similarité sur `pseudo_reseau`.
-3. **Étape 3 — Gouvernance Forensique ISO 27037 (Validation Humaine Review-Run)** : Aucune fusion automatique n'écrase un nœud du Calque 1 (`VERIFIED`). Les candidats à la fusion sont présentés dans la file **Clues Inbox (Review-Run)** pour arbitrage OPJ avec inscription au registre d'audit SHA-256.
-4. **Étape 4 — Golden Record & Lineage Réversible** : Conservation de tous les alias (`aliases[]`) et des attributs bruts d'origine (`raw_attributes_lineage[]`) permettant la dissociation (`Split`) à tout moment.
+2. **Mécanisme 2 — Détection Heuristique & Empreinte de Format (Schema-Agnostic Field Inference)** :
+   - Lorsqu'un fichier ou flux externe utilise un nom de colonne inédit (hors dictionnaire d'alias), le moteur d'ingestion combine :
+     - **La similarité lexicale du nom de champ** (normalisation `snake_case`, retrait des préfixes/suffixes, correspondance floue sur le nom de clé).
+     - **La signature structurelle de la valeur (Value Pattern Fingerprinting)** : détection par expressions régulières et validateurs typés (ex. séquence téléphonique algérienne/internationale $\rightarrow$ `numero_e164` ; clé de 20 chiffres `00799999...` $\rightarrow$ `rip_algerie_poste` ; chaîne hexadécimale 64 caractères $\rightarrow$ `empreinte_sha256` ; adresse Tron/EVM $\rightarrow$ `adresse_wallet`).
+   - En cas d'incertitude sur un champ lors d'un import, un **assistant d'appariement de colonnes (Schema Mapping Assistant)** propose l'association à l'enquêteur pour validation.
+
+3. **Mécanisme 3 — Canonisation des Valeurs & Résolution d'Entités (Value Normalization & Entity Resolution)** :
+   - Une fois l'attribut rattaché à sa clé canonique, sa valeur est normalisée (conversion E.164 `+213...`, dates en ISO 8601 UTC, normalisation Unicode `NFKC` et translittération phonétique Franco-Arabe/Darija pour les noms).
+   - Le moteur **Elasticsearch 8.14** exécute ensuite le rapprochement multi-critères (correspondance exacte sur clés dures `numero_e164`/`platform_uid` + recherche floue `fuzzy` Levenshtein et phonétique sur `nom_complet`/`pseudo_reseau`), et soumet les propositions de fusion dans la file **Review-Run (Clues Inbox)** sans jamais écraser automatiquement un nœud `VERIFIED` (conformité ISO/IEC 27037).
+
+4. **Mécanisme 4 — Préservation Intégrale du Schéma Brut d'Origine (Raw Payload Lineage)** :
+   - Pour garantir l'admissibilité judiciaire et éviter toute perte d'information, les clés et valeurs d'origine telles que reçues de la source (`{"tele": "0555...", "author_name": "..."}`) sont conservées sans altération dans un champ d'audit `raw_source_attributes` (stocké sous le type `flattened` dans Elasticsearch 8.14) lié à l'empreinte SHA-256 de la collecte.
 
 ---
 
@@ -258,12 +254,3 @@ Dans le Tier de Stockage Polyglotte (Layer 3 / `SRV-DATA-01`), **Elasticsearch 8
 | **Data Fusion & Résolution Floue (`Fuzzy` / Phonétique)** | **Natif** : Requêtes `fuzzy` (automates de Levenshtein rapides), filtres phonétiques et scoring multi-attributs pondéré en $< 15\text{ ms}$. | Nécessite des expressions régulières (`$regex`) provoquant des scans complets de collection (`COLLSCAN`). | Accélère drastiquement le rapprochement des variantes de noms et pseudonymes inter-OSN. |
 | **Flux Continus (RSS, Streaming, Logs DFIR)** | **Architecture Data Streams / ILM** : Ingestion quasi temps-réel (NRT) et agrégations temporelles (`date_histogram`) instantanées. | Moins performant sur les agrégations textuelles et temporelles combinées à grande échelle. | Idéal pour la veille temps réel sur chaînes YouTube/TikTok/Telegram et flux RSS. |
 | **Dumps JSON Hétérogènes des 76 Outils** | Type **`flattened`** + `_source` compressé (ZSTD/LZ4) acceptant tout JSON imbriqué sans explosion de mapping. | Stockage BSON sans schéma. | Elasticsearch offre à la fois la flexibilité JSON sans schéma (`flattened`) et la puissance d'un moteur de recherche inversé Lucene. |
-
----
-
-### 10.4 Architecture Logique : Patron Clean Architecture (Ports & Adapters)
-Pour garantir l'indépendance totale de la logique d'enquête vis-à-vis des moteurs de bases de données (Neo4j, PostgreSQL/TimescaleDB, Elasticsearch, Qdrant, MinIO, Redis), le backend et le frontend suivent les principes de la **Clean Architecture** en 4 cercles concentriques (règle d'inversion de dépendance orientée vers le centre) :
-1. **Cercle 1 — Enterprise Domain (`domain/`)** : Entités forensiques pures, registre unique des 37 types de nœuds et 47 relations, dictionnaire canonique de Data Fusion des attributs, règles d'immuabilité ISO 27037 et interfaces abstraites (**Ports** : `GraphRepositoryPort`, `AuditLedgerPort`, `SearchEnginePort`, `EvidenceStoragePort`). Zéro dépendance externe.
-2. **Cercle 2 — Application Use Cases (`services/`)** : Orchestration des cas d'usage métier (`ExpandPersonNetworkUseCase`, `RunSnaAlgorithmUseCase`, `FuseMultiSourceEntityUseCase`, `PromoteToVerifiedUseCase`, `VerifyAuditChainUseCase`) + 16 algorithmes SNA purs (`services/sna/`). Ne dépend que du Cercle 1 (`domain/`).
-3. **Cercle 3 — Interface Adapters (`api/v1/`, `schemas/`)** : Contrôleurs HTTP FastAPI, schémas de validation et d'harmonisation d'attributs Pydantic v2 (`AliasChoices`), sérialiseurs JSON/Cypher et côté Frontend l'adaptateur `GraphCanvasAdapter` isolant le moteur de rendu graphique.
-4. **Cercle 4 — Frameworks & Drivers (`db/`, `core/`)** : Adaptateurs concrets implémentant les Ports du domaine (`Neo4jGraphAdapter`, `PostgresAuditAdapter`, `ElasticsearchSearchAdapter`, `RedisCacheAdapter`).

@@ -361,11 +361,11 @@
       </div>
     </section>
 
-    <!-- 4. Complete Platform Specification: OSN/RSS/Streaming Sources, Attribute Data Fusion, Elasticsearch 8.14 & Clean Architecture -->
+    <!-- 4. Complete Platform Specification: OSN/RSS/Streaming Sources, Attribute Data Fusion & Elasticsearch 8.14 -->
     <section style="margin-top:2rem;">
-      <h2 class="section-title">4. Sources OSN / Streaming, Stratégie de Data Fusion des Attributs, Elasticsearch 8.14 &amp; Clean Architecture</h2>
+      <h2 class="section-title">4. Sources OSN / Streaming, Stratégie Générale de Data Fusion des Attributs &amp; Elasticsearch 8.14</h2>
       <p class="section-subtitle">
-        Synthèse normative du Chapitre 10 de la spécification technique (<code>doc/SPECIFICATION.md</code>) : acquisition multi-plateformes, harmonisation automatique des noms d'attributs, moteur plein-texte Elasticsearch 8.14 et architecture hexagonale (Clean Architecture).
+        Synthèse normative du Chapitre 10 de la spécification technique (<code>doc/SPECIFICATION.md</code>) : acquisition multi-plateformes, méthodologie de résolution des étiquetages hétérogènes entre sources et moteur plein-texte Elasticsearch 8.14.
       </p>
 
       <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(310px, 1fr));gap:1rem;margin-bottom:1.5rem;">
@@ -388,10 +388,10 @@
         </div>
 
         <div class="card" style="border-left:4px solid #a855f7;">
-          <h3 style="font-size:0.95rem;color:#a855f7;margin-bottom:0.4rem;">🏛️ 3. Clean Architecture &amp; Vue Graphe Centrée Personnes</h3>
+          <h3 style="font-size:0.95rem;color:#a855f7;margin-bottom:0.4rem;">🧬 3. Résolution des Étiquetages Hétérogènes (Schema Data Fusion)</h3>
           <p style="font-size:0.81rem;color:var(--text-secondary);line-height:1.5;">
-            <strong>• 4 Cercles Concentriques (Ports &amp; Adapters) :</strong> (1) <em>Enterprise Domain</em> (<code>domain/</code> — 37 nœuds, 47 relations, règles ISO 27037, Ports abstraits), (2) <em>Application Use Cases</em> (<code>services/</code> &amp; 16 algorithmes SNA purs), (3) <em>Interface Adapters</em> (FastAPI, Pydantic v2, <code>GraphCanvasAdapter</code>), (4) <em>Drivers</em> (Neo4j, Postgres/TimescaleDB, Elasticsearch, Redis).<br/>
-            <strong>• Projection Centrée Personnes :</strong> Affichage par défaut des <code>Personnes</code> avec liens directs ou médiés (repli des appels/comptes intermédiaires en un lien agrégé dépliable au clic, bouton global <em>Déplier tout le graphe</em> et édition de la confiance/confidentialité des liens).
+            <strong>• Problématique :</strong> Chaque source externe nomme ses attributs différemment (ex. un numéro de téléphone écrit <code>num</code>, <code>tele</code>, <code>tel</code>, <code>phone</code>, <code>phone_number</code> ou <code>msisdn</code>).<br/>
+            <strong>• Solution en 4 Mécanismes :</strong> (1) Registre déclaratif d'alias par connecteur (<code>AliasChoices</code>), (2) Inférence heuristique par similarité de clé et signature regex de la valeur (E.164, RIP 20 chiffres, SHA-256), (3) Canonisation des valeurs &amp; translittération bilingue FR/AR, (4) Conservation du payload brut original dans <code>raw_source_attributes</code>.
           </p>
         </div>
       </div>

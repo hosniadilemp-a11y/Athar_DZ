@@ -63,6 +63,10 @@ interface DagEdgeLayout {
   id: string;
   sourceId: string;
   targetId: string;
+  srcRow: number;
+  tgtRow: number;
+  srcLane: number;
+  tgtLane: number;
   x1: number;
   y1: number;
   x2: number;
@@ -85,34 +89,34 @@ function getShortNodeLabel(rawLabel: string, nodeType: string): string {
   const clean = (rawLabel || '').trim();
   if (!clean) return nodeType;
 
-  if (nodeType === 'Person') {
+  const lowType = nodeType.toLowerCase();
+  if (lowType === 'personne' || lowType === 'person') {
     const parts = clean.split(/\s+/);
     if (parts.length >= 2 && parts[0] && parts[1]) {
       const initial = parts[0].charAt(0).toUpperCase();
       const family = parts.slice(1).join(' ');
       const shortPerson = `${initial}. ${family}`;
-      return shortPerson.length > 16 ? `${shortPerson.slice(0, 15)}…` : shortPerson;
+      return shortPerson.length > 15 ? `${shortPerson.slice(0, 14)}…` : shortPerson;
     }
   }
 
   if (
-    nodeType === 'PhoneNumber' ||
-    nodeType === 'BankAccount' ||
-    nodeType === 'CcpAccount' ||
-    nodeType === 'CryptoWallet' ||
-    nodeType === 'ImeiDevice'
+    lowType === 'telephone' ||
+    lowType === 'compte_bancaire' ||
+    lowType === 'crypto_wallet' ||
+    lowType === 'carte_sim'
   ) {
     if (clean.length > 10) {
       return `…${clean.slice(-6)}`;
     }
   }
 
-  return clean.length > 16 ? `${clean.slice(0, 15)}…` : clean;
+  return clean.length > 15 ? `${clean.slice(0, 14)}…` : clean;
 }
 
 export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
   const { nodes, edges, selectedNodeId, selectNode } = useGraphStore();
-  const { locale } = useI18n();
+  const { tr, trLabel, locale } = useI18n();
 
   const [viewMode, setViewMode] = useState<'dag' | 'linear'>('dag');
   const [searchTerm, setSearchTerm] = useState('');
@@ -217,69 +221,371 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
     });
   }, [allBranches, selectedBranchIds, hideSmallBranches, minBranchNodes]);
 
-  // Set of visible node IDs from active branches
+  // Set of visible node IDs from active branches (plus any node connected to an active branch node)
   const branchVisibleNodeIds = useMemo(() => {
     const ids = new Set<string>();
     activeBranches.forEach((b) => {
       b.reachableNodeIds.forEach((id) => ids.add(id));
     });
+    // Also include direct parents of active branch nodes (e.g. a victim root converging into a piece)
+    edges.forEach((e) => {
+      if (ids.has(e.target_id)) {
+        ids.add(e.source_id);
+      }
+    });
     return ids;
-  }, [activeBranches]);
+  }, [activeBranches, edges]);
 
-  // Base nodes in active branches (before temporal slider cutoff)
+  // Base nodes in active branches (INVARIANT of timeCursorStep so positions never jump!)
   const branchFilteredNodes = useMemo(() => {
     return activeNodes.filter((n) => branchVisibleNodeIds.has(n.id));
   }, [activeNodes, branchVisibleNodeIds]);
 
-  // 4. Chronological Ordering for the Temporal Evolution Slider
-  const chronologicalSequence = useMemo(() => {
+  // 4. Compute Ancestor Set for Selected Node
+  const ancestorNodeIds = useMemo(() => {
+    if (!selectedNodeId) return new Set<string>();
+
+    const ancestors = new Set<string>();
+    const queue = [selectedNodeId];
+
+    while (queue.length > 0) {
+      const curr = queue.shift()!;
+      ancestors.add(curr);
+
+      edges.forEach((e) => {
+        if (e.target_id === curr && !ancestors.has(e.source_id)) {
+          ancestors.add(e.source_id);
+          queue.push(e.source_id);
+        }
+      });
+    }
+
+    return ancestors;
+  }, [selectedNodeId, edges]);
+
+  // 5. FULL INVARIANT DAG LAYOUT (Computed on branchFilteredNodes so nodes NEVER switch positions when changing étape!)
+  const { fullDagNodes, fullDagEdges, maxLanes, maxRows, depthByNodeId } = useMemo(() => {
     const nodeMap = new Map<string, GraphNode>();
     branchFilteredNodes.forEach((n) => nodeMap.set(n.id, n));
 
     const adj = new Map<string, string[]>();
     const revAdj = new Map<string, string[]>();
+    const undirectedAdj = new Map<string, string[]>();
+
     branchFilteredNodes.forEach((n) => {
       adj.set(n.id, []);
       revAdj.set(n.id, []);
+      undirectedAdj.set(n.id, []);
     });
+
     edges.forEach((e) => {
-      if (nodeMap.has(e.source_id) && nodeMap.has(e.target_id)) {
+      if (nodeMap.has(e.source_id) && nodeMap.has(e.target_id) && e.source_id !== e.target_id) {
         adj.get(e.source_id)?.push(e.target_id);
         revAdj.get(e.target_id)?.push(e.source_id);
+        undirectedAdj.get(e.source_id)?.push(e.target_id);
+        undirectedAdj.get(e.target_id)?.push(e.source_id);
       }
     });
 
-    // Compute topological depth so parents always appear before children in time slider
+    // Identify primary roots ordered by branch size descending
+    const allRoots = branchFilteredNodes.filter((n) => (revAdj.get(n.id)?.length || 0) === 0);
+    const branchSizeMap = new Map<string, number>();
+    allBranches.forEach((b) => branchSizeMap.set(b.id, b.nodeCount));
+    allRoots.sort((a, b) => (branchSizeMap.get(b.id) || 0) - (branchSizeMap.get(a.id) || 0));
+
+    // Step A: Compute cycle-safe topological depth (Row) from roots
     const depthMap = new Map<string, number>();
-    const roots = branchFilteredNodes.filter((n) => (revAdj.get(n.id)?.length || 0) === 0);
-    const queue: string[] = [];
-    roots.forEach((r) => {
-      depthMap.set(r.id, 0);
-      queue.push(r.id);
-    });
-    while (queue.length > 0) {
-      const curr = queue.shift()!;
-      const d = depthMap.get(curr) || 0;
-      (adj.get(curr) || []).forEach((cId) => {
-        const nextD = d + 1;
-        const prevD = depthMap.get(cId);
-        if (prevD === undefined || nextD > prevD) {
-          depthMap.set(cId, nextD);
-          queue.push(cId);
+    allRoots.forEach((r) => depthMap.set(r.id, 0));
+
+    // Bounded relaxation (Bellman-Ford longest path without cycles)
+    const maxPasses = Math.min(25, branchFilteredNodes.length + 1);
+    for (let pass = 0; pass < maxPasses; pass++) {
+      let changed = false;
+      edges.forEach((e) => {
+        if (!nodeMap.has(e.source_id) || !nodeMap.has(e.target_id) || e.source_id === e.target_id) return;
+        const dSrc = depthMap.get(e.source_id) ?? 0;
+        const dTgt = depthMap.get(e.target_id);
+        if (dTgt === undefined || (dSrc + 1 > dTgt && dSrc + 1 < 18)) {
+          depthMap.set(e.target_id, dSrc + 1);
+          changed = true;
         }
       });
+      if (!changed) break;
     }
 
+    branchFilteredNodes.forEach((n) => {
+      if (!depthMap.has(n.id)) depthMap.set(n.id, 0);
+    });
+
+    // Step B: Pull converging roots (e.g. Karim Zerrouki -> Pièce A-01) down to (minChildRow - 1)
+    // so they sit directly 1 row above their convergence target instead of floating at row 0 far away!
+    allRoots.forEach((root) => {
+      const children = adj.get(root.id) || [];
+      if (children.length > 0) {
+        let minChildRow = Infinity;
+        children.forEach((cid) => {
+          const cRow = depthMap.get(cid) ?? 1;
+          if (cRow < minChildRow) minChildRow = cRow;
+        });
+        if (Number.isFinite(minChildRow) && minChildRow > 1) {
+          depthMap.set(root.id, minChildRow - 1);
+        }
+      }
+    });
+
+    // Step C: Strict Spanning-Tree & Chord-Spine DFS Lane Allocation
+    // Guarantees that chains with direct chord links to an ancestor (e.g. Karim Zerrouki -> ... -> Amine B. -> Pièce A-01)
+    // remain aligned in the ancestor's primary lane (Lane 0) so links never traverse across unrelated branches!
+    const reachableByRoot = new Map<string, Set<string>>();
+    const ownerRootByNode = new Map<string, string>();
+    allRoots.forEach((r) => {
+      const vis = new Set<string>([r.id]);
+      const q = [r.id];
+      while (q.length > 0) {
+        const curr = q.shift()!;
+        if (!ownerRootByNode.has(curr)) {
+          ownerRootByNode.set(curr, r.id);
+        }
+        (adj.get(curr) || []).forEach((nxt) => {
+          if (!vis.has(nxt)) {
+            vis.add(nxt);
+            q.push(nxt);
+          }
+        });
+      }
+      reachableByRoot.set(r.id, vis);
+    });
+
+    // Identify nodes that are direct multi-row chord targets of a root (e.g. vic_01_karim -> evid_audio_a01)
+    // and propagate priority up their tight parent chain so they stay in the root's own lane!
+    const chordPriority = new Map<string, number>();
+    branchFilteredNodes.forEach((n) => chordPriority.set(n.id, 0));
+
+    allRoots.forEach((r) => {
+      const reach = reachableByRoot.get(r.id) || new Set<string>();
+      (adj.get(r.id) || []).forEach((childId) => {
+        if ((depthMap.get(childId) ?? 0) > 1) {
+          const q = [childId];
+          const seenChord = new Set<string>();
+          while (q.length > 0) {
+            const curr = q.shift()!;
+            if (seenChord.has(curr) || !reach.has(curr)) continue;
+            seenChord.add(curr);
+            chordPriority.set(curr, (chordPriority.get(curr) || 0) + 10);
+            const currDepth = depthMap.get(curr) ?? 0;
+            (revAdj.get(curr) || []).forEach((pId) => {
+              if (reach.has(pId) && (depthMap.get(pId) ?? 0) === currDepth - 1) {
+                q.push(pId);
+              }
+            });
+          }
+        }
+      });
+    });
+
+    // Build a strict spanning tree where each non-root node selects its single best primary parent
+    const treeChildren = new Map<string, string[]>();
+    branchFilteredNodes.forEach((n) => treeChildren.set(n.id, []));
+
+    branchFilteredNodes.forEach((n) => {
+      const parents = revAdj.get(n.id) || [];
+      if (parents.length === 0) return;
+      const myDepth = depthMap.get(n.id) ?? 0;
+      const tightParents = parents.filter((p) => (depthMap.get(p) ?? 0) === myDepth - 1);
+      const candidates = tightParents.length > 0 ? [...tightParents] : [...parents];
+      candidates.sort((pA, pB) => {
+        const sameOwnerA = ownerRootByNode.get(pA) === ownerRootByNode.get(n.id) ? 0 : 1;
+        const sameOwnerB = ownerRootByNode.get(pB) === ownerRootByNode.get(n.id) ? 0 : 1;
+        if (sameOwnerA !== sameOwnerB) return sameOwnerA - sameOwnerB;
+        const prioDiff = (chordPriority.get(pB) || 0) - (chordPriority.get(pA) || 0);
+        if (prioDiff !== 0) return prioDiff;
+        return (
+          Math.abs((depthMap.get(pA) ?? 0) + 1 - myDepth) -
+          Math.abs((depthMap.get(pB) ?? 0) + 1 - myDepth)
+        );
+      });
+      const bestParent = candidates[0];
+      if (bestParent) {
+        treeChildren.get(bestParent)?.push(n.id);
+      }
+    });
+
+    const subtreeSizeMemo = new Map<string, number>();
+    const getSubtreeSize = (nid: string, visited = new Set<string>()): number => {
+      if (subtreeSizeMemo.has(nid)) return subtreeSizeMemo.get(nid)!;
+      if (visited.has(nid)) return 1;
+      visited.add(nid);
+      let total = 1;
+      for (const cid of treeChildren.get(nid) || []) {
+        total += getSubtreeSize(cid, visited);
+      }
+      subtreeSizeMemo.set(nid, total);
+      return total;
+    };
+
+    branchFilteredNodes.forEach((n) => {
+      const ch = treeChildren.get(n.id);
+      if (ch && ch.length > 1) {
+        ch.sort((a, b) => {
+          const prioDiff = (chordPriority.get(b) || 0) - (chordPriority.get(a) || 0);
+          if (prioDiff !== 0) return prioDiff;
+          return getSubtreeSize(b) - getSubtreeSize(a);
+        });
+      }
+    });
+
+    const laneMap = new Map<string, number>();
+    const occupiedCell = new Set<string>(); // `${row}:${lane}`
+    let currentBaseLane = 0;
+    let globalMaxLane = 0;
+    let computedMaxRow = 0;
+
+    depthMap.forEach((r) => {
+      if (r > computedMaxRow) computedMaxRow = r;
+    });
+
+    const assignLane = (nodeId: string, preferredLane: number): number => {
+      const row = depthMap.get(nodeId) ?? 0;
+      let lane = Math.max(0, preferredLane);
+      while (occupiedCell.has(`${row}:${lane}`)) {
+        lane += 1;
+      }
+      occupiedCell.add(`${row}:${lane}`);
+      laneMap.set(nodeId, lane);
+      if (lane > globalMaxLane) globalMaxLane = lane;
+      return lane;
+    };
+
+    // Separate major roots (that start their own tree) from tributary roots (small roots that merge into a larger branch)
+    const majorRoots = allRoots.filter((r) => (branchSizeMap.get(r.id) || 1) >= 4 || allRoots.length <= 4);
+    const tributaryRoots = allRoots.filter((r) => !majorRoots.includes(r));
+
+    const placeSubtreeDfs = (nodeId: string, targetLane: number) => {
+      if (laneMap.has(nodeId)) return;
+      const myLane = assignLane(nodeId, targetLane);
+
+      const children = treeChildren.get(nodeId) || [];
+      children.forEach((childId, cIdx) => {
+        if (!laneMap.has(childId)) {
+          placeSubtreeDfs(childId, myLane + cIdx);
+        }
+      });
+    };
+
+    majorRoots.forEach((root) => {
+      if (!laneMap.has(root.id)) {
+        placeSubtreeDfs(root.id, currentBaseLane);
+        currentBaseLane = globalMaxLane + 1;
+      }
+    });
+
+    // Place any remaining tributary roots near their first child's lane
+    tributaryRoots.forEach((tRoot) => {
+      if (!laneMap.has(tRoot.id)) {
+        const children = adj.get(tRoot.id) || [];
+        const firstChildWithLane = children.find((cid) => laneMap.has(cid));
+        const prefLane = firstChildWithLane !== undefined ? (laneMap.get(firstChildWithLane) ?? currentBaseLane) + 1 : currentBaseLane;
+        placeSubtreeDfs(tRoot.id, prefLane);
+      }
+    });
+
+    // Place any remaining unvisited nodes
+    branchFilteredNodes.forEach((n) => {
+      if (!laneMap.has(n.id)) {
+        const parents = revAdj.get(n.id) || [];
+        const pWithLane = parents.find((pid) => laneMap.has(pid));
+        const pref = pWithLane ? (laneMap.get(pWithLane) ?? 0) : globalMaxLane + 1;
+        assignLane(n.id, pref);
+      }
+    });
+
+    const LANE_WIDTH = 210;
+    const ROW_HEIGHT = 96;
+    const START_X = 60;
+    const START_Y = 44;
+    const CIRCLE_RADIUS = 18;
+
+    const nodeLayoutList: DagNodeLayout[] = branchFilteredNodes.map((node) => {
+      const row = depthMap.get(node.id) || 0;
+      const lane = laneMap.get(node.id) || 0;
+      const parents = revAdj.get(node.id) || [];
+      const children = adj.get(node.id) || [];
+
+      return {
+        node,
+        row,
+        lane,
+        x: START_X + lane * LANE_WIDTH,
+        y: START_Y + row * ROW_HEIGHT,
+        isRoot: parents.length === 0,
+        isFork: children.length > 1,
+        isMerge: parents.length > 1,
+        parentIds: parents,
+        childIds: children,
+      };
+    });
+
+    const nodePosLookup = new Map<string, DagNodeLayout>();
+    nodeLayoutList.forEach((nl) => nodePosLookup.set(nl.node.id, nl));
+
+    const edgeLayoutList: DagEdgeLayout[] = [];
+
+    edges.forEach((edge) => {
+      const rawSrc = nodePosLookup.get(edge.source_id);
+      const rawTgt = nodePosLookup.get(edge.target_id);
+      if (!rawSrc || !rawTgt || rawSrc.node.id === rawTgt.node.id) return;
+
+      // Ensure visual flow always goes top-to-bottom in the chronological tree
+      const [src, tgt] = rawSrc.row <= rawTgt.row ? [rawSrc, rawTgt] : [rawTgt, rawSrc];
+
+      const isAncestral =
+        ancestorNodeIds.has(edge.source_id) && ancestorNodeIds.has(edge.target_id);
+
+      const pX = src.x + CIRCLE_RADIUS;
+      const pY = src.y + CIRCLE_RADIUS;
+      const cX = tgt.x + CIRCLE_RADIUS;
+      const cY = tgt.y + CIRCLE_RADIUS;
+
+      edgeLayoutList.push({
+        id: edge.id,
+        sourceId: edge.source_id,
+        targetId: edge.target_id,
+        srcRow: src.row,
+        tgtRow: tgt.row,
+        srcLane: src.lane,
+        tgtLane: tgt.lane,
+        x1: pX,
+        y1: pY + CIRCLE_RADIUS,
+        x2: cX,
+        y2: cY - CIRCLE_RADIUS,
+        relationType: edge.type,
+        layer: edge.layer,
+        isMerge: tgt.isMerge,
+        isAncestralHighlight: isAncestral,
+      });
+    });
+
+    return {
+      fullDagNodes: nodeLayoutList,
+      fullDagEdges: edgeLayoutList,
+      maxLanes: globalMaxLane + 1,
+      maxRows: computedMaxRow + 1,
+      depthByNodeId: depthMap,
+    };
+  }, [branchFilteredNodes, edges, ancestorNodeIds, allBranches]);
+
+  // 6. Chronological Sequence for Temporal Slider (ordered by timestamp + fixed topological depth)
+  const chronologicalSequence = useMemo(() => {
     return [...branchFilteredNodes].sort((a, b) => {
       const tA = a.created_at ? new Date(a.created_at).getTime() : 0;
       const tB = b.created_at ? new Date(b.created_at).getTime() : 0;
       if (tA !== tB) return tA - tB;
-      const dA = depthMap.get(a.id) ?? 0;
-      const dB = depthMap.get(b.id) ?? 0;
+      const dA = depthByNodeId.get(a.id) ?? 0;
+      const dB = depthByNodeId.get(b.id) ?? 0;
       if (dA !== dB) return dA - dB;
       return a.id.localeCompare(b.id);
     });
-  }, [branchFilteredNodes, edges]);
+  }, [branchFilteredNodes, depthByNodeId]);
 
   const totalSteps = chronologicalSequence.length;
   const currentStep =
@@ -319,209 +625,16 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
     return chronologicalSequence[currentStep - 1] || null;
   }, [chronologicalSequence, currentStep, totalSteps]);
 
-  const dagActiveNodes = useMemo(() => {
-    return branchFilteredNodes.filter((n) => revealedNodeIds.has(n.id));
-  }, [branchFilteredNodes, revealedNodeIds]);
+  // Filter the INVARIANT layout by revealedNodeIds -> Nodes NEVER switch position!
+  const dagNodes = useMemo(() => {
+    return fullDagNodes.filter((n) => revealedNodeIds.has(n.node.id));
+  }, [fullDagNodes, revealedNodeIds]);
 
-  // 5. Compute Ancestor Set for Selected Node (Highlight full investigative genealogy)
-  const ancestorNodeIds = useMemo(() => {
-    if (!selectedNodeId) return new Set<string>();
-
-    const ancestors = new Set<string>();
-    const queue = [selectedNodeId];
-
-    while (queue.length > 0) {
-      const curr = queue.shift()!;
-      ancestors.add(curr);
-
-      edges.forEach((e) => {
-        if (e.target_id === curr && !ancestors.has(e.source_id)) {
-          ancestors.add(e.source_id);
-          queue.push(e.source_id);
-        }
-      });
-    }
-
-    return ancestors;
-  }, [selectedNodeId, edges]);
-
-  // 6. Orthogonal DAG Layout: Roots ordered from LEFT to RIGHT by size
-  const { dagNodes, dagEdges, maxLanes, maxRows } = useMemo(() => {
-    const nodeMap = new Map<string, GraphNode>();
-    dagActiveNodes.forEach((n) => nodeMap.set(n.id, n));
-
-    const adj = new Map<string, string[]>();
-    const revAdj = new Map<string, string[]>();
-
-    dagActiveNodes.forEach((n) => {
-      adj.set(n.id, []);
-      revAdj.set(n.id, []);
-    });
-
-    edges.forEach((e) => {
-      if (nodeMap.has(e.source_id) && nodeMap.has(e.target_id)) {
-        adj.get(e.source_id)?.push(e.target_id);
-        revAdj.get(e.target_id)?.push(e.source_id);
-      }
-    });
-
-    const activeRoots = activeBranches
-      .map((b) => nodeMap.get(b.id))
-      .filter((n): n is GraphNode => n !== undefined);
-
-    const depthMap = new Map<string, number>();
-    const queue: string[] = [];
-
-    activeRoots.forEach((r) => {
-      depthMap.set(r.id, 0);
-      queue.push(r.id);
-    });
-
-    while (queue.length > 0) {
-      const curr = queue.shift()!;
-      const currDepth = depthMap.get(curr) || 0;
-      const children = adj.get(curr) || [];
-
-      children.forEach((childId) => {
-        const nextDepth = currDepth + 1;
-        const prevDepth = depthMap.get(childId);
-        if (prevDepth === undefined || nextDepth > prevDepth) {
-          depthMap.set(childId, nextDepth);
-          queue.push(childId);
-        }
-      });
-    }
-
-    dagActiveNodes.forEach((n) => {
-      if (!depthMap.has(n.id)) {
-        depthMap.set(n.id, 0);
-      }
-    });
-
-    const rowBuckets = new Map<number, GraphNode[]>();
-    let computedMaxRow = 0;
-
-    dagActiveNodes.forEach((node) => {
-      const row = depthMap.get(node.id) || 0;
-      if (row > computedMaxRow) computedMaxRow = row;
-      const list = rowBuckets.get(row) || [];
-      list.push(node);
-      rowBuckets.set(row, list);
-    });
-
-    const laneMap = new Map<string, number>();
-    let nextAvailableLane = 0;
-
-    activeRoots.forEach((root) => {
-      laneMap.set(root.id, nextAvailableLane);
-      nextAvailableLane += 1;
-    });
-
-    let globalMaxLane = Math.max(0, nextAvailableLane - 1);
-
-    for (let r = 1; r <= computedMaxRow; r++) {
-      const nodesInRow = rowBuckets.get(r) || [];
-
-      nodesInRow.sort((a, b) => {
-        const parentsA = revAdj.get(a.id) || [];
-        const parentsB = revAdj.get(b.id) || [];
-        const avgLaneA =
-          parentsA.length > 0
-            ? parentsA.reduce((sum, p) => sum + (laneMap.get(p) ?? 0), 0) / parentsA.length
-            : 0;
-        const avgLaneB =
-          parentsB.length > 0
-            ? parentsB.reduce((sum, p) => sum + (laneMap.get(p) ?? 0), 0) / parentsB.length
-            : 0;
-        return avgLaneA - avgLaneB;
-      });
-
-      const usedLanesInRow = new Set<number>();
-      nodesInRow.forEach((node) => {
-        const parents = revAdj.get(node.id) || [];
-        let preferredLane =
-          parents.length > 0
-            ? Math.round(
-                parents.reduce((sum, p) => sum + (laneMap.get(p) ?? 0), 0) / parents.length
-              )
-            : 0;
-
-        while (usedLanesInRow.has(preferredLane)) {
-          preferredLane += 1;
-        }
-
-        usedLanesInRow.add(preferredLane);
-        laneMap.set(node.id, preferredLane);
-        if (preferredLane > globalMaxLane) globalMaxLane = preferredLane;
-      });
-    }
-
-    const LANE_WIDTH = 210;
-    const ROW_HEIGHT = 96;
-    const START_X = 60;
-    const START_Y = 44;
-    const CIRCLE_RADIUS = 18;
-
-    const nodeLayoutList: DagNodeLayout[] = dagActiveNodes.map((node) => {
-      const row = depthMap.get(node.id) || 0;
-      const lane = laneMap.get(node.id) || 0;
-      const parents = revAdj.get(node.id) || [];
-      const children = adj.get(node.id) || [];
-
-      return {
-        node,
-        row,
-        lane,
-        x: START_X + lane * LANE_WIDTH,
-        y: START_Y + row * ROW_HEIGHT,
-        isRoot: parents.length === 0,
-        isFork: children.length > 1,
-        isMerge: parents.length > 1,
-        parentIds: parents,
-        childIds: children,
-      };
-    });
-
-    const nodePosLookup = new Map<string, DagNodeLayout>();
-    nodeLayoutList.forEach((nl) => nodePosLookup.set(nl.node.id, nl));
-
-    const edgeLayoutList: DagEdgeLayout[] = [];
-
-    edges.forEach((edge) => {
-      const src = nodePosLookup.get(edge.source_id);
-      const tgt = nodePosLookup.get(edge.target_id);
-      if (!src || !tgt) return;
-
-      const isAncestral =
-        ancestorNodeIds.has(edge.source_id) && ancestorNodeIds.has(edge.target_id);
-
-      const pX = src.x + CIRCLE_RADIUS;
-      const pY = src.y + CIRCLE_RADIUS;
-      const cX = tgt.x + CIRCLE_RADIUS;
-      const cY = tgt.y + CIRCLE_RADIUS;
-
-      edgeLayoutList.push({
-        id: edge.id,
-        sourceId: edge.source_id,
-        targetId: edge.target_id,
-        x1: pX,
-        y1: pY + CIRCLE_RADIUS,
-        x2: cX,
-        y2: cY - CIRCLE_RADIUS,
-        relationType: edge.type,
-        layer: edge.layer,
-        isMerge: tgt.isMerge,
-        isAncestralHighlight: isAncestral,
-      });
-    });
-
-    return {
-      dagNodes: nodeLayoutList,
-      dagEdges: edgeLayoutList,
-      maxLanes: globalMaxLane + 1,
-      maxRows: computedMaxRow + 1,
-    };
-  }, [dagActiveNodes, edges, ancestorNodeIds, activeBranches]);
+  const dagEdges = useMemo(() => {
+    return fullDagEdges.filter(
+      (e) => revealedNodeIds.has(e.sourceId) && revealedNodeIds.has(e.targetId)
+    );
+  }, [fullDagEdges, revealedNodeIds]);
 
   // Handle node selection & dispatch to Right Inspector panel
   const handleSelectNode = useCallback(
@@ -534,7 +647,6 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
     [selectNode, onSelectNode]
   );
 
-  // Focus node in DAG canvas and display full details in Right Inspector
   const handleFocusDagNode = useCallback(
     (nodeLayout: DagNodeLayout) => {
       handleSelectNode(nodeLayout.node.id);
@@ -544,12 +656,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
 
   // Linear view events sorted chronologically
   const sortedLinearEvents = useMemo(() => {
-    return [...dagActiveNodes].sort((a, b) => {
-      const tA = a.created_at ? new Date(a.created_at).getTime() : 0;
-      const tB = b.created_at ? new Date(b.created_at).getTime() : 0;
-      return tA - tB;
-    });
-  }, [dagActiveNodes]);
+    return chronologicalSequence.slice(0, currentStep);
+  }, [chronologicalSequence, currentStep]);
 
   // Drag and pan handlers
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -630,38 +738,36 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
     setPlaybackSpeed((prev) => (prev === 1 ? 2 : prev === 2 ? 4 : 1));
   };
 
-  const currentCutoffDateStr = useMemo(() => {
-    if (!latestRevealedNode?.created_at) return '';
-    return new Date(latestRevealedNode.created_at).toLocaleString(dateLocale, {
-      dateStyle: 'short',
-      timeStyle: 'short',
-    });
-  }, [latestRevealedNode, dateLocale]);
-
   return (
     <div className="timeline-view-shell">
       {/* 1. Top Filter and Command Toolbar */}
       <div className="timeline-top-bar">
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-          {/* View Mode Switcher */}
-          <div className="canvas-segmented-tabs" role="tablist" aria-label="Mode chronologique">
+          {/* View Mode Switcher — Active button clearly highlighted in primary blue */}
+          <div className="canvas-segmented-tabs" role="tablist" aria-label={tr('Mode chronologique')}>
             <button
               type="button"
+              role="tab"
+              aria-selected={viewMode === 'dag'}
               className={`canvas-segmented-btn ${viewMode === 'dag' ? 'active' : ''}`}
               onClick={() => setViewMode('dag')}
-              title="Chronologie Arborescente Descendante (Arbre d'enquête & convergences)"
+              style={{ minWidth: '158px' }}
+              title={tr("Chronologie Arborescente Descendante (Arbre d'enquête & convergences)")}
             >
               <GitBranch size={13} />
-              <span>Arbre Multi-Branches</span>
+              <span>{tr('Arbre Multi-Branches')}</span>
             </button>
             <button
               type="button"
+              role="tab"
+              aria-selected={viewMode === 'linear'}
               className={`canvas-segmented-btn ${viewMode === 'linear' ? 'active' : ''}`}
               onClick={() => setViewMode('linear')}
-              title="Flux linéaire chronologique vertical"
+              style={{ minWidth: '96px' }}
+              title={tr('Flux linéaire chronologique vertical')}
             >
               <List size={13} />
-              <span>Linéaire</span>
+              <span>{tr('Linéaire')}</span>
             </button>
           </div>
 
@@ -672,10 +778,11 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                 type="button"
                 className={`btn btn-xs ${isBranchSelectorOpen ? 'btn-primary' : 'btn-secondary'}`}
                 onClick={() => setIsBranchSelectorOpen((prev) => !prev)}
-                title="Sélectionner les pistes chronologiques et filtrer par nombre de nœuds"
+                style={{ minWidth: '155px', justifyContent: 'space-between' }}
+                title={tr('Sélectionner les pistes chronologiques et filtrer par nombre de nœuds')}
               >
                 <SlidersHorizontal size={12} />
-                <span>Pistes d'enquête</span>
+                <span>{tr("Pistes d'enquête")}</span>
                 <span className="chip chip-neutral font-mono text-xs">
                   {activeBranches.length}/{allBranches.length}
                 </span>
@@ -688,7 +795,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                   style={{
                     position: 'absolute',
                     top: 'calc(100% + 6px)',
-                    left: 0,
+                    insetInlineStart: 0,
                     width: '330px',
                     maxHeight: '440px',
                     backgroundColor: 'var(--color-bg-surface)',
@@ -714,17 +821,17 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                   >
                     <div>
                       <div style={{ fontWeight: 600, fontSize: 'var(--text-xs)' }}>
-                        Pistes chronologiques
+                        {tr('Pistes chronologiques')}
                       </div>
                       <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                        Classées par taille (les plus fournies à gauche)
+                        {tr('Classées par taille (les plus fournies à gauche)')}
                       </div>
                     </div>
                     <button
                       type="button"
                       className="btn btn-ghost btn-xs"
                       onClick={() => setIsBranchSelectorOpen(false)}
-                      aria-label="Fermer le sélecteur de pistes"
+                      aria-label={tr('Fermer')}
                     >
                       <X size={14} />
                     </button>
@@ -746,7 +853,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                       onClick={applyPresetMajorBranches}
                       style={{ flex: 1 }}
                     >
-                      Majeures (≥ 4)
+                      {tr('Majeures (≥ 4)')}
                     </button>
                     <button
                       type="button"
@@ -754,16 +861,16 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                       onClick={applyPresetAllBranches}
                       style={{ flex: 1 }}
                     >
-                      Toutes ({allBranches.length})
+                      {tr('Toutes')} ({allBranches.length})
                     </button>
                     <button
                       type="button"
                       className="btn btn-xs btn-danger"
                       onClick={applyPresetNoneBranches}
                       style={{ flex: 1 }}
-                      title="Désactiver toutes les pistes chronologiques"
+                      title={tr('Désactiver toutes les pistes chronologiques')}
                     >
-                      Tout désactiver
+                      {tr('Tout désactiver')}
                     </button>
                   </div>
 
@@ -772,7 +879,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                     <input
                       type="text"
                       className="input input-xs"
-                      placeholder="Filtrer les pistes..."
+                      placeholder={tr('Filtrer les pistes...')}
                       value={branchFilterSearch}
                       onChange={(e) => setBranchFilterSearch(e.target.value)}
                       style={{ width: '100%' }}
@@ -839,9 +946,9 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                                   maxWidth: '170px',
                                   color: 'var(--color-text-primary)',
                                 }}
-                                title={branch.label}
+                                title={trLabel(branch.label)}
                               >
-                                #{rank + 1} {getShortNodeLabel(branch.label, branch.type)}
+                                #{rank + 1} {getShortNodeLabel(trLabel(branch.label), branch.type)}
                               </span>
                             </div>
 
@@ -857,11 +964,12 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
             </div>
           )}
 
-          {/* Quick Toggle to enable/disable all branches in 1 click */}
+          {/* Quick Toggle to enable/disable all branches in 1 click (fixed min-width to prevent shifting) */}
           {viewMode === 'dag' && (
             <button
               type="button"
               className="btn btn-xs btn-secondary"
+              style={{ minWidth: '172px', justifyContent: 'center' }}
               onClick={() => {
                 if (selectedBranchIds && selectedBranchIds.size === 0) {
                   applyPresetAllBranches();
@@ -871,19 +979,19 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
               }}
               title={
                 selectedBranchIds && selectedBranchIds.size === 0
-                  ? 'Activer toutes les pistes'
-                  : 'Désactiver toutes les pistes en 1 clic'
+                  ? tr('Activer toutes les pistes')
+                  : tr('Désactiver toutes les pistes')
               }
             >
               {selectedBranchIds && selectedBranchIds.size === 0 ? (
                 <>
                   <Eye size={12} />
-                  <span>Activer toutes les pistes</span>
+                  <span>{tr('Activer toutes les pistes')}</span>
                 </>
               ) : (
                 <>
                   <EyeOff size={12} />
-                  <span>Désactiver toutes les pistes</span>
+                  <span>{tr('Désactiver toutes les pistes')}</span>
                 </>
               )}
             </button>
@@ -894,14 +1002,15 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
             <button
               type="button"
               className={`btn btn-xs ${hideSmallBranches ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ minWidth: '138px', justifyContent: 'center' }}
               onClick={() => {
                 setHideSmallBranches((prev) => !prev);
                 setSelectedBranchIds(null);
               }}
-              title="Masquer automatiquement les pistes courtes (≤ 3 nœuds)"
+              title={tr('Masquer automatiquement les pistes courtes (≤ 3 nœuds)')}
             >
               {hideSmallBranches ? <EyeOff size={12} /> : <Eye size={12} />}
-              <span>Pistes courtes (≤ 3)</span>
+              <span>{tr('Pistes courtes (≤ 3)')}</span>
             </button>
           )}
 
@@ -912,14 +1021,14 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
               className="select select-xs"
               value={selectedLayer}
               onChange={(e) => setSelectedLayer(e.target.value)}
-              title="Filtrer par couche probatoire"
+              title={tr('Filtrer par couche...')}
             >
-              <option value="ALL">Toutes les couches</option>
-              <option value="VERIFIED">1. Preuve Vérifiée</option>
-              <option value="OSINT_RAW">2. OSINT Brute</option>
-              <option value="INFRA">3. Données Opérateurs</option>
-              <option value="HYPOTHESIS">4. Hypothèses Enquêteur</option>
-              <option value="FLOWS">5. Flux Financiers</option>
+              <option value="ALL">{tr('Toutes les couches')}</option>
+              <option value="VERIFIED">{tr('1. Preuve Vérifiée')}</option>
+              <option value="OSINT_RAW">{tr('2. OSINT Brute')}</option>
+              <option value="INFRA">{tr('3. Données Opérateurs')}</option>
+              <option value="HYPOTHESIS">{tr('4. Hypothèses Enquêteur')}</option>
+              <option value="FLOWS">{tr('5. Flux Financiers')}</option>
             </select>
           </div>
         </div>
@@ -941,10 +1050,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
             <input
               type="text"
               className="input input-xs"
-              placeholder="Rechercher..."
+              placeholder={tr('Rechercher...')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ paddingInlineStart: '24px', width: '160px' }}
+              style={{ paddingInlineStart: '24px', width: '150px' }}
             />
           </div>
 
@@ -964,14 +1073,14 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                 type="button"
                 className="btn btn-ghost btn-xs"
                 onClick={() => setZoom((z) => Math.max(0.3, z - 0.1))}
-                title="Dézoomer"
-                aria-label="Dézoomer"
+                title={tr('Zoom arrière')}
+                aria-label={tr('Zoom arrière')}
               >
                 <ZoomOut size={12} />
               </button>
               <span
                 className="font-mono text-xs"
-                style={{ minWidth: '38px', textAlign: 'center' }}
+                style={{ minWidth: '40px', textAlign: 'center' }}
               >
                 {Math.round(zoom * 100)}%
               </span>
@@ -979,8 +1088,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                 type="button"
                 className="btn btn-ghost btn-xs"
                 onClick={() => setZoom((z) => Math.min(2.0, z + 0.1))}
-                title="Zoomer"
-                aria-label="Zoomer"
+                title={tr('Zoom avant')}
+                aria-label={tr('Zoom avant')}
               >
                 <ZoomIn size={12} />
               </button>
@@ -991,33 +1100,37 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                   setZoom(0.9);
                   setPan({ x: 50, y: 40 });
                 }}
-                title="Recentrer la vue"
-                aria-label="Recentrer la vue"
+                title={tr('Ajuster la vue (Centrer)')}
+                aria-label={tr('Ajuster la vue (Centrer)')}
               >
                 <RotateCcw size={12} />
               </button>
             </div>
           )}
 
-          {/* Counts badge */}
-          <span className="chip chip-neutral font-mono text-xs">
-            {dagActiveNodes.length} nœuds / {dagEdges.length} liens
+          {/* Counts badge (fixed min-width to prevent shifting) */}
+          <span
+            className="chip chip-neutral font-mono text-xs"
+            style={{ minWidth: '132px', justifyContent: 'center' }}
+          >
+            {dagNodes.length} {tr('Entités')} / {dagEdges.length} {tr('Relations')}
           </span>
         </div>
       </div>
 
-      {/* 2. Temporal Evolution Interactive Slider & Animation Bar */}
-      <div className="timeline-evolution-bar" role="region" aria-label="Curseur d'évolution temporelle">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+      {/* 2. Temporal Evolution Interactive Slider & Animation Bar (Fixed button & readout widths so slider never shifts!) */}
+      <div className="timeline-evolution-bar" role="region" aria-label={tr("Curseur d'évolution temporelle")}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', flexShrink: 0 }}>
           <button
             type="button"
             className={`btn btn-xs ${isPlaying ? 'btn-primary' : 'btn-secondary'}`}
             onClick={handleTogglePlay}
             disabled={totalSteps <= 1}
-            title={isPlaying ? "Mettre en pause l'évolution temporelle" : "Animer l'évolution chronologique"}
+            style={{ minWidth: '82px', justifyContent: 'center' }}
+            title={isPlaying ? tr('Pause') : tr('Animer')}
           >
             {isPlaying ? <Pause size={12} /> : <Play size={12} />}
-            <span>{isPlaying ? 'Pause' : 'Animer'}</span>
+            <span>{isPlaying ? tr('Pause') : tr('Animer')}</span>
           </button>
 
           <button
@@ -1025,8 +1138,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
             className="btn btn-secondary btn-xs"
             onClick={handleStepBack}
             disabled={currentStep <= 1}
-            title="Étape précédente"
-            aria-label="Étape précédente"
+            title={tr('Étape précédente')}
+            aria-label={tr('Étape précédente')}
           >
             <SkipBack size={12} />
           </button>
@@ -1036,8 +1149,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
             className="btn btn-secondary btn-xs"
             onClick={handleStepForward}
             disabled={currentStep >= totalSteps}
-            title="Étape suivante"
-            aria-label="Étape suivante"
+            title={tr('Étape suivante')}
+            aria-label={tr('Étape suivante')}
           >
             <SkipForward size={12} />
           </button>
@@ -1046,7 +1159,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
             type="button"
             className="btn btn-secondary btn-xs font-mono"
             onClick={cyclePlaybackSpeed}
-            title="Vitesse de lecture temporelle"
+            style={{ minWidth: '38px', justifyContent: 'center' }}
+            title={tr('Vitesse de lecture temporelle')}
           >
             {playbackSpeed}x
           </button>
@@ -1056,10 +1170,11 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
             className="btn btn-ghost btn-xs"
             onClick={handleResetTimeline}
             disabled={currentStep >= totalSteps && !isPlaying}
-            title="Afficher toute la chronologie (100%)"
+            style={{ minWidth: '76px', justifyContent: 'center' }}
+            title={tr('Afficher toute la chronologie (100%)')}
           >
             <RotateCcw size={12} />
-            <span>Complet</span>
+            <span>{tr('Complet')}</span>
           </button>
         </div>
 
@@ -1076,28 +1191,50 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
               setIsPlaying(false);
               setTimeCursorStep(Number(e.target.value));
             }}
-            aria-label="Faire glisser dans le temps pour visualiser l'évolution de l'enquête"
+            aria-label={tr("Faire glisser dans le temps pour visualiser l'évolution de l'enquête")}
           />
         </div>
 
-        {/* Temporal Evolution Status Readout */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          <span className="chip chip-neutral font-mono text-xs">
-            Étape {currentStep} / {totalSteps}
+        {/* Fixed-width Temporal Evolution Status Readout (Never resizes the slider track!) */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            gap: 'var(--space-2)',
+            width: '250px',
+            flexShrink: 0,
+            overflow: 'hidden',
+          }}
+        >
+          <span
+            className="chip chip-neutral font-mono text-xs"
+            style={{ minWidth: '104px', justifyContent: 'center', flexShrink: 0 }}
+          >
+            {tr('Étape')} {currentStep} / {totalSteps}
           </span>
-          {currentCutoffDateStr && (
-            <span className="chip chip-neutral font-mono text-xs">
-              {currentCutoffDateStr}
-            </span>
-          )}
           {latestRevealedNode && (
             <button
               type="button"
               className="btn btn-ghost btn-xs"
               onClick={() => handleSelectNode(latestRevealedNode.id)}
-              title="Cliquer pour inspecter le dernier événement révélé dans le panneau latéral"
+              style={{
+                flex: 1,
+                minWidth: 0,
+                justifyContent: 'flex-start',
+                overflow: 'hidden',
+              }}
+              title={trLabel(latestRevealedNode.label)}
             >
-              <span>Dernier : {getShortNodeLabel(latestRevealedNode.label, latestRevealedNode.type)}</span>
+              <span
+                style={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {getShortNodeLabel(trLabel(latestRevealedNode.label), latestRevealedNode.type)}
+              </span>
             </button>
           )}
         </div>
@@ -1146,47 +1283,42 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                 <defs>
                   <marker
                     id="dag-orthogonal-arrow"
-                    viewBox="0 0 10 10"
-                    refX="6"
-                    refY="5"
-                    markerWidth="6"
-                    markerHeight="6"
+                    markerUnits="userSpaceOnUse"
+                    viewBox="0 0 8 7"
+                    refX="6.5"
+                    refY="3.5"
+                    markerWidth="6.5"
+                    markerHeight="6.5"
                     orient="auto-start-reverse"
                   >
-                    <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--color-border-default)" />
+                    <path d="M 0 1 L 6.5 3.5 L 0 6 z" fill="var(--color-border-default)" />
                   </marker>
 
                   <marker
                     id="dag-ancestor-arrow"
-                    viewBox="0 0 10 10"
-                    refX="6"
-                    refY="5"
-                    markerWidth="6"
-                    markerHeight="6"
+                    markerUnits="userSpaceOnUse"
+                    viewBox="0 0 8 7"
+                    refX="6.5"
+                    refY="3.5"
+                    markerWidth="6.5"
+                    markerHeight="6.5"
                     orient="auto-start-reverse"
                   >
-                    <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--color-accent-text)" />
+                    <path d="M 0 1 L 6.5 3.5 L 0 6 z" fill="var(--color-accent-text)" />
                   </marker>
 
                   <marker
                     id="dag-merge-arrow"
-                    viewBox="0 0 10 10"
-                    refX="6"
-                    refY="5"
-                    markerWidth="6"
-                    markerHeight="6"
+                    markerUnits="userSpaceOnUse"
+                    viewBox="0 0 8 7"
+                    refX="6.5"
+                    refY="3.5"
+                    markerWidth="6.5"
+                    markerHeight="6.5"
                     orient="auto-start-reverse"
                   >
-                    <path d="M 0 1 L 8 5 L 0 9 z" fill="var(--color-status-warning)" />
+                    <path d="M 0 1 L 6.5 3.5 L 0 6 z" fill="var(--color-status-warning)" />
                   </marker>
-
-                  <filter id="dag-glow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="3" result="blur" />
-                    <feMerge>
-                      <feMergeNode in="blur" />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                  </filter>
                 </defs>
 
                 {/* Vertical Lane Guides */}
@@ -1200,21 +1332,38 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                     stroke="var(--color-border-subtle)"
                     strokeWidth={1}
                     strokeDasharray="4 6"
-                    opacity={0.25}
+                    opacity={0.22}
                   />
                 ))}
 
-                {/* Strictly Horizontal and Vertical Lines (Orthogonal Manhattan Routing) */}
+                {/* Clean Inter-Row & Inter-Gutter Orthogonal Routing (Never cuts through intermediate rows/branches) */}
                 {dagEdges.map((e) => {
                   const dx = e.x2 - e.x1;
+                  const rowSpan = Math.abs(e.tgtRow - e.srcRow);
                   const isAncestral = e.isAncestralHighlight;
 
                   let pathD = '';
-                  if (Math.abs(dx) < 2) {
+                  if (Math.abs(dx) < 2 && rowSpan <= 1) {
+                    // Direct 1-row vertical drop in same lane
                     pathD = `M ${e.x1} ${e.y1} L ${e.x2} ${e.y2}`;
+                  } else if (Math.abs(dx) < 2 && rowSpan > 1) {
+                    // Same-lane multi-row chord (e.g. Karim Zerrouki Row 0 -> Pièce A-01 Row 5 in Lane 0):
+                    // Exit left edge of source circle, travel down the empty left margin gutter of the lane, enter left edge of target circle
+                    const srcCenterY = e.y1 - 18;
+                    const tgtCenterY = e.y2 + 18;
+                    const leftGutterX = e.x1 - 30;
+                    pathD = `M ${e.x1 - 18} ${srcCenterY} L ${leftGutterX} ${srcCenterY} L ${leftGutterX} ${tgtCenterY} L ${e.x2 - 18} ${tgtCenterY}`;
+                  } else if (rowSpan <= 1) {
+                    // 1-row step across lanes: horizontal bend in the empty inter-row corridor (18px above target circle)
+                    const corridorY = e.y2 - 18;
+                    pathD = `M ${e.x1} ${e.y1} L ${e.x1} ${corridorY} L ${e.x2} ${corridorY} L ${e.x2} ${e.y2}`;
                   } else {
-                    const midY = e.y1 + (e.y2 - e.y1) * 0.45;
-                    pathD = `M ${e.x1} ${e.y1} L ${e.x1} ${midY} L ${e.x2} ${midY} L ${e.x2} ${e.y2}`;
+                    // Multi-row span across lanes: exit left of source circle into source lane's left gutter,
+                    // drop vertically down the gutter to the target row's inter-row corridor, then enter target
+                    const srcCenterY = e.y1 - 18;
+                    const lowerCorridorY = e.y2 - 18;
+                    const leftGutterX = e.x1 - 26;
+                    pathD = `M ${e.x1 - 18} ${srcCenterY} L ${leftGutterX} ${srcCenterY} L ${leftGutterX} ${lowerCorridorY} L ${e.x2} ${lowerCorridorY} L ${e.x2} ${e.y2}`;
                   }
 
                   const strokeColor = isAncestral
@@ -1223,7 +1372,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                     ? 'var(--color-status-warning)'
                     : LAYER_COLORS[e.layer] || 'var(--color-border-default)';
 
-                  const strokeWidth = isAncestral ? 3.0 : e.isMerge ? 2.4 : 1.8;
+                  const strokeWidth = isAncestral ? 2.2 : e.isMerge ? 1.8 : 1.4;
 
                   const markerId = isAncestral
                     ? 'url(#dag-ancestor-arrow)'
@@ -1233,24 +1382,13 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
 
                   return (
                     <g key={e.id}>
-                      {(isAncestral || e.isMerge) && (
-                        <path
-                          d={pathD}
-                          fill="none"
-                          stroke={strokeColor}
-                          strokeWidth={strokeWidth + 3}
-                          opacity={0.3}
-                          filter="url(#dag-glow)"
-                        />
-                      )}
-
                       <path
                         d={pathD}
                         fill="none"
                         stroke={strokeColor}
                         strokeWidth={strokeWidth}
-                        strokeDasharray={e.layer === 'HYPOTHESIS' ? '5 4' : undefined}
-                        opacity={isAncestral ? 1 : 0.8}
+                        strokeDasharray={e.layer === 'HYPOTHESIS' ? '3 3' : undefined}
+                        opacity={isAncestral ? 0.95 : 0.72}
                         markerEnd={markerId}
                       />
                     </g>
@@ -1258,7 +1396,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                 })}
               </svg>
 
-              {/* CIRCULAR NODES WITH COMPACT SHORT LABEL (FULL DETAILS ON CLICK IN RIGHT INSPECTOR) */}
+              {/* CIRCULAR NODES WITH COMPACT SHORT LABEL (INVARIANT POSITIONS, FULL DETAILS ON CLICK IN RIGHT INSPECTOR) */}
               {dagNodes.map((n) => {
                 const isSelected = selectedNodeId === n.node.id;
                 const isAncestral = ancestorNodeIds.has(n.node.id);
@@ -1266,7 +1404,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                 const typeDef = registry.node_types[n.node.type];
                 const domKey = NODE_TYPE_TO_CATEGORY[n.node.type] || 'acteurs';
                 const domColor = ONTOLOGY_CATEGORY_COLORS[domKey] || 'var(--color-accent-primary)';
-                const shortText = getShortNodeLabel(n.node.label, n.node.type);
+                const localizedLabelText = trLabel(n.node.label);
+                const shortText = getShortNodeLabel(localizedLabelText, n.node.type);
 
                 const photoUrl =
                   (n.node.properties?.photo_url as string) ||
@@ -1292,7 +1431,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                       zIndex: isSelected ? 30 : isLatest ? 28 : isAncestral ? 25 : 10,
                       userSelect: 'none',
                     }}
-                    title="Cliquer pour afficher toutes les informations dans le panneau latéral droit"
+                    title={localizedLabelText}
                   >
                     {/* 1. CIRCLE WITH ICON */}
                     <div
@@ -1308,17 +1447,13 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                             ? 'var(--color-status-success)'
                             : domColor
                         }`,
-                        boxShadow: isSelected
-                          ? 'var(--shadow-md)'
-                          : 'var(--shadow-sm)',
+                        boxShadow: isSelected ? 'var(--shadow-md)' : 'var(--shadow-sm)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         color: domColor,
                         position: 'relative',
                         flexShrink: 0,
-                        transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-                        transform: isSelected || isLatest ? 'scale(1.1)' : 'scale(1)',
                       }}
                     >
                       {photoUrl ? (
@@ -1337,7 +1472,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                         <NodeIcon name={typeDef?.icon || 'help-circle'} size={17} />
                       )}
 
-                      {/* Mini Convergence Badge (Zero Emoji — Uses GitMerge icon) */}
+                      {/* Mini Convergence Badge */}
                       {n.isMerge && (
                         <span
                           style={{
@@ -1358,7 +1493,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                             padding: '0 3px',
                             boxShadow: 'var(--shadow-xs)',
                           }}
-                          title={`Convergence de ${n.parentIds.length} pistes`}
+                          title={`${n.parentIds.length}`}
                         >
                           <GitMerge size={9} />
                           <span>{n.parentIds.length}</span>
@@ -1366,7 +1501,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                       )}
                     </div>
 
-                    {/* 2. COMPACT SHORT TEXT PILL ONLY (Click opens full info in side Inspector) */}
+                    {/* 2. COMPACT SHORT TEXT PILL ONLY */}
                     <div
                       className={`dag-short-pill ${isSelected ? 'is-selected' : ''} ${
                         isLatest ? 'is-latest' : ''
@@ -1422,7 +1557,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                   const isSelected = selectedNodeId === event.id;
                   const typeDef = registry.node_types[event.type];
                   const color = LAYER_COLORS[event.layer] || 'var(--color-border-default)';
-                  const shortText = getShortNodeLabel(event.label, event.type);
+                  const localizedEventLabel = trLabel(event.label);
+                  const shortText = getShortNodeLabel(localizedEventLabel, event.type);
 
                   const formattedDate = event.created_at
                     ? new Date(event.created_at).toLocaleDateString(dateLocale, {
@@ -1440,12 +1576,12 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onSelectNode }) => {
                         display: 'flex',
                         width: '100%',
                         alignItems: 'center',
-                        justifyContent: ' flex-start',
+                        justifyContent: 'flex-start',
                         gap: 'var(--space-3)',
                         padding: 'var(--space-1-5) var(--space-2)',
                         textAlign: 'start',
                       }}
-                      title="Cliquer pour afficher les détails complets dans le panneau latéral"
+                      title={localizedEventLabel}
                     >
                       <div
                         style={{

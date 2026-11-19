@@ -211,6 +211,7 @@ export interface GraphStoreState {
   setPersonOnlyGraph: (active: boolean) => void;
   toggleExpandNodeConnections: (nodeId: string) => void;
   expandMediatedEdgeNodes: (intermediateNodeIds: string[]) => void;
+  expandNodeNeighborhood: (nodeId: string, hops: number) => number;
 
   // Edge / Link Confidence & Confidentiality Update
   updateEdgeDetails: (
@@ -482,6 +483,48 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
       };
     }),
 
+  expandNodeNeighborhood: (nodeId, hops) => {
+    const state = get();
+    const discovered = new Set<string>();
+    let frontier = [nodeId];
+    const visited = new Set<string>([nodeId]);
+
+    for (let h = 1; h <= Math.max(1, hops); h++) {
+      const nextFrontier: string[] = [];
+      state.edges.forEach((e) => {
+        if (frontier.includes(e.source_id) && !visited.has(e.target_id)) {
+          visited.add(e.target_id);
+          discovered.add(e.target_id);
+          nextFrontier.push(e.target_id);
+        } else if (frontier.includes(e.target_id) && !visited.has(e.source_id)) {
+          visited.add(e.source_id);
+          discovered.add(e.source_id);
+          nextFrontier.push(e.source_id);
+        }
+      });
+      frontier = nextFrontier;
+    }
+
+    if (discovered.size === 0) return 0;
+
+    const nextExpanded = new Set(state.expandedHiddenNodeIds);
+    const nextLayers = new Set(state.activeLayers);
+    discovered.forEach((id) => {
+      nextExpanded.add(id);
+      const found = state.nodes.find((n) => n.id === id);
+      if (found) nextLayers.add(found.layer);
+    });
+
+    set({
+      expandedHiddenNodeIds: nextExpanded,
+      activeLayers: nextLayers,
+      selectedNodeIds: [nodeId, ...Array.from(discovered)],
+      selectedNodeId: nodeId,
+    });
+
+    return discovered.size;
+  },
+
   updateEdgeDetails: (edgeId, updates) => {
     const state = get();
     if (edgeId.startsWith('mediated__')) {
@@ -626,10 +669,13 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     });
 
     const edgesToAdd = newEdges.filter((e) => !edgeIds.has(e.id));
+    const nextExpanded = new Set(get().expandedHiddenNodeIds);
+    newNodes.forEach((n) => nextExpanded.add(n.id));
 
     set({
       nodes: [...currentNodes, ...nodesToAdd],
       edges: [...currentEdges, ...edgesToAdd],
+      expandedHiddenNodeIds: nextExpanded,
     });
   },
 

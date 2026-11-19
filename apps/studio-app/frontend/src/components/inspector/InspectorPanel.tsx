@@ -27,9 +27,12 @@ import {
   Save,
   Edit3,
   Camera,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
 import { useToast } from '../../context/ToastContext';
+import { getRelationLabel } from '../../i18n/phrases/relations';
 
 const registry = registryDataRaw as unknown as RegistryData;
 
@@ -58,7 +61,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   onTriggerPhaseNotice,
   style,
 }) => {
-  const { t, tr, label } = useI18n();
+  const { t, tr, trLabel, label, locale } = useI18n();
   const {
     nodes,
     edges,
@@ -90,6 +93,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   const [editStatus, setEditStatus] = useState('');
   const [editNotes, setEditNotes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isEditFormOpen, setIsEditFormOpen] = useState(false);
 
   // Edge editing state (Confidence + Judicial Confidentiality + Layer + Notes)
   const [editEdgeConfidence, setEditEdgeConfidence] = useState<number>(0.85);
@@ -381,14 +385,14 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 <div key={clue.id} className="inbox-item">
                   <div className="inbox-item-meta">
                     <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-accent-text)', fontWeight: 600 }}>
-                      {clue.title}
+                      {trLabel(clue.title)}
                     </span>
                     <span style={{ fontSize: 'var(--text-xs)', fontWeight: 500, color: 'var(--color-text-primary)' }}>
-                      {clue.value}
+                      {trLabel(clue.value)}
                     </span>
                     <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>
                       {tr('Source : {src} • Confiance : {pct}%', {
-                        src: clue.provenance,
+                        src: tr(clue.provenance),
                         pct: Math.round(clue.confidence * 100),
                       })}
                     </span>
@@ -463,23 +467,55 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
         })),
     ];
 
-    // Procedural Status and Details
+    // Procedural Status and Details (clean, non-hallucinated, and fully localized)
     const lbl = selectedNode.label.toLowerCase();
-    const isBoss = lbl.includes('tarek') || lbl.includes('hadj');
-    const isLt = lbl.includes('youcef') || lbl.includes('nadia') || lbl.includes('farid') || lbl.includes('kamel') || lbl.includes('sofiane');
-    const isVictim = lbl.includes('karim') || lbl.includes('meriem') || lbl.includes('djamel') || lbl.includes('rachid') || lbl.includes('tahar') || lbl.includes('mourad');
+    const rawType = String(selectedNode.properties?.raw_type || '').toUpperCase();
+    const isBoss = rawType === 'KINGPIN' || lbl.includes('tarek') || lbl.includes('hadj');
+    const isLt = rawType === 'LIEUTENANT' || rawType === 'DEVELOPER' || lbl.includes('youcef') || lbl.includes('nadia') || lbl.includes('farid') || lbl.includes('kamel') || lbl.includes('sofiane');
+    const isVictim = rawType === 'VICTIM' || lbl.includes('karim') || lbl.includes('meriem') || lbl.includes('djamel') || lbl.includes('rachid') || lbl.includes('tahar') || lbl.includes('mourad') || lbl.includes('salim') || lbl.includes('amina') || lbl.includes('fatima') || lbl.includes('omar');
+    const isExhibit =
+      selectedNode.type === 'enregistrement_vocal' ||
+      selectedNode.type === 'document_judiciaire' ||
+      selectedNode.type === 'artefact_dfir' ||
+      selectedNode.type === 'fichier_apk' ||
+      selectedNode.type === 'message_chat';
 
-    const proceduralStatus = isBoss
-      ? 'MANDAT D\'ARRÊT INTERPOL — RED NOTICE'
+    const customJudicialStatus =
+      (selectedNode.properties?.status_judiciaire as string) ||
+      (selectedNode.properties?.role_judiciaire as string) ||
+      '';
+
+    const proceduralStatus = customJudicialStatus
+      ? trLabel(customJudicialStatus)
+      : isExhibit
+      ? tr('PIÈCE À CONVICTION SCELLÉE — ISO 27037')
+      : isBoss
+      ? tr("MANDAT D'ARRÊT INTERPOL — RED NOTICE")
       : isLt
-      ? 'GARDE À VUE 48H — CCO ALGER'
+      ? tr('GARDE À VUE 48H — CCO ALGER')
       : isVictim
-      ? 'PARTIE CIVILE — PLAINTE DÉPOSÉE'
+      ? tr('PARTIE CIVILE — PLAINTE DÉPOSÉE')
       : selectedNode.type === 'compte_bancaire'
-      ? 'GEL AML CONSERVATOIRE — ALGÉRIE POSTE'
+      ? tr('GEL AML CONSERVATOIRE — ALGÉRIE POSTE')
       : selectedNode.type === 'vehicule'
-      ? 'VÉHICULE EN FUITE — AVIS DE RECHERCHE'
-      : 'SCIS-TIC / SOUS SURVEILLANCE';
+      ? tr('VÉHICULE SIGNALÉ — AVIS DE RECHERCHE')
+      : tr('ÉLÉMENT SOUS SURVEILLANCE JUDICIAIRE');
+
+    // Clean contextual subtitle (never displays raw UUIDs!)
+    const rawSubtitle = (selectedNode.properties?.subtitle as string) || '';
+    const locationParts = [
+      selectedNode.properties?.commune,
+      selectedNode.properties?.wilaya,
+    ]
+      .filter(Boolean)
+      .map((x) => trLabel(String(x)));
+    const cleanSubtitle = rawSubtitle
+      ? trLabel(rawSubtitle)
+      : selectedNode.properties?.rip
+      ? `RIP ${String(selectedNode.properties.rip)}`
+      : locationParts.length > 0
+      ? locationParts.join(' • ')
+      : label(typeDef, selectedNode.type);
 
     // Authentic Darija audio intercepts matching Candy Wheels case (Strictly connected entities)
     const getDarijaWiretap = () => {
@@ -667,10 +703,11 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
         {/* Content */}
         <div style={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-          {/* 1. Procedural Forensic Identity Card (Portrait & Legal Details) */}
+          {/* 1. Clean Forensic Identity Card (Consistent, No Raw UUIDs, No Cartoon SVGs) */}
           <div
             style={{
               display: 'flex',
+              alignItems: 'center',
               gap: 'var(--space-3)',
               padding: 'var(--space-3)',
               backgroundColor: 'var(--color-bg-elevated)',
@@ -678,96 +715,89 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               borderRadius: 'var(--radius-sm)',
             }}
           >
-            {/* Real Photographic Evidence or SVG Forensic Avatar */}
             {evidencePhoto ? (
               <img
                 src={evidencePhoto}
-                alt={selectedNode.label}
+                alt={trLabel(selectedNode.label)}
                 style={{
-                  width: '68px',
-                  height: '68px',
+                  width: '52px',
+                  height: '52px',
                   borderRadius: 'var(--radius-sm)',
-                  border: '1px solid var(--color-border-subtle)',
+                  border: `1.5px solid ${layerDef?.color || 'var(--color-border-default)'}`,
                   objectFit: 'cover',
-                  background: '#0f172a',
+                  background: 'var(--color-bg-surface)',
                   flexShrink: 0,
-                  boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
+                  boxShadow: 'var(--shadow-xs)',
                 }}
               />
-            ) : selectedNode.type === 'personne' ? (
-              <svg width="68" height="68" viewBox="0 0 100 100" style={{ borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-subtle)', background: '#1e293b', flexShrink: 0 }}>
-                <line x1="8" y1="20" x2="92" y2="20" stroke="#334155" strokeWidth="1" strokeDasharray="2,2" />
-                <line x1="8" y1="35" x2="92" y2="35" stroke="#334155" strokeWidth="1" strokeDasharray="2,2" />
-                <line x1="8" y1="50" x2="92" y2="50" stroke="#334155" strokeWidth="1" strokeDasharray="2,2" />
-                <text x="90" y="23" fill="#64748b" fontSize="6" textAnchor="end">185cm</text>
-                <text x="90" y="38" fill="#64748b" fontSize="6" textAnchor="end">175cm</text>
-                <text x="90" y="53" fill="#64748b" fontSize="6" textAnchor="end">165cm</text>
-                <path d="M20,95 Q20,70 50,70 Q80,70 80,95 Z" fill={isVictim ? '#2563eb' : '#dc2626'} opacity="0.85" />
-                <rect x="44" y="55" width="12" height="18" fill="#cbd5e1" />
-                <ellipse cx="50" cy="42" rx="16" ry="20" fill="#f1f5f9" />
-                <path d="M32,38 Q35,22 50,22 Q65,22 68,38 Q60,26 50,26 Q40,26 32,38 Z" fill="#1e293b" />
-                <circle cx="44" cy="42" r="2.2" fill="#0f172a" />
-                <circle cx="56" cy="42" r="2.2" fill="#0f172a" />
-                <line x1="50" y1="44" x2="50" y2="49" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" />
-                <line x1="46" y1="53" x2="54" y2="53" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" />
-                <rect x="10" y="83" width="80" height="13" rx="2" fill="rgba(15, 23, 42, 0.95)" />
-                <text x="50" y="92" fill={isVictim ? '#60a5fa' : '#ef4444'} fontSize="6.5" fontWeight="bold" textAnchor="middle">
-                  {isVictim ? 'VICTIME' : 'SUSPECT'}
-                </text>
-              </svg>
-            ) : selectedNode.type === 'vehicule' ? (
-              <svg width="68" height="68" viewBox="0 0 100 100" style={{ borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-subtle)', background: '#0f172a', flexShrink: 0 }}>
-                <path d="M15,62 L25,44 Q35,30 50,30 L68,30 Q78,44 85,62 Z" fill="#2563eb" opacity="0.9" />
-                <rect x="12" y="60" width="76" height="15" rx="3" fill="#1e293b" />
-                <circle cx="30" cy="75" r="8" fill="#475569" stroke="#94a3b8" strokeWidth="2" />
-                <circle cx="70" cy="75" r="8" fill="#475569" stroke="#94a3b8" strokeWidth="2" />
-                <rect x="34" y="65" width="32" height="8" rx="1" fill="#f8fafc" />
-                <text x="50" y="71" fill="#0f172a" fontSize="5" fontWeight="bold" textAnchor="middle">12345 126 16</text>
-              </svg>
-            ) : selectedNode.type === 'compte_bancaire' ? (
-              <svg width="68" height="68" viewBox="0 0 100 100" style={{ borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-subtle)', background: 'linear-gradient(135deg, #b45309, #78350f)', flexShrink: 0 }}>
-                <rect x="10" y="20" width="80" height="60" rx="6" fill="#b45309" stroke="#fef3c7" strokeWidth="1" />
-                <rect x="20" y="32" width="16" height="13" rx="2" fill="#fef08a" stroke="#ca8a04" strokeWidth="1" />
-                <text x="20" y="64" fill="#fef3c7" fontSize="6.5" fontWeight="bold" fontFamily="monospace">00799999...</text>
-                <text x="75" y="32" fill="#fff" fontSize="6" fontWeight="bold">BaridiMob</text>
-              </svg>
-            ) : selectedNode.type === 'telephone' ? (
-              <svg width="68" height="68" viewBox="0 0 100 100" style={{ borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-subtle)', background: '#1e293b', flexShrink: 0 }}>
-                <rect x="30" y="15" width="40" height="70" rx="5" fill="#334155" stroke="#64748b" strokeWidth="1.5" />
-                <rect x="34" y="23" width="32" height="50" rx="2" fill="#0f172a" />
-                <circle cx="50" cy="78" r="2.5" fill="#94a3b8" />
-                <line x1="45" y1="18" x2="55" y2="18" stroke="#94a3b8" strokeWidth="1" strokeLinecap="round" />
-                <path d="M42,40 Q50,33 58,40" stroke="#38bdf8" strokeWidth="1.5" fill="none" />
-                <path d="M38,45 Q50,35 62,45" stroke="#38bdf8" strokeWidth="1.5" fill="none" />
-              </svg>
             ) : (
-              <svg width="68" height="68" viewBox="0 0 100 100" style={{ borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-subtle)', background: '#1e293b', flexShrink: 0 }}>
-                <circle cx="50" cy="50" r="28" fill="#334155" stroke="#64748b" strokeWidth="2" />
-                <text x="50" y="55" fill="#94a3b8" fontSize="14" fontWeight="bold" textAnchor="middle">DZ</text>
-              </svg>
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: 'var(--radius-sm)',
+                  backgroundColor: 'var(--color-bg-surface)',
+                  border: `1.5px solid ${layerDef?.color || 'var(--color-border-default)'}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: layerDef?.color || 'var(--color-accent-text)',
+                  flexShrink: 0,
+                }}
+              >
+                <NodeIcon name={typeDef?.icon || 'help-circle'} size={22} />
+              </div>
             )}
 
-            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '3px' }}>
-              <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {selectedNode.label}
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div
+                style={{
+                  fontSize: 'var(--text-sm)',
+                  fontWeight: 700,
+                  color: 'var(--color-text-primary)',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+                title={trLabel(selectedNode.label)}
+              >
+                {trLabel(selectedNode.label)}
               </div>
 
-              <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span className="chip" style={{ fontSize: '10px', padding: '1px 5px', backgroundColor: isVictim ? 'rgba(59, 130, 246, 0.15)' : 'rgba(239, 68, 68, 0.15)', color: isVictim ? '#3b82f6' : '#ef4444', fontWeight: 600 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+                <span
+                  className="chip"
+                  style={{
+                    fontSize: '10px',
+                    padding: '1px 6px',
+                    backgroundColor: isExhibit
+                      ? 'rgba(16, 185, 129, 0.14)'
+                      : isVictim
+                      ? 'rgba(59, 130, 246, 0.14)'
+                      : 'rgba(239, 68, 68, 0.14)',
+                    color: isExhibit
+                      ? 'var(--color-status-success)'
+                      : isVictim
+                      ? 'var(--color-accent-text)'
+                      : 'var(--color-status-danger)',
+                    fontWeight: 600,
+                  }}
+                >
                   {proceduralStatus}
                 </span>
               </div>
 
-              <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>
-                {selectedNode.type === 'personne'
-                  ? 'NIN 1982 1601 0023 4851 22'
-                  : selectedNode.type === 'compte_bancaire'
-                  ? 'RIP 00799999002148593214'
-                  : selectedNode.type === 'vehicule'
-                  ? 'Plaque : 12345 126 16'
-                  : selectedNode.type === 'telephone'
-                  ? 'MSISDN +213 555 019 283 • Ooredoo DZ'
-                  : selectedNode.id}
+              <div
+                style={{
+                  fontSize: '11px',
+                  color: 'var(--color-text-muted)',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+                title={cleanSubtitle}
+              >
+                {cleanSubtitle}
               </div>
             </div>
           </div>
@@ -788,28 +818,28 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '5px' }}>
                   <Camera size={13} style={{ color: 'var(--color-accent-text)' }} />
-                  Cliché &amp; Pièce Photographique Scellée
+                  {tr('Cliché & Pièce Photographique Scellée')}
                 </span>
                 <span className="chip chip-success" style={{ fontSize: '9.5px', padding: '1px 5px' }}>
-                  Certifié ISO 27037
+                  {tr('Certifié ISO 27037')}
                 </span>
               </div>
               <div style={{ width: '100%', maxHeight: '160px', overflow: 'hidden', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-subtle)' }}>
                 <img
                   src={evidencePhoto!}
-                  alt={`Scellé photographique ${selectedNode.label}`}
+                  alt={trLabel(selectedNode.label)}
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                 />
               </div>
               <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontFamily: 'var(--font-mono)' }}>Fichier : {evidencePhoto!.split('/').pop()}</span>
+                <span style={{ fontFamily: 'var(--font-mono)' }}>{evidencePhoto!.split('/').pop()}</span>
                 <a
                   href={evidencePhoto!}
                   target="_blank"
                   rel="noreferrer"
                   style={{ color: 'var(--color-accent-text)', textDecoration: 'underline' }}
                 >
-                  Agrandir plein écran
+                  {tr('Agrandir plein écran')}
                 </a>
               </div>
             </div>
@@ -832,165 +862,171 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 <Sparkles size={14} style={{ color: '#eab308', flexShrink: 0 }} />
                 <div>
                   <div style={{ fontSize: '10px', textTransform: 'uppercase', color: '#ca8a04', fontWeight: 700 }}>
-                    Qualification Réseau SNA Validée
+                    {tr('Qualification Réseau SNA Validée')}
                   </div>
                   <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
-                    {String(snaRole)}
+                    {trLabel(String(snaRole))}
                   </div>
                 </div>
               </div>
               {snaScore !== undefined && (
                 <span className="chip chip-neutral font-mono text-xs">
-                  Score : {typeof snaScore === 'number' ? Math.round(snaScore * 100) + '%' : String(snaScore)}
+                  {typeof snaScore === 'number' ? Math.round(snaScore * 100) + '%' : String(snaScore)}
                 </span>
               )}
             </div>
           )}
 
-          {/* 3. Layer and Confidence Badges */}
-          <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-            <span
-              className="chip"
-              style={{
-                backgroundColor: 'var(--color-bg-elevated)',
-                borderColor: layerDef?.color || 'var(--color-border-default)',
-                color: layerDef?.color,
-                fontWeight: 600,
-                fontSize: 'var(--text-xs)',
-              }}
-            >
-              {tr('COUCHE : {layer}', { layer: label(layerDef, selectedNode.layer) })}
-            </span>
-
-            {selectedNode.confidence !== null && (
+          {/* 3. Layer and Confidence Badges + Edit Toggle */}
+          <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
               <span
-                className="chip chip-neutral font-mono"
-                style={{ fontSize: 'var(--text-xs)' }}
-                title={tr('Confiance analytique calculée par l\'algorithme ou l\'enquêteur')}
+                className="chip"
+                style={{
+                  backgroundColor: 'var(--color-bg-elevated)',
+                  borderColor: layerDef?.color || 'var(--color-border-default)',
+                  color: layerDef?.color,
+                  fontWeight: 600,
+                  fontSize: 'var(--text-xs)',
+                }}
               >
-                {tr('CONFIANCE : {pct}%', { pct: Math.round(selectedNode.confidence * 100) })}
+                {tr('COUCHE : {layer}', { layer: label(layerDef, selectedNode.layer) })}
               </span>
-            )}
-          </div>
 
-          {/* 3b. Quick Interactive Entity Editor (Label, Status, Notes, Confidence) */}
-          <div
-            style={{
-              padding: 'var(--space-3)',
-              backgroundColor: 'var(--color-bg-elevated)',
-              border: '1px solid var(--color-border-subtle)',
-              borderRadius: 'var(--radius-sm)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 'var(--space-2)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--color-border-subtle)', paddingBottom: '4px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>
-                <Edit3 size={12} style={{ color: 'var(--color-accent-text)' }} />
-                <span>{tr('Édition Fiche Entité')}</span>
-              </div>
-              <span className="chip chip-neutral font-mono text-xs">OPJ / Procédure</span>
+              {selectedNode.confidence !== null && (
+                <span
+                  className="chip chip-neutral font-mono"
+                  style={{ fontSize: 'var(--text-xs)' }}
+                  title={tr("Confiance analytique calculée par l'algorithme ou l'enquêteur")}
+                >
+                  {tr('CONFIANCE : {pct}%', { pct: Math.round(selectedNode.confidence * 100) })}
+                </span>
+              )}
             </div>
 
-            {/* Libellé */}
-            <div>
-              <label style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px' }}>
-                {tr('Nom / Libellé de l\'entité :')}
-              </label>
-              <input
-                type="text"
-                value={editLabel}
-                onChange={(e) => setEditLabel(e.target.value)}
-                style={{
-                  width: '100%',
-                  fontSize: '12px',
-                  padding: '4px 8px',
-                  backgroundColor: 'var(--color-bg-surface)',
-                  border: '1px solid var(--color-border-default)',
-                  borderRadius: 'var(--radius-sm)',
-                  color: 'var(--color-text-primary)',
-                  boxSizing: 'border-box',
-                }}
-              />
-            </div>
-
-            {/* Statut Judiciaire / Procédural */}
-            <div>
-              <label style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px' }}>
-                {tr('Statut Judiciaire / Mandat :')}
-              </label>
-              <input
-                type="text"
-                value={editStatus}
-                placeholder="ex: Mandat d'arrêt Interpol, Garde à vue 48h, Scellé sous main de justice..."
-                onChange={(e) => setEditStatus(e.target.value)}
-                style={{
-                  width: '100%',
-                  fontSize: '11.5px',
-                  padding: '4px 8px',
-                  backgroundColor: 'var(--color-bg-surface)',
-                  border: '1px solid var(--color-border-default)',
-                  borderRadius: 'var(--radius-sm)',
-                  color: 'var(--color-text-primary)',
-                  boxSizing: 'border-box',
-                }}
-              />
-            </div>
-
-            {/* Confiance Slider */}
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>
-                <span>{tr('Certitude Probatoire :')}</span>
-                <span className="font-mono">{Math.round(editConfidence * 100)}%</span>
-              </div>
-              <input
-                type="range"
-                min={0.1}
-                max={1.0}
-                step={0.05}
-                value={editConfidence}
-                onChange={(e) => setEditConfidence(Number(e.target.value))}
-                style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--color-accent-primary)' }}
-              />
-            </div>
-
-            {/* Notes d'enquête */}
-            <div>
-              <label style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px' }}>
-                {tr('Notes Judiciaires & Observations :')}
-              </label>
-              <textarea
-                rows={2}
-                value={editNotes}
-                placeholder="Observations des services d'enquête, pièces de procédure..."
-                onChange={(e) => setEditNotes(e.target.value)}
-                style={{
-                  width: '100%',
-                  fontSize: '11.5px',
-                  padding: '4px 8px',
-                  backgroundColor: 'var(--color-bg-surface)',
-                  border: '1px solid var(--color-border-default)',
-                  borderRadius: 'var(--radius-sm)',
-                  color: 'var(--color-text-primary)',
-                  resize: 'vertical',
-                  boxSizing: 'border-box',
-                }}
-              />
-            </div>
-
-            {/* Bouton Sauvegarder */}
             <button
               type="button"
-              className="btn btn-primary btn-xs"
-              disabled={isSaving}
-              onClick={handleSaveNodeEdits}
-              style={{ gap: '6px', justifyContent: 'center', marginTop: '2px' }}
+              className={`btn btn-xs ${isEditFormOpen ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => setIsEditFormOpen((prev) => !prev)}
             >
-              <Save size={12} />
-              <span>{isSaving ? tr('Enregistrement...') : tr('Enregistrer dans le Dossier')}</span>
+              <Edit3 size={11} />
+              <span>{tr('Édition Fiche Entité')}</span>
+              {isEditFormOpen ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
             </button>
           </div>
+
+          {/* 3b. Collapsible Quick Interactive Entity Editor */}
+          {isEditFormOpen && (
+            <div
+              style={{
+                padding: 'var(--space-3)',
+                backgroundColor: 'var(--color-bg-elevated)',
+                border: '1px solid var(--color-border-subtle)',
+                borderRadius: 'var(--radius-sm)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'var(--space-2)',
+              }}
+            >
+              {/* Libellé */}
+              <div>
+                <label style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px' }}>
+                  {tr("Nom / Libellé de l'entité :")}
+                </label>
+                <input
+                  type="text"
+                  value={editLabel}
+                  onChange={(e) => setEditLabel(e.target.value)}
+                  style={{
+                    width: '100%',
+                    fontSize: '12px',
+                    padding: '4px 8px',
+                    backgroundColor: 'var(--color-bg-surface)',
+                    border: '1px solid var(--color-border-default)',
+                    borderRadius: 'var(--radius-sm)',
+                    color: 'var(--color-text-primary)',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              {/* Statut Judiciaire / Procédural */}
+              <div>
+                <label style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px' }}>
+                  {tr('Statut Judiciaire / Mandat :')}
+                </label>
+                <input
+                  type="text"
+                  value={editStatus}
+                  placeholder={tr("ex: Mandat d'arrêt Interpol, Garde à vue 48h...")}
+                  onChange={(e) => setEditStatus(e.target.value)}
+                  style={{
+                    width: '100%',
+                    fontSize: '11.5px',
+                    padding: '4px 8px',
+                    backgroundColor: 'var(--color-bg-surface)',
+                    border: '1px solid var(--color-border-default)',
+                    borderRadius: 'var(--radius-sm)',
+                    color: 'var(--color-text-primary)',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              {/* Confiance Slider */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>
+                  <span>{tr('Certitude Probatoire :')}</span>
+                  <span className="font-mono">{Math.round(editConfidence * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min={0.1}
+                  max={1.0}
+                  step={0.05}
+                  value={editConfidence}
+                  onChange={(e) => setEditConfidence(Number(e.target.value))}
+                  style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--color-accent-primary)' }}
+                />
+              </div>
+
+              {/* Notes d'enquête */}
+              <div>
+                <label style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px' }}>
+                  {tr('Notes Judiciaires & Observations :')}
+                </label>
+                <textarea
+                  rows={2}
+                  value={editNotes}
+                  placeholder={tr("Observations des services d'enquête, pièces de procédure...")}
+                  onChange={(e) => setEditNotes(e.target.value)}
+                  style={{
+                    width: '100%',
+                    fontSize: '11.5px',
+                    padding: '4px 8px',
+                    backgroundColor: 'var(--color-bg-surface)',
+                    border: '1px solid var(--color-border-default)',
+                    borderRadius: 'var(--radius-sm)',
+                    color: 'var(--color-text-primary)',
+                    resize: 'vertical',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              {/* Bouton Sauvegarder */}
+              <button
+                type="button"
+                className="btn btn-primary btn-xs"
+                disabled={isSaving}
+                onClick={handleSaveNodeEdits}
+                style={{ gap: '6px', justifyContent: 'center', marginTop: '2px' }}
+              >
+                <Save size={12} />
+                <span>{isSaving ? tr('Enregistrement...') : tr('Enregistrer dans le Dossier')}</span>
+              </button>
+            </div>
+          )}
 
           {/* 4. Audio Scellé Intercept Player with Darija Wiretap (Rendered ONLY if audio evidence attached) */}
           {wiretap && (
@@ -1009,26 +1045,26 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Volume2 size={14} style={{ color: 'var(--color-accent-text)' }} />
                   <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>
-                    Scellé Audio &amp; Interception ({wiretap.id})
+                    {tr('Scellé Audio & Interception')} ({wiretap.id})
                   </span>
                 </div>
                 <span className="chip font-mono" style={{ fontSize: '10px', backgroundColor: 'rgba(16, 185, 129, 0.15)', color: 'var(--color-status-success)' }}>
-                  {wiretap.match} Concordance
+                  {wiretap.match} {tr('Concordance')}
                 </span>
               </div>
 
               {/* Interlocutors and channel */}
               <div style={{ padding: '6px 8px', backgroundColor: 'var(--color-bg-canvas)', borderRadius: 'var(--radius-sm)', display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '11px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: 'var(--color-text-muted)' }}>Locuteur :</span>
-                  <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{wiretap.speaker}</span>
+                  <span style={{ color: 'var(--color-text-muted)' }}>{tr('Locuteur :')}</span>
+                  <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{trLabel(wiretap.speaker)}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: 'var(--color-text-muted)' }}>Cible / Destinataire :</span>
-                  <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{wiretap.target}</span>
+                  <span style={{ color: 'var(--color-text-muted)' }}>{tr('Cible / Destinataire :')}</span>
+                  <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{trLabel(wiretap.target)}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: 'var(--color-text-muted)' }}>Canal d'interception :</span>
+                  <span style={{ color: 'var(--color-text-muted)' }}>{tr("Canal d'interception :")}</span>
                   <span style={{ color: 'var(--color-accent-text)', fontFamily: 'var(--font-mono)', fontSize: '10px' }}>{wiretap.channel}</span>
                 </div>
               </div>
@@ -1052,7 +1088,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     className="btn btn-primary btn-xs"
                     onClick={() => handleToggleAudio(wiretap.audioFile)}
                     style={{ width: '28px', height: '28px', padding: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-                    title={isPlayingAudio ? 'Mettre en pause' : 'Écouter l\'interception'}
+                    title={isPlayingAudio ? tr('Mettre en pause') : tr("Écouter l'interception")}
                   >
                     {isPlayingAudio ? <Pause size={13} /> : <Play size={13} />}
                   </button>
@@ -1063,7 +1099,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     className="btn btn-neutral btn-xs"
                     onClick={handleRestartAudio}
                     style={{ width: '26px', height: '26px', padding: 0, borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-                    title="Recommencer depuis le début"
+                    title={tr('Recommencer depuis le début')}
                   >
                     <RotateCcw size={12} />
                   </button>
@@ -1083,7 +1119,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                         accentColor: 'var(--color-accent-primary)',
                         height: '4px',
                       }}
-                      title="Naviguer dans la bande son"
+                      title={tr('Naviguer dans la bande son')}
                     />
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>
                       <span>{formatAudioTime(audioCurrentTime)}</span>
@@ -1097,7 +1133,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     download={wiretap.audioFile.split('/').pop()}
                     className="btn btn-neutral btn-xs"
                     style={{ padding: '2px 6px', fontSize: '10.5px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}
-                    title="Télécharger la pièce à conviction audio originale (WAV)"
+                    title={tr('Télécharger la pièce à conviction audio originale (WAV)')}
                   >
                     <Download size={11} />
                     <span>WAV</span>
@@ -1125,7 +1161,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                           cursor: 'pointer',
                           transition: 'height 0.1s ease, background-color 0.15s ease',
                         }}
-                        title={`Sauter à ${formatAudioTime((i / totalBars) * (audioDuration || 35))}`}
+                        title={`${formatAudioTime((i / totalBars) * (audioDuration || 35))}`}
                       />
                     );
                   })}
@@ -1136,7 +1172,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               <div style={{ padding: '8px', backgroundColor: 'rgba(15, 23, 42, 0.6)', borderRadius: 'var(--radius-sm)', borderLeft: '3px solid var(--color-accent-primary)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                   <div style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--color-accent-text)' }}>
-                    Transcription Originale (Darija algéroise) :
+                    {tr('Transcription Originale (Darija algéroise) :')}
                   </div>
                   <button
                     type="button"
@@ -1148,7 +1184,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       setTimeout(() => setCopiedDarija(false), 2000);
                       toast.info(tr('Transcription Darija copiée'));
                     }}
-                    title="Copier la transcription"
+                    title={tr('Copier')}
                   >
                     {copiedDarija ? <Check size={10} style={{ color: 'var(--color-status-success)' }} /> : <Copy size={10} />}
                     <span>{copiedDarija ? tr('Copié') : tr('Copier')}</span>
@@ -1160,10 +1196,10 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               </div>
 
               {/* French Judicial Translation with Copy */}
-              <div style={{ padding: '8px', backgroundColor: 'var(--color-bg-base)', borderRadius: 'var(--radius-sm)' }}>
+              <div style={{ padding: '8px', backgroundColor: 'var(--color-bg-surface)', borderRadius: 'var(--radius-sm)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                   <div style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--color-text-muted)' }}>
-                    Traduction Judiciaire Assermentée (OPJ) :
+                    {tr('Traduction Judiciaire Assermentée (OPJ) :')}
                   </div>
                   <button
                     type="button"
@@ -1175,7 +1211,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       setTimeout(() => setCopiedFrench(false), 2000);
                       toast.info(tr('Traduction assermentée copiée'));
                     }}
-                    title="Copier la traduction"
+                    title={tr('Copier')}
                   >
                     {copiedFrench ? <Check size={10} style={{ color: 'var(--color-status-success)' }} /> : <Copy size={10} />}
                     <span>{copiedFrench ? tr('Copié') : tr('Copier')}</span>
@@ -1214,55 +1250,59 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <GitBranch size={13} style={{ color: 'var(--color-accent-text)' }} />
                 <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>
-                  Liaisons Directes ({incidentEdges.length})
+                  {tr('Liaisons Directes ({n})', { n: incidentEdges.length })}
                 </span>
               </div>
               <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
-                Cliquer pour inspecter
+                {tr('Cliquer pour inspecter')}
               </span>
             </div>
 
             {incidentEdges.length === 0 ? (
               <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', textAlign: 'center', padding: 'var(--space-2)' }}>
-                Aucune liaison directe incidente.
+                {tr('Aucune liaison directe incidente.')}
               </div>
             ) : (
               <div style={{ maxHeight: '150px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                {incidentEdges.map(({ edge, direction, neighborId, neighbor }) => (
-                  <button
-                    key={edge.id}
-                    type="button"
-                    onClick={() => selectNode(neighborId)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '4px 6px',
-                      backgroundColor: 'var(--color-bg-canvas)',
-                      border: '1px solid var(--color-border-subtle)',
-                      borderRadius: 'var(--radius-sm)',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      fontSize: '11px',
-                    }}
-                    title={`Inspecter ${neighbor?.label || neighborId}`}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
-                      {direction === 'out' ? (
-                        <ArrowUpRight size={12} style={{ color: 'var(--color-accent-text)', flexShrink: 0 }} />
-                      ) : (
-                        <ArrowDownLeft size={12} style={{ color: 'var(--color-status-success)', flexShrink: 0 }} />
-                      )}
-                      <span style={{ fontWeight: 600, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {neighbor?.label || neighborId}
-                      </span>
-                    </div>
+                {incidentEdges.map(({ edge, direction, neighborId, neighbor }) => {
+                  const neighborDisplay = neighbor?.label ? trLabel(neighbor.label) : tr('Entité');
+                  return (
+                    <button
+                      key={edge.id}
+                      type="button"
+                      onClick={() => selectNode(neighborId)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '6px',
+                        padding: '4px 6px',
+                        backgroundColor: 'var(--color-bg-canvas)',
+                        border: '1px solid var(--color-border-subtle)',
+                        borderRadius: 'var(--radius-sm)',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        fontSize: '11px',
+                      }}
+                      title={tr('Inspecter {label}', { label: neighborDisplay })}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden', minWidth: 0 }}>
+                        {direction === 'out' ? (
+                          <ArrowUpRight size={12} style={{ color: 'var(--color-accent-text)', flexShrink: 0 }} />
+                        ) : (
+                          <ArrowDownLeft size={12} style={{ color: 'var(--color-status-success)', flexShrink: 0 }} />
+                        )}
+                        <span style={{ fontWeight: 600, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {neighborDisplay}
+                        </span>
+                      </div>
 
-                    <span className="chip chip-neutral font-mono" style={{ fontSize: '9.5px', padding: '1px 4px' }}>
-                      {edge.type}
-                    </span>
-                  </button>
-                ))}
+                      <span className="chip chip-neutral" style={{ fontSize: '9.5px', padding: '1px 5px', flexShrink: 0 }}>
+                        {getRelationLabel(edge.type, locale)}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -1301,7 +1341,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               type="button"
               className="btn btn-ghost btn-xs"
               onClick={() => handleCopyHash(dummyHash)}
-              title={tr('Copier l\'empreinte SHA-256')}
+              title={tr("Copier l'empreinte SHA-256")}
             >
               {copiedHash ? <Check size={13} style={{ color: 'var(--color-status-success)' }} /> : <Copy size={13} />}
             </button>
@@ -1323,45 +1363,111 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             )}
           </div>
 
-          {/* 8. Specific Metadata Attributes Table */}
-          {selectedNode.properties && Object.keys(selectedNode.properties).length > 0 && (
-            <div>
-              <div style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: 'var(--space-1)', textTransform: 'uppercase' }}>
-                {tr('Métadonnées Spécifiques')}
+          {/* 8. Specific Metadata Attributes Table (Filtered & Localized) */}
+          {(() => {
+            const HIDDEN_PROP_KEYS = new Set([
+              'raw_id',
+              'raw_type',
+              'icon',
+              'subtitle',
+              'photo_url',
+              'photo',
+              'image_url',
+              'audio_url',
+              'audioFile',
+              'audio',
+              'transcript_darija',
+              'transcript_french',
+              'intercept_speaker',
+              'intercept_target',
+              'intercept_channel',
+              'hash_sha256',
+              'sha256',
+              'voiceprint_match',
+              'audio_duration',
+              'sna_role',
+              'sna_score',
+            ]);
+            const PROP_KEY_LABELS: Record<string, string> = {
+              wilaya: tr('Wilaya'),
+              daira: tr('Daïra'),
+              commune: tr('Commune'),
+              commune_activity: tr("Commune d'activité"),
+              daira_activity: tr("Daïra d'activité"),
+              wilaya_activity: tr("Wilaya d'activité"),
+              role: tr('Rôle opérationnel'),
+              role_judiciaire: tr('Rôle judiciaire'),
+              status_judiciaire: tr('Statut judiciaire'),
+              implication_level: tr("Niveau d'implication"),
+              betweenness_centrality: tr('Centralité (Betweenness)'),
+              rip: tr('Compte RIP / CCP'),
+              cell: tr('Cellule'),
+              turnover: tr("Flux estimé (DZD)"),
+              volume_monthly: tr('Volume mensuel'),
+              total_damage: tr('Préjudice total (DZD)'),
+              status: tr('Statut'),
+              used_by: tr('Utilisé par'),
+              voice_match: tr('Concordance vocale'),
+              notes: tr('Notes'),
+              source_title: tr("Source de l'indice"),
+            };
+            const visibleEntries = Object.entries(selectedNode.properties || {}).filter(
+              ([k, v]) => !HIDDEN_PROP_KEYS.has(k) && v !== null && v !== undefined && String(v).trim() !== ''
+            );
+            if (visibleEntries.length === 0) return null;
+
+            return (
+              <div>
+                <div style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: 'var(--space-1)', textTransform: 'uppercase' }}>
+                  {tr('Métadonnées Spécifiques')}
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
+                    backgroundColor: 'var(--color-bg-elevated)',
+                    padding: 'var(--space-2) var(--space-3)',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--color-border-subtle)',
+                    maxHeight: '150px',
+                    overflowY: 'auto',
+                  }}
+                >
+                  {visibleEntries.map(([k, v]) => {
+                    const displayKey = PROP_KEY_LABELS[k] || k.replace(/_/g, ' ');
+                    const displayVal =
+                      typeof v === 'number'
+                        ? k === 'voice_match' && v <= 1
+                          ? `${Math.round(v * 100)}%`
+                          : v.toLocaleString()
+                        : typeof v === 'object'
+                        ? JSON.stringify(v)
+                        : trLabel(String(v));
+                    return (
+                      <div
+                        key={k}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          gap: 'var(--space-2)',
+                          fontSize: 'var(--text-xs)',
+                          borderBottom: '1px solid var(--color-border-subtle)',
+                          paddingBottom: '3px',
+                        }}
+                      >
+                        <span style={{ color: 'var(--color-text-muted)' }}>{displayKey}</span>
+                        <span style={{ color: 'var(--color-text-primary)', fontWeight: 600, textAlign: 'right' }}>
+                          {displayVal}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '4px',
-                  backgroundColor: 'var(--color-bg-elevated)',
-                  padding: 'var(--space-2)',
-                  borderRadius: 'var(--radius-sm)',
-                  border: '1px solid var(--color-border-subtle)',
-                  maxHeight: '140px',
-                  overflowY: 'auto',
-                }}
-              >
-                {Object.entries(selectedNode.properties).map(([k, v]) => (
-                  <div
-                    key={k}
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      fontSize: 'var(--text-xs)',
-                      borderBottom: '1px solid var(--color-border-subtle)',
-                      paddingBottom: '2px',
-                    }}
-                  >
-                    <span style={{ color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>{k}</span>
-                    <span style={{ color: 'var(--color-text-primary)', fontWeight: 500 }}>
-                      {typeof v === 'object' ? JSON.stringify(v) : String(v)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* 9. Core Procedural Action Buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
@@ -1523,8 +1629,8 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             <GitBranch size={16} style={{ color: layerDef?.color }} />
             <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600 }}>
               {isMediated
-                ? (selectedEdge.properties?.summary_label as string) || tr('Relation Médiée')
-                : label(relTypeDef, selectedEdge.type)}
+                ? trLabel((selectedEdge.properties?.summary_label as string) || tr('Relation Médiée'))
+                : getRelationLabel(selectedEdge.type, locale) || label(relTypeDef, selectedEdge.type)}
             </span>
           </div>
           <button
@@ -1566,7 +1672,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 className="btn btn-ghost btn-xs"
                 onClick={() => sourceNode && selectNode(sourceNode.id, false)}
               >
-                <span style={{ fontWeight: 600 }}>{sourceNode?.label || selectedEdge.source_id}</span>
+                <span style={{ fontWeight: 600 }}>{sourceNode ? trLabel(sourceNode.label) : tr('Entité')}</span>
               </button>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1576,7 +1682,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 className="btn btn-ghost btn-xs"
                 onClick={() => targetNode && selectNode(targetNode.id, false)}
               >
-                <span style={{ fontWeight: 600 }}>{targetNode?.label || selectedEdge.target_id}</span>
+                <span style={{ fontWeight: 600 }}>{targetNode ? trLabel(targetNode.label) : tr('Entité')}</span>
               </button>
             </div>
           </div>
@@ -1616,7 +1722,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <NodeIcon name={tDef?.icon || 'help-circle'} size={13} />
-                        <span style={{ fontWeight: 600 }}>{inNode.label}</span>
+                        <span style={{ fontWeight: 600 }}>{trLabel(inNode.label)}</span>
                       </div>
                       <span className="chip chip-neutral font-mono text-xs">
                         {label(tDef, inNode.type)}

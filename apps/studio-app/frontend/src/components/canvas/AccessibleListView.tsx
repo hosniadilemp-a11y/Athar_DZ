@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useGraphStore } from '../../store/useGraphStore';
 import { useI18n } from '../../context/I18nContext';
+import { getRelationLabel } from '../../i18n/phrases/relations';
 import { NodeIcon } from './NodeIcon';
 import registryDataRaw from '../../registry/registry.json';
 import type { RegistryData } from '../../types/registry';
@@ -9,7 +10,7 @@ const registry = registryDataRaw as unknown as RegistryData;
 
 export const AccessibleListView: React.FC = () => {
   const { nodes, edges, selectedNodeId, selectNode, openContextMenu } = useGraphStore();
-  const { tr, label, dir } = useI18n();
+  const { tr, trLabel, label, dir, locale } = useI18n();
   const [activeTab, setActiveTab] = useState<'nodes' | 'edges'>('nodes');
 
   const tableStyle: React.CSSProperties = {
@@ -105,7 +106,7 @@ export const AccessibleListView: React.FC = () => {
                       <NodeIcon name={typeDef?.icon || 'help-circle'} size={16} />
                       <span>{label(typeDef, node.type)}</span>
                     </td>
-                    <td style={{ padding: 'var(--space-2)', fontWeight: 600 }}>{node.label}</td>
+                    <td style={{ padding: 'var(--space-2)', fontWeight: 600 }}>{trLabel(node.label)}</td>
                     <td style={{ padding: 'var(--space-2)' }}>
                       <span
                         style={{
@@ -127,7 +128,7 @@ export const AccessibleListView: React.FC = () => {
                     <td style={{ padding: 'var(--space-2)' }}>
                       <button
                         type="button"
-                        aria-label={tr('Inspecter {label}', { label: node.label })}
+                        aria-label={tr('Inspecter {label}', { label: trLabel(node.label) })}
                         onClick={(e) => {
                           e.stopPropagation();
                           openContextMenu(e.clientX || 200, e.clientY || 200, node.id);
@@ -172,11 +173,11 @@ export const AccessibleListView: React.FC = () => {
                 const layerDef = registry.layers[edge.layer];
                 return (
                   <tr key={edge.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
-                    <td style={{ padding: 'var(--space-2)', fontFamily: 'var(--font-mono)' }}>
-                      {label(relDef, edge.type)}
+                    <td style={{ padding: 'var(--space-2)' }}>
+                      {getRelationLabel(edge.type, locale) || label(relDef, edge.type)}
                     </td>
-                    <td style={{ padding: 'var(--space-2)' }}>{srcNode?.label || edge.source_id}</td>
-                    <td style={{ padding: 'var(--space-2)' }}>{tgtNode?.label || edge.target_id}</td>
+                    <td style={{ padding: 'var(--space-2)' }}>{srcNode ? trLabel(srcNode.label) : edge.source_id}</td>
+                    <td style={{ padding: 'var(--space-2)' }}>{tgtNode ? trLabel(tgtNode.label) : edge.target_id}</td>
                     <td style={{ padding: 'var(--space-2)' }}>{label(layerDef, edge.layer)}</td>
                   </tr>
                 );

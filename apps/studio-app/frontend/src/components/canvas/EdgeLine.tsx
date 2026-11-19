@@ -33,6 +33,9 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
   const [isHovered, setIsHovered] = useState(false);
   const graphCustomization = useGraphStore((s) => s.graphCustomization);
   const selectedNodeId = useGraphStore((s) => s.selectedNodeId);
+  const edgeLabelMode = useGraphStore((s) => s.edgeLabelMode);
+  const edgeLabelConnectedNodeTypes = useGraphStore((s) => s.edgeLabelConnectedNodeTypes);
+  const expandMediatedEdgeNodes = useGraphStore((s) => s.expandMediatedEdgeNodes);
   const { locale } = useI18n();
 
   if (!sourceNode || !targetNode) return null;
@@ -46,12 +49,28 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
   const dist = Math.sqrt(dx * dx + dy * dy);
   if (dist === 0) return null;
 
-  // Dynamically adapt arrow endpoint to actual node radius
+  // Match actual rendered node diameter from CircularNode.tsx
   const baseNodeSize = graphCustomization?.nodeSize || 64;
-  const srcBaseRadius = (sourceNode.radius && sourceNode.radius !== 28 ? sourceNode.radius : baseNodeSize / 2);
-  const tgtBaseRadius = (targetNode.radius && targetNode.radius !== 28 ? targetNode.radius : baseNodeSize / 2);
-  const rSrc = srcBaseRadius + 2;
-  const rTgt = tgtBaseRadius + 4;
+  let adaptiveMultiplier = 1.0;
+  if (zoom !== undefined) {
+    if (zoom < 0.5) adaptiveMultiplier = 0.85;
+    else if (zoom > 1.3) adaptiveMultiplier = 1.05;
+  }
+
+  const srcSize =
+    selectedNodeId === sourceNode.id || sourceNode.radius === 34
+      ? Math.round(baseNodeSize * 1.15 * adaptiveMultiplier)
+      : Math.round(baseNodeSize * adaptiveMultiplier);
+  const tgtSize =
+    selectedNodeId === targetNode.id || targetNode.radius === 34
+      ? Math.round(baseNodeSize * 1.15 * adaptiveMultiplier)
+      : Math.round(baseNodeSize * adaptiveMultiplier);
+
+  const rSrc = srcSize / 2 + 3;
+  const rTgt = tgtSize / 2 + 5;
+
+  // If nodes are too close, avoid inverting the segment
+  if (dist <= rSrc + rTgt + 4) return null;
 
   const startX = x1 + (dx * rSrc) / dist;
   const startY = y1 + (dy * rSrc) / dist;
@@ -63,33 +82,28 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
 
   const color = LAYER_EDGE_COLORS[edge.layer] || 'var(--color-border-default)';
   const isHypothesis = edge.layer === 'HYPOTHESIS';
-
-  // Feature 7 & Customization: Dynamic thickness by confidence and user slider
-  const conf = typeof edge.confidence === 'number' ? edge.confidence : 0.85;
-  const userThicknessMultiplier = (graphCustomization?.edgeThickness || 2) / 2;
-  const baseThickness = Math.max(1.5, Math.min(4.5, conf * 3.5)) * userThicknessMultiplier;
-  const edgeLabelMode = useGraphStore((s) => s.edgeLabelMode);
-  const edgeLabelConnectedNodeTypes = useGraphStore((s) => s.edgeLabelConnectedNodeTypes);
-  const expandMediatedEdgeNodes = useGraphStore((s) => s.expandMediatedEdgeNodes);
-
   const isMediated = Boolean(edge.properties?.is_mediated);
   const mediatedCount = (edge.properties?.mediated_count as number) || 0;
   const intermediateNodeIds = (edge.properties?.intermediate_node_ids as string[]) || [];
   const confidentialityLevel = (edge.properties?.confidentiality_level as string) || '';
 
-  // Link to specific node types if chosen by user (e.g. user selected 'personne'):
+  // Clean, sleek edge stroke width that never overpowers nodes
+  const conf = typeof edge.confidence === 'number' ? edge.confidence : 0.85;
+  const userThicknessMultiplier = (graphCustomization?.edgeThickness || 2) / 2;
+  const baseThickness = Math.max(1.1, Math.min(2.0, 0.9 + conf * 0.9)) * userThicknessMultiplier;
+
   const isConnectedToMonitoredType = Boolean(
     (sourceNode && edgeLabelConnectedNodeTypes?.has(sourceNode.type)) ||
     (targetNode && edgeLabelConnectedNodeTypes?.has(targetNode.type))
   );
 
-  const isEndpointSelected = Boolean(selectedNodeId && (selectedNodeId === edge.source_id || selectedNodeId === edge.target_id));
+  const isEndpointSelected = Boolean(
+    selectedNodeId && (selectedNodeId === edge.source_id || selectedNodeId === edge.target_id)
+  );
   const finalStrokeWidth = isSelected
-    ? baseThickness + 1.8
+    ? baseThickness + 0.9
     : isHovered || isEndpointSelected
-    ? baseThickness + 1.0
-    : isMediated
-    ? baseThickness + 0.6
+    ? baseThickness + 0.5
     : baseThickness;
 
   const isFarZoom = zoom !== undefined && zoom < 0.65;
@@ -100,16 +114,14 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
   } else if (edgeLabelMode === 'none') {
     showLabels = isHovered || isSelected;
   } else {
-    // default 'hover' (or mediated counter pill on hover/select)
     showLabels = isHovered || isSelected || isConnectedToMonitoredType;
   }
 
   const labelFontSize = graphCustomization?.edgeLabelSize || 11;
   const confPercent = Math.round(conf * 100);
 
-  // Human-readable relation name in active language
   const baseLabel = isMediated
-    ? ((edge.properties?.summary_label as string) || `Lien médié (+${mediatedCount})`)
+    ? ((edge.properties?.summary_label as string) || `Via (+${mediatedCount})`)
     : getRelationLabel(edge.type, locale);
 
   const confShortTag =
@@ -121,8 +133,8 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
 
   const labelText =
     isHovered || isSelected ? `${baseLabel} · ${confPercent}%${confShortTag}` : baseLabel;
-  const badgeWidth = Math.max(78, labelText.length * (labelFontSize * 0.66) + 20);
-  const badgeHeight = Math.max(20, labelFontSize + 8);
+  const badgeWidth = Math.max(72, labelText.length * (labelFontSize * 0.65) + 16);
+  const badgeHeight = Math.max(19, labelFontSize + 7);
 
   return (
     <g
@@ -140,69 +152,34 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
       onMouseLeave={() => setIsHovered(false)}
       style={{ cursor: 'pointer', pointerEvents: 'auto' }}
     >
-      {/* Invisible wider hit area for easy hover/selection */}
+      {/* Invisible hit area for easy hover/selection */}
       <line
         x1={startX}
         y1={startY}
         x2={endX}
         y2={endY}
         stroke="transparent"
-        strokeWidth={Math.max(22, finalStrokeWidth * 3.5)}
+        strokeWidth={16}
         style={{ pointerEvents: 'stroke' }}
       />
 
-      {/* Visual Line */}
+      {/* Sleek Visual Line with fixed userSpaceOnUse arrowhead */}
       <line
         x1={startX}
         y1={startY}
         x2={endX}
         y2={endY}
-        stroke={isSelected ? 'var(--color-accent-primary)' : isHovered ? 'var(--color-accent-subtle)' : color}
+        stroke={isSelected ? 'var(--color-accent-primary)' : isHovered ? 'var(--color-accent-text)' : color}
         strokeWidth={finalStrokeWidth}
-        strokeDasharray={isMediated ? '8,4' : isHypothesis ? '4,4' : undefined}
-        strokeOpacity={isSelected ? 1.0 : isHovered ? 0.95 : 0.72}
+        strokeDasharray={isHypothesis ? '3,3' : undefined}
+        strokeOpacity={isSelected ? 0.95 : isHovered ? 0.85 : 0.55}
         markerEnd={`url(#arrow-${edge.layer})`}
         style={{
           transition: 'stroke-width 0.15s ease, stroke 0.15s ease, stroke-opacity 0.15s ease',
         }}
       />
 
-      {/* Compact Mediated Counter Dot when not hovered so user sees indirect connection count */}
-      {isMediated && !showLabels && (
-        <g
-          transform={`translate(${midX}, ${midY})`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelect(edge.id);
-          }}
-        >
-          <rect
-            x={-16}
-            y={-9}
-            width={32}
-            height={18}
-            rx={9}
-            ry={9}
-            fill="var(--color-bg-elevated)"
-            stroke={color}
-            strokeWidth={1.2}
-          />
-          <text
-            x={0}
-            y={3.5}
-            textAnchor="middle"
-            fontSize="10px"
-            fontFamily="var(--font-mono)"
-            fill="var(--color-text-primary)"
-            fontWeight={700}
-            style={{ userSelect: 'none' }}
-          >
-            +{mediatedCount}
-          </text>
-        </g>
-      )}
-
-      {/* Feature 7 & Customization: Edge Label Badge with Light-Mode Fix */}
+      {/* Edge Label Badge on Hover / Selection */}
       {showLabels && (
         <g transform={`translate(${midX}, ${midY})`} style={{ pointerEvents: 'none' }}>
           <rect
@@ -213,11 +190,8 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
             rx={4}
             ry={4}
             fill="var(--color-bg-elevated)"
-            stroke={isSelected ? 'var(--color-accent-primary)' : isHovered ? 'var(--color-border-hover)' : 'var(--color-border-default)'}
-            strokeWidth={isSelected || isHovered ? 1.4 : 0.8}
-            style={{
-              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))',
-            }}
+            stroke={isSelected ? 'var(--color-accent-primary)' : 'var(--color-border-default)'}
+            strokeWidth={isSelected || isHovered ? 1.2 : 0.8}
           />
           <text
             x={0}
@@ -225,7 +199,7 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
             textAnchor="middle"
             fontSize={`${labelFontSize}px`}
             fontFamily="var(--font-mono)"
-            fill={isSelected ? 'var(--color-accent-text)' : isHovered ? 'var(--color-text-primary)' : 'var(--color-text-primary)'}
+            fill={isSelected ? 'var(--color-accent-text)' : 'var(--color-text-primary)'}
             fontWeight={isSelected || isHovered ? 600 : 500}
             style={{ userSelect: 'none' }}
           >

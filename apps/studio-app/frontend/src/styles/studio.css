@@ -71,6 +71,7 @@ body,
 
 .font-mono {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .text-xs { font-size: var(--text-xs); }
@@ -1172,10 +1173,10 @@ body,
   display: flex;
   align-items: center;
   gap: 3px;
-  background-color: var(--color-bg-base);
+  background-color: var(--color-bg-elevated);
   padding: 3px;
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid var(--color-border-default);
   flex-shrink: 0;
 }
 
@@ -1190,23 +1191,25 @@ body,
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   min-height: 28px;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   user-select: none;
+  font-variant-numeric: tabular-nums;
 }
 
-.canvas-segmented-btn:hover {
+.canvas-segmented-btn:hover:not(.active) {
   color: var(--color-text-primary);
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--color-bg-subtle);
 }
 
 .canvas-segmented-btn.active {
-  background-color: var(--color-bg-elevated);
-  border-color: var(--color-border-default);
-  color: var(--color-text-primary);
+  background-color: var(--color-accent-primary);
+  border-color: var(--color-accent-primary);
+  color: var(--color-text-on-accent);
   font-weight: var(--font-weight-semibold);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--shadow-xs);
 }
 
 /* Inline Graph Layouts Switcher Bar in Toolbar */
@@ -1927,6 +1930,8 @@ body,
 .graph-live-sim-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  min-width: 152px;
   gap: 6px;
   font-weight: var(--font-weight-medium);
   border: 1px solid var(--color-border-subtle);
@@ -1935,7 +1940,7 @@ body,
   border-radius: var(--radius-sm);
   padding: 3px 8px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   white-space: nowrap;
 }
 

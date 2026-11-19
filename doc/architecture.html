@@ -2153,37 +2153,37 @@
     </div>
 
     <!-- ====================================================================
-         CLEAN ARCHITECTURE (4 CERCLES CONCENTRIQUES) & SOURCES OSN / STREAMING
+         SOURCES OSN / RSS / STREAMING & STRATÉGIE DE DATA FUSION MULTI-SOURCES
          ==================================================================== -->
     <section style="margin-top:2.5rem;">
-      <h2 class="section-title">7. Architecture Logique : Patron Clean Architecture (4 Cercles — Ports &amp; Adapters) &amp; Collecte Multi-Plateformes</h2>
+      <h2 class="section-title">7. Collecte Multi-Plateformes (OSN, RSS, Streaming) &amp; Stratégie de Data Fusion d'Attributs Hétérogènes</h2>
       <p class="section-subtitle">
-        Isolation stricte du domaine forensique ISO 27037 par inversion de dépendance (Ports &amp; Adapters) et couverture exhaustive des sources OSN, Flux RSS et plateformes de Streaming en continu.
+        Couverture des sources ouvertes et flux continus (Chapitre 10 de <code>doc/SPECIFICATION.md</code>) et méthodologie générale de résolution des différences d'étiquetage entre sources lors de l'ingestion.
       </p>
 
-      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:1rem;margin-bottom:1.5rem;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;margin-bottom:1.5rem;">
         <div class="card" style="border-left:4px solid #10b981;">
-          <h3 style="font-size:0.95rem;color:#10b981;margin-bottom:0.4rem;">1. Cercle 1 — Enterprise Domain (<code>domain/</code>)</h3>
+          <h3 style="font-size:0.95rem;color:#10b981;margin-bottom:0.4rem;">1. Registre Déclaratif d'Alias (Schema Mapping)</h3>
           <p style="font-size:0.81rem;color:var(--text-secondary);line-height:1.5;">
-            Noyau pur sans aucune dépendance externe : Registre canonique des <strong>37 types de nœuds</strong> et <strong>47 relations</strong>, dictionnaire de <strong>Data Fusion des attributs</strong>, règles d'immuabilité probatoire ISO 27037 et interfaces abstraites (<code>GraphRepositoryPort</code>, <code>AuditLedgerPort</code>, <code>SearchEnginePort</code>).
+            Chaque connecteur projette les noms de champs spécifiques à une source vers l'attribut canonique GFPG (par exemple : <code>num</code>, <code>tele</code>, <code>tel</code>, <code>phone</code>, <code>phone_number</code>, <code>msisdn</code> &rarr; <code>numero_e164</code>).
           </p>
         </div>
         <div class="card" style="border-left:4px solid #38bdf8;">
-          <h3 style="font-size:0.95rem;color:#38bdf8;margin-bottom:0.4rem;">2. Cercle 2 — Application Use Cases (<code>services/</code>)</h3>
+          <h3 style="font-size:0.95rem;color:#38bdf8;margin-bottom:0.4rem;">2. Inférence Heuristique &amp; Signature de Format</h3>
           <p style="font-size:0.81rem;color:var(--text-secondary);line-height:1.5;">
-            Cas d'usage métier orchestrant les règles d'investigation : <code>ProjectPersonNetworkUseCase</code> (vue centrée Personnes &amp; liens médiés), <code>FuseMultiSourceEntityUseCase</code>, <code>PromoteToVerifiedUseCase</code>, et les <strong>16 algorithmes SNA purs</strong> (<code>services/sna/</code>).
+            Pour les sources au schéma inconnu ou non répertorié, détection automatique du type d'attribut par combinaison de la similarité lexicale du nom de colonne et de l'empreinte structurelle de la valeur (E.164, RIP 20 chiffres, SHA-256, ISO 8601).
           </p>
         </div>
         <div class="card" style="border-left:4px solid #a855f7;">
-          <h3 style="font-size:0.95rem;color:#a855f7;margin-bottom:0.4rem;">3. Cercle 3 — Interface Adapters (<code>api/v1/</code>, <code>schemas/</code>)</h3>
+          <h3 style="font-size:0.95rem;color:#a855f7;margin-bottom:0.4rem;">3. Canonisation &amp; Appariement Elasticsearch 8.14</h3>
           <p style="font-size:0.81rem;color:var(--text-secondary);line-height:1.5;">
-            Routeurs HTTP FastAPI, schémas Pydantic v2 avec <code>AliasChoices</code> pour l'harmonisation automatique des noms d'attributs (<code>num/tele/phone/phone_number &rarr; numero_e164</code>), et adaptateur Frontend <code>GraphCanvasAdapter</code>.
+            Normalisation des valeurs (E.164, UTC, translittération Latin &harr; Arabe <code>NFKC</code>) suivie d'un scoring hybride dans Elasticsearch 8.14 (clés dures exactes + requêtes <code>fuzzy</code> Levenshtein et phonétiques soumises en <em>Review-Run</em>).
           </p>
         </div>
         <div class="card" style="border-left:4px solid #f43f5e;">
-          <h3 style="font-size:0.95rem;color:#f43f5e;margin-bottom:0.4rem;">4. Cercle 4 — Frameworks &amp; Drivers (<code>db/</code>, <code>core/</code>)</h3>
+          <h3 style="font-size:0.95rem;color:#f43f5e;margin-bottom:0.4rem;">4. Préservation du Lignage Brut (ISO 27037)</h3>
           <p style="font-size:0.81rem;color:var(--text-secondary);line-height:1.5;">
-            Implémentations concrètes des Ports : <code>Neo4jGraphAdapter</code> (Bolt), <code>PostgresAuditAdapter</code> (SQLAlchemy 2.0 + TimescaleDB/PostGIS), <code>ElasticsearchSearchAdapter</code> (REST 9200 BM25) et <code>RedisCacheAdapter</code>.
+            Les attributs bruts d'origine avec leurs noms natifs sont intégralement conservés dans <code>raw_source_attributes</code> (type <code>flattened</code> Elasticsearch) pour garantir la traçabilité probatoire sans perte.
           </p>
         </div>
       </div>

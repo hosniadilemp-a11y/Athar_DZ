@@ -10,6 +10,7 @@ import {
   ONTOLOGY_CATEGORY_COLORS,
   NODE_TYPE_TO_CATEGORY,
 } from '../../store/useGraphStore';
+import { useI18n } from '../../context/I18nContext';
 
 const registry = registryDataRaw as unknown as RegistryData;
 
@@ -79,9 +80,11 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
   onContextMenu,
   onDragStart,
 }) => {
+  const { trLabel } = useI18n();
   const typeDef = registry.node_types[node.type];
   const iconName = typeDef?.icon || 'help-circle';
   const layerDef = registry.layers[node.layer];
+  const localizedNodeLabel = trLabel(node.label);
 
   // Hover state for LOD override
   const [isHovered, setIsHovered] = useState(false);
@@ -177,15 +180,15 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
 
   let showLabel = false;
   if (isExplicitlyForcedHidden) {
-    showLabel = isHovered;
-  } else if (isHovered || isSelected || isExplicitlyForcedVisible) {
+    showLabel = false;
+  } else if (isExplicitlyForcedVisible) {
     showLabel = true;
   } else if (labelDensityMode === 'all') {
     showLabel = !isExtremeZoom;
   } else if (labelDensityMode === 'none') {
     showLabel = false;
   } else {
-    // Strictly obeys the user's node label selection in Visibilité & Étiquettes
+    // Strictly obeys the user's node label selection in Visibilité & Étiquettes (fixed, no hover pop-in)
     showLabel = Boolean(isTypeVisible);
   }
 
@@ -215,17 +218,11 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
         top: `${(node.y ?? 0) - halfSize}px`,
         width: `${size}px`,
         height: `${size}px`,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
         cursor: isDragging ? 'grabbing' : 'grab',
         userSelect: 'none',
-        // Feature 5: Smooth Layout transitions when not dragging
         transition: isDragging
           ? 'none'
           : 'left 0.45s cubic-bezier(0.16, 1, 0.3, 1), top 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
-        // Elevate hovered node above all other nodes and edges
         zIndex: isHovered ? 60 : isDragging ? 50 : isSelected ? 30 : 10,
       }}
       onClick={(e) => {
@@ -417,6 +414,7 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
                 ? `Déplier ${hiddenNeighborsCount} entités liées`
                 : `Replier ${expandedNeighborsCount} entités liées`
             }
+            onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
               toggleExpandNodeConnections(node.id);
@@ -474,6 +472,7 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
             color: 'var(--color-text-muted)',
             zIndex: 4,
           }}
+          onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();
             onContextMenu(e, node.id);
@@ -483,43 +482,15 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
         </button>
       </div>
 
-      {/* Feature 10: Enquêteur Mode Procedural Status Pill */}
-      {investigationMode === 'investigator' && statusJudiciaire && (
-        <div
-          style={{
-            marginTop: '4px',
-            fontSize: '9.5px',
-            fontWeight: 700,
-            letterSpacing: '0.3px',
-            textTransform: 'uppercase',
-            color: '#ffffff',
-            backgroundColor: statusJudiciaire.toLowerCase().includes('mandat')
-              ? '#dc2626'
-              : statusJudiciaire.toLowerCase().includes('examen')
-              ? '#ea580c'
-              : statusJudiciaire.toLowerCase().includes('garde')
-              ? '#d97706'
-              : 'var(--color-accent-primary)',
-            padding: '1px 6px',
-            borderRadius: 'var(--radius-full)',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-            whiteSpace: 'nowrap',
-            maxWidth: '140px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
-          {statusJudiciaire}
-        </div>
-      )}
-
-      {/* Feature 2: Node Label or Inline Rename Input with LOD zoom adaptation */}
+      {/* Fixed Label Below Circle (Positioned absolutely so circle never moves on hover) */}
       {showLabel && (
         isEditing ? (
           <div
             style={{
-              marginTop: '4px',
-              position: 'relative',
+              position: 'absolute',
+              top: `${size + 5}px`,
+              left: '50%',
+              transform: 'translateX(-50%)',
               zIndex: 30,
             }}
             onClick={(e) => e.stopPropagation()}
@@ -549,54 +520,43 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
                 border: '1px solid var(--color-accent-primary)',
                 borderRadius: 'var(--radius-sm)',
                 outline: 'none',
-                width: '140px',
+                width: '130px',
                 textAlign: 'center',
-                boxShadow: '0 0 8px rgba(37, 99, 235, 0.5)',
+                boxShadow: 'var(--shadow-sm)',
               }}
               aria-label="Modifier le libellé du nœud"
             />
           </div>
         ) : (
           <div
-            title={`${node.label} (Double-cliquer pour renommer)`}
+            title={localizedNodeLabel}
             style={{
-              marginTop: '4px',
-              fontSize: isHovered ? `${Math.max(11.5, labelSize)}px` : isFarZoom ? '9.5px' : '10.5px',
-              lineHeight: '1.25',
+              position: 'absolute',
+              top: `${size + 5}px`,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              fontSize: isFarZoom ? '9.5px' : '10.5px',
+              lineHeight: '1.2',
               fontFamily: 'var(--font-sans)',
               color: isSelected ? 'var(--color-accent-text)' : 'var(--color-text-primary)',
-              fontWeight: isSelected || isKeyTarget || isPerson ? 700 : 500,
+              fontWeight: isSelected || isKeyTarget || isPerson ? 600 : 500,
               textAlign: 'center',
-              maxWidth: isHovered ? '280px' : isSelected ? '180px' : isFarZoom ? '75px' : '95px',
-              whiteSpace: isHovered ? 'normal' : 'nowrap',
-              overflow: isHovered ? 'visible' : 'hidden',
-              textOverflow: isHovered ? 'clip' : 'ellipsis',
-              pointerEvents: 'auto',
-              backgroundColor: 'var(--color-bg-elevated, #182234)',
-              padding: isHovered ? '4px 10px' : '1.5px 7px',
-              borderRadius: isHovered ? 'var(--radius-sm)' : '10px',
-              border: isHovered
+              maxWidth: '105px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              pointerEvents: 'none',
+              backgroundColor: 'var(--color-bg-elevated)',
+              padding: '1.5px 7px',
+              borderRadius: '10px',
+              border: isSelected
                 ? '1.5px solid var(--color-accent-primary)'
-                : isSelected
-                ? '1.5px solid var(--color-accent-primary)'
-                : isKeyTarget
-                ? '1.5px solid #eab308'
-                : isPerson
-                ? '1px solid rgba(59, 130, 246, 0.45)'
-                : '1px solid var(--color-border-subtle)',
-              boxShadow: isHovered
-                ? '0 6px 20px rgba(0, 0, 0, 0.85)'
-                : '0 2px 5px rgba(0, 0, 0, 0.3)',
-              opacity: 1,
-              cursor: 'text',
-              zIndex: isHovered ? 70 : 12,
+                : '1px solid var(--color-border-default)',
+              boxShadow: 'var(--shadow-xs)',
+              zIndex: 12,
             }}
           >
-            {isHovered ? (
-              <span style={{ fontWeight: 700, color: 'var(--color-text-primary)' }}>{node.label}</span>
-            ) : (
-              getSmartShortLabel(node.label, node.type)
-            )}
+            {getSmartShortLabel(localizedNodeLabel, node.type)}
           </div>
         )
       )}
