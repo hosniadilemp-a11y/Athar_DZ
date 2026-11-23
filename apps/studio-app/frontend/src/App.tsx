@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { ShieldCheck, FileText } from 'lucide-react';
 import { useGraphStore } from './store/useGraphStore';
+import type { GraphNode } from './types/graph';
 import { DesktopMenuBar } from './components/menubar/DesktopMenuBar';
 import { AppSubBar } from './components/menubar/AppSubBar';
 import { GraphCanvasAdapter } from './components/canvas/GraphCanvasAdapter';
@@ -358,6 +359,37 @@ export function App() {
       if (!activeCase) return;
       setPendingAddNode((prev) => ({ ...prev, isOpen: false }));
 
+      const tempId = `node-opt-${Date.now()}`;
+      const optimisticNode: GraphNode = {
+        id: tempId,
+        case_id: activeCase.id,
+        type: data.type,
+        label: data.label,
+        layer: data.layer || 'HYPOTHESIS',
+        confidence: data.confidence,
+        provenance: 'INVESTIGATOR_MANUAL',
+        properties: data.properties || {},
+        latitude: null,
+        longitude: null,
+        x: data.x,
+        y: data.y,
+        radius: 28,
+      };
+
+      // 1. Immediately inject onto canvas & select node (instant 0ms feedback)
+      const storeBefore = useGraphStore.getState();
+      const initialExpanded = new Set(storeBefore.expandedHiddenNodeIds);
+      initialExpanded.add(tempId);
+      const initialLayers = new Set(storeBefore.activeLayers);
+      initialLayers.add(optimisticNode.layer);
+      useGraphStore.setState({ expandedHiddenNodeIds: initialExpanded, activeLayers: initialLayers });
+
+      mergeExpandedNodes([optimisticNode], []);
+      selectNode(tempId);
+      setIsInspectorOpen(true);
+      toast.success(`Entité "${optimisticNode.label}" ajoutée au graphe`, "Création d'entité");
+
+      // 2. Persist to backend in background
       fetch(`${API_BASE}/api/v1/cases/${activeCase.id}/nodes`, {
         method: 'POST',
         headers: {
@@ -385,13 +417,33 @@ export function App() {
           createdNode.x = data.x;
           createdNode.y = data.y;
           if (data.layer) createdNode.layer = data.layer;
-          mergeExpandedNodes([createdNode], []);
-          selectNode(createdNode.id);
-          setIsInspectorOpen(true);
-          toast.success(`Entité "${createdNode.label}" créée et positionnée sur le graphe`, "Création d'entité");
+          // Reconcile optimistic node with server response
+          const store = useGraphStore.getState();
+          const nextExpanded = new Set(store.expandedHiddenNodeIds);
+          nextExpanded.delete(tempId);
+          nextExpanded.add(createdNode.id);
+          const nextLayers = new Set(store.activeLayers);
+          if (createdNode.layer) nextLayers.add(createdNode.layer);
+
+          useGraphStore.setState({
+            nodes: store.nodes.map((n) => (n.id === tempId ? createdNode : n)),
+            selectedNodeId: store.selectedNodeId === tempId ? createdNode.id : store.selectedNodeId,
+            selectedNodeIds: store.selectedNodeIds.map((id) => (id === tempId ? createdNode.id : id)),
+            expandedHiddenNodeIds: nextExpanded,
+            activeLayers: nextLayers,
+          });
         })
         .catch((err) => {
           console.error('Erreur création nœud:', err);
+          // Rollback on failure
+          const store = useGraphStore.getState();
+          const rollExpanded = new Set(store.expandedHiddenNodeIds);
+          rollExpanded.delete(tempId);
+          useGraphStore.setState({
+            nodes: store.nodes.filter((n) => n.id !== tempId),
+            selectedNodeId: store.selectedNodeId === tempId ? null : store.selectedNodeId,
+            expandedHiddenNodeIds: rollExpanded,
+          });
           toast.error(err instanceof Error ? err.message : 'Erreur serveur', "Échec de création");
         });
     },

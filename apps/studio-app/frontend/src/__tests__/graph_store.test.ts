@@ -228,7 +228,7 @@ describe('useGraphStore & Reversible Undo/Redo Engine', () => {
     expect(useGraphStore.getState().edges).toHaveLength(1);
     expect(useGraphStore.getState().edges[0]?.source_id).toBe('node-link-1');
     expect(useGraphStore.getState().edges[0]?.target_id).toBe('node-link-2');
-    expect(useGraphStore.getState().isLinkMode).toBe(false);
+    expect(useGraphStore.getState().isLinkMode).toBe(true);
     expect(useGraphStore.getState().linkSourceNodeId).toBeNull();
     expect(useGraphStore.getState().undoStack).toHaveLength(1);
 

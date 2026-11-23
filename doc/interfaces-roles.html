@@ -455,6 +455,131 @@
           </div>
         </div>
 
+        <!-- 1.10 Système Multi-Onglets d'Enquête & Algorithme d'Extraction "Actor Sphere" (Option A) -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">1.10 Système Multi-Onglets d'Enquête &amp; Algorithme "Actor Sphere" (Option A)</h3>
+        <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;">
+          Inspiré des onglets de documents dans Photoshop et des graphes dérivés sous Palantir Gotham, le studio dispose d'une <strong>barre d'onglets de travail</strong> surmontant l'espace graphique :
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;margin:1rem 0;">
+          <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #8b5cf6;border-radius:6px;padding:0.9rem;font-size:0.82rem;">
+            <strong style="color:#8b5cf6;display:block;margin-bottom:0.35rem;">📑 Barre d'Onglets Horizontale Permanente</strong>
+            <ul style="padding-left:1.1rem;margin:0;color:#cbd5e1;line-height:1.6;">
+              <li><strong>Onglet Maître Fixe :</strong> <code>[ 🌐 Dossier Général (#2026-SCAM-089) ]</code> conserve la totalité des nœuds de l'affaire.</li>
+              <li><strong>Onglets Focalisés par Suspect :</strong> Créés d'un clic-droit sur un suspect &rarr; <em>« Ouvrir dans un nouvel onglet (Actor Sphere) »</em>.</li>
+              <li><strong>Indépendance Visuelle :</strong> Chaque onglet possède son propre niveau de zoom, pan et disposition (Organique, Hiérarchique, Étoile).</li>
+              <li><strong>Single Source of Truth (SSOT) :</strong> Les modifications de métadonnées ou de calques se répercutent instantanément sur tous les onglets ouverts.</li>
+            </ul>
+          </div>
+          <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #38bdf8;border-radius:6px;padding:0.9rem;font-size:0.82rem;">
+            <strong style="color:#38bdf8;display:block;margin-bottom:0.35rem;">🛑 Algorithme "Stop-at-Actors BFS" (Anti-Hairball)</strong>
+            <ul style="padding-left:1.1rem;margin:0;color:#cbd5e1;line-height:1.6;">
+              <li><strong>Problème :</strong> Les graphes criminels sont non-convexes. Aspirer les voisins sans limite ramène 80% du dossier complet (saturation).</li>
+              <li><strong>Règle de Coupure :</strong> Le BFS traverse librement les actifs/traces (téléphones, SIMs, comptes, véhicules, notes vocales), mais <em>s'arrête strictement à tout autre nœud Personne</em>.</li>
+              <li><strong>Nœuds Frontières :</strong> L'autre personne apparaît en périphérie sous forme d'ancre fermée avec badge <em>« +N entités »</em>.</li>
+              <li><strong>Actifs Partagés :</strong> Les véhicules ou comptes en commun sont mis en surbrillance au centre du sous-graphe.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 1.11 Synergie Option A & Option B : Tiroir du Bassin d'Indices Non-Inclus dans l'Onglet Suspect -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">1.11 Synergie Option A &amp; Option B : Bassin d'Indices Non-Inclus Pilotable par Onglet</h3>
+        <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;">
+          Lorsqu'un suspect est isolé dans son onglet dédié, le studio ne se contente pas d'afficher ses nœuds actifs : il déploie un <strong>tiroir d'arbitrage latéral</strong> contenant tous les indices secondaires découverts autour de ce suspect mais non encore validés :
+        </p>
+        <div style="background:#090d16;border:1px solid #1e293b;border-radius:8px;padding:1.1rem;margin:1rem 0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e293b;padding-bottom:0.5rem;margin-bottom:0.8rem;">
+            <strong style="color:#10b981;font-size:0.9rem;">🧩 Volet des Indices Détectés en Attente (Associés à ce Suspect)</strong>
+            <span class="badge badge-amber font-mono text-xs">18 éléments en réserve</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:0.9rem;font-size:0.82rem;color:#cbd5e1;">
+            <div style="background:#060a12;border:1px solid #1e293b;border-radius:6px;padding:0.8rem;">
+              <strong style="color:#10b981;">1. ➕ Bouton [Inclure au Sous-Graphe] :</strong>
+              <p style="color:#94a3b8;margin:0.25rem 0 0;line-height:1.5;">
+                Promut l'indice (ex: véhicule d'arrière-plan ou contact téléphonique rare) sur le canevas actif de l'onglet et trace l'admission au dossier.
+              </p>
+            </div>
+            <div style="background:#060a12;border:1px solid #1e293b;border-radius:6px;padding:0.8rem;">
+              <strong style="color:#ef4444;">2. ✕ Bouton [Écarter / Supprimer] :</strong>
+              <p style="color:#94a3b8;margin:0.25rem 0 0;line-height:1.5;">
+                Rejette définitivement la fausse piste pour ce suspect. L'action est inscrite au journal d'audit pour justifier l'abandon de la piste au juge.
+              </p>
+            </div>
+            <div style="background:#060a12;border:1px solid #1e293b;border-radius:6px;padding:0.8rem;">
+              <strong style="color:#38bdf8;">3. 🔍 Maintien en Réserve (Index Elasticsearch/Qdrant) :</strong>
+              <p style="color:#94a3b8;margin:0.25rem 0 0;line-height:1.5;">
+                L'indice reste consultable à tout moment via la recherche globale (Ctrl+K) si de nouveaux éléments d'enquête le rendent suspect ultérieurement.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1.12 Ingestion Drag & Drop Universelle & Microservices Coopératifs (Option B) -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">1.12 Ingestion Drag &amp; Drop par Microservices Coopératifs &amp; Groupement Anti-Saturation</h3>
+        <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;">
+          L'ingestion de fichiers bruts (photos, vocaux, documents, CDRs) active une chaîne de microservices locaux hautement spécialisés qui coopèrent entre eux :
+        </p>
+        <div style="background:#0c1322;border:1px solid #1e293b;border-radius:8px;padding:1rem;margin:1rem 0;">
+          <ul style="padding-left:1.2rem;margin:0;font-size:0.82rem;color:#cbd5e1;line-height:1.7;">
+            <li><strong>Chaining de Microservices :</strong> L'Ordonnanceur Média dispatche l'image en parallèle vers <code>srv-face</code> (InsightFace pour visages), <code>srv-ocr-alpr</code> (PaddleOCR pour matricules et textes) et <code>srv-yolo</code> (détection de véhicules, téléphones, armes).</li>
+            <li><strong>Binder Sémantique &amp; Spatial :</strong> Si une plaque d'immatriculation est détectée à l'intérieur de la boîte englobante d'un véhicule, les microservices coopèrent pour fusionner les attributs en un seul nœud <code>vehicule</code> enrichi de son matricule.</li>
+            <li><strong>Groupement Hiérarchique Anti-Saturation :</strong> La boîte de prévisualisation présente les entités par dossiers rétractables (Acteurs, Véhicules, Objets, Arrière-plan secondaire replié par défaut) pour ne jamais polluer visuellement le graphe de l'OPJ.</li>
+          </ul>
+        </div>
+
+        <!-- 1.13 Matrice Exhaustive des Outils Requis par Type de Fichier -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">1.13 Matrice Exhaustive des Outils Requis par Type de Fichier (Téléchargés vs À Télécharger)</h3>
+        <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;">
+          Inventaire rigoureux de la chaîne d'outillage requise pour chaque format de fichier, croisé avec le référentiel souverain hors-ligne <code>.athar-tools/</code> :
+        </p>
+        <table class="rbac-table">
+          <thead>
+            <tr>
+              <th>Format de Fichier</th>
+              <th>Pipeline de Microservices Requis</th>
+              <th>Outils &amp; Modèles Déjà Téléchargés (.athar-tools)</th>
+              <th>Compléments à Télécharger / Activer</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1. Photographies &amp; Captures</strong> (<code>.jpg</code>, <code>.png</code>, <code>.heic</code>)</td>
+              <td>Ingress SHA-256 &rarr; EXIF &rarr; Face Extractor &rarr; OCR/Plaques &rarr; YOLO Objects &rarr; Binder</td>
+              <td><span class="perm-yes">✔ ExifTool 12.84</span><br/><span class="perm-yes">✔ InsightFace Buffalo_L (w600k_r50 + det_10g)</span><br/><span class="perm-yes">✔ YOLOv8m &amp; YOLOv8x (.pt)</span><br/><span class="perm-yes">✔ Tesseract OCR (ara/fra/eng)</span><br/><span class="perm-yes">✔ Sherloq Forensic Repo</span></td>
+              <td><span class="perm-cond">Poids YOLO spécialisés ALPR Algérie (ou fallback sur YOLOv8x + Tesseract)</span></td>
+            </tr>
+            <tr>
+              <td><strong>2. Audio &amp; Vocaux WhatsApp</strong> (<code>.opus</code>, <code>.m4a</code>, <code>.mp3</code>, <code>.wav</code>)</td>
+              <td>Denoise &rarr; Silero VAD &rarr; Whisper Darija &rarr; Diarisation Locuteurs &rarr; NER vocal</td>
+              <td><span class="perm-yes">✔ FFmpeg &amp; FFprobe Static</span><br/><span class="perm-yes">✔ Faster-Whisper Large v3</span><br/><span class="perm-yes">✔ MohammedNasri Whisper Darija Algérien</span><br/><span class="perm-yes">✔ attoucheaziz Whisper Darja</span><br/><span class="perm-yes">✔ Silero VAD (.onnx)</span><br/><span class="perm-yes">✔ Whisper.cpp (binaires + ggml-base)</span></td>
+              <td><span class="perm-cond">Poids pyannote/speaker-diarization-3.1 (HuggingFace tokenisé)</span></td>
+            </tr>
+            <tr>
+              <td><strong>3. Documents Juridiques</strong> (<code>.pdf</code>, <code>.docx</code>, <code>.txt</code>)</td>
+              <td>PDF/Docx Parser &rarr; OCR Manuscrit &rarr; NER Arabe/FR &rarr; Normaliseur Géographique</td>
+              <td><span class="perm-yes">✔ CAMeL-Lab Arabic BERT NER</span><br/><span class="perm-yes">✔ WikiNeural Multilingual NER</span><br/><span class="perm-yes">✔ TrOCR Handwritten Microsoft</span><br/><span class="perm-yes">✔ DziriBERT Sentiment &amp; Base</span><br/><span class="perm-yes">✔ Qwen 2.5 14B / 32B Instruct GGUF</span></td>
+              <td><span class="perm-yes">✔ Complet (100% Hors-ligne disponible)</span></td>
+            </tr>
+            <tr>
+              <td><strong>4. Relevés Télécom &amp; Bancaires</strong> (<code>.csv</code>, <code>.xlsx</code>)</td>
+              <td>Schema Inferrer &rarr; Normaliseur E.164/RIP &rarr; Geocoder BTS &rarr; SNA Fréquences</td>
+              <td><span class="perm-yes">✔ GeoLite2 ASN, City, Country</span><br/><span class="perm-yes">✔ TimescaleDB HA PG16 (Hyper-tables)</span><br/><span class="perm-yes">✔ Python Polars &amp; Pandas (Wheels)</span><br/><span class="perm-yes">✔ 16 Moteurs SNA Python</span></td>
+              <td><span class="perm-yes">✔ Base des 58 Wilayas &amp; Cell-ID intégrée localement</span></td>
+            </tr>
+            <tr>
+              <td><strong>5. Captures Web &amp; HTML</strong> (<code>.html</code>, <code>.warc</code>, <code>.url</code>)</td>
+              <td>HTML Scraper &rarr; Extracteur de Trackers &rarr; Identité Réseaux &rarr; Archivage WARC</td>
+              <td><span class="perm-yes">✔ ArchiveBox ISO 28500 (Docker)</span><br/><span class="perm-yes">✔ Katana, Nuclei, Httpx (Binaires)</span><br/><span class="perm-yes">✔ Maigret, Holehe, Sherlock, GHunt (Repos)</span><br/><span class="perm-yes">✔ Toutatis, SocialScan, Waymore (Repos)</span></td>
+              <td><span class="perm-yes">✔ Complet (Arsenal 76 outils prêt)</span></td>
+            </tr>
+            <tr>
+              <td><strong>6. Vidéosurveillance &amp; Mobiles</strong> (<code>.mp4</code>, <code>.apk</code>, <code>.sqlite</code>)</td>
+              <td>FFmpeg Keyframes &rarr; YOLO Track &rarr; Jadx APK Decompiler &rarr; SQLite Forensics</td>
+              <td><span class="perm-yes">✔ JADX Decompiler CLI &amp; GUI</span><br/><span class="perm-yes">✔ Android ADB &amp; Scrcpy (Scrcpy Server JAR)</span><br/><span class="perm-yes">✔ ALEAPP (Android) &amp; iLEAPP (iOS) Repos</span><br/><span class="perm-yes">✔ FFmpeg Static</span></td>
+              <td><span class="perm-cond">ByteTrack wheel Python (disponible via pip offline)</span></td>
+            </tr>
+          </tbody>
+        </table>
+
       </section>
     </div>
 

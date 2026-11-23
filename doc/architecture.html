@@ -1258,6 +1258,88 @@
             </tr>
           </tbody>
         </table>
+
+        <!-- Sub-Section 3.5: Unified OSINT Artifact Processing & Recursive Event-Driven Orchestration -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">3.5 Traitement Unifié des Collectes OSINT &amp; Orchestration Événementielle Récursive (Temporal.io Loops)</h3>
+        <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.6;">
+          Le pipeline d'ingestion par microservices (Option B) n'est pas limité aux fichiers glissés-déposés manuellement par l'enquêteur : <strong>il unifie l'ensemble des flux d'artefacts générés par les 76 outils OSINT</strong>. Lorsqu'un scraper ou un collecteur de réseau social capture la page d'une cible, les artefacts collectés déclenchent une cascade d'événements asynchrones pilotée par la machine à états <strong>Temporal.io v1.24</strong> :
+        </p>
+
+        <!-- Scenario Flow Card -->
+        <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #a855f7;border-radius:8px;padding:1.1rem;margin:1rem 0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e293b;padding-bottom:0.5rem;margin-bottom:0.8rem;">
+            <strong style="color:#c084fc;font-size:0.9rem;">🔄 Scénario Réel d'Orchestration : Collecte de Profil &amp; Rapprochement Récursif</strong>
+            <span class="badge" style="background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid #c084fc;">Orchestrateur Temporal.io + Redis</span>
+          </div>
+
+          <div style="font-size:0.82rem;color:#cbd5e1;line-height:1.6;">
+            <p style="margin:0 0 0.6rem;">
+              <strong>1. Déclenchement Initial :</strong> L'outil OSINT (ex: <code>brick.socmint.facebook_dumper</code>) télécharge depuis le profil ciblé : <strong>3 photos</strong>, <strong>4 publications texte</strong> et <strong>1 vidéo</strong>.
+            </p>
+            <p style="margin:0 0 0.6rem;">
+              <strong>2. Dispatch Parallèle (Fan-Out) :</strong>
+              <br/>• <em>Les 4 posts texte</em> &rarr; envoyés à <code>srv-ner-arabic</code> (extrait téléphones, wilayas et montants en DZD).
+              <br/>• <em>La vidéo</em> &rarr; envoyée à <code>srv-ffmpeg</code> (extraction keyframes) puis <code>srv-yolo</code> (véhicules).
+              <br/>• <em>Les 3 photos</em> &rarr; distribuées en parallèle vers <code>srv-face</code> (InsightFace), <code>srv-ocr-alpr</code> et <code>srv-yolo</code>.
+            </p>
+            <p style="margin:0 0 0.6rem;">
+              <strong>3. Traitement de la Photo #1 &amp; Découverte Biométrique :</strong>
+              <br/>Le microservice <code>srv-face</code> isole <strong>3 visages</strong> sur la photo :
+              <br/>&bull; <strong>Visage 1 :</strong> Correspondance exacte (&gt;92% dans Qdrant) avec le suspect principal déjà fiché (Amine B.). L'image est liée comme preuve de présence.
+              <br/>&bull; <strong>Visages 2 et 3 :</strong> Inconnus dans la base de données criminelle (individus non identifiés accompagnant le suspect).
+            </p>
+            <p style="margin:0;">
+              <strong>4. Boucle Événementielle Récursive (Tool Chaining) :</strong>
+              <br/>Face à ces 2 visages inconnus, l'orchestrateur Temporal émet un événement <code>UNMATCHED_FACE_DETECTED</code>. Il <strong>déclenche automatiquement de nouveaux outils OSINT</strong> de recherche inversée et de reconnaissance faciale (PimEyes / Maigret / Face Search) pour tenter d'identifier ces complices.
+              <br/>Les résultats ne sont pas injectés aveuglément sur le graphe : ils sont versés dans le <strong>Bassin d'Indices Non-Inclus</strong> sous forme de propositions pour l'OPJ : <em>« 2 complices inconnus détectés sur la photo avec Amine B. ; profil potentiel trouvé : @karim_dz23 »</em>.
+            </p>
+          </div>
+        </div>
+
+        <!-- Matrix Table of Tools Required vs Downloaded -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">Matrice des Outils Requis par Type d'Artefact (Vérification .athar-tools/)</h3>
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Type d'Artefact</th>
+              <th>Pipeline de Microservices Déclenché</th>
+              <th>Outils Déjà Téléchargés &amp; Opérationnels (.athar-tools)</th>
+              <th>Statut &amp; Compléments Éventuels</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Images &amp; Photos OSINT</strong></td>
+              <td>ExifTool &rarr; InsightFace &rarr; PaddleOCR / Tesseract &rarr; YOLOv8x &rarr; Semantic Binder</td>
+              <td><code>exiftool</code>, <code>insightface/buffalo_l</code>, <code>vision/yolov8x.pt</code>, <code>tessdata (ara/fra/eng)</code>, <code>microsoft__trocr</code></td>
+              <td><span class="badge" style="background:#10b981;color:#fff;">100% Hors-Ligne Prêt</span></td>
+            </tr>
+            <tr>
+              <td><strong>Audio &amp; Vocaux WhatsApp</strong></td>
+              <td>FFmpeg &rarr; Silero VAD &rarr; Faster-Whisper Darija &rarr; Diarisation Locuteurs &rarr; NER vocal</td>
+              <td><code>forensic_ffmpeg</code>, <code>faster-whisper-large-v3</code>, <code>MohammedNasri__whisper-algerian</code>, <code>silero_vad</code>, <code>whisper_cpp</code></td>
+              <td><span class="badge" style="background:#f59e0b;color:#0b0f17;">Poids PyAnnote tokenisé HF requis</span></td>
+            </tr>
+            <tr>
+              <td><strong>Posts Texte &amp; Documents</strong></td>
+              <td>PyMuPDF &rarr; CAMeL BERT NER &rarr; WikiNeural &rarr; Qwen 2.5 14B/32B Local LLM</td>
+              <td><code>CAMeL-Lab__arabic-ner</code>, <code>WikiNeural-ner</code>, <code>dziribert</code>, <code>Qwen2.5-32B/14B GGUF</code>, <code>llama_cpp</code></td>
+              <td><span class="badge" style="background:#10b981;color:#fff;">100% Hors-Ligne Prêt</span></td>
+            </tr>
+            <tr>
+              <td><strong>Vidéos &amp; Stories</strong></td>
+              <td>FFmpeg Keyframe Extractor &rarr; ByteTrack &rarr; YOLOv8x ALPR &rarr; InsightFace Video</td>
+              <td><code>forensic_ffmpeg</code>, <code>yolov8x.pt</code>, <code>insightface/buffalo_l</code></td>
+              <td><span class="badge" style="background:#f59e0b;color:#0b0f17;">ByteTrack wheel à packager</span></td>
+            </tr>
+            <tr>
+              <td><strong>Relevés CDR &amp; Finances</strong></td>
+              <td>Polars &rarr; Algérie Poste BaridiMob Validator &rarr; Geocoder BTS &rarr; 16 Moteurs SNA</td>
+              <td><code>GeoLite2 (City/ASN)</code>, <code>TimescaleDB PG16</code>, <code>16 Algorithmes SNA Python</code>, <code>58 Wilayas GeoJSON</code></td>
+              <td><span class="badge" style="background:#10b981;color:#fff;">100% Hors-Ligne Prêt</span></td>
+            </tr>
+          </tbody>
+        </table>
       </section>
     </div>
     <!-- ====================================================================

@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useGraphStore } from '../../store/useGraphStore';
+import {
+  useGraphStore,
+  ONTOLOGY_CATEGORY_COLORS,
+  NODE_TYPE_TO_CATEGORY,
+} from '../../store/useGraphStore';
 import { computePersonGraphProjection } from '../../utils/graphLayouts';
 import { NodeIcon } from '../canvas/NodeIcon';
 import registryDataRaw from '../../registry/registry.json';
@@ -28,13 +32,56 @@ import {
   Edit3,
   Camera,
   ChevronDown,
-  ChevronUp,
+  Search,
 } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
 import { useToast } from '../../context/ToastContext';
 import { getRelationLabel } from '../../i18n/phrases/relations';
 
 const registry = registryDataRaw as unknown as RegistryData;
+
+const TYPE_EDITABLE_FIELDS: Record<string, Array<{ key: string; label: string; placeholder: string }>> = {
+  personne: [
+    { key: 'prenom', label: 'Prénom', placeholder: 'ex: Mohamed, Karim...' },
+    { key: 'nom', label: 'Nom de famille', placeholder: 'ex: Zerrouki, Hadj...' },
+    { key: 'pseudonyme', label: 'Alias / Surnom', placeholder: 'ex: El-Hadj, Lieutenant Pneus...' },
+    { key: 'role', label: 'Rôle opérationnel', placeholder: 'ex: Cerveau, Recruteur, Mule...' },
+  ],
+  vehicule: [
+    { key: 'plaque', label: 'Immatriculation', placeholder: 'ex: 01234-116-16...' },
+    { key: 'marque', label: 'Marque', placeholder: 'ex: Renault, Dacia, Toyota...' },
+    { key: 'modele', label: 'Modèle', placeholder: 'ex: Clio 4, Hilux, Logan...' },
+    { key: 'couleur', label: 'Couleur', placeholder: 'ex: Gris métallisé, Blanc, Noir...' },
+  ],
+  compte_bancaire: [
+    { key: 'rip', label: 'Numéro RIP / CCP', placeholder: 'ex: 00799999002345678912...' },
+    { key: 'banque', label: 'Établissement bancaire', placeholder: 'ex: Algérie Poste (CCP), BNA, BEA...' },
+    { key: 'titulaire', label: 'Nom du titulaire', placeholder: 'ex: Nom et prénom du titulaire...' },
+  ],
+  telephone: [
+    { key: 'numero', label: 'Numéro de ligne', placeholder: 'ex: +213 661 44 12 89...' },
+    { key: 'operateur', label: 'Opérateur télécom', placeholder: 'ex: Djezzy, Mobilis, Ooredoo...' },
+    { key: 'imei', label: 'Code IMEI terminal', placeholder: 'ex: 864521048291034...' },
+  ],
+  carte_sim: [
+    { key: 'imsi', label: 'Numéro IMSI', placeholder: 'ex: 603010123456789...' },
+    { key: 'msisdn', label: 'Numéro MSISDN', placeholder: 'ex: +213 555 12 34 56...' },
+    { key: 'operateur', label: 'Opérateur télécom', placeholder: 'ex: Mobilis, Djezzy, Ooredoo...' },
+  ],
+  compte_social: [
+    { key: 'plateforme', label: 'Plateforme réseau', placeholder: 'ex: Facebook, Telegram, WhatsApp...' },
+    { key: 'identifiant', label: 'Identifiant / URL', placeholder: 'ex: @amine_pneus_dz...' },
+  ],
+  adresse_email: [
+    { key: 'email', label: 'Adresse courriel', placeholder: 'ex: contact@example.com...' },
+    { key: 'fournisseur', label: 'Fournisseur', placeholder: 'ex: Gmail, ProtonMail...' },
+  ],
+  serveur_c2: [
+    { key: 'ip', label: 'Adresse IP', placeholder: 'ex: 185.220.101.5...' },
+    { key: 'port', label: 'Port de communication', placeholder: 'ex: 443, 8443...' },
+    { key: 'hebergement', label: 'Hébergeur / ASN', placeholder: 'ex: OVH, DigitalOcean...' },
+  ],
+};
 
 interface InspectorPanelProps {
   onExpand: (hops: number) => void;
@@ -82,7 +129,6 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   } = useGraphStore();
 
   const toast = useToast();
-  const [copiedHash, setCopiedHash] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [audioCurrentTime, setAudioCurrentTime] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
@@ -92,8 +138,29 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   const [editConfidence, setEditConfidence] = useState(0.85);
   const [editStatus, setEditStatus] = useState('');
   const [editNotes, setEditNotes] = useState('');
+  const [editProps, setEditProps] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
-  const [isEditFormOpen, setIsEditFormOpen] = useState(false);
+  const [isEditFormOpen, setIsEditFormOpen] = useState(true);
+
+  // Inspector Search & Filter + Accordion Sections
+  const [linkSearchTerm, setLinkSearchTerm] = useState('');
+  const [linkTypeFilter, setLinkTypeFilter] = useState('ALL');
+  const [openInspectorSections, setOpenInspectorSections] = useState({
+    identity: true,
+    relations: true,
+    audio: true,
+    metadata: true,
+    tools: true,
+  });
+
+  const toggleInspectorSection = (section: 'identity' | 'relations' | 'audio' | 'metadata' | 'tools') => {
+    setOpenInspectorSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  useEffect(() => {
+    setLinkSearchTerm('');
+    setLinkTypeFilter('ALL');
+  }, [selectedNodeId]);
 
   // Edge editing state (Confidence + Judicial Confidentiality + Layer + Notes)
   const [editEdgeConfidence, setEditEdgeConfidence] = useState<number>(0.85);
@@ -183,6 +250,14 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
         (selectedNode.properties?.description as string) ||
         ''
       );
+      const props = (selectedNode.properties || {}) as Record<string, unknown>;
+      const pMap: Record<string, string> = {};
+      Object.entries(props).forEach(([k, v]) => {
+        if (typeof v === 'string' || typeof v === 'number') {
+          pMap[k] = String(v);
+        }
+      });
+      setEditProps(pMap);
     }
   }, [selectedNodeId, selectedNode]);
 
@@ -248,6 +323,8 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
         label: editLabel.trim() || selectedNode.label,
         confidence: editConfidence,
         properties: {
+          ...selectedNode.properties,
+          ...editProps,
           status_judiciaire: editStatus,
           role_judiciaire: editStatus,
           notes: editNotes,
@@ -259,12 +336,6 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const handleCopyHash = (text: string) => {
-    navigator.clipboard.writeText(text).catch(() => {});
-    setCopiedHash(true);
-    setTimeout(() => setCopiedHash(false), 1500);
   };
 
   const handleAddClueToGraph = (clue: InboxClue) => {
@@ -445,8 +516,6 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
     const layerDef = registry.layers[selectedNode.layer];
     const isGps = typeDef?.is_gps_enabled || (selectedNode.latitude !== null && selectedNode.longitude !== null);
     const proposedTools = typeDef?.proposed_tools || [];
-    const dummyHash = `sha256:7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069`;
-
     // Dynamic Connections of selected node (Interactive network table)
     const incidentEdges = [
       ...edges
@@ -467,12 +536,26 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
         })),
     ];
 
-    // Procedural Status and Details (clean, non-hallucinated, and fully localized)
-    const lbl = selectedNode.label.toLowerCase();
-    const rawType = String(selectedNode.properties?.raw_type || '').toUpperCase();
-    const isBoss = rawType === 'KINGPIN' || lbl.includes('tarek') || lbl.includes('hadj');
-    const isLt = rawType === 'LIEUTENANT' || rawType === 'DEVELOPER' || lbl.includes('youcef') || lbl.includes('nadia') || lbl.includes('farid') || lbl.includes('kamel') || lbl.includes('sofiane');
-    const isVictim = rawType === 'VICTIM' || lbl.includes('karim') || lbl.includes('meriem') || lbl.includes('djamel') || lbl.includes('rachid') || lbl.includes('tahar') || lbl.includes('mourad') || lbl.includes('salim') || lbl.includes('amina') || lbl.includes('fatima') || lbl.includes('omar');
+    const connectedTypes = Array.from(
+      new Set(incidentEdges.map((ie) => ie.neighbor?.type).filter(Boolean) as string[])
+    ).sort();
+
+    const filteredIncidentEdges = incidentEdges.filter(({ neighbor, edge }) => {
+      if (linkTypeFilter !== 'ALL' && neighbor?.type !== linkTypeFilter) {
+        return false;
+      }
+      if (linkSearchTerm.trim()) {
+        const q = linkSearchTerm.toLowerCase().trim();
+        const nLabel = (neighbor?.label ? trLabel(neighbor.label) : '').toLowerCase();
+        const relLabel = getRelationLabel(edge.type, locale).toLowerCase();
+        if (!nLabel.includes(q) && !relLabel.includes(q)) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    // Procedural Status and Details (clean, non-hallucinated, strictly evidentiary)
     const isExhibit =
       selectedNode.type === 'enregistrement_vocal' ||
       selectedNode.type === 'document_judiciaire' ||
@@ -489,17 +572,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
       ? trLabel(customJudicialStatus)
       : isExhibit
       ? tr('PIÈCE À CONVICTION SCELLÉE — ISO 27037')
-      : isBoss
-      ? tr("MANDAT D'ARRÊT INTERPOL — RED NOTICE")
-      : isLt
-      ? tr('GARDE À VUE 48H — CCO ALGER')
-      : isVictim
-      ? tr('PARTIE CIVILE — PLAINTE DÉPOSÉE')
-      : selectedNode.type === 'compte_bancaire'
-      ? tr('GEL AML CONSERVATOIRE — ALGÉRIE POSTE')
-      : selectedNode.type === 'vehicule'
-      ? tr('VÉHICULE SIGNALÉ — AVIS DE RECHERCHE')
-      : tr('ÉLÉMENT SOUS SURVEILLANCE JUDICIAIRE');
+      : null;
 
     // Clean contextual subtitle (never displays raw UUIDs!)
     const rawSubtitle = (selectedNode.properties?.subtitle as string) || '';
@@ -517,146 +590,88 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
       ? locationParts.join(' • ')
       : label(typeDef, selectedNode.type);
 
-    // Authentic Darija audio intercepts matching Candy Wheels case (Strictly connected entities)
+    // Authentic Darija audio intercepts strictly for audio evidence pieces or nodes with explicit audio
     const getDarijaWiretap = () => {
       const props = (selectedNode.properties || {}) as Record<string, unknown>;
       const explicitAudio = (props.audio_url || props.audioFile || props.audio) as string | undefined;
 
-      // 1. Direct audio evidence node or node with explicit audio URL
-      if (explicitAudio || selectedNode.type === 'enregistrement_vocal') {
-        const rawId = (props.raw_id || props.id || selectedNode.label || '') as string;
-        const lowRaw = rawId.toLowerCase();
-        const lowLbl = lbl.toLowerCase();
-        let pieceId = 'EVID-A01';
-        let defaultAudio = '/audio/evid_a01.wav';
-
-        if (lowRaw.includes('a02') || lowLbl.includes('a-02') || lowLbl.includes('a02') || (explicitAudio && explicitAudio.includes('a02'))) {
-          pieceId = 'EVID-A02';
-          defaultAudio = '/audio/evid_a02.wav';
-        } else if (lowRaw.includes('a03') || lowLbl.includes('a-03') || lowLbl.includes('a03') || (explicitAudio && explicitAudio.includes('a03'))) {
-          pieceId = 'EVID-A03';
-          defaultAudio = '/audio/evid_a03.wav';
-        } else if (lowRaw.includes('a04') || lowLbl.includes('a-04') || lowLbl.includes('a04') || (explicitAudio && explicitAudio.includes('a04'))) {
-          pieceId = 'EVID-A04';
-          defaultAudio = '/audio/evid_a04.wav';
-        } else {
-          pieceId = 'EVID-A01';
-          defaultAudio = '/audio/evid_a01.wav';
-        }
-
-        return {
-          id: pieceId,
-          audioFile: explicitAudio || defaultAudio,
-          speaker: (props.intercept_speaker as string) || (props.speaker as string) || (
-            pieceId === 'EVID-A01' ? 'Amine B. (Opérateur Commercial)' :
-            pieceId === 'EVID-A02' ? "Tarek H. (« El-Hadj »)" :
-            pieceId === 'EVID-A03' ? "Nadia M. (« Dina »)" :
-            'Interception Ligne Coordination'
-          ),
-          target: (props.intercept_target as string) || (props.target as string) || (
-            pieceId === 'EVID-A01' ? 'Karim Zerrouki (Victime)' :
-            pieceId === 'EVID-A02' ? 'Youcef R. (Lieutenant Pneus)' :
-            pieceId === 'EVID-A03' ? 'Comité C2 Direction' :
-            'Kamel V. (« Le Caissier »)'
-          ),
-          channel: (props.intercept_channel as string) || (
-            pieceId === 'EVID-A01' ? 'WhatsApp Audio / AMR-NB' :
-            pieceId === 'EVID-A02' ? 'Telegram Call / Interception CCO' :
-            pieceId === 'EVID-A03' ? 'Telegram Voice / Scellé S-03' :
-            'Interception Réseau CCO Algérie'
-          ),
-          time: (props.audio_duration as string) || (
-            pieceId === 'EVID-A01' ? '0:42' :
-            pieceId === 'EVID-A02' ? '0:35' :
-            pieceId === 'EVID-A03' ? '0:29' :
-            '0:24'
-          ),
-          darija: (props.transcript_darija as string) || (
-            pieceId === 'EVID-A01' ? "Khouya Karim, salam alaykoum. Les quatre pneus Michelin rahoum réservés b'smitek fel dépôt taâ Boufarik. Bessah la promo hadhi fiha demande kbira. Versi les 64 000 da f'had le compte BaridiMob li b'ath'toulak, w b'athli le reçu f'WhatsApp..." :
-            pieceId === 'EVID-A02' ? "Youcef, smaâni mlih. La cellule pneus rahi t'dirlna 600 000 da par jour had la semaine, c’est bien bessah les plaintes b'daw y'kethrou f'Facebook. Ghleq les trois pages ghedwa s'bah, w khéli Sofiane y'lansi les trois nouveaux sites..." :
-            pieceId === 'EVID-A03' ? "Boss, el-hamdullah le nouveau script taâ Sofiane pour les rendez-vous TLS rah yemchi 10/10. Les opérateurs diali f'Constantine jawbou plus de 80 clients had sbeh. Derna 2,4 millions de dinars d'acomptes..." :
-            "Allô Kamel, l'argent taâ Oran dkhoul fel BaridiMob... Jebed 200 000 da men la poste taâ Bab El Oued w khéli le reste pour Sofiane..."
-          ),
-          french: (props.transcript_french as string) || (
-            pieceId === 'EVID-A01' ? "Frère Karim, salam alaykoum. Les 4 pneus Michelin sont réservés à ton nom au dépôt de Boufarik. Mais la promo a une forte demande. Verse les 64 000 DZD sur le compte BaridiMob et transmets le reçu..." :
-            pieceId === 'EVID-A02' ? "Youcef, écoute-moi bien. La cellule pneus rapporte 600 000 DZD/jour mais les plaintes s'accumulent sur Facebook. Ferme les 3 pages demain matin et laisse Sofiane lancer les 3 nouveaux sites..." :
-            pieceId === 'EVID-A03' ? "Boss, le nouveau script de Sofiane pour les rendez-vous TLS marche à 100%. Mes opérateurs à Constantine ont répondu à 80 clients ce matin. Nous avons cumulé 2,4 millions de dinars d'acomptes..." :
-            "Allô Kamel, l'argent d'Oran est arrivé sur BaridiMob... Retire 200 000 DZD au bureau de poste de Bab El Oued et laisse le reste pour Sofiane..."
-          ),
-          match: (props.voiceprint_match as string) || (
-            pieceId === 'EVID-A01' ? '96.2%' :
-            pieceId === 'EVID-A02' ? '98.7%' :
-            pieceId === 'EVID-A03' ? '95.1%' :
-            '94.0%'
-          ),
-          sha256: (props.hash_sha256 as string) || (props.sha256 as string) || (
-            pieceId === 'EVID-A01' ? 'be9f4b192ae92f0f57ab7263bdb781458c935e1f6277793d29241220a9da6996' :
-            pieceId === 'EVID-A02' ? '350e7515324415d0982afa0314d6b6dea2de59871b70c6ff719fdca953f57552' :
-            pieceId === 'EVID-A03' ? '72c3d102eef519234857bdf82109283745a19283746192837461928374619283' :
-            '992a76b192837465910283746519283746519283746519283746519283746519'
-          ),
-        };
+      // Strictly null if node is not an audio evidence item and has no audio attached
+      if (!explicitAudio && selectedNode.type !== 'enregistrement_vocal') {
+        return null;
       }
 
-      // 2. Interlocutors mapped when selected in graph
-      if (lbl.includes('karim') || lbl.includes('zerrouki') || lbl.includes('amine') || lbl.includes('555 019')) {
-        return {
-          id: 'EVID-A01',
-          audioFile: '/audio/evid_a01.wav',
-          speaker: 'Amine B. (Opérateur Commercial)',
-          target: 'Karim Zerrouki (+213 661 44 12 89)',
-          channel: 'WhatsApp Audio / AMR-NB',
-          time: '0:42',
-          darija: "Khouya Karim, salam alaykoum. Les quatre pneus Michelin rahoum réservés b'smitek fel dépôt taâ Boufarik. Bessah la promo hadhi fiha demande kbira. Versi les 64 000 da f'had le compte BaridiMob li b'ath'toulak, w b'athli le reçu f'WhatsApp...",
-          french: "Frère Karim, salam alaykoum. Les 4 pneus Michelin sont réservés à ton nom au dépôt de Boufarik. Mais la promo a une forte demande. Verse les 64 000 DZD sur le compte BaridiMob et transmets le reçu...",
-          match: '96.2%',
-          sha256: 'be9f4b192ae92f0f57ab7263bdb781458c935e1f6277793d29241220a9da6996',
-        };
+      const rawId = (props.raw_id || props.id || selectedNode.label || '') as string;
+      const lowRaw = rawId.toLowerCase();
+      const lowLbl = selectedNode.label.toLowerCase();
+      let pieceId = 'EVID-A01';
+      let defaultAudio = '/audio/evid_a01.wav';
+
+      if (lowRaw.includes('a02') || lowLbl.includes('a-02') || lowLbl.includes('a02') || (explicitAudio && explicitAudio.includes('a02'))) {
+        pieceId = 'EVID-A02';
+        defaultAudio = '/audio/evid_a02.wav';
+      } else if (lowRaw.includes('a03') || lowLbl.includes('a-03') || lowLbl.includes('a03') || (explicitAudio && explicitAudio.includes('a03'))) {
+        pieceId = 'EVID-A03';
+        defaultAudio = '/audio/evid_a03.wav';
+      } else if (lowRaw.includes('a04') || lowLbl.includes('a-04') || lowLbl.includes('a04') || (explicitAudio && explicitAudio.includes('a04'))) {
+        pieceId = 'EVID-A04';
+        defaultAudio = '/audio/evid_a04.wav';
+      } else {
+        pieceId = 'EVID-A01';
+        defaultAudio = '/audio/evid_a01.wav';
       }
-      if (isBoss || lbl.includes('tarek') || lbl.includes('hadj') || lbl.includes('youcef')) {
-        return {
-          id: 'EVID-A02',
-          audioFile: '/audio/evid_a02.wav',
-          speaker: "Tarek H. (« El-Hadj »)",
-          target: "Youcef R. (Lieutenant Pneus)",
-          channel: 'Telegram Call / Interception CCO',
-          time: '0:35',
-          darija: "Youcef, smaâni mlih. La cellule pneus rahi t'dirlna 600 000 da par jour had la semaine, c’est bien bessah les plaintes b'daw y'kethrou f'Facebook. Ghleq les trois pages ghedwa s'bah, w khéli Sofiane y'lansi les trois nouveaux sites...",
-          french: "Youcef, écoute-moi bien. La cellule pneus rapporte 600 000 DZD/jour mais les plaintes s'accumulent sur Facebook. Ferme les 3 pages demain matin et laisse Sofiane lancer les 3 nouveaux sites...",
-          match: '98.7%',
-          sha256: '350e7515324415d0982afa0314d6b6dea2de59871b70c6ff719fdca953f57552',
-        };
-      }
-      if (lbl.includes('nadia') || lbl.includes('dina') || lbl.includes('meriem') || lbl.includes('sofiane')) {
-        return {
-          id: 'EVID-A03',
-          audioFile: '/audio/evid_a03.wav',
-          speaker: "Nadia M. (« Dina »)",
-          target: "Comité C2 Direction",
-          channel: 'Telegram Voice / Scellé S-03',
-          time: '0:29',
-          darija: "Boss, el-hamdullah le nouveau script taâ Sofiane pour les rendez-vous TLS rah yemchi 10/10. Les opérateurs diali f'Constantine jawbou plus de 80 clients had sbeh. Derna 2,4 millions de dinars d'acomptes...",
-          french: "Boss, le nouveau script de Sofiane pour les rendez-vous TLS marche à 100%. Mes opérateurs à Constantine ont répondu à 80 clients ce matin. Nous avons cumulé 2,4 millions de dinars d'acomptes...",
-          match: '95.1%',
-          sha256: '72c3d102eef519234857bdf82109283745a19283746192837461928374619283',
-        };
-      }
-      if (lbl.includes('kamel') || lbl.includes('oran') || lbl.includes('bab el oued')) {
-        return {
-          id: 'EVID-A04',
-          audioFile: '/audio/evid_a04.wav',
-          speaker: 'Interception Ligne Coordination',
-          target: "Kamel V. (« Le Caissier »)",
-          channel: 'Interception Réseau CCO Algérie',
-          time: '0:24',
-          darija: "Allô Kamel, l'argent taâ Oran dkhoul fel BaridiMob... Jebed 200 000 da men la poste taâ Bab El Oued w khéli le reste pour Sofiane...",
-          french: "Allô Kamel, l'argent d'Oran est arrivé sur BaridiMob... Retire 200 000 DZD au bureau de poste de Bab El Oued et laisse le reste pour Sofiane...",
-          match: '94.0%',
-          sha256: '992a76b192837465910283746519283746519283746519283746519283746519',
-        };
-      }
-      // Strictly null for all other entities (cars, ips, bts, accounts, etc.)
-      return null;
+
+      return {
+        id: pieceId,
+        audioFile: explicitAudio || defaultAudio,
+        speaker: (props.intercept_speaker as string) || (props.speaker as string) || (
+          pieceId === 'EVID-A01' ? 'Amine B. (Opérateur Commercial)' :
+          pieceId === 'EVID-A02' ? "Tarek H. (« El-Hadj »)" :
+          pieceId === 'EVID-A03' ? "Nadia M. (« Dina »)" :
+          'Interception Ligne Coordination'
+        ),
+        target: (props.intercept_target as string) || (props.target as string) || (
+          pieceId === 'EVID-A01' ? 'Karim Zerrouki (Victime)' :
+          pieceId === 'EVID-A02' ? 'Youcef R. (Lieutenant Pneus)' :
+          pieceId === 'EVID-A03' ? 'Comité C2 Direction' :
+          'Kamel V. (« Le Caissier »)'
+        ),
+        channel: (props.intercept_channel as string) || (
+          pieceId === 'EVID-A01' ? 'WhatsApp Audio / AMR-NB' :
+          pieceId === 'EVID-A02' ? 'Telegram Call / Interception CCO' :
+          pieceId === 'EVID-A03' ? 'Telegram Voice / Scellé S-03' :
+          'Interception Réseau CCO Algérie'
+        ),
+        time: (props.audio_duration as string) || (
+          pieceId === 'EVID-A01' ? '0:42' :
+          pieceId === 'EVID-A02' ? '0:35' :
+          pieceId === 'EVID-A03' ? '0:29' :
+          '0:24'
+        ),
+        darija: (props.transcript_darija as string) || (
+          pieceId === 'EVID-A01' ? "Khouya Karim, salam alaykoum. Les quatre pneus Michelin rahoum réservés b'smitek fel dépôt taâ Boufarik. Bessah la promo hadhi fiha demande kbira. Versi les 64 000 da f'had le compte BaridiMob li b'ath'toulak, w b'athli le reçu f'WhatsApp..." :
+          pieceId === 'EVID-A02' ? "Youcef, smaâni mlih. La cellule pneus rahi t'dirlna 600 000 da par jour had la semaine, c’est bien bessah les plaintes b'daw y'kethrou f'Facebook. Ghleq les trois pages ghedwa s'bah, w khéli Sofiane y'lansi les trois nouveaux sites..." :
+          pieceId === 'EVID-A03' ? "Boss, el-hamdullah le nouveau script taâ Sofiane pour les rendez-vous TLS rah yemchi 10/10. Les opérateurs diali f'Constantine jawbou plus de 80 clients had sbeh. Derna 2,4 millions de dinars d'acomptes..." :
+          "Allô Kamel, l'argent taâ Oran dkhoul fel BaridiMob... Jebed 200 000 da men la poste taâ Bab El Oued w khéli le reste pour Sofiane..."
+        ),
+        french: (props.transcript_french as string) || (
+          pieceId === 'EVID-A01' ? "Frère Karim, salam alaykoum. Les 4 pneus Michelin sont réservés à ton nom au dépôt de Boufarik. Mais la promo a une forte demande. Verse les 64 000 DZD sur le compte BaridiMob et transmets le reçu..." :
+          pieceId === 'EVID-A02' ? "Youcef, écoute-moi bien. La cellule pneus rapporte 600 000 DZD/jour mais les plaintes s'accumulent sur Facebook. Ferme les 3 pages demain matin et laisse Sofiane lancer les 3 nouveaux sites..." :
+          pieceId === 'EVID-A03' ? "Boss, le nouveau script de Sofiane pour les rendez-vous TLS marche à 100%. Mes opérateurs à Constantine ont répondu à 80 clients ce matin. Nous avons cumulé 2,4 millions de dinars d'acomptes..." :
+          "Allô Kamel, l'argent d'Oran est arrivé sur BaridiMob... Retire 200 000 DZD au bureau de poste de Bab El Oued et laisse le reste pour Sofiane..."
+        ),
+        match: (props.voiceprint_match as string) || (
+          pieceId === 'EVID-A01' ? '96.2%' :
+          pieceId === 'EVID-A02' ? '98.7%' :
+          pieceId === 'EVID-A03' ? '95.1%' :
+          '94.0%'
+        ),
+        sha256: (props.hash_sha256 as string) || (props.sha256 as string) || (
+          pieceId === 'EVID-A01' ? 'be9f4b192ae92f0f57ab7263bdb781458c935e1f6277793d29241220a9da6996' :
+          pieceId === 'EVID-A02' ? '350e7515324415d0982afa0314d6b6dea2de59871b70c6ff719fdca953f57552' :
+          pieceId === 'EVID-A03' ? '72c3d102eef519234857bdf82109283745a19283746192837461928374619283' :
+          '992a76b192837465910283746519283746519283746519283746519283746519'
+        ),
+      };
     };
 
     const wiretap = getDarijaWiretap();
@@ -765,26 +780,34 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
-                <span
-                  className="chip"
-                  style={{
-                    fontSize: '10px',
-                    padding: '1px 6px',
-                    backgroundColor: isExhibit
-                      ? 'rgba(16, 185, 129, 0.14)'
-                      : isVictim
-                      ? 'rgba(59, 130, 246, 0.14)'
-                      : 'rgba(239, 68, 68, 0.14)',
-                    color: isExhibit
-                      ? 'var(--color-status-success)'
-                      : isVictim
-                      ? 'var(--color-accent-text)'
-                      : 'var(--color-status-danger)',
-                    fontWeight: 600,
-                  }}
-                >
-                  {proceduralStatus}
-                </span>
+                {proceduralStatus ? (
+                  <span
+                    className="chip"
+                    style={{
+                      fontSize: '10px',
+                      padding: '1px 6px',
+                      backgroundColor: isExhibit ? 'rgba(16, 185, 129, 0.14)' : 'rgba(59, 130, 246, 0.14)',
+                      color: isExhibit ? 'var(--color-status-success)' : 'var(--color-accent-text)',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {proceduralStatus}
+                  </span>
+                ) : (
+                  <span
+                    className="chip"
+                    style={{
+                      fontSize: '10px',
+                      padding: '1px 6px',
+                      backgroundColor: 'var(--color-bg-canvas)',
+                      borderColor: layerDef?.color || 'var(--color-border-default)',
+                      color: layerDef?.color || 'var(--color-text-muted)',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {label(layerDef, selectedNode.layer)}
+                  </span>
+                )}
               </div>
 
               <div
@@ -801,6 +824,269 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Demarcation Divider */}
+          <div style={{ height: '1px', backgroundColor: 'var(--color-border-subtle)', margin: '2px 0' }} />
+
+          {/* Section 1: Informations & Attributs Modifiables (Priorité Enquêteur) */}
+          <div
+            className="accordion-group"
+            style={{
+              backgroundColor: 'var(--color-bg-elevated)',
+              border: '1px solid var(--color-border-subtle)',
+              borderRadius: 'var(--radius-sm)',
+            }}
+          >
+            <button
+              type="button"
+              className="accordion-header-btn"
+              onClick={() => setIsEditFormOpen((prev) => !prev)}
+              aria-expanded={isEditFormOpen}
+              style={{
+                padding: '8px 10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                width: '100%',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Edit3 size={13} style={{ color: 'var(--color-accent-text)' }} />
+                <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-primary)' }}>
+                  {tr('Informations Modifiables')}
+                </span>
+              </div>
+              <ChevronDown
+                size={12}
+                style={{
+                  transform: isEditFormOpen ? 'rotate(180deg)' : 'none',
+                  transition: 'transform 0.2s ease',
+                  color: 'var(--color-text-muted)',
+                }}
+              />
+            </button>
+
+            {isEditFormOpen && (
+              <div
+                style={{
+                  padding: '10px',
+                  borderTop: '1px solid var(--color-border-subtle)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                }}
+              >
+                {/* Libellé */}
+                <div>
+                  <label style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px', fontWeight: 600 }}>
+                    {tr("Nom / Libellé de l'entité :")}
+                  </label>
+                  <input
+                    type="text"
+                    value={editLabel}
+                    onChange={(e) => setEditLabel(e.target.value)}
+                    style={{
+                      width: '100%',
+                      fontSize: '12px',
+                      padding: '5px 8px',
+                      backgroundColor: 'var(--color-bg-canvas)',
+                      border: '1px solid var(--color-border-default)',
+                      borderRadius: 'var(--radius-sm)',
+                      color: 'var(--color-text-primary)',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+
+                {/* Statut Procédural / Rôle Judiciaire */}
+                <div>
+                  <label style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px', fontWeight: 600 }}>
+                    {tr('Statut Procédural / Rôle Judiciaire :')}
+                  </label>
+                  <input
+                    type="text"
+                    value={editStatus}
+                    placeholder={tr("ex: Suspect, Témoin assisté, Partie civile...")}
+                    onChange={(e) => setEditStatus(e.target.value)}
+                    style={{
+                      width: '100%',
+                      fontSize: '11.5px',
+                      padding: '5px 8px',
+                      backgroundColor: 'var(--color-bg-canvas)',
+                      border: '1px solid var(--color-border-default)',
+                      borderRadius: 'var(--radius-sm)',
+                      color: 'var(--color-text-primary)',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+
+                {/* Calque Actuel & Bouton de Reclassification */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                    <span style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
+                      {tr('Calque Probatoire :')}
+                    </span>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-xs"
+                      onClick={() => openLayerChangeModal(selectedNode.id, selectedNode.layer)}
+                      style={{ fontSize: '10px', padding: '1px 5px', color: 'var(--color-accent-text)' }}
+                    >
+                      <ShieldCheck size={11} />
+                      <span>{tr('Changer de calque')}</span>
+                    </button>
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '4px 8px',
+                      backgroundColor: 'var(--color-bg-canvas)',
+                      border: `1px solid ${layerDef?.color || 'var(--color-border-subtle)'}`,
+                      borderRadius: 'var(--radius-sm)',
+                      fontSize: '11px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        backgroundColor: layerDef?.color || 'var(--color-text-muted)',
+                        display: 'inline-block',
+                      }}
+                    />
+                    <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                      {label(layerDef, selectedNode.layer)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Certitude Probatoire Slider */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: 'var(--color-text-secondary)', marginBottom: '2px', fontWeight: 600 }}>
+                    <span>{tr('Certitude Probatoire :')}</span>
+                    <span className="font-mono" style={{ color: 'var(--color-accent-text)' }}>{Math.round(editConfidence * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0.1}
+                    max={1.0}
+                    step={0.05}
+                    value={editConfidence}
+                    onChange={(e) => setEditConfidence(Number(e.target.value))}
+                    style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--color-accent-primary)' }}
+                  />
+                </div>
+
+                {/* Type-Specific Editable Fields (Visible even if not yet populated) */}
+                {(TYPE_EDITABLE_FIELDS[selectedNode.type] || []).map((field) => (
+                  <div key={field.key}>
+                    <label style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px', fontWeight: 600 }}>
+                      {tr(field.label)} :
+                    </label>
+                    <input
+                      type="text"
+                      value={editProps[field.key] || ''}
+                      placeholder={tr(field.placeholder)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setEditProps((prev) => ({ ...prev, [field.key]: val }));
+                      }}
+                      style={{
+                        width: '100%',
+                        fontSize: '11.5px',
+                        padding: '5px 8px',
+                        backgroundColor: 'var(--color-bg-canvas)',
+                        border: '1px solid var(--color-border-default)',
+                        borderRadius: 'var(--radius-sm)',
+                        color: 'var(--color-text-primary)',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+                ))}
+
+                {/* Notes d'enquête & Observations */}
+                <div>
+                  <label style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px', fontWeight: 600 }}>
+                    {tr('Notes Judiciaires & Observations :')}
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={editNotes}
+                    placeholder={tr("Observations de l'enquêteur, PV d'audition, pièces de procédure...")}
+                    onChange={(e) => setEditNotes(e.target.value)}
+                    style={{
+                      width: '100%',
+                      fontSize: '11.5px',
+                      padding: '5px 8px',
+                      backgroundColor: 'var(--color-bg-canvas)',
+                      border: '1px solid var(--color-border-default)',
+                      borderRadius: 'var(--radius-sm)',
+                      color: 'var(--color-text-primary)',
+                      resize: 'vertical',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+
+                {/* Bouton Sauvegarder */}
+                <button
+                  type="button"
+                  className="btn btn-primary btn-xs"
+                  disabled={isSaving}
+                  onClick={handleSaveNodeEdits}
+                  style={{ gap: '6px', justifyContent: 'center', marginTop: '4px', padding: '6px 12px' }}
+                >
+                  <Save size={12} />
+                  <span>{isSaving ? tr('Enregistrement...') : tr('Enregistrer les modifications')}</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Official SNA Forensic Qualification Ribbon */}
+          {Boolean(snaRole) && (
+            <div
+              style={{
+                padding: 'var(--space-2) var(--space-3)',
+                backgroundColor: 'rgba(234, 179, 8, 0.12)',
+                border: '1px solid #eab308',
+                borderRadius: 'var(--radius-sm)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Sparkles size={14} style={{ color: '#eab308', flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontSize: '10px', textTransform: 'uppercase', color: '#ca8a04', fontWeight: 700 }}>
+                    {tr('Qualification Réseau SNA Validée')}
+                  </div>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                    {trLabel(String(snaRole))}
+                  </div>
+                </div>
+              </div>
+              {snaScore !== undefined && (
+                <span className="chip chip-neutral font-mono text-xs">
+                  {typeof snaScore === 'number' ? Math.round(snaScore * 100) + '%' : String(snaScore)}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Demarcation Divider before Exhibits (Rendered only if Photo or Audio exists) */}
+          {Boolean(evidencePhoto || wiretap) && (
+            <div style={{ height: '1px', backgroundColor: 'var(--color-border-subtle)', margin: '2px 0' }} />
+          )}
 
           {/* Photographic Evidence Exhibit Card */}
           {Boolean(evidencePhoto) && (
@@ -842,189 +1128,6 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   {tr('Agrandir plein écran')}
                 </a>
               </div>
-            </div>
-          )}
-
-          {/* 2. Official SNA Forensic Qualification Ribbon */}
-          {Boolean(snaRole) && (
-            <div
-              style={{
-                padding: 'var(--space-2) var(--space-3)',
-                backgroundColor: 'rgba(234, 179, 8, 0.12)',
-                border: '1px solid #eab308',
-                borderRadius: 'var(--radius-sm)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Sparkles size={14} style={{ color: '#eab308', flexShrink: 0 }} />
-                <div>
-                  <div style={{ fontSize: '10px', textTransform: 'uppercase', color: '#ca8a04', fontWeight: 700 }}>
-                    {tr('Qualification Réseau SNA Validée')}
-                  </div>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
-                    {trLabel(String(snaRole))}
-                  </div>
-                </div>
-              </div>
-              {snaScore !== undefined && (
-                <span className="chip chip-neutral font-mono text-xs">
-                  {typeof snaScore === 'number' ? Math.round(snaScore * 100) + '%' : String(snaScore)}
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* 3. Layer and Confidence Badges + Edit Toggle */}
-          <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-              <span
-                className="chip"
-                style={{
-                  backgroundColor: 'var(--color-bg-elevated)',
-                  borderColor: layerDef?.color || 'var(--color-border-default)',
-                  color: layerDef?.color,
-                  fontWeight: 600,
-                  fontSize: 'var(--text-xs)',
-                }}
-              >
-                {tr('COUCHE : {layer}', { layer: label(layerDef, selectedNode.layer) })}
-              </span>
-
-              {selectedNode.confidence !== null && (
-                <span
-                  className="chip chip-neutral font-mono"
-                  style={{ fontSize: 'var(--text-xs)' }}
-                  title={tr("Confiance analytique calculée par l'algorithme ou l'enquêteur")}
-                >
-                  {tr('CONFIANCE : {pct}%', { pct: Math.round(selectedNode.confidence * 100) })}
-                </span>
-              )}
-            </div>
-
-            <button
-              type="button"
-              className={`btn btn-xs ${isEditFormOpen ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setIsEditFormOpen((prev) => !prev)}
-            >
-              <Edit3 size={11} />
-              <span>{tr('Édition Fiche Entité')}</span>
-              {isEditFormOpen ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
-            </button>
-          </div>
-
-          {/* 3b. Collapsible Quick Interactive Entity Editor */}
-          {isEditFormOpen && (
-            <div
-              style={{
-                padding: 'var(--space-3)',
-                backgroundColor: 'var(--color-bg-elevated)',
-                border: '1px solid var(--color-border-subtle)',
-                borderRadius: 'var(--radius-sm)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 'var(--space-2)',
-              }}
-            >
-              {/* Libellé */}
-              <div>
-                <label style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px' }}>
-                  {tr("Nom / Libellé de l'entité :")}
-                </label>
-                <input
-                  type="text"
-                  value={editLabel}
-                  onChange={(e) => setEditLabel(e.target.value)}
-                  style={{
-                    width: '100%',
-                    fontSize: '12px',
-                    padding: '4px 8px',
-                    backgroundColor: 'var(--color-bg-surface)',
-                    border: '1px solid var(--color-border-default)',
-                    borderRadius: 'var(--radius-sm)',
-                    color: 'var(--color-text-primary)',
-                    boxSizing: 'border-box',
-                  }}
-                />
-              </div>
-
-              {/* Statut Judiciaire / Procédural */}
-              <div>
-                <label style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px' }}>
-                  {tr('Statut Judiciaire / Mandat :')}
-                </label>
-                <input
-                  type="text"
-                  value={editStatus}
-                  placeholder={tr("ex: Mandat d'arrêt Interpol, Garde à vue 48h...")}
-                  onChange={(e) => setEditStatus(e.target.value)}
-                  style={{
-                    width: '100%',
-                    fontSize: '11.5px',
-                    padding: '4px 8px',
-                    backgroundColor: 'var(--color-bg-surface)',
-                    border: '1px solid var(--color-border-default)',
-                    borderRadius: 'var(--radius-sm)',
-                    color: 'var(--color-text-primary)',
-                    boxSizing: 'border-box',
-                  }}
-                />
-              </div>
-
-              {/* Confiance Slider */}
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>
-                  <span>{tr('Certitude Probatoire :')}</span>
-                  <span className="font-mono">{Math.round(editConfidence * 100)}%</span>
-                </div>
-                <input
-                  type="range"
-                  min={0.1}
-                  max={1.0}
-                  step={0.05}
-                  value={editConfidence}
-                  onChange={(e) => setEditConfidence(Number(e.target.value))}
-                  style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--color-accent-primary)' }}
-                />
-              </div>
-
-              {/* Notes d'enquête */}
-              <div>
-                <label style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px' }}>
-                  {tr('Notes Judiciaires & Observations :')}
-                </label>
-                <textarea
-                  rows={2}
-                  value={editNotes}
-                  placeholder={tr("Observations des services d'enquête, pièces de procédure...")}
-                  onChange={(e) => setEditNotes(e.target.value)}
-                  style={{
-                    width: '100%',
-                    fontSize: '11.5px',
-                    padding: '4px 8px',
-                    backgroundColor: 'var(--color-bg-surface)',
-                    border: '1px solid var(--color-border-default)',
-                    borderRadius: 'var(--radius-sm)',
-                    color: 'var(--color-text-primary)',
-                    resize: 'vertical',
-                    boxSizing: 'border-box',
-                  }}
-                />
-              </div>
-
-              {/* Bouton Sauvegarder */}
-              <button
-                type="button"
-                className="btn btn-primary btn-xs"
-                disabled={isSaving}
-                onClick={handleSaveNodeEdits}
-                style={{ gap: '6px', justifyContent: 'center', marginTop: '2px' }}
-              >
-                <Save size={12} />
-                <span>{isSaving ? tr('Enregistrement...') : tr('Enregistrer dans le Dossier')}</span>
-              </button>
             </div>
           )}
 
@@ -1234,118 +1337,221 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             </div>
           )}
 
-          {/* 5. Direct Incident Relationships Table (Interactive Graph Navigation) */}
-          <div
-            style={{
-              padding: 'var(--space-3)',
-              backgroundColor: 'var(--color-bg-elevated)',
-              border: '1px solid var(--color-border-subtle)',
-              borderRadius: 'var(--radius-sm)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '6px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {/* Demarcation Divider */}
+          <div style={{ height: '1px', backgroundColor: 'var(--color-border-subtle)', margin: '2px 0' }} />
+
+          {/* 5. Direct Incident Relationships Table (Accordion Group matching Left Menu) */}
+          <div className="accordion-group" style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-sm)' }}>
+            <button
+              type="button"
+              className="accordion-header-btn"
+              onClick={() => toggleInspectorSection('relations')}
+              aria-expanded={openInspectorSections.relations}
+              style={{ padding: '8px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer' }}
+            >
+              <div className="accordion-title-left" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <GitBranch size={13} style={{ color: 'var(--color-accent-text)' }} />
-                <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>
-                  {tr('Liaisons Directes ({n})', { n: incidentEdges.length })}
+                <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-primary)' }}>
+                  {tr('Liaisons Directes')}
                 </span>
               </div>
-              <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
-                {tr('Cliquer pour inspecter')}
-              </span>
-            </div>
-
-            {incidentEdges.length === 0 ? (
-              <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', textAlign: 'center', padding: 'var(--space-2)' }}>
-                {tr('Aucune liaison directe incidente.')}
+              <div className="accordion-header-right" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span className="chip chip-neutral font-mono" style={{ fontSize: '10px', padding: '1px 6px' }}>
+                  {incidentEdges.length}
+                </span>
+                <ChevronDown
+                  size={12}
+                  className={`accordion-chevron ${openInspectorSections.relations ? 'is-open' : ''}`}
+                  style={{ transform: openInspectorSections.relations ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease', color: 'var(--color-text-muted)' }}
+                />
               </div>
-            ) : (
-              <div style={{ maxHeight: '150px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                {incidentEdges.map(({ edge, direction, neighborId, neighbor }) => {
-                  const neighborDisplay = neighbor?.label ? trLabel(neighbor.label) : tr('Entité');
-                  return (
-                    <button
-                      key={edge.id}
-                      type="button"
-                      onClick={() => selectNode(neighborId)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '6px',
-                        padding: '4px 6px',
-                        backgroundColor: 'var(--color-bg-canvas)',
-                        border: '1px solid var(--color-border-subtle)',
-                        borderRadius: 'var(--radius-sm)',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        fontSize: '11px',
-                      }}
-                      title={tr('Inspecter {label}', { label: neighborDisplay })}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden', minWidth: 0 }}>
-                        {direction === 'out' ? (
-                          <ArrowUpRight size={12} style={{ color: 'var(--color-accent-text)', flexShrink: 0 }} />
-                        ) : (
-                          <ArrowDownLeft size={12} style={{ color: 'var(--color-status-success)', flexShrink: 0 }} />
-                        )}
-                        <span style={{ fontWeight: 600, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {neighborDisplay}
-                        </span>
-                      </div>
+            </button>
 
-                      <span className="chip chip-neutral" style={{ fontSize: '9.5px', padding: '1px 5px', flexShrink: 0 }}>
-                        {getRelationLabel(edge.type, locale)}
-                      </span>
+            {openInspectorSections.relations && (
+              <div className="accordion-panel-content" style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '6px', borderTop: '1px solid var(--color-border-subtle)' }}>
+                {incidentEdges.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {/* Search bar */}
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                      <Search size={12} style={{ position: 'absolute', left: '8px', color: 'var(--color-text-muted)', pointerEvents: 'none' }} />
+                      <input
+                        type="text"
+                        value={linkSearchTerm}
+                        onChange={(e) => setLinkSearchTerm(e.target.value)}
+                        placeholder={tr('Filtrer par nom ou liaison...')}
+                        style={{
+                          width: '100%',
+                          fontSize: '11px',
+                          padding: '4px 6px 4px 24px',
+                          backgroundColor: 'var(--color-bg-canvas)',
+                          border: '1px solid var(--color-border-subtle)',
+                          borderRadius: 'var(--radius-sm)',
+                          color: 'var(--color-text-primary)',
+                        }}
+                      />
+                      {linkSearchTerm && (
+                        <button
+                          type="button"
+                          onClick={() => setLinkSearchTerm('')}
+                          style={{ position: 'absolute', right: '6px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', padding: '2px' }}
+                          title={tr('Effacer')}
+                        >
+                          <X size={11} />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Type Filter Selector with Full Labels & Ontology Colors */}
+                    {connectedTypes.length > 1 && (
+                      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px', padding: '2px 0' }}>
+                        <button
+                          type="button"
+                          className={`btn btn-xs ${linkTypeFilter === 'ALL' ? 'btn-primary' : 'btn-ghost'}`}
+                          onClick={() => setLinkTypeFilter('ALL')}
+                          style={{ padding: '2px 8px', fontSize: '10px' }}
+                        >
+                          {tr('Tous')} ({incidentEdges.length})
+                        </button>
+                        {connectedTypes.map((tKey) => {
+                          const tDef = registry.node_types[tKey];
+                          const count = incidentEdges.filter((ie) => ie.neighbor?.type === tKey).length;
+                          const cat = NODE_TYPE_TO_CATEGORY[tKey];
+                          const color = cat ? ONTOLOGY_CATEGORY_COLORS[cat] : 'var(--color-accent-text)';
+                          const isSelected = linkTypeFilter === tKey;
+                          return (
+                            <button
+                              key={tKey}
+                              type="button"
+                              className={`btn btn-xs ${isSelected ? 'btn-primary' : 'btn-ghost'}`}
+                              onClick={() => setLinkTypeFilter(tKey)}
+                              style={{
+                                padding: '2px 8px',
+                                fontSize: '10px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                borderLeft: `3px solid ${color}`,
+                              }}
+                            >
+                              <span
+                                style={{
+                                  width: '6px',
+                                  height: '6px',
+                                  borderRadius: '50%',
+                                  backgroundColor: color,
+                                  display: 'inline-block',
+                                }}
+                              />
+                              <span>{tDef?.label_fr || tKey}</span>
+                              <span style={{ opacity: 0.8 }}>({count})</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Filter count indicator if filtered */}
+                {(linkSearchTerm || linkTypeFilter !== 'ALL') && (
+                  <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>{tr('Résultats filtrés :')} {filteredIncidentEdges.length} / {incidentEdges.length}</span>
+                    <button
+                      type="button"
+                      onClick={() => { setLinkSearchTerm(''); setLinkTypeFilter('ALL'); }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-accent-text)', fontSize: '10px', padding: 0 }}
+                    >
+                      {tr('Réinitialiser')}
                     </button>
-                  );
-                })}
+                  </div>
+                )}
+
+                {/* Relationships list */}
+                {filteredIncidentEdges.length === 0 ? (
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', textAlign: 'center', padding: 'var(--space-2)' }}>
+                    {incidentEdges.length === 0
+                      ? tr('Aucune liaison directe incidente.')
+                      : tr('Aucune liaison ne correspond au filtre.')}
+                  </div>
+                ) : (
+                  <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    {filteredIncidentEdges.map(({ edge, direction, neighborId, neighbor }) => {
+                      const neighborDisplay = neighbor?.label ? trLabel(neighbor.label) : tr('Entité');
+                      const nType = neighbor?.type || '';
+                      const nCat = NODE_TYPE_TO_CATEGORY[nType];
+                      const nColor = nCat ? ONTOLOGY_CATEGORY_COLORS[nCat] : 'var(--color-text-muted)';
+                      return (
+                        <button
+                          key={edge.id}
+                          type="button"
+                          onClick={() => {
+                            const store = useGraphStore.getState();
+                            // If neighbor is currently hidden in person-only graph, unhide it!
+                            if (store.isPersonOnlyGraph && !store.expandedHiddenNodeIds.has(neighborId)) {
+                              const nextExpanded = new Set(store.expandedHiddenNodeIds);
+                              nextExpanded.add(neighborId);
+                              useGraphStore.setState({ expandedHiddenNodeIds: nextExpanded });
+                            }
+                            // Ensure neighbor's layer is active so it's not hidden
+                            if (neighbor && !store.activeLayers.has(neighbor.layer)) {
+                              const nextLayers = new Set(store.activeLayers);
+                              nextLayers.add(neighbor.layer);
+                              useGraphStore.setState({ activeLayers: nextLayers });
+                            }
+                            selectNode(neighborId);
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: '6px',
+                            padding: '4px 6px',
+                            backgroundColor: 'var(--color-bg-canvas)',
+                            border: '1px solid var(--color-border-subtle)',
+                            borderRadius: 'var(--radius-sm)',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            fontSize: '11px',
+                          }}
+                          title={tr('Inspecter et révéler {label}', { label: neighborDisplay })}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden', minWidth: 0 }}>
+                            {direction === 'out' ? (
+                              <ArrowUpRight size={12} style={{ color: 'var(--color-accent-text)', flexShrink: 0 }} />
+                            ) : (
+                              <ArrowDownLeft size={12} style={{ color: 'var(--color-status-success)', flexShrink: 0 }} />
+                            )}
+                            <span
+                              style={{
+                                width: '6px',
+                                height: '6px',
+                                borderRadius: '50%',
+                                backgroundColor: nColor,
+                                flexShrink: 0,
+                              }}
+                            />
+                            <span
+                              title={neighborDisplay}
+                              style={{ fontWeight: 600, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                            >
+                              {neighborDisplay}
+                            </span>
+                          </div>
+
+                          <span className="chip chip-neutral" style={{ fontSize: '9.5px', padding: '1px 5px', flexShrink: 0 }}>
+                            {getRelationLabel(edge.type, locale)}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
           </div>
 
-          {/* 6. SHA-256 Hash Chip with Copy */}
-          <div
-            style={{
-              padding: 'var(--space-2)',
-              backgroundColor: 'var(--color-bg-elevated)',
-              border: '1px solid var(--color-border-subtle)',
-              borderRadius: 'var(--radius-sm)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 'var(--space-2)',
-            }}
-          >
-            <div style={{ overflow: 'hidden' }}>
-              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
-                {tr('Empreinte Scellée (SHA-256)')}
-              </div>
-              <div
-                style={{
-                  fontSize: 'var(--text-xs)',
-                  fontFamily: 'var(--font-mono)',
-                  color: 'var(--color-layer-1-verified)',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {dummyHash}
-              </div>
-            </div>
-            <button
-              type="button"
-              className="btn btn-ghost btn-xs"
-              onClick={() => handleCopyHash(dummyHash)}
-              title={tr("Copier l'empreinte SHA-256")}
-            >
-              {copiedHash ? <Check size={13} style={{ color: 'var(--color-status-success)' }} /> : <Copy size={13} />}
-            </button>
-          </div>
+          {/* Demarcation Divider */}
+          <div style={{ height: '1px', backgroundColor: 'var(--color-border-subtle)', margin: '2px 0' }} />
 
           {/* 7. Provenance & GPS Coordinates */}
           <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
@@ -1417,57 +1623,83 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             if (visibleEntries.length === 0) return null;
 
             return (
-              <div>
-                <div style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: 'var(--space-1)', textTransform: 'uppercase' }}>
-                  {tr('Métadonnées Spécifiques')}
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '4px',
-                    backgroundColor: 'var(--color-bg-elevated)',
-                    padding: 'var(--space-2) var(--space-3)',
-                    borderRadius: 'var(--radius-sm)',
-                    border: '1px solid var(--color-border-subtle)',
-                    maxHeight: '150px',
-                    overflowY: 'auto',
-                  }}
+              <div className="accordion-group" style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-sm)' }}>
+                <button
+                  type="button"
+                  className="accordion-header-btn"
+                  onClick={() => toggleInspectorSection('metadata')}
+                  aria-expanded={openInspectorSections.metadata}
+                  style={{ padding: '8px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer' }}
                 >
-                  {visibleEntries.map(([k, v]) => {
-                    const displayKey = PROP_KEY_LABELS[k] || k.replace(/_/g, ' ');
-                    const displayVal =
-                      typeof v === 'number'
-                        ? k === 'voice_match' && v <= 1
-                          ? `${Math.round(v * 100)}%`
-                          : v.toLocaleString()
-                        : typeof v === 'object'
-                        ? JSON.stringify(v)
-                        : trLabel(String(v));
-                    return (
-                      <div
-                        key={k}
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          gap: 'var(--space-2)',
-                          fontSize: 'var(--text-xs)',
-                          borderBottom: '1px solid var(--color-border-subtle)',
-                          paddingBottom: '3px',
-                        }}
-                      >
-                        <span style={{ color: 'var(--color-text-muted)' }}>{displayKey}</span>
-                        <span style={{ color: 'var(--color-text-primary)', fontWeight: 600, textAlign: 'right' }}>
-                          {displayVal}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
+                  <div className="accordion-title-left" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <ShieldCheck size={13} style={{ color: 'var(--color-accent-text)' }} />
+                    <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-primary)' }}>
+                      {tr('Métadonnées Spécifiques')}
+                    </span>
+                  </div>
+                  <div className="accordion-header-right" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span className="chip chip-neutral font-mono" style={{ fontSize: '10px', padding: '1px 6px' }}>
+                      {visibleEntries.length}
+                    </span>
+                    <ChevronDown
+                      size={12}
+                      className={`accordion-chevron ${openInspectorSections.metadata ? 'is-open' : ''}`}
+                      style={{ transform: openInspectorSections.metadata ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease', color: 'var(--color-text-muted)' }}
+                    />
+                  </div>
+                </button>
+
+                {openInspectorSections.metadata && (
+                  <div
+                    className="accordion-panel-content"
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px',
+                      padding: '8px 10px',
+                      borderTop: '1px solid var(--color-border-subtle)',
+                      maxHeight: '180px',
+                      overflowY: 'auto',
+                    }}
+                  >
+                    {visibleEntries.map(([k, v]) => {
+                      const displayKey = PROP_KEY_LABELS[k] || k.replace(/_/g, ' ');
+                      const displayVal =
+                        typeof v === 'number'
+                          ? k === 'voice_match' && v <= 1
+                            ? `${Math.round(v * 100)}%`
+                            : v.toLocaleString()
+                          : typeof v === 'object'
+                          ? JSON.stringify(v)
+                          : trLabel(String(v));
+                      return (
+                        <div
+                          key={k}
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            gap: 'var(--space-2)',
+                            fontSize: 'var(--text-xs)',
+                            borderBottom: '1px solid var(--color-border-subtle)',
+                            paddingBottom: '3px',
+                          }}
+                        >
+                          <span style={{ color: 'var(--color-text-muted)' }}>{displayKey}</span>
+                          <span style={{ color: 'var(--color-text-primary)', fontWeight: 600, textAlign: 'right' }} title={String(displayVal)}>
+                            {displayVal}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             );
           })()}
+
+          {/* Demarcation Divider */}
+          <div style={{ height: '1px', backgroundColor: 'var(--color-border-subtle)', margin: '2px 0' }} />
 
           {/* 9. Core Procedural Action Buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>

@@ -119,8 +119,6 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
   // Common Forensic Meta
   const [layer, setLayer] = useState<LayerId>('VERIFIED');
   const [confidence, setConfidence] = useState(0.85);
-  const [statusJudiciaire, setStatusJudiciaire] = useState('');
-  const [notes, setNotes] = useState('');
   const [customAlias, setCustomAlias] = useState('');
 
   // Photographic Evidence (local file or URL)
@@ -336,9 +334,6 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
 
     let derivedLabel = '';
     const properties: Record<string, any> = {
-      status_judiciaire: statusJudiciaire.trim() || undefined,
-      role_judiciaire: statusJudiciaire.trim() || undefined,
-      notes: notes.trim() || undefined,
       photo_url: photoUrl.trim() || undefined,
       photo: photoUrl.trim() || undefined,
     };
@@ -1801,51 +1796,6 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
                 style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--color-accent-primary)' }}
               />
             </div>
-          </div>
-
-          {/* STATUT PROCÉDURAL */}
-          <div>
-            <label style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: '3px' }}>
-              {tr('Statut Procédural / Rôle Judiciaire (Optionnel) :')}
-            </label>
-            <input
-              type="text"
-              value={statusJudiciaire}
-              onChange={(e) => setStatusJudiciaire(e.target.value)}
-              placeholder="ex: Mandat d'arrêt, Mis en examen, Gel AML BaridiMob, Témoin..."
-              style={{
-                width: '100%',
-                fontSize: '11px',
-                padding: '4px 8px',
-                backgroundColor: 'var(--color-bg-elevated)',
-                border: '1px solid var(--color-border-default)',
-                borderRadius: 'var(--radius-sm)',
-                color: 'var(--color-text-primary)',
-              }}
-            />
-          </div>
-
-          {/* OBSERVATIONS */}
-          <div>
-            <label style={{ fontSize: '10.5px', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: '3px' }}>
-              {tr('Observations & Éléments de Procédure :')}
-            </label>
-            <textarea
-              rows={2}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Détails du scellé, procès-verbal de réquisition, constatation d'huissier..."
-              style={{
-                width: '100%',
-                fontSize: '11px',
-                padding: '4px 8px',
-                backgroundColor: 'var(--color-bg-elevated)',
-                border: '1px solid var(--color-border-default)',
-                borderRadius: 'var(--radius-sm)',
-                color: 'var(--color-text-primary)',
-                resize: 'none',
-              }}
-            />
           </div>
 
           {/* Footer Actions */}

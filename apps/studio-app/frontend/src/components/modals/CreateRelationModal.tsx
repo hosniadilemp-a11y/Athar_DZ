@@ -42,6 +42,12 @@ export const CreateRelationModal: React.FC<CreateRelationModalProps> = ({
   const [searchFilter, setSearchFilter] = useState('');
   const [notes, setNotes] = useState('');
 
+  React.useEffect(() => {
+    if (availableRelations.length > 0 && availableRelations[0]) {
+      setSelectedRelation(availableRelations[0].key);
+    }
+  }, [availableRelations]);
+
   if (!isOpen || !sourceNode || !targetNode) return null;
 
   const srcTypeDef = registry.node_types[sourceNode.type];
@@ -169,7 +175,10 @@ export const CreateRelationModal: React.FC<CreateRelationModalProps> = ({
           >
             <NodeIcon name={srcTypeDef?.icon || 'help-circle'} size={18} style={{ color: 'var(--color-accent-text)', flexShrink: 0 }} />
             <div style={{ overflow: 'hidden' }}>
-              <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-primary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+              <div
+                title={sourceNode.label}
+                style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-primary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', cursor: 'help' }}
+              >
                 {sourceNode.label}
               </div>
               <div style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
@@ -196,7 +205,10 @@ export const CreateRelationModal: React.FC<CreateRelationModalProps> = ({
           >
             <NodeIcon name={tgtTypeDef?.icon || 'help-circle'} size={18} style={{ color: 'var(--color-status-success)', flexShrink: 0 }} />
             <div style={{ overflow: 'hidden' }}>
-              <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-primary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+              <div
+                title={targetNode.label}
+                style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-primary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', cursor: 'help' }}
+              >
                 {targetNode.label}
               </div>
               <div style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
@@ -268,11 +280,27 @@ export const CreateRelationModal: React.FC<CreateRelationModalProps> = ({
                     }}
                   >
                     <div>
-                      <div style={{ fontWeight: isSelected ? 600 : 500 }}>
-                        {localized}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontWeight: isSelected ? 600 : 500 }}>{localized}</span>
+                        {rel.isRecommended && (
+                          <span
+                            style={{
+                              fontSize: '9.5px',
+                              fontWeight: 600,
+                              padding: '1px 5px',
+                              borderRadius: 'var(--radius-sm)',
+                              backgroundColor: 'rgba(37, 99, 235, 0.15)',
+                              color: 'var(--color-accent-text)',
+                              border: '1px solid rgba(37, 99, 235, 0.3)',
+                              letterSpacing: '0.02em',
+                            }}
+                          >
+                            {tr('Recommandé')}
+                          </span>
+                        )}
                       </div>
                       {rel.description && (
-                        <div style={{ fontSize: '10.5px', color: 'var(--color-text-muted)' }}>
+                        <div style={{ fontSize: '10.5px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
                           {rel.description}
                         </div>
                       )}

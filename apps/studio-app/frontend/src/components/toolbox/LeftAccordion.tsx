@@ -406,7 +406,7 @@ export const LeftAccordion: React.FC<LeftAccordionProps> = ({
                     <span className="node-drag-icon">
                       <NodeIcon name={iconName} size={15} style={{ color: domColor }} />
                     </span>
-                    <span className="node-drag-title">{nodeLabel}</span>
+                    <span className="node-drag-title" title={nodeLabel}>{nodeLabel}</span>
                   </div>
                 );
               })}

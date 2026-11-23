@@ -18,6 +18,7 @@ export interface LayoutOptions {
   centerY?: number;
   width?: number;
   height?: number;
+  pinnedNodeIds?: Set<string>;
 }
 
 const DEFAULT_CENTER_X = 600;
@@ -26,49 +27,69 @@ const DEFAULT_CENTER_Y = 450;
 /**
  * Apply selected layout to an array of nodes, returning updated nodes with new x, y coordinates.
  * Handles all special cases: 0 nodes, 1 node, disconnected graphs, missing layers.
+ * Preserves exact positions for nodes in pinnedNodeIds.
  */
 export function computeGraphLayout(
   nodes: GraphNode[],
   edges: GraphEdge[],
   layoutType: GraphLayoutType,
-  options?: LayoutOptions
+  options?: LayoutOptions,
+  pinnedNodeIds?: Set<string>
 ): GraphNode[] {
   const count = nodes.length;
   if (count === 0) return [];
 
+  const effectivePinned = pinnedNodeIds ?? options?.pinnedNodeIds;
+  const originalPos = new Map<string, { x: number; y: number }>();
+  if (effectivePinned && effectivePinned.size > 0) {
+    nodes.forEach((n) => {
+      if (effectivePinned.has(n.id) && typeof n.x === 'number' && typeof n.y === 'number') {
+        originalPos.set(n.id, { x: n.x, y: n.y });
+      }
+    });
+  }
+
   const cx = options?.centerX ?? DEFAULT_CENTER_X;
   const cy = options?.centerY ?? DEFAULT_CENTER_Y;
 
-  // Special Case 1: Single Node -> placed exactly at center
+  let computed: GraphNode[];
   if (count === 1) {
     const singleNode = nodes[0];
-    if (!singleNode) return [];
-    return [{ ...singleNode, x: cx, y: cy }];
-  }
-
-  // Special Case 2: Two Nodes -> placed symmetrically around center
-  if (count === 2) {
+    computed = singleNode ? [{ ...singleNode, x: cx, y: cy }] : [];
+  } else if (count === 2) {
     const [n1, n2] = nodes;
-    if (!n1 || !n2) return nodes;
-    return [
+    computed = !n1 || !n2 ? nodes : [
       { ...n1, x: cx - 140, y: cy },
       { ...n2, x: cx + 140, y: cy },
     ];
+  } else {
+    switch (layoutType) {
+      case 'concentric':
+        computed = computeConcentricLayout(nodes, cx, cy);
+        break;
+      case 'force':
+        computed = computeForceDirectedLayout(nodes, edges, cx, cy);
+        break;
+      case 'hierarchical':
+        computed = computeHierarchicalLayout(nodes, edges, cx, cy);
+        break;
+      case 'grid':
+        computed = computeGridLayout(nodes, cx, cy);
+        break;
+      case 'circular':
+      default:
+        computed = computeCircularLayout(nodes, cx, cy);
+        break;
+    }
   }
 
-  switch (layoutType) {
-    case 'concentric':
-      return computeConcentricLayout(nodes, cx, cy);
-    case 'force':
-      return computeForceDirectedLayout(nodes, edges, cx, cy);
-    case 'hierarchical':
-      return computeHierarchicalLayout(nodes, edges, cx, cy);
-    case 'grid':
-      return computeGridLayout(nodes, cx, cy);
-    case 'circular':
-    default:
-      return computeCircularLayout(nodes, cx, cy);
+  if (originalPos.size > 0) {
+    return computed.map((n) => {
+      const orig = originalPos.get(n.id);
+      return orig ? { ...n, x: orig.x, y: orig.y } : n;
+    });
   }
+  return computed;
 }
 
 /**
@@ -414,7 +435,8 @@ export function stepLiveForcePhysics(
   edges: GraphEdge[],
   cx: number = DEFAULT_CENTER_X,
   cy: number = DEFAULT_CENTER_Y,
-  fixedNodeId?: string | null
+  fixedNodeId?: string | null,
+  pinnedNodeIds?: Set<string>
 ): Map<string, { x: number; y: number }> {
   const count = nodes.length;
   const positions = new Map<string, { x: number; y: number; dx: number; dy: number }>();
@@ -422,7 +444,7 @@ export function stepLiveForcePhysics(
     positions.set(n.id, { x: n.x ?? cx, y: n.y ?? cy, dx: 0, dy: 0 });
   });
 
-  const k = Math.min(160, Math.max(100, Math.sqrt((850 * 650) / Math.max(count, 1))));
+  const k = Math.min(220, Math.max(120, Math.sqrt((850 * 650) / Math.max(count, 1))));
 
   // 1. Repulsion between all node pairs
   for (let i = 0; i < count; i++) {
@@ -439,11 +461,11 @@ export function stepLiveForcePhysics(
       let deltaY = posA.y - posB.y;
       let dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
       if (dist < 1) {
-        deltaX = (Math.sin(i * 13 + j) || 0.5) * 4;
-        deltaY = (Math.cos(i * 7 + j) || 0.5) * 4;
+        deltaX = (Math.sin(i * 13 + j) || 0.5) * 6;
+        deltaY = (Math.cos(i * 7 + j) || 0.5) * 6;
         dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
       }
-      const repForce = Math.min((k * k) / dist, 120);
+      const repForce = Math.min((k * k) / Math.max(dist, 10), 180);
       const fx = (deltaX / dist) * repForce;
       const fy = (deltaY / dist) * repForce;
       posA.dx += fx;
@@ -462,7 +484,7 @@ export function stepLiveForcePhysics(
     const deltaY = posSource.y - posTarget.y;
     const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     if (dist < 1) return;
-    const attrForce = (dist * dist) / k;
+    const attrForce = (dist * dist) / (k * 1.3);
     const fx = (deltaX / dist) * attrForce;
     const fy = (deltaY / dist) * attrForce;
     posSource.dx -= fx;
@@ -471,8 +493,8 @@ export function stepLiveForcePhysics(
     posTarget.dy += fy;
   });
 
-  // 3. Center gravity
-  const gravity = 0.025;
+  // 3. Center gravity (smooth pull towards canvas center)
+  const gravity = 0.032;
   nodes.forEach((node) => {
     const pos = positions.get(node.id);
     if (!pos) return;
@@ -480,22 +502,22 @@ export function stepLiveForcePhysics(
     pos.dy += (cy - pos.y) * gravity;
   });
 
-  // 4. Dampen max step per tick for silky fluid motion
-  const maxStep = 2.5;
+  // 4. Kinetic step dampening allowing fluid, responsive motion for all nodes
+  const maxStep = 5.0;
   const result = new Map<string, { x: number; y: number }>();
   nodes.forEach((node) => {
     const pos = positions.get(node.id);
     if (!pos) return;
-    if (node.id === fixedNodeId) {
+    if (node.id === fixedNodeId || (pinnedNodeIds && pinnedNodeIds.has(node.id))) {
       result.set(node.id, { x: pos.x, y: pos.y });
       return;
     }
     const dispDist = Math.sqrt(pos.dx * pos.dx + pos.dy * pos.dy);
-    if (dispDist > 0.01) {
+    if (dispDist > 0.02) {
       const step = Math.min(dispDist, maxStep);
       result.set(node.id, {
-        x: Math.round(pos.x + (pos.dx / dispDist) * step),
-        y: Math.round(pos.y + (pos.dy / dispDist) * step),
+        x: Number((pos.x + (pos.dx / dispDist) * step).toFixed(1)),
+        y: Number((pos.y + (pos.dy / dispDist) * step).toFixed(1)),
       });
     } else {
       result.set(node.id, { x: pos.x, y: pos.y });
@@ -576,15 +598,17 @@ export function computePersonGraphProjection(
     }
   });
 
-  // Count hidden & expanded non-person neighbors for every visible node
+  // Count hidden & expanded non-person direct neighbors for every visible node
   visibleNodes.forEach((vNode) => {
-    const neighbors = adj.get(vNode.id) || [];
     const hiddenSet = new Set<string>();
     const expandedSet = new Set<string>();
 
+    const neighbors = adj.get(vNode.id) || [];
     neighbors.forEach(({ neighborId }) => {
       const target = nodeById.get(neighborId);
       if (!target || isPersonEntity(target)) return;
+      if (ADMINISTRATIVE_CONTAINER_TYPES.has(target.type.toLowerCase())) return;
+
       if (visibleNodeIds.has(neighborId)) {
         expandedSet.add(neighborId);
       } else {
@@ -601,21 +625,21 @@ export function computePersonGraphProjection(
     (e) => visibleNodeIds.has(e.source_id) && visibleNodeIds.has(e.target_id)
   );
 
-  // 2. Synthesize aggregated mediated edges between pairs of visible Person nodes
-  // connected via 1..3 hidden operational entities (excluding generic administrative containers)
-  const personNodes = visibleNodes.filter(isPersonEntity);
+  // 2. Synthesize aggregated mediated edges between pairs of visible nodes
+  // connected via 1..5 hidden operational entities (excluding generic administrative containers).
+  // Any visible node (Person or expanded non-person) terminates the path.
   const pairMediationMap = new Map<
     string,
     {
-      personA: string;
-      personB: string;
+      nodeA: string;
+      nodeB: string;
       intermediateNodes: Map<string, GraphNode>;
       underlyingEdges: Map<string, GraphEdge>;
     }
   >();
 
-  personNodes.forEach((startPerson) => {
-    // BFS through hidden operational nodes up to 3 intermediate nodes (total path length <= 4 edges)
+  visibleNodes.forEach((startNode) => {
+    // BFS through intermediate operational hidden nodes up to 5 hops
     interface QueueItem {
       currId: string;
       intermediateIds: string[];
@@ -623,7 +647,7 @@ export function computePersonGraphProjection(
     }
 
     const queue: QueueItem[] = [
-      { currId: startPerson.id, intermediateIds: [], edgeIds: [] },
+      { currId: startNode.id, intermediateIds: [], edgeIds: [] },
     ];
 
     while (queue.length > 0) {
@@ -631,25 +655,25 @@ export function computePersonGraphProjection(
       const neighbors = adj.get(currId) || [];
 
       for (const { neighborId, edge } of neighbors) {
-        if (neighborId === startPerson.id) continue;
+        if (neighborId === startNode.id) continue;
         if (intermediateIds.includes(neighborId)) continue;
 
         const neighborNode = nodeById.get(neighborId);
         if (!neighborNode) continue;
 
-        // Reached another visible Person node via >= 1 hidden intermediates!
-        if (visibleNodeIds.has(neighborId) && isPersonEntity(neighborNode)) {
+        // Reached another visible node via >= 1 hidden intermediates!
+        if (visibleNodeIds.has(neighborId)) {
           if (intermediateIds.length >= 1) {
             const [pA, pB] =
-              startPerson.id < neighborId
-                ? [startPerson.id, neighborId]
-                : [neighborId, startPerson.id];
+              startNode.id < neighborId
+                ? [startNode.id, neighborId]
+                : [neighborId, startNode.id];
             const pairKey = `mediated__${pA}__${pB}`;
 
             if (!pairMediationMap.has(pairKey)) {
               pairMediationMap.set(pairKey, {
-                personA: pA,
-                personB: pB,
+                nodeA: pA,
+                nodeB: pB,
                 intermediateNodes: new Map(),
                 underlyingEdges: new Map(),
               });
@@ -665,14 +689,15 @@ export function computePersonGraphProjection(
               if (foundEdge) entry.underlyingEdges.set(eid, foundEdge);
             });
           }
+          // Do not traverse past ANY visible node (paths split at visible intermediate nodes)
           continue;
         }
 
-        // Only traverse through hidden operational entities (max 3 intermediate nodes)
+        // Traverse through intermediate hidden operational entities (max 5 hidden intermediate nodes)
         if (
-          !visibleNodeIds.has(neighborId) &&
           !ADMINISTRATIVE_CONTAINER_TYPES.has(neighborNode.type.toLowerCase()) &&
-          intermediateIds.length < 3
+          !isPersonEntity(neighborNode) &&
+          intermediateIds.length < 5
         ) {
           queue.push({
             currId: neighborId,
@@ -697,17 +722,18 @@ export function computePersonGraphProjection(
         : 0.85;
 
     const override = mediatedEdgeOverrides[pairKey];
-    const firstIntermediate = intermediates[0]!;
+    const firstIntermediate = intermediates[0];
+    const caseId = firstIntermediate?.case_id || nodeById.get(entry.nodeA)?.case_id || 'active';
     const summaryLabel =
       intermediates.length === 1
-        ? `Via ${firstIntermediate.label}`
-        : `Via ${firstIntermediate.label} (+${intermediates.length - 1})`;
+        ? `Liaison médiée (1 nœud)`
+        : `Liaison médiée (${intermediates.length} nœuds)`;
 
     mediatedEdges.push({
       id: pairKey,
-      case_id: firstIntermediate.case_id || 'active',
-      source_id: entry.personA,
-      target_id: entry.personB,
+      case_id: caseId,
+      source_id: entry.nodeA,
+      target_id: entry.nodeB,
       type: 'RELATION_MEDIEE',
       layer: override?.layer || underlying[0]?.layer || 'FLOWS',
       confidence: override?.confidence !== undefined ? override.confidence : Number(avgConf.toFixed(2)),

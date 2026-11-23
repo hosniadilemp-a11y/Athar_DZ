@@ -78,6 +78,7 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
   const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [livePositions, setLivePositions] = useState<Map<string, { x: number; y: number }>>(new Map());
+  const dragPosRef = useRef<{ id: string; x: number; y: number } | null>(null);
 
   // Canvas Drag & Drop State (Feature 1)
   const [isDragOverCanvas, setIsDragOverCanvas] = useState(false);
@@ -111,7 +112,10 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
     const tick = () => {
       const currentNodes = useGraphStore.getState().nodes;
       const currentEdges = useGraphStore.getState().edges;
-      const stepMap = stepLiveForcePhysics(currentNodes, currentEdges, 600, 450, draggingNodeId);
+      const pinnedNodeIds = useGraphStore.getState().pinnedNodeIds;
+      const cx = containerSize.w > 100 ? containerSize.w / 2 : 600;
+      const cy = containerSize.h > 100 ? containerSize.h / 2 : 450;
+      const stepMap = stepLiveForcePhysics(currentNodes, currentEdges, cx, cy, draggingNodeId, pinnedNodeIds);
 
       useGraphStore.setState((state) => ({
         nodes: state.nodes.map((n) => {
@@ -125,7 +129,7 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
 
     animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
-  }, [isLiveSimulationActive, nodes.length, draggingNodeId]);
+  }, [isLiveSimulationActive, nodes.length, draggingNodeId, containerSize.w, containerSize.h]);
 
   // Handle Node Click (Selection or Link Creation Mode)
   const handleNodeClick = useCallback(
@@ -313,6 +317,7 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
     const node = nodeMap.get(nodeId);
     if (!node) return;
     setDraggingNodeId(nodeId);
+    dragPosRef.current = { id: nodeId, x: node.x ?? 0, y: node.y ?? 0 };
     setDragOffset({
       x: e.clientX - (node.x ?? 0) * viewport.zoom - viewport.panX,
       y: e.clientY - (node.y ?? 0) * viewport.zoom - viewport.panY,
@@ -327,6 +332,7 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
       } else if (draggingNodeId) {
         const newX = Math.round((e.clientX - viewport.panX - dragOffset.x) / viewport.zoom);
         const newY = Math.round((e.clientY - viewport.panY - dragOffset.y) / viewport.zoom);
+        dragPosRef.current = { id: draggingNodeId, x: newX, y: newY };
         setLivePositions((prev) => {
           const next = new Map(prev);
           next.set(draggingNodeId, { x: newX, y: newY });
@@ -340,10 +346,16 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
         setIsPanning(false);
       }
       if (draggingNodeId) {
-        const finalPos = livePositions.get(draggingNodeId);
-        if (finalPos && onNodeDragEnd) {
-          onNodeDragEnd(draggingNodeId, finalPos.x, finalPos.y);
+        const latest = dragPosRef.current;
+        if (latest && latest.id === draggingNodeId && onNodeDragEnd) {
+          onNodeDragEnd(draggingNodeId, latest.x, latest.y);
         }
+        setLivePositions((prev) => {
+          const next = new Map(prev);
+          next.delete(draggingNodeId);
+          return next;
+        });
+        dragPosRef.current = null;
         setDraggingNodeId(null);
       }
     };
@@ -356,7 +368,7 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
         window.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isPanning, panStart, draggingNodeId, dragOffset, viewport, livePositions, onViewportChange, onNodeDragEnd]);
+  }, [isPanning, panStart, draggingNodeId, dragOffset, viewport, onViewportChange, onNodeDragEnd]);
 
   // Keyboard navigation on canvas
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -645,12 +657,12 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
           targetId={pendingLink.targetId}
           onClose={() => {
             setPendingLink(null);
-            setLinkMode(false);
             setLinkSourceNodeId(null);
           }}
           onConfirm={(relationType, layer, confidence, notes) => {
             createManualEdge(pendingLink.sourceId, pendingLink.targetId, relationType, layer, confidence, notes);
             setPendingLink(null);
+            setLinkSourceNodeId(null);
           }}
         />
       )}

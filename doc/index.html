@@ -29,6 +29,8 @@
       <li><a href="roadmap-phases.html"><span>🚀 07. Incremental Development Phases</span><span class="nav-badge">6 Releases</span></a></li>
       <li><a href="maquette.html" class="maquette-cta"><span>🖥️ 08. Interactive Application Mock</span><span class="nav-badge">Live Studio</span></a></li>
       <li><a href="tools-cache-inventory.html"><span>📦 09. Outils Téléchargés &amp; Justification</span><span class="nav-badge" style="background:#10b981;color:#fff;">100% Hors-Ligne</span></a></li>
+      <li><a href="SPECIFICATION.md#chapitre-11--système-multi-onglets-denquête--extraction-de-sous-graphes-ciblés-actor-sphere"><span>📑 11. Multi-Onglets &amp; Actor Sphere</span><span class="nav-badge" style="background:#8b5cf6;color:#fff;">Sub-Graph</span></a></li>
+      <li><a href="SPECIFICATION.md#chapitre-12--ingestion-universelle-drag-and-drop--station-de-dépouillement-forensique-multi-formats"><span>📥 12. Drag &amp; Drop Microservices</span><span class="nav-badge" style="background:#ec4899;color:#fff;">Pipeline</span></a></li>
     </ul>
 
     <div class="nav-section">Markdown Reference</div>
@@ -358,6 +360,16 @@
           <div class="card-title"><span class="badge badge-emerald">Live Prototype</span> 🖥️ Full-Screen App Maquette</div>
           <p>Interactive HTML simulation of the actual investigator software with real case data, live tool execution simulation, Timeline view, Map view, Evidence Locker, and Court Report generator.</p>
         </a>
+
+        <a href="SPECIFICATION.md#chapitre-11--système-multi-onglets-denquête--extraction-de-sous-graphes-ciblés-actor-sphere" class="card" style="text-decoration:none;border-color:#8b5cf6;">
+          <div class="card-title"><span class="badge" style="background:#8b5cf6;color:#fff;">Chapter 11</span> 📑 Multi-Tab &amp; "Actor Sphere" Sub-Graph</div>
+          <p>Spécification du système d'onglets de travail (type Photoshop/Maltego) et de l'algorithme "Stop-at-Actors BFS" isolant la sphère d'un suspect sans aspirer tout le graphe.</p>
+        </a>
+
+        <a href="SPECIFICATION.md#chapitre-12--ingestion-universelle-drag-and-drop--station-de-dépouillement-forensique-multi-formats" class="card" style="text-decoration:none;border-color:#ec4899;">
+          <div class="card-title"><span class="badge" style="background:#ec4899;color:#fff;">Chapter 12</span> 📥 Drag &amp; Drop &amp; Microservices Station</div>
+          <p>Chaîne de microservices coopératifs (InsightFace, PaddleOCR, YOLOv8) avec extraction multi-angles, groupement anti-saturation et bassin d'indices non-inclus indexé.</p>
+        </a>
       </div>
     </section>
 
@@ -446,7 +458,137 @@
         </table>
       </div>
     </section>
-    <!-- Modal Fiche Suspect 1-Clic -->
+
+    <!-- 5. Future Architecture: Multi-Tab Workspace ("Actor Sphere") & Composable Microservices Drag & Drop (Option B) -->
+    <section style="margin-top:2rem;">
+      <h2 class="section-title">5. Nouvelles Spécifications : Système Multi-Onglets ("Actor Sphere") &amp; Pipeline de Microservices Coopératifs (Option B)</h2>
+      <p class="section-subtitle">
+        Synthèse normative des Chapitres 11 et 12 de la spécification technique (<code>doc/SPECIFICATION.md</code>) : isolation de sous-graphe focalisé sans effet "hairball" et chaîne de microservices d'extraction multi-aspects avec bassin d'indices non-inclus indexé.
+      </p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:1rem;margin-bottom:1.5rem;">
+        
+        <!-- Feature 1: Multi-Tab Workspace & Stop-at-Actors BFS -->
+        <div class="card" style="border-left:4px solid #8b5cf6;">
+          <div class="card-title" style="color:#8b5cf6;font-size:0.95rem;margin-bottom:0.4rem;">
+            📑 1. Système Multi-Onglets &amp; Algorithme "Stop-at-Actors BFS" (Chapitre 11)
+          </div>
+          <p style="font-size:0.81rem;color:var(--text-secondary);line-height:1.5;">
+            <strong>• Problème de Non-Convexité :</strong> Dans un graphe d'enquête, prendre naïvement toutes les connexions d'un suspect aspire 80% du dossier complet (effet "hairball" dû aux antennes BTS et hubs partagés).<br/>
+            <strong>• Algorithme "Actor Sphere" :</strong> Parcours en largeur (BFS) traversant librement les actifs/traces (téléphones, cartes SIM, comptes bancaires, véhicules, notes vocales), mais <em>s'arrêtant strictement dès qu'un autre nœud Personne est atteint</em>.<br/>
+            <strong>• Nœuds Frontières &amp; Actifs Partagés :</strong> La personne tierce apparaît comme un point d'ancrage avec badge masqué sans déployer sa vie privée. Les actifs utilisés en commun (ex: véhicule partagé) sont mis en exergue au centre.<br/>
+            <strong>• Ergonomie Photoshop :</strong> Onglet Maître <code>[ 🌐 Dossier Général ]</code> fixe + onglets focalisés par suspect avec zoom et disposition indépendants mais synchronisation en temps réel de la preuve (SSOT).
+          </p>
+        </div>
+
+        <!-- Feature 2: Composable Microservices Drag & Drop Pipeline -->
+        <div class="card" style="border-left:4px solid #ec4899;">
+          <div class="card-title" style="color:#ec4899;font-size:0.95rem;margin-bottom:0.4rem;">
+            📥 2. Ingestion Drag &amp; Drop par Microservices Coopératifs (Chapitre 12)
+          </div>
+          <p style="font-size:0.81rem;color:var(--text-secondary);line-height:1.5;">
+            <strong>• Dépôt Contextuel :</strong> Glisser un élément sur le canevas ouvre la Station de Dépouillement ; glisser directement sur un nœud Personne permet de définir son avatar ou d'enrichir ses données biométriques.<br/>
+            <strong>• Chaîne de Microservices Coopératifs :</strong> Un service d'ingress dispatche le fichier vers des microservices spécialisés (Visages InsightFace, OCR/Plaques PaddleOCR, Détecteur d'objets YOLOv8) qui se complètent mutuellement.<br/>
+            <strong>• Corrélation Spatiale (Cross-Service Binder) :</strong> Si une plaque d'immatriculation est détectée à l'intérieur d'une boîte englobante de voiture, le système fusionne automatiquement les deux détections en un seul nœud <code>vehicule</code> enrichi.<br/>
+            <strong>• Zéro Cloud :</strong> Modèles 100% locaux (Faster-Whisper Darija, PyAnnote, Qwen 2.5 NER, ExifTool) respectant la norme ISO 27037.
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Deep Dive Card: Anti-Saturation & Searchable Staging Pool -->
+      <div class="card" style="border-left:4px solid #10b981;">
+        <h3 style="font-size:0.98rem;color:#10b981;margin-bottom:0.5rem;">🧩 3. Maîtrise de la Saturation : Groupement par Catégories &amp; Bassin d'Indices Non-Inclus (Pending Clues Pool)</h3>
+        <p style="font-size:0.81rem;color:var(--text-secondary);line-height:1.5;margin-bottom:0.75rem;">
+          Pour éviter d'inonder le graphe lorsqu'une photo ou une vidéo révèle 40 éléments (15 voitures garées, 10 passants en arrière-plan, 5 panneaux), Athar applique une stratégie forensique à deux étages :
+        </p>
+        
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(290px, 1fr));gap:0.75rem;margin-bottom:0.75rem;">
+          <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:8px;padding:0.85rem;font-size:0.8rem;">
+            <div style="font-weight:700;color:#f59e0b;margin-bottom:0.35rem;">📁 Étage 1 : Groupement Hiérarchique de Prévisualisation</div>
+            <p style="color:var(--text-secondary);line-height:1.45;margin:0;">
+              L'enquêteur voit des dossiers rétractables : <strong>Acteurs Clés</strong> (visages nets), <strong>Véhicules &amp; Plaques</strong>, <strong>Indices Remarquables</strong> (téléphones, argent), et <strong>Arrière-Plan Secondaire</strong> (replié par défaut). Seuls les éléments cochés manuellement sont versés sur le canevas d'investigation.
+            </p>
+          </div>
+
+          <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:8px;padding:0.85rem;font-size:0.8rem;">
+            <div style="font-weight:700;color:#06b6d4;margin-bottom:0.35rem;">🔍 Étage 2 : Bassin d'Indices Non-Inclus Consultable Ultérieurement</div>
+            <p style="color:var(--text-secondary);line-height:1.45;margin:0;">
+              Les entités non retenues restent enregistrées en arrière-plan (<code>PENDING_NON_INCLUDED</code>) et sont indexées dans <strong>Elasticsearch 8.14</strong> et <strong>Qdrant</strong>. Si une écoute ultérieure mentionne un détail secondaire (ex: <em>"une Peugeot blanche garée au fond"</em>), le moteur le retrouve immédiatement !
+            </p>
+          </div>
+        </div>
+
+        <table class="tech-table">
+          <thead>
+            <tr>
+              <th>Format Déposé</th>
+              <th>Pipeline de Microservices Coopératifs</th>
+              <th>Propositions Clés (Sur le Graphe)</th>
+              <th>Bassin Non-Inclus (Indexé &amp; Recherchable Plus Tard)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Photographie / Capture</strong></td>
+              <td><code>srv-ingress</code> &rarr; <code>srv-face</code> + <code>srv-ocr-alpr</code> + <code>srv-yolo</code> &rarr; <code>srv-binder</code></td>
+              <td>Visage du suspect (avec avatar), véhicule avec plaque matricule liée, téléphone.</td>
+              <td>Les 12 voitures garées au loin, piétons flous, enseignes de magasins en arrière-plan.</td>
+            </tr>
+            <tr>
+              <td><strong>Audio / Vocal WhatsApp</strong></td>
+              <td><code>srv-clean</code> &rarr; <code>srv-whisper-darija</code> &rarr; <code>srv-pyannote</code> &rarr; <code>srv-ner</code></td>
+              <td>Locuteurs principaux (Victime vs Escroc), montants négociés en DZD, lieux de RDV.</td>
+              <td>Bruits d'ambiance (sirènes, appels à la prière), locuteurs tertiaires lointains.</td>
+            </tr>
+            <tr>
+              <td><strong>Document Judiciaire (PDF)</strong></td>
+              <td><code>srv-pdf-parser</code> &rarr; <code>srv-layout</code> &rarr; <code>srv-ner-qwen</code> &rarr; <code>srv-geo</code></td>
+              <td>Suspects auditionnés, comptes BaridiMob/CCP visés, numéros mobiles de contact.</td>
+              <td>Greffiers, articles de loi du CPP cités, tampons officiels, mentions de procédure.</td>
+            </tr>
+            <tr>
+              <td><strong>Relevé Télécom (CDR CSV)</strong></td>
+              <td><code>srv-csv-parser</code> &rarr; <code>srv-operator</code> &rarr; <code>srv-bts-geo</code> &rarr; <code>srv-freq</code></td>
+              <td>Top 5 correspondants fréquents du suspect et bornages suspects pour la Timeline.</td>
+              <td>Les 4 500 appels ordinaires du mois, requêtables à la demande sans saturer la vue.</td>
+            </tr>
+            <tr>
+              <td><strong>Vidéosurveillance (MP4)</strong></td>
+              <td><code>srv-ffmpeg-keyframes</code> &rarr; <code>srv-bytetrack</code> &rarr; <code>srv-yolo-alpr</code> &rarr; <code>srv-face</code></td>
+              <td>Acteurs en premier plan au moment de l'infraction et véhicules impliqués.</td>
+              <td>L'ensemble des autres véhicules et passants circulant durant l'heure de vidéo.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- 4. Unified OSINT Ingestion & Event-Driven Tool Chaining -->
+        <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #a855f7;border-radius:8px;padding:1.1rem;margin-top:1.25rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e293b;padding-bottom:0.5rem;margin-bottom:0.8rem;">
+            <strong style="color:#c084fc;font-size:0.95rem;">🔄 Unification avec l'Arsenal OSINT : Orchestration d'Événements &amp; Déclenchements Récursifs</strong>
+            <span class="badge" style="background:#a855f7;color:#fff;font-size:0.7rem;">Temporal.io Workflows</span>
+          </div>
+          <p style="font-size:0.81rem;color:var(--text-secondary);line-height:1.6;margin:0 0 0.75rem;">
+            Le pipeline de microservices ne traite pas seulement les fichiers locaux : <strong>il s'applique de manière identique et transparente à toutes les collectes automatisées des 76 outils OSINT</strong> (Facebook, Telegram, Instagram, TikTok, scrapers web).
+          </p>
+
+          <div style="background:#0c1322;border:1px solid #1e293b;border-radius:6px;padding:0.9rem;font-size:0.8rem;color:#cbd5e1;line-height:1.6;">
+            <strong style="color:#38bdf8;">Exemple Concret : Dépouillement Récursif d'une Page de Profil</strong>
+            <ul style="padding-left:1.2rem;margin:0.4rem 0 0;line-height:1.6;">
+              <li><strong>Collecte Initiale :</strong> L'outil OSINT télécharge la page d'un suspect : <strong>3 photos</strong>, <strong>4 posts texte</strong>, et <strong>1 vidéo</strong>.</li>
+              <li><strong>Dispatch par Microservices :</strong> Les 4 posts sont envoyés au NER arabe/français, la vidéo à l'extracteur de keyframes, et les photos aux microservices de vision.</li>
+              <li><strong>Découverte sur la Photo #1 :</strong> Le microservice <code>InsightFace</code> isole <strong>3 visages</strong> :
+                <br/>&bull; <em>Visage 1 :</em> Rapproché avec certitude (&gt;92% dans Qdrant) comme étant le suspect principal (Amine B.).
+                <br/>&bull; <em>Visages 2 et 3 :</em> <strong>Individus inconnus</strong> dans la base de données.
+              </li>
+              <li><strong>Orchestration Récursive &amp; Appel de Nouveaux Outils :</strong> L'orchestrateur émet un événement qui <strong>déclenche automatiquement de nouveaux outils OSINT</strong> (recherche faciale inversée, Maigret sur pseudonymes associés) pour rechercher qui sont ces 2 complices inconnus.</li>
+              <li><strong>Bassin d'Indices en Attente :</strong> Les profils découverts ne polluent pas le graphe actif : ils sont placés dans le <strong>tiroir des indices non-inclus de l'onglet du suspect</strong>, où l'OPJ peut d'un clic les inclure ou les écarter.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
     <div id="studio-suspect-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:9999;align-items:center;justify-content:center;padding:1.5rem;">
       <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:12px;max-width:680px;width:100%;max-height:90vh;overflow-y:auto;padding:1.5rem;box-shadow:0 20px 40px rgba(0,0,0,0.6);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;border-bottom:1px solid var(--border-color);padding-bottom:0.75rem;">

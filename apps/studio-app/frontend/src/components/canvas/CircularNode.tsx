@@ -4,7 +4,7 @@ import type { LayerId } from '../../types/registry';
 import { NodeIcon } from './NodeIcon';
 import registryDataRaw from '../../registry/registry.json';
 import type { RegistryData } from '../../types/registry';
-import { MoreHorizontal, Camera, Volume2 } from 'lucide-react';
+import { MoreHorizontal, Volume2, Pin } from 'lucide-react';
 import {
   useGraphStore,
   ONTOLOGY_CATEGORY_COLORS,
@@ -33,6 +33,44 @@ const LAYER_BORDER_COLORS: Record<LayerId, string> = {
   INFRA: 'var(--color-layer-3-infra)',
   HYPOTHESIS: 'var(--color-layer-4-hypothesis)',
   FLOWS: 'var(--color-layer-5-flows)',
+};
+
+const LAYER_BADGES: Record<LayerId, { label: string; bg: string; border: string; color: string; tooltip: string }> = {
+  VERIFIED: {
+    label: '✓ PV',
+    bg: 'rgba(16, 185, 129, 0.22)',
+    border: '1.5px solid #10b981',
+    color: '#10b981',
+    tooltip: 'Fait judiciairement établi sous scellé (ISO 27037)',
+  },
+  OSINT_RAW: {
+    label: '🌐 OSINT',
+    bg: 'rgba(56, 189, 248, 0.22)',
+    border: '1.5px solid #38bdf8',
+    color: '#38bdf8',
+    tooltip: 'Source ouverte / Renseignement brut du web',
+  },
+  INFRA: {
+    label: '📡 CDR',
+    bg: 'rgba(129, 140, 248, 0.22)',
+    border: '1.5px solid #818cf8',
+    color: '#818cf8',
+    tooltip: 'Vecteur technique / Bornage opérateur / C2',
+  },
+  FLOWS: {
+    label: '💳 Flux',
+    bg: 'rgba(245, 158, 11, 0.22)',
+    border: '1.5px solid #f59e0b',
+    color: '#f59e0b',
+    tooltip: 'Transaction financière / Virement / BaridiMob',
+  },
+  HYPOTHESIS: {
+    label: '❓ Piste',
+    bg: 'rgba(236, 72, 153, 0.22)',
+    border: '1.5px dashed #ec4899',
+    color: '#ec4899',
+    tooltip: "Piste d'enquête / Hypothèse de travail interne",
+  },
 };
 
 /**
@@ -98,6 +136,7 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
   const forcedVisibleNodeLabelIds = useGraphStore((s) => s.forcedVisibleNodeLabelIds);
   const forcedHiddenNodeLabelIds = useGraphStore((s) => s.forcedHiddenNodeLabelIds);
   const toggleExpandNodeConnections = useGraphStore((s) => s.toggleExpandNodeConnections);
+  const isPinned = useGraphStore((s) => s.pinnedNodeIds.has(node.id));
 
   // Inline rename state (Feature 2)
   const [isEditing, setIsEditing] = useState(false);
@@ -260,7 +299,11 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
             : `radial-gradient(circle, ${activeBorderColor}36 0%, #182234 85%)`,
           borderWidth: isHypothesis ? '2.5px' : '2.5px',
           borderStyle: isHypothesis ? 'dashed' : 'solid',
-          borderColor: isLinkSource ? 'var(--color-status-warning)' : activeBorderColor,
+          borderColor: isLinkSource
+            ? 'var(--color-status-warning)'
+            : isSelected
+            ? '#ef4444'
+            : activeBorderColor,
           boxShadow: isHovered
             ? `0 0 0 3.5px var(--color-accent-primary), 0 8px 24px rgba(0, 0, 0, 0.7)`
             : isLinkSource
@@ -268,7 +311,7 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
             : snaColor
             ? `0 0 0 3px ${snaColor}44, 0 0 14px ${snaColor}88`
             : isSelected
-            ? '0 0 0 3.5px var(--color-accent-subtle), 0 0 14px rgba(37, 99, 235, 0.45)'
+            ? '0 0 0 3.5px rgba(239, 68, 68, 0.4), 0 0 18px rgba(239, 68, 68, 0.85)'
             : '0 2px 8px rgba(0, 0, 0, 0.45)',
           display: 'flex',
           alignItems: 'center',
@@ -302,31 +345,6 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
           />
         )}
 
-        {/* Small badge icon indicating real photographic evidence attached */}
-        {hasPhoto && (
-          <span
-            title="Preuve photographique / portrait judiciaire certifié"
-            style={{
-              position: 'absolute',
-              bottom: '-3px',
-              left: '-3px',
-              width: '18px',
-              height: '18px',
-              borderRadius: 'var(--radius-full)',
-              backgroundColor: 'var(--color-bg-elevated)',
-              border: `1.5px solid ${categoryColor}`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: categoryColor,
-              boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
-              zIndex: 3,
-            }}
-          >
-            <Camera size={10} />
-          </span>
-        )}
-
         {/* Small badge icon indicating audio wiretap / vocal evidence attached */}
         {(Boolean(node.properties?.audio_url) || node.type === 'enregistrement_vocal') && (
           <span
@@ -334,7 +352,7 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
             style={{
               position: 'absolute',
               bottom: '-3px',
-              left: hasPhoto ? '18px' : '-3px',
+              left: isPinned ? '18px' : '-3px',
               width: '18px',
               height: '18px',
               borderRadius: 'var(--radius-full)',
@@ -349,6 +367,31 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
             }}
           >
             <Volume2 size={10} />
+          </span>
+        )}
+
+        {/* Pinned Position Badge */}
+        {isPinned && (
+          <span
+            title="Position épinglée (verrouillée)"
+            style={{
+              position: 'absolute',
+              bottom: '-4px',
+              left: '-4px',
+              width: '18px',
+              height: '18px',
+              borderRadius: 'var(--radius-full)',
+              backgroundColor: 'var(--color-bg-primary)',
+              border: '1.5px solid var(--color-status-warning)',
+              color: 'var(--color-status-warning)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: 'var(--shadow-xs)',
+              zIndex: 5,
+            }}
+          >
+            <Pin size={10} style={{ transform: 'rotate(45deg)' }} />
           </span>
         )}
 
@@ -376,29 +419,43 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
           </span>
         )}
 
-        {/* Confidence chip in Analyst mode */}
-        {investigationMode === 'analyst' &&
-          node.confidence !== null &&
-          node.confidence !== undefined &&
-          node.confidence < 1.0 && (
-            <span
-              style={{
-                position: 'absolute',
-                top: '-4px',
-                right: '-4px',
-                fontSize: '10px',
-                fontFamily: 'var(--font-mono)',
-                padding: '1px 4px',
-                borderRadius: 'var(--radius-sm)',
-                backgroundColor: 'var(--color-bg-elevated)',
-                border: '1px solid var(--color-border-default)',
-                color: 'var(--color-text-secondary)',
-                zIndex: 4,
-              }}
-            >
-              {Math.round(node.confidence * 100)}%
-            </span>
-          )}
+        {/* Evidentiary Layer Badge (Top-Right: Nature vs Calque Dual Architecture) */}
+        {LAYER_BADGES[node.layer] && (
+          <span
+            className="layer-status-pill font-mono"
+            title={`${LAYER_BADGES[node.layer].tooltip}${node.confidence !== null && node.confidence !== undefined ? ` • Certitude ${Math.round(node.confidence * 100)}%` : ''}`}
+            style={{
+              position: 'absolute',
+              top: '-6px',
+              right: '-6px',
+              backgroundColor: LAYER_BADGES[node.layer].bg,
+              border: LAYER_BADGES[node.layer].border,
+              color: LAYER_BADGES[node.layer].color,
+              fontSize: '9px',
+              fontWeight: 800,
+              padding: '0 5px',
+              borderRadius: 'var(--radius-sm)',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
+              whiteSpace: 'nowrap',
+              zIndex: 5,
+              pointerEvents: 'none',
+              lineHeight: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '3px',
+            }}
+          >
+            <span>{LAYER_BADGES[node.layer].label}</span>
+            {investigationMode === 'analyst' &&
+              node.confidence !== null &&
+              node.confidence !== undefined &&
+              node.confidence < 1.0 && (
+                <span style={{ opacity: 0.85, fontSize: '8.5px' }}>
+                  {Math.round(node.confidence * 100)}%
+                </span>
+              )}
+          </span>
+        )}
 
         {/* Clickable Granular Expansion Badge (+N hidden connected entities / -N collapse) */}
         {(hiddenNeighborsCount > 0 || expandedNeighborsCount > 0) && (
@@ -538,7 +595,7 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
               fontSize: isFarZoom ? '9.5px' : '10.5px',
               lineHeight: '1.2',
               fontFamily: 'var(--font-sans)',
-              color: isSelected ? 'var(--color-accent-text)' : 'var(--color-text-primary)',
+              color: isSelected ? '#f87171' : 'var(--color-text-primary)',
               fontWeight: isSelected || isKeyTarget || isPerson ? 600 : 500,
               textAlign: 'center',
               maxWidth: '105px',
@@ -550,9 +607,9 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
               padding: '1.5px 7px',
               borderRadius: '10px',
               border: isSelected
-                ? '1.5px solid var(--color-accent-primary)'
+                ? '1.5px solid #ef4444'
                 : '1px solid var(--color-border-default)',
-              boxShadow: 'var(--shadow-xs)',
+              boxShadow: isSelected ? '0 0 10px rgba(239, 68, 68, 0.45)' : 'var(--shadow-xs)',
               zIndex: 12,
             }}
           >

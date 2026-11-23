@@ -203,6 +203,9 @@ export interface GraphStoreState {
   // Person-Centric Graph Projection & Granular Node/Relation Expansion
   isPersonOnlyGraph: boolean;
   expandedHiddenNodeIds: Set<string>;
+  pinnedNodeIds: Set<string>;
+  togglePinNode: (nodeId: string) => void;
+  setNodePinned: (nodeId: string, pinned: boolean) => void;
   mediatedEdgeOverrides: Record<
     string,
     { confidence?: number; layer?: LayerId; confidentiality_level?: string; notes?: string }
@@ -324,7 +327,7 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
   activeLayers: new Set(DEFAULT_LAYERS),
   isLinkMode: false,
   linkSourceNodeId: null,
-  activeLayout: 'concentric',
+  activeLayout: 'force',
 
   isLiveSimulationActive: false,
   toggleLiveSimulation: () => set((state) => ({ isLiveSimulationActive: !state.isLiveSimulationActive })),
@@ -432,6 +435,21 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
   // Person-Centric Projection (Option A: Person-only by default, expandable per node, per mediated relation, or full graph)
   isPersonOnlyGraph: true,
   expandedHiddenNodeIds: new Set(),
+  pinnedNodeIds: new Set(),
+  togglePinNode: (nodeId) =>
+    set((state) => {
+      const next = new Set(state.pinnedNodeIds);
+      if (next.has(nodeId)) next.delete(nodeId);
+      else next.add(nodeId);
+      return { pinnedNodeIds: next };
+    }),
+  setNodePinned: (nodeId, pinned) =>
+    set((state) => {
+      const next = new Set(state.pinnedNodeIds);
+      if (pinned) next.add(nodeId);
+      else next.delete(nodeId);
+      return { pinnedNodeIds: next };
+    }),
   mediatedEdgeOverrides: {},
 
   togglePersonOnlyGraph: () =>
@@ -448,26 +466,39 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
 
   toggleExpandNodeConnections: (nodeId) =>
     set((state) => {
-      const neighborIds: string[] = [];
-      state.edges.forEach((e) => {
-        if (e.source_id === nodeId) neighborIds.push(e.target_id);
-        else if (e.target_id === nodeId) neighborIds.push(e.source_id);
-      });
+      // Find all intermediate non-person nodes in the multi-hop chain starting from nodeId
+      const intermediateChainIds = new Set<string>();
+      const visited = new Set<string>([nodeId]);
+      const queue = [nodeId];
 
-      const hiddenNeighborIds = neighborIds.filter((id) => {
-        const n = state.nodes.find((node) => node.id === id);
-        return n && n.type !== 'personne' && n.type.toLowerCase() !== 'person';
-      });
+      while (queue.length > 0) {
+        const curr = queue.shift()!;
+        state.edges.forEach((e) => {
+          let neighbor: string | null = null;
+          if (e.source_id === curr) neighbor = e.target_id;
+          else if (e.target_id === curr) neighbor = e.source_id;
 
-      if (hiddenNeighborIds.length === 0) return {};
+          if (neighbor && !visited.has(neighbor)) {
+            visited.add(neighbor);
+            const nNode = state.nodes.find((n) => n.id === neighbor);
+            const isPerson = nNode && (nNode.type === 'personne' || nNode.type.toLowerCase() === 'person');
+            if (nNode && !isPerson) {
+              intermediateChainIds.add(neighbor);
+              queue.push(neighbor);
+            }
+          }
+        });
+      }
+
+      if (intermediateChainIds.size === 0) return {};
 
       const nextExpanded = new Set(state.expandedHiddenNodeIds);
-      const allAlreadyExpanded = hiddenNeighborIds.every((id) => nextExpanded.has(id));
+      const allAlreadyExpanded = Array.from(intermediateChainIds).every((id) => nextExpanded.has(id));
 
       if (allAlreadyExpanded) {
-        hiddenNeighborIds.forEach((id) => nextExpanded.delete(id));
+        intermediateChainIds.forEach((id) => nextExpanded.delete(id));
       } else {
-        hiddenNeighborIds.forEach((id) => nextExpanded.add(id));
+        intermediateChainIds.forEach((id) => nextExpanded.add(id));
       }
 
       return { expandedHiddenNodeIds: nextExpanded };
@@ -921,7 +952,7 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
 
     const previousNodes = nodes;
     const previousLayout = activeLayout;
-    const updatedNodes = computeGraphLayout(nodes, edges, layoutType);
+    const updatedNodes = computeGraphLayout(nodes, edges, layoutType, undefined, get().pinnedNodeIds);
 
     set({
       nodes: updatedNodes,
@@ -983,7 +1014,7 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     const previousEdges = edges;
     set({
       edges: [...previousEdges, newEdge],
-      isLinkMode: false,
+      isLinkMode: true,
       linkSourceNodeId: null,
       selectedEdgeId: newEdge.id,
     });

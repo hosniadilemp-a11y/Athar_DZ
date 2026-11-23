@@ -11,6 +11,7 @@ import {
   Wand2,
   Lock,
   Link2,
+  Pin,
 } from 'lucide-react';
 
 interface ContextMenuProps {
@@ -29,6 +30,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ onExpand, onInspect })
     setLinkSourceNodeId,
     isPersonOnlyGraph,
     toggleExpandNodeConnections,
+    pinnedNodeIds,
+    togglePinNode,
   } = useGraphStore();
   const { tr, dir } = useI18n();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -187,6 +190,30 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ onExpand, onInspect })
       >
         <GitBranch size={16} />
         <span>{tr('Explorer réseau élargi (2 bonds)')}</span>
+      </button>
+
+      <button
+        type="button"
+        role="menuitem"
+        style={menuItemStyle}
+        onClick={() => {
+          closeContextMenu();
+          togglePinNode(targetNode.id);
+        }}
+      >
+        <Pin
+          size={16}
+          style={{
+            color: pinnedNodeIds.has(targetNode.id)
+              ? 'var(--color-status-warning)'
+              : 'inherit',
+          }}
+        />
+        <span>
+          {pinnedNodeIds.has(targetNode.id)
+            ? tr('Détacher la position (Dépingler)')
+            : tr('Épingler la position')}
+        </span>
       </button>
 
       <button

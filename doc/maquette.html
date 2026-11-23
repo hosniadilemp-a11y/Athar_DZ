@@ -953,6 +953,46 @@
       <!-- Center Canvas Area -->
       <section class="workspace-canvas-area" aria-label="Espace de travail principal">
 
+        <!-- Feature Option A: Multi-Tab Workspace Bar (Photoshop / Palantir Style) -->
+        <div class="workspace-tabs-bar" role="tablist" aria-label="Onglets d'enquête et sous-graphes">
+          <button type="button" class="workspace-tab-item active" id="tab-master" onclick="switchInvestigationTab('master')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <span>Dossier Général (#2026-SCAM-089)</span>
+            <span class="chip chip-neutral font-mono text-xs">8 Nœuds</span>
+          </button>
+          
+          <button type="button" class="workspace-tab-item" id="tab-suspect-amine" onclick="switchInvestigationTab('suspect-amine')" title="Sous-graphe isolé selon l'algorithme Actor Sphere">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--color-layer-4-hypothesis);"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span style="color:#c084fc;font-weight:600;">Suspect : Amine B.</span>
+            <span class="chip font-mono text-xs" style="background:rgba(192,132,252,0.15);color:#c084fc;border:1px solid #c084fc;">Sphere (5)</span>
+            <span class="chip font-mono text-xs" id="amine-pending-badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid #f59e0b;" title="18 indices détectés non-inclus en réserve">+18 en attente</span>
+            <span class="tab-close-btn" onclick="event.stopPropagation(); closeInvestigationTab('suspect-amine')" title="Fermer l'onglet">✕</span>
+          </button>
+
+          <button type="button" class="workspace-tab-add-btn" onclick="openNewTabDialog()" title="Créer un nouvel onglet ou isoler une entité">+</button>
+        </div>
+
+        <!-- Feature Option A + B Synergy: Pending Clues Drawer for the Suspect -->
+        <div id="suspect-pending-clues-banner" class="pending-clues-strip" style="display:none;">
+          <div class="pending-clues-strip-left">
+            <span class="chip chip-warning font-mono">Bassin d'Indices en Attente (18)</span>
+            <span style="font-size:0.8rem;color:#cbd5e1;" id="pending-clues-text">
+              <strong>Détections secondaires non-incluses pour Amine B. :</strong> 1 Peugeot 208 blanche (plaque 16), 1 visage flou, 16 bruits/voitures de fond.
+            </span>
+          </div>
+          <div class="pending-clues-strip-actions">
+            <button class="btn btn-secondary btn-sm" onclick="alert('Inspection du Bassin d\'indices : 18 éléments en attente dans Elasticsearch/Qdrant.');" style="font-size:0.75rem;padding:3px 8px;">
+              🔍 Inspecter le Bassin (18)
+            </button>
+            <button class="btn btn-primary btn-sm" id="btn-include-pending" onclick="includeAllPendingClues('amine')" style="background:#10b981;border-color:#10b981;font-size:0.75rem;padding:3px 8px;color:#0b0f17;font-weight:700;">
+              ➕ Tout Inclure
+            </button>
+            <button class="btn btn-ghost btn-sm" id="btn-dismiss-pending" onclick="dismissAllPendingClues('amine')" style="color:#ef4444;font-size:0.75rem;padding:3px 8px;">
+              ✕ Tout Écarter
+            </button>
+          </div>
+        </div>
+
         <!-- Canvas Sub-Header: Segmented View Selector -->
         <div class="canvas-sub-header">
           <div class="canvas-segmented-tabs" role="tablist" aria-label="Vues analytiques">
@@ -1869,6 +1909,70 @@
       </div>
     </div>
   </div>
+
+  <!-- Script : Workspace Tabs & Pending Clues Synergy Handlers -->
+  <script>
+    function switchInvestigationTab(tabKey) {
+      const tabMaster = document.getElementById('tab-master');
+      const tabAmine = document.getElementById('tab-suspect-amine');
+      const banner = document.getElementById('suspect-pending-clues-banner');
+
+      if (tabKey === 'master') {
+        tabMaster?.classList.add('active');
+        tabAmine?.classList.remove('active');
+        if (banner) banner.style.display = 'none';
+        // Reset full graph visibility
+        document.querySelectorAll('.canvas-node-circle').forEach(n => n.style.opacity = '1');
+      } else if (tabKey === 'suspect-amine') {
+        tabAmine?.classList.add('active');
+        tabMaster?.classList.remove('active');
+        if (banner) banner.style.display = 'flex';
+        // Focus on Amine B. sphere: highlight focal suspect & phone/telegram, dim unrelated
+        document.querySelectorAll('.canvas-node-circle').forEach(n => {
+          if (['node-suspect', 'node-phone', 'node-telegram'].includes(n.id)) {
+            n.style.opacity = '1';
+          } else {
+            n.style.opacity = '0.35';
+          }
+        });
+      }
+    }
+
+    function closeInvestigationTab(tabKey) {
+      if (confirm('Fermer cet onglet d\'analyse focalisée ?')) {
+        const tabAmine = document.getElementById('tab-suspect-amine');
+        if (tabAmine) tabAmine.style.display = 'none';
+        switchInvestigationTab('master');
+      }
+    }
+
+    function openNewTabDialog() {
+      const target = prompt('Entrez le nom d\'un suspect ou identifiant pour créer un sous-graphe isolé (Stop-at-Actors BFS) :', 'Karim T.');
+      if (target) {
+        alert('Nouvel onglet créé pour [' + target + '] avec calcul automatique de l\'Actor Sphere.');
+      }
+    }
+
+    function includeAllPendingClues(suspect) {
+      const badge = document.getElementById('amine-pending-badge');
+      const text = document.getElementById('pending-clues-text');
+      const btnInc = document.getElementById('btn-include-pending');
+      const btnDis = document.getElementById('btn-dismiss-pending');
+      if (badge) badge.textContent = '0 en attente';
+      if (text) text.innerHTML = '<strong style="color:#10b981;">✓ 18 indices ont été promus et ajoutés sur le canevas de cet onglet avec traçabilité ISO 27037.</strong>';
+      if (btnInc) btnInc.style.display = 'none';
+      if (btnDis) btnDis.style.display = 'none';
+    }
+
+    function dismissAllPendingClues(suspect) {
+      if (confirm('Écarter définitivement ces 18 indices secondaires pour ce suspect ? (Action tracée au registre légal)')) {
+        const banner = document.getElementById('suspect-pending-clues-banner');
+        const badge = document.getElementById('amine-pending-badge');
+        if (banner) banner.style.display = 'none';
+        if (badge) badge.style.display = 'none';
+      }
+    }
+  </script>
 
 </body>
 </html>
