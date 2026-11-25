@@ -55,10 +55,16 @@ Athar DZ / AegisInvestigate is a visual criminal investigation and digital foren
 
 ---
 
-## 5. Six-Phase Incremental Roadmap
-- **Phase 1 (`v0.1`):** Studio d'Enquête Visuel, Accordéon 37 nœuds, Nœuds Circulaires, Calques, 16 outils SNA, Socle FastAPI + Neo4j + PostgreSQL/PostGIS + Redis, Scénario 100 nœuds.
-- **Phase 2 (`v0.2`):** Coffre-fort MinIO S3 WORM, extraction automatique d'IOCs, horodatage RFC 3161.
-- **Phase 3 (`v0.3`):** Arsenal OSINT Dockerisé (76 briques) & intégration Phone Farm (`SRV-FARM-01`).
-- **Phase 4 (`v0.4`):** Biométrie multimodale (ArcFace 512-d, Qdrant) & bascule canevas WebGL haute volumétrie.
-- **Phase 5 (`v0.5`):** IA souveraine locale (Text-to-Cypher Llama-3, Faster-Whisper Darija, PyAnnote) & CDR massifs.
-- **Phase 6 (`v1.0`):** Multi-tenancy Wilayas (RLS), alertes inter-affaires, durcissement production.
+## 5. Six-Phase Incremental Roadmap & Dual-Track Process Factory
+
+Le développement est organisé selon un **modèle d'ingénierie parallèle à deux pistes** :
+- **Piste 1 (Socle Plateforme & Orchestration Studio) :** Évolution incrémentale de l'application et de l'infrastructure de données (Phases 1 à 6).
+- **Piste 2 (Usine de Processus Forensiques & Catalogue Public — Process Factory) :** Développement, test déterministe sur jeux étalons et publication continue des plugins conformes au standard `ForensicPluginSPI` dans le registre public (`ProcessRegistry`), consommables immédiatement par le Popover d'Ingestion et l'Arbre des Processus sans attendre de refonte applicative.
+
+### Découpage Révisé des 6 Phases :
+- **Phase 1 (`v0.1 — En cours d'achèvement 90%`):** Studio d'Enquête Visuel, Accordéon 37 nœuds, Nœuds Circulaires SVG, 5 Calques, 16 outils SNA, Socle FastAPI + Neo4j + PostgreSQL/PostGIS + Redis, Scénario 100 nœuds Candy Wheels, Surface UI d'ingestion non-intrusive avec Popover 3 Modes (Option B) et commutation multi-onglets (Option A).
+- **Phase 2 (`v0.2`):** Blackboard WORM (MinIO S3 Compliance ISO 27037 + RFC 3161), Elasticsearch 8.14 (Plein-texte Arabe/FR + Bassin d'Indices Non-Inclus `PENDING_NON_INCLUDED`), Forensic SPI Core et exécution réelle des Modes 1 & 2 sur Docs/Images (*Lot A : ExifTool, PyMuPDF OCR, Qwen 2.5 NER, BaridiMob*).
+- **Phase 3 (`v0.3`):** Bus Événementiel (EDA - Redis Streams + WebSockets), Workflows Temporal.io v1.24 (fan-out et boucles récursives), **Process Discovery Tree interactif** en direct, **Algorithme Actor Sphere complet** (traversée asymétrique orientée), intégration SPI des 76 briques OSINT (*Lot B : PhoneInfoga, Maigret, bbot, scrapers sociaux*).
+- **Phase 4 (`v0.4`):** Dynamic Dataflow Multimodal, Base vectorielle Qdrant intégrée au Blackboard (ArcFace 512-d), Binders sémantiques spatiaux (Plaque ALPR $\in$ Voiture YOLO), plugins Vision lourds GPU CUDA (*Lot C : InsightFace Buffalo_L, YOLOv8x, PaddleOCR ALPR Algérie, Sherloq*).
+- **Phase 5 (`v0.5`):** Télécoms Massifs (Relevés CDR millions de lignes via Polars + TimescaleDB), Triangulation cellulaire Voronoi, détection de co-déplacements et contradictions d'alibi, Cartographie SIG synchronisée (MapLibre GL JS + Deck.gl), Criminalistique vocale souveraine (*Lot D : Faster-Whisper Darija Algérien, PyAnnote Audio 3.1*).
+- **Phase 6 (`v1.0`):** Mode 3 Récursif Autonome (saturation continue), Copilot IA Souverain 100% Local (Ollama / Qwen 2.5 32B / Llama 3 Text-to-Cypher), Générateur officiel du PV de Synthèse Judiciaire (PDF A4 numéroté ISO), Multi-tenancy 58 Wilayas (RLS PostgreSQL) et durcissement production.

@@ -163,11 +163,16 @@
 
     <!-- TAB 0: OVERVIEW -->
     <div id="tab-overview" class="tab-content-panel active">
-      <div class="deliverable-banner">
+      <!-- Active Phase Status Banner -->
+      <div class="deliverable-banner" style="border-left: 4px solid #3b82f6;">
         <div>
-          <strong style="color:#34d399;font-size:1.05rem;">Principes Directeurs du Développement</strong>
-          <p style="font-size:0.86rem;color:var(--text-secondary);margin:0.2rem 0 0;">
-            Chaque phase est testable immédiatement par un officier de police judiciaire sur un cas réel d'arnaque ou de cybercriminalité.
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;">
+            <span class="badge badge-blue">PHASE ACTUELLE : PHASE 1 (v0.1)</span>
+            <span class="badge badge-emerald">Jalons 1A à 1F Validés (90%)</span>
+          </div>
+          <strong style="color:#60a5fa;font-size:1.05rem;">Studio d'Enquête Visuel, Calques &amp; 16 Algorithmes SNA</strong>
+          <p style="font-size:0.84rem;color:var(--text-secondary);margin:0.2rem 0 0;">
+            Le socle fonctionnel complet (FastAPI, Neo4j, PostgreSQL, Redis, React 19, 37 entités, 5 calques, 16 SNA) est 100% opérationnel. La finalisation en cours porte sur le durcissement (1G) et les surfaces UI d'ingestion et d'onglets.
           </p>
         </div>
         <a href="maquette.html" class="btn btn-emerald" style="text-decoration:none;">
@@ -175,52 +180,85 @@
         </a>
       </div>
 
+      <!-- Dual-Track Engineering Model Card -->
+      <div style="background:#0c1322;border:1px solid #1e293b;border-top:3px solid #8b5cf6;border-radius:8px;padding:1.1rem;margin-bottom:1.5rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e293b;padding-bottom:0.5rem;margin-bottom:0.8rem;">
+          <strong style="color:#c084fc;font-size:0.95rem;">⚡ Modèle d'Ingénierie Parallèle : Plateforme &amp; Usine de Processus (Dual-Track Model)</strong>
+          <span class="badge" style="background:rgba(139,92,246,0.15);color:#c084fc;border:1px solid #c084fc;">Architecture Parallélisée</span>
+        </div>
+        <p style="font-size:0.82rem;color:var(--text-secondary);line-height:1.55;margin:0 0 0.8rem;">
+          Pour accélérer le déploiement opérationnel sans bloquer l'équipe sur des dépendances monolithiques, le développement est scindé en <strong>deux pistes parallèles et découplées</strong> :
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:0.9rem;">
+          <div style="background:#090d16;border:1px solid #1e293b;border-radius:6px;padding:0.9rem;">
+            <strong style="color:#38bdf8;font-size:0.85rem;">🏗️ Piste 1 : Socle Plateforme &amp; Orchestration Studio</strong>
+            <p style="font-size:0.78rem;color:#cbd5e1;line-height:1.5;margin:0.3rem 0 0;">
+              Déroulement séquentiel des infrastructures système : Canvas &amp; Store (Phase 1) &rarr; Blackboard WORM &amp; Elasticsearch (Phase 2) &rarr; EDA Bus &amp; Temporal.io (Phase 3) &rarr; Vector Qdrant (Phase 4) &rarr; TimescaleDB Telecoms (Phase 5) &rarr; Copilot IA (Phase 6).
+            </p>
+          </div>
+          <div style="background:#090d16;border:1px solid #1e293b;border-radius:6px;padding:0.9rem;">
+            <strong style="color:#10b981;font-size:0.85rem;">🏭 Piste 2 : Usine de Processus Forensiques &amp; Catalogue Public (Process Factory)</strong>
+            <p style="font-size:0.78rem;color:#cbd5e1;line-height:1.5;margin:0.3rem 0 0;">
+              Développement, test sur jeux de données étalons et publication continue des plugins conformes au standard <strong>Forensic SPI</strong> dans le registre public (<code>ProcessRegistry</code>). Tout plugin qualifié devient instantanément disponible dans le Popover d'Ingestion et l'Arbre des Processus sans attendre de refonte applicative !
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reconfigured 6-Phase Table -->
       <div class="table-container">
         <table>
           <thead>
             <tr>
               <th>Phase &amp; Version</th>
-              <th>Objectif &amp; Périmètre Fonctionnel</th>
+              <th>Objectif &amp; Architecture</th>
               <th>Ce Que l'Enquêteur Peut Tester</th>
-              <th>Stack Logiciel Livré</th>
+              <th>Piste Parallèle : Usine de Processus (SPI)</th>
+              <th>Statut</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td><span class="badge badge-blue">PHASE 1</span><br/><strong>App v0.1</strong><br/><em>(Sem. 1–3)</em></td>
-              <td><strong>Tableau d'Affaire &amp; Calques Photoshop</strong><br/>Création de dossiers d'enquête, ajout manuel de fiches indices (post FB, téléphone, lien, suspect), tracé de liens de cause à effet, masquage/affichage des 4 calques.</td>
-              <td>Créer une affaire d'arnaque, placer les cartes d'indices, basculer entre les calques <em>Faits Vérifiés</em> et <em>Hypothèses</em>, sauvegarder et exporter le graphe en PNG/JSON.</td>
-              <td>React 19 + Cytoscape.js + FastAPI + Neo4j 5.x + PostgreSQL 16 (Docker Compose)</td>
+              <td><span class="badge badge-blue">PHASE 1</span><br/><strong>App v0.1</strong><br/><em>(Socle Studio)</em></td>
+              <td><strong>Studio d'Enquête Visuel &amp; 16 Algorithmes SNA</strong><br/>Canevas 37 entités, 5 calques, seed 100 nœuds, pinning, audit Merkle SHA-256, surface UI multi-onglets (Option A) et ingestion non-intrusive 3 modes (Option B).</td>
+              <td>Créer/ouvrir des dossiers, manipuler les nœuds circulaires, commuter les 5 calques, lancer les 16 SNA, tester l'export de rapport et déposer un fichier ouvrant le popover 3 modes.</td>
+              <td><strong>Lot Initial :</strong> Formalisation de l'interface SPI et structure du registre de processus (<code>ProcessRegistry</code>).</td>
+              <td><span class="badge badge-emerald">En Cours (90%)</span></td>
             </tr>
             <tr>
-              <td><span class="badge badge-cyan">PHASE 2</span><br/><strong>App v0.2</strong><br/><em>(Sem. 4–6)</em></td>
-              <td><strong>Coffre-fort des Preuves &amp; Extraction Automatique</strong><br/>Geler une page web ou un post Facebook en archive WARC avec capture d'écran horodatée. Extraction automatique d'IOCs (téléphones, URLs, IBAN, emails).</td>
-              <td>Coller le texte d'une annonce Facebook : le lien frauduleux et le numéro de téléphone apparaissent automatiquement sur le graphe, avec capture d'écran certifiée au coffre.</td>
-              <td>ArchiveBox + Playwright + Parsers Regex/AST + MinIO WORM S3 + Journal d'audit haché</td>
+              <td><span class="badge badge-cyan">PHASE 2</span><br/><strong>App v0.2</strong><br/><em>(WORM &amp; Text)</em></td>
+              <td><strong>Blackboard WORM, Elasticsearch &amp; Ingestion Texte/EXIF</strong><br/>MinIO S3 WORM Compliance (ISO 27037) + RFC 3161, Elasticsearch 8.14 (BM25 Arabe/FR + Bassin d'Indices Non-Inclus), exécution opérationnelle des Modes 1 &amp; 2.</td>
+              <td>Déposer un PV de plainte (PDF) ou une photo : extraction réelle du SHA-256, des métadonnées EXIF, des entités nommées (noms, téléphones, RIB BaridiMob) avec prévisualisation et versement contrôlé.</td>
+              <td><strong>Lot A (Prêt) :</strong> <code>plugin-exiftool</code>, <code>plugin-pymupdf-ocr</code>, <code>plugin-ner-qwen</code>, <code>plugin-baridimob-validator</code>.</td>
+              <td><span class="badge badge-blue">Planifiée</span></td>
             </tr>
             <tr>
-              <td><span class="badge badge-emerald">PHASE 3</span><br/><strong>App v0.3</strong><br/><em>(Sem. 7–9)</em></td>
-              <td><strong>Suite d'Outils OSINT Essentiels (Téléphone, Web &amp; Alias)</strong><br/>Reconnaissance opérateur, test de présence sur Instagram/Snapchat/Amazon, recherche de pseudonymes sur 2500+ sites, décodage de code interne web (MongoDB ObjectId) et sites jumeaux.</td>
-              <td>Cliquer sur le téléphone du vendeur pour découvrir son profil Telegram @amine_import et son compte Instagram, puis trouver 2 autres faux sites partageant le même pixel Meta.</td>
-              <td>Conteneurs Docker : PhoneInfoga, Ignorant, Maigret, httpx, Shodan API, Temporal.io</td>
+              <td><span class="badge badge-emerald">PHASE 3</span><br/><strong>App v0.3</strong><br/><em>(EDA &amp; OSINT)</em></td>
+              <td><strong>Bus Événementiel (EDA), Temporal.io &amp; 76 Connecteurs OSINT</strong><br/>Redis Streams + WebSockets, Temporal.io v1.24 (boucles récursives), <strong>Process Discovery Tree interactif</strong>, <strong>Algorithme Actor Sphere</strong> (traversée asymétrique orientée).</td>
+              <td>Collecter un profil suspect : visualiser en temps réel l'Arbre des Processus grandir, observer le déclenchement automatique d'outils secondaires sur les visages inconnus et isoler le suspect dans son onglet.</td>
+              <td><strong>Lot B (Prêt) :</strong> 76 briques OSINT (PhoneInfoga, Maigret, bbot, extracteurs Telegram/Facebook/TikTok).</td>
+              <td><span class="badge badge-blue">Planifiée</span></td>
             </tr>
             <tr>
-              <td><span class="badge badge-purple">PHASE 4</span><br/><strong>App v0.4</strong><br/><em>(Sem. 10–12)</em></td>
-              <td><strong>Analyse d'Images, Falsification &amp; Comparaison Faciale</strong><br/>Détection de retouche d'image (Sherloq), recherche inversée de photos de stock, métadonnées EXIF, comparaison faciale biométrique ArcFace, transcription audio Whisper.</td>
-              <td>Uploader les 3 photos de pneus pour prouver qu'elles sont volées, puis comparer la photo Telegram et Instagram pour obtenir une confirmation biométrique à 89%.</td>
-              <td>Qdrant Vector DB + DeepFace (ArcFace) + Sherloq + ExifTool + Faster-Whisper</td>
+              <td><span class="badge badge-purple">PHASE 4</span><br/><strong>App v0.4</strong><br/><em>(Vision &amp; Qdrant)</em></td>
+              <td><strong>Dynamic Dataflow Multimodal &amp; Biométrie Vectorielle Qdrant</strong><br/>Qdrant Vector DB (vecteurs ArcFace 512-d), Dynamic Dataflow Engine avec jointures géométriques spatiales (Plaque ALPR incluse dans la boîte englobante de Voiture).</td>
+              <td>Déposer une photo ou capture vidéo : reconnaissance faciale biométrique sub-8ms contre la base des suspects, extraction et fusion automatique véhicule/immatriculation.</td>
+              <td><strong>Lot C (Prêt) :</strong> <code>plugin-insightface-buffalo_l</code>, <code>plugin-yolov8x</code>, <code>plugin-paddleocr-alpr</code>.</td>
+              <td><span class="badge badge-blue">Planifiée</span></td>
             </tr>
             <tr>
-              <td><span class="badge badge-amber">PHASE 5</span><br/><strong>App v0.5</strong><br/><em>(Sem. 13–15)</em></td>
-              <td><strong>Enquête Terrain, Bornage Télécom CDR &amp; Carte SIG</strong><br/>Import de fichiers d'appels opérateurs (CDR Excel), triangulation des antennes relais, détection de co-déplacements, détection de contradictions temporelles d'alibi.</td>
-              <td>Glisser une feuille Excel d'appels téléphoniques : visualiser le parcours géographique du suspect et vérifier à quelle antenne il était connecté lors de la publication de l'annonce.</td>
-              <td>MapLibre GL JS + Deck.gl + Vis-Timeline + Triangulateur Voronoi + Moteur OSRM</td>
+              <td><span class="badge badge-amber">PHASE 5</span><br/><strong>App v0.5</strong><br/><em>(CDR &amp; Darija)</em></td>
+              <td><strong>Télécoms Massifs (CDR Polars), Audio Darija &amp; Cartographie SIG</strong><br/>Moteur Polars haute vitesse sur TimescaleDB (millions d'appels), triangulation Voronoi, trajets OSRM, transcription Faster-Whisper Darija et diarisation PyAnnote.</td>
+              <td>Glisser un listing d'appels Excel de 500 000 lignes : affichage instantané des trajets du suspect sur la carte SIG, écoute des vocaux Darija transcrits et alerte de contradiction d'alibi.</td>
+              <td><strong>Lot D (Prêt) :</strong> <code>plugin-polars-cdr</code>, <code>plugin-whisper-darija-algerian</code>, <code>plugin-pyannote-3.1</code>.</td>
+              <td><span class="badge badge-blue">Planifiée</span></td>
             </tr>
             <tr>
-              <td><span class="badge badge-rose">PHASE 6</span><br/><strong>App v1.0</strong><br/><em>(Sem. 16–18)</em></td>
-              <td><strong>Copilot IA, Coffre de Comptes Secrets &amp; Dossier Judiciaire</strong><br/>Assistant IA local (Ollama/vLLM) en français/arabe, coffre chiffré de comptes d'investigation Telegram/WhatsApp, et exportateur automatique du procès-verbal judiciaire complet en PDF.</td>
-              <td>Exécuter toute l'affaire de A à Z puis cliquer sur <em>"Générer Rapport Judiciaire"</em> pour sortir un dossier de 25 pages prêt à signer pour le procureur de la République.</td>
-              <td>LiteLLM Gateway + Ollama (Qwen 2.5) + WeasyPrint/Typst + Coffre AES-256 Sock-Puppets</td>
+              <td><span class="badge badge-rose">PHASE 6</span><br/><strong>App v1.0</strong><br/><em>(IA &amp; Parquet)</em></td>
+              <td><strong>Mode 3 Récursif Autonome, Copilot IA Local &amp; Remise au Parquet</strong><br/>Saturation récursive autonome continue, Copilot IA Souverain 100% Local (Ollama / Qwen 2.5 32B), PV Judiciaire officiel PDF A4 ISO, Multi-tenancy 58 Wilayas (RLS).</td>
+              <td>Lancer une investigation autonome complète puis générer en un clic le Procès-Verbal de Synthèse Judiciaire de 30 pages certifié et numéroté pour transmission au procureur.</td>
+              <td><strong>Lot E (Prêt) :</strong> <code>plugin-qwen-copilot-local</code>, <code>plugin-typst-judicial-report</code>.</td>
+              <td><span class="badge badge-blue">Planifiée</span></td>
             </tr>
           </tbody>
         </table>
@@ -231,60 +269,53 @@
     <div id="tab-phase1" class="tab-content-panel">
       <div class="deliverable-banner">
         <div>
-          <span class="badge badge-blue">APPLICATION FONCTIONNELLE v0.1</span>
-          <h2 style="font-size:1.25rem;color:#fff;margin:0.25rem 0;">Phase 1: Studio d'Enquête Visuel &amp; Calques Multi-Niveaux</h2>
-          <span style="font-size:0.84rem;color:var(--text-secondary);">Durée: Semaines 1 à 3 &bull; Focus: Socle ergonomique &amp; Graphe d'affaire</span>
+          <span class="badge badge-blue">APPLICATION FONCTIONNELLE v0.1 (PHASE ACTUELLE)</span>
+          <h2 style="font-size:1.25rem;color:#fff;margin:0.25rem 0;">Phase 1: Studio d'Enquête Visuel, Calques &amp; 16 Algorithmes SNA Core</h2>
+          <span style="font-size:0.84rem;color:var(--text-secondary);">Durée: Semaines 1 à 3 &bull; Focus: Socle ergonomique, Graphe judiciaire &amp; SNA Déterministe</span>
         </div>
-        <span class="badge badge-emerald">Livrable: <code>docker compose up aegis-studio</code></span>
+        <span class="badge badge-emerald">Livrable Actif: <code>docker compose up</code> (5 Conteneurs Verts)</span>
       </div>
 
-      <h3 class="section-title">1. Objectifs &amp; Expérience de l'Enquêteur</h3>
-      <p class="section-subtitle">
-        L'officier de police ouvre son navigateur, crée une nouvelle affaire "Affaire #2026-PNEUS-089", et dispose d'un canevas interactif où il peut placer des cartes d'indices, tracer des liens étiquetés, et filtrer les informations grâce aux <strong>Calques d'Enquête</strong>.
-      </p>
+      <!-- Status Audit: Done vs Left -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:1rem;margin-bottom:1.5rem;">
+        <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #10b981;border-radius:8px;padding:1rem;">
+          <strong style="color:#10b981;font-size:0.9rem;display:block;margin-bottom:0.5rem;">✔ Ce qui est FAIT et VÉRIFIÉ (100% Opérationnel)</strong>
+          <ul style="padding-left:1.1rem;margin:0;font-size:0.8rem;color:#cbd5e1;line-height:1.6;">
+            <li><strong>Jalon 1A (Fondation) :</strong> 5 conteneurs Docker (backend FastAPI, frontend React 19, Neo4j 5.20, PostgreSQL 16 PostGIS, Redis 7.2) avec healthchecks et volumes nommés.</li>
+            <li><strong>Jalon 1B (Registre &amp; Schéma) :</strong> Registre unique de 37 types de nœuds, 47 relations, 5 calques forensiques (11/8/8/4/6 = 37) et seed idempotent du cas Candy Wheels (100 nœuds).</li>
+            <li><strong>Jalon 1C (API REST Graphe) :</strong> Routes `/api/v1/cases/...`, CRUD, expansion 1-hop/2-hop, changement de calque avec motif OPJ obligatoire, chaîne d'audit Merkle SHA-256 avec détection de falsification.</li>
+            <li><strong>Jalon 1D (Canevas Graphique) :</strong> `GraphCanvasAdapter`, nœuds circulaires SVG (56px standard, 68px pivot), anneaux de calques, zoom/pan/drag, mode impact (`betweenness`), menu contextuel (`Shift+F10`), inspector panel, undo/redo Zustand, vue tabulaire accessible, épinglage (`pinnedNodeIds`).</li>
+            <li><strong>Jalon 1E (16 Algorithmes SNA) :</strong> 16 algorithmes déterministes NetworkX en Python via l'API et le panneau `SnaPanel.tsx`.</li>
+            <li><strong>Jalon 1F (Vues &amp; Finitions) :</strong> Accordéon gauche (5 calques, 37 types), Timeline synchronisée, Carte SIG 58 Wilayas, export PDF/JSON, i18n FR/AR(RTL)/EN, thèmes Dark/Light, viewer d'audit Merkle, boutons grisés `aria-disabled="true"` avec notices Phase N (Décision D10).</li>
+            <li><strong>Validation Technique :</strong> 42 tests backend pytest au vert, 33 tests frontend vitest au vert, build TypeScript 0 erreur.</li>
+          </ul>
+        </div>
 
-      <div class="step-list">
-        <div class="step-item">
-          <strong>1. Gestion Complète des Dossiers d'Enquête</strong>
-          Interface de création, ouverture, sauvegarde et clôture d'affaires. Chaque dossier est stocké de manière isolée avec référence de parquet et nom de l'officier enquêteur.
-        </div>
-        <div class="step-item">
-          <strong>2. Canevas Graphique Visuel avec Palette d'Indices</strong>
-          Composants glisser-déposer pour 8 types d'indices initiaux : 👤 Personne / Suspect, 📢 Annonce / Post Réseau Social, 📱 Numéro de Téléphone, 🌐 Lien / Site Web, 💳 Compte Bancaire / CCP, 🚗 Véhicule, 📍 Emplacement Géographique, 📄 Document.
-        </div>
-        <div class="step-item">
-          <strong>3. Système de Calques Style Photoshop</strong>
-          4 calques indépendants avec bouton œil (Afficher / Masquer) :
-          <ul style="padding-left:1.2rem;font-size:0.83rem;color:var(--text-secondary);margin-top:0.3rem;">
-            <li><strong>Calque 1 (Faits Vérifiés) :</strong> Éléments certifiés par PV et dépositions (bordure verte).</li>
-            <li><strong>Calque 2 (Pistes &amp; OSINT) :</strong> Données collectées en ligne en attente de vérification (bordure cyan).</li>
-            <li><strong>Calque 3 (Infrastructure &amp; Réseau) :</strong> Adresses IP, hébergeurs, pixels et identifiants techniques (bordure orange).</li>
-            <li><strong>Calque 4 (Théories &amp; Hypothèses) :</strong> Suspects potentiels et scénarios de travail (bordure violette en pointillés).</li>
+        <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #f59e0b;border-radius:8px;padding:1rem;">
+          <strong style="color:#fbbf24;font-size:0.9rem;display:block;margin-bottom:0.5rem;">⏳ Ce qu'il RESTE à Faire pour Clôturer la Phase 1</strong>
+          <ul style="padding-left:1.1rem;margin:0;font-size:0.8rem;color:#cbd5e1;line-height:1.6;">
+            <li><strong>Option B (Surface Ingestion UI) :</strong> Activer le glisser-déposer de fichiers bruts sur le canevas : calcul SHA-256 client immédiat, création du nœud `scelle_numerique` sur le canevas, ouverture du Popover 3 Modes. Clic sur lancer &rarr; affiche la notice explicative D10 (*« Disponible en Phase 2 / Phase N »*), place le badge *« En cours d'investigation »* sur le nœud et met à jour l'inspecteur.</li>
+            <li><strong>Option A (Surface Multi-Tab UI) :</strong> Rendre la barre d'onglets (`[🌐 Dossier Général]` et `[👤 Suspect : Amine B.]`) active dans `useGraphStore.ts` pour commuter l'affichage du sous-graphe du suspect sans charger le graphe complet.</li>
+            <li><strong>Jalon 1G (Hardening &amp; Clôture) :</strong> Exécuter `pip-audit` et `npm audit`, valider l'accessibilité 100% clavier sur le canevas, et finaliser la documentation de remise.</li>
           </ul>
         </div>
       </div>
 
-      <h3 class="section-title">2. Architecture &amp; Spécifications Techniques</h3>
-      <div class="table-container">
-        <table class="spec-table">
-          <tr><th>Frontend UI</th><td>Next.js 15 (React 19, TypeScript, Tailwind CSS) + <strong>Cytoscape.js</strong> (moteur de graphe interactif avec layouts Dagre et Cola).</td></tr>
-          <tr><th>Backend API</th><td>Python 3.12 + <strong>FastAPI</strong> + Pydantic v2 pour la validation stricte des entités d'enquête.</td></tr>
-          <tr><th>Base de Données Graphe</th><td><strong>Neo4j 5.x Community</strong> avec connecteur Bolt asynchrone pour stocker les nœuds, relations et propriétés de calques.</td></tr>
-          <tr><th>Base Relationnelle</th><td><strong>PostgreSQL 16</strong> pour la gestion des utilisateurs, des dossiers et des permissions.</td></tr>
-          <tr><th>Critères de Validation</th><td>Créer un dossier, ajouter 10 nœuds reliés, masquer le Calque 4, recharger la page : l'état exact du tableau est persisté.</td></tr>
-        </table>
+      <h3 class="section-title">Étapes Détaillées &amp; Tâches à Réaliser pour Achever la Phase 1</h3>
+      <div class="step-list">
+        <div class="step-item">
+          <strong>Étape 1.1 : Intégration du Glisser-Déposer de Surface &amp; Popover 3 Modes (Option B)</strong>
+          Écouter l'événement <code>drop</code> HTML5 sur le canevas. Calculer l'empreinte SHA-256 via Web Crypto API. Créer le nœud scellé et déployer le popover contextuel proposant les 3 options (Rapide, Pas à Pas, Récursif). Le clic sur lancer ouvre la modale PhaseNoticeModal (Décision D10) et bascule le badge du nœud en « En cours d'investigation » avec barre de progression live dans l'inspecteur.
+        </div>
+        <div class="step-item">
+          <strong>Étape 1.2 : Activation de la Barre d'Onglets d'Enquête (Option A)</strong>
+          Ajouter le slice `activeWorkspaceTabId` dans Zustand (`useGraphStore.ts`). Lors du clic sur `[👤 Suspect : Amine B.]`, filtrer les nœuds rendus pour n'afficher que le sous-graphe centré sur le suspect tout en conservant l'état intact dans le store.
+        </div>
+        <div class="step-item">
+          <strong>Étape 1.3 : Hardening Final &amp; Scellement de la Version v0.1 (Jalon 1G)</strong>
+          Audit des dépendances (`pip-audit`, `npm audit`), revue d'accessibilité WCAG 2.1 AA au clavier, vérification de la persistance de l'état et tagging de la release Git `v0.1-studio-core`.
+        </div>
       </div>
-
-      <h3 class="section-title">3. Commandes de Démarrage Rapide</h3>
-      <pre><code># Démarrer la version v0.1 de l'application
-git clone https://github.com/votre-org/aegis-investigate.git
-cd aegis-investigate && git checkout release-v0.1
-docker compose up -d
-
-# Accès immédiat dans le navigateur :
-# URL Studio : http://localhost:3000
-# API Docs   : http://localhost:8000/docs
-# Neo4j UI   : http://localhost:7474</code></pre>
     </div>
 
     <!-- TAB 2: PHASE 2 DETAIL -->
@@ -292,40 +323,39 @@ docker compose up -d
       <div class="deliverable-banner">
         <div>
           <span class="badge badge-cyan">APPLICATION FONCTIONNELLE v0.2</span>
-          <h2 style="font-size:1.25rem;color:#fff;margin:0.25rem 0;">Phase 2: Coffre-fort des Preuves &amp; Extracteur Automatique d'Indices</h2>
-          <span style="font-size:0.84rem;color:var(--text-secondary);">Durée: Semaines 4 à 6 &bull; Focus: Préservation légale &amp; Extraction instantanée</span>
+          <h2 style="font-size:1.25rem;color:#fff;margin:0.25rem 0;">Phase 2: Blackboard WORM, Elasticsearch &amp; Ingestion Texte/EXIF (Modes 1 &amp; 2)</h2>
+          <span style="font-size:0.84rem;color:var(--text-secondary);">Durée: Semaines 4 à 6 &bull; Focus: Préservation légale ISO 27037 &amp; Ingestion Opérationnelle</span>
         </div>
-        <span class="badge badge-emerald">Livrable: Archivage WARC certifié &amp; Extracteur d'IOC</span>
+        <span class="badge badge-emerald">Livrable: MinIO WORM S3 + Elasticsearch 8.14 + Ingestion Opérationnelle</span>
       </div>
 
       <h3 class="section-title">1. Objectifs &amp; Expérience de l'Enquêteur</h3>
       <p class="section-subtitle">
-        L'enquêteur colle simplement le texte d'une annonce ou une URL suspecte : le système fige immédiatement la page avant qu'elle ne disparaisse, crée un enregistrement légal inaltérable, et extrait tous les numéros de téléphone et liens sur le tableau.
+        L'enquêteur glisse un PV de plainte (PDF), une facture ou une photo de scène de crime : le système stocke le fichier dans le coffre-fort immuable MinIO WORM avec jeton RFC 3161, indexe le contenu dans Elasticsearch 8.14 et permet d'exécuter l'analyse en <strong>Mode 1 (Rapide)</strong> ou <strong>Mode 2 (Pas-à-pas guidé)</strong> avec extraction des entités nommées et gestion du Bassin d'Indices Non-Inclus.
       </p>
 
+      <h3 class="section-title">2. Étapes Détaillées &amp; Tâches d'Ingénierie</h3>
       <div class="step-list">
         <div class="step-item">
-          <strong>1. Coffre-fort Numérique (MinIO S3 en Mode WORM)</strong>
-          Stockage des captures au format Write-Once-Read-Many : une fois la page ou la photo enregistrée, même l'administrateur système ne peut ni modifier ni effacer la preuve.
+          <strong>Étape 2.1 : Déploiement du Blackboard WORM (MinIO S3) &amp; Horodatage RFC 3161</strong>
+          Configuration du conteneur MinIO avec <em>S3 Object Lock</em> en mode Compliance (durée de rétention judiciaire verrouillée). Génération du reçu d'intégrité cryptographique et chaînage dans le registre Merkle PostgreSQL.
         </div>
         <div class="step-item">
-          <strong>2. Outil "Geler &amp; Certifier la Page Web"</strong>
-          Génération automatique d'un fichier d'archive normalisé ISO (<code>.WARC</code>), d'une capture d'écran pleine page (PNG) et du code source HTML avec empreinte cryptographique SHA-256 et horodatage RFC 3161.
+          <strong>Étape 2.2 : Déploiement d'Elasticsearch 8.14 &amp; Bassin d'Indices Non-Inclus</strong>
+          Installation du cluster Elasticsearch avec analyseurs morphologiques arabes et français. Création de l'index des données brutes et de l'index du <em>Bassin d'Indices Non-Inclus</em> (`status: PENDING_NON_INCLUDED`) pour la recherche rétroactive d'indices secondaires.
         </div>
         <div class="step-item">
-          <strong>3. Extracteur Déterministe d'Indices Textuels</strong>
-          Analyse automatique de texte pour détecter instantanément : numéros mobiles algériens et internationaux (+213, 05, 06, 07), comptes CCP et RIB bancaires, adresses e-mail, liens web et adresses de portefeuilles crypto.
+          <strong>Étape 2.3 : Forensic SPI Core &amp; Usine de Processus (Lot A Qualifié)</strong>
+          Définition du contrat standard `ForensicPluginSPI`. Intégration et qualification des 4 premiers plugins locaux :
+          <br/>• <code>plugin-exiftool</code> : extraction des métadonnées photo (GPS WGS84, appareil, date).
+          <br/>• <code>plugin-pymupdf-ocr</code> : extraction de texte PDF et documents scannés.
+          <br/>• <code>plugin-ner-qwen</code> : modèle NER local identifiant suspects, matricules et comptes.
+          <br/>• <code>plugin-baridimob-validator</code> : validation des comptes CCP et RIP BaridiMob à 20 chiffres.
         </div>
-      </div>
-
-      <h3 class="section-title">2. Architecture &amp; Spécifications Techniques</h3>
-      <div class="table-container">
-        <table class="spec-table">
-          <tr><th>Moteur d'Archivage</th><td><strong>ArchiveBox + Playwright Headless</strong> conteneurisé s'exécutant dans un bac à sable sécurisé.</td></tr>
-          <tr><th>Coffre d'Éléments de Preuve</th><td><strong>MinIO Object Storage</strong> configuré avec <em>S3 Object Lock (Compliance Mode)</em>.</td></tr>
-          <tr><th>Moteur d'Extraction</th><td>Module Python optimisé combinant <strong>phonenumbers (Google E.164)</strong>, validateurs d'IBAN/CCP et règles d'expressions rationnelles compilées.</td></tr>
-          <tr><th>Journalisation d'Audit</th><td>Table PostgreSQL avec chaînage cryptographique SHA-256 garantissant la traçabilité des pièces saisies.</td></tr>
-        </table>
+        <div class="step-item">
+          <strong>Étape 2.4 : Exécution Réelle des Modes 1 &amp; 2 dans l'Interface</strong>
+          Brancher le Popover d'Ingestion sur le backend : exécution du <em>Mode 1 (Rapide)</em> générant les métadonnées de surface, et du <em>Mode 2 (Pas-à-pas)</em> avec station de désambiguïsation modale permettant à l'OPJ de cocher/décocher les entités avant injection sur le canevas.
+        </div>
       </div>
     </div>
 
@@ -334,39 +364,35 @@ docker compose up -d
       <div class="deliverable-banner">
         <div>
           <span class="badge badge-emerald">APPLICATION FONCTIONNELLE v0.3</span>
-          <h2 style="font-size:1.25rem;color:#fff;margin:0.25rem 0;">Phase 3: Suite d'Outils OSINT Clés (Téléphone, Web &amp; Alias)</h2>
-          <span style="font-size:0.84rem;color:var(--text-secondary);">Durée: Semaines 7 à 9 &bull; Focus: Pivots d'investigation en ligne automatisés</span>
+          <h2 style="font-size:1.25rem;color:#fff;margin:0.25rem 0;">Phase 3: Bus Événementiel (EDA), Temporal.io, Arbre des Processus &amp; 76 Briques OSINT</h2>
+          <span style="font-size:0.84rem;color:var(--text-secondary);">Durée: Semaines 7 à 9 &bull; Focus: Orchestration Asynchrone, Process Discovery Tree &amp; OSINT</span>
         </div>
-        <span class="badge badge-emerald">Livrable: Première version opérationnelle d'enquête OSINT</span>
+        <span class="badge badge-emerald">Livrable: Process Tree Interactif &amp; Arsenal OSINT Connecté</span>
       </div>
 
       <h3 class="section-title">1. Objectifs &amp; Expérience de l'Enquêteur</h3>
       <p class="section-subtitle">
-        C'est l'étape où le cas de l'arnaque aux pneus devient entièrement résoluble dans l'application. En sélectionnant un numéro de téléphone ou un lien web, les outils d'enrichissement s'exécutent en 1 clic.
+        L'enquêteur lance une collecte de profil cible : le système dispatche les objets multimédias, anime en direct l'<strong>Arbre des Processus</strong>, déclenche automatiquement des outils secondaires sur les complices inconnus détectés, et isole le suspect dans son onglet dédié grâce à l'algorithme complet <strong>Actor Sphere</strong>.
       </p>
 
+      <h3 class="section-title">2. Étapes Détaillées &amp; Tâches d'Ingénierie</h3>
       <div class="step-list">
         <div class="step-item">
-          <strong>1. Scanner Téléphonique Multi-Plateformes</strong>
-          Vérification de l'opérateur (Ooredoo, Mobilis, Djezzy) et test silencieux de présence de compte sur Instagram, Snapchat, Amazon et Telegram.
+          <strong>Étape 3.1 : Déploiement de l'EDA (Redis Streams + WebSockets) &amp; Temporal.io v1.24</strong>
+          Mise en place du bus d'événements asynchrones ultra-rapide propageant les signaux d'état. Orchestrateur Temporal pour exécuter les workflows d'enquête résilients aux pannes et gérer les reprises automatiques.
         </div>
         <div class="step-item">
-          <strong>2. Recherche d'Alias &amp; Pseudonymes sur 2 500+ Sites</strong>
-          Intégration des moteurs Maigret et Sherlock pour cartographier la présence en ligne d'un suspect à partir d'un seul nom d'utilisateur (ex: <code>@amine_import</code>).
+          <strong>Étape 3.2 : Implémentation du Process Discovery Tree Interactif</strong>
+          Développement du composant graphique dédié visualisant l'arbre d'exécution algorithmique (Racine fichier &rarr; Plugins exécutés &rarr; Détections intermédiaires &rarr; Rapprochements). L'arbre se ramifie en direct au rythme des événements WebSockets.
         </div>
         <div class="step-item">
-          <strong>3. Détecteur de Codes Cachés &amp; Sites Jumeaux</strong>
-          Décodage automatique des identifiants d'annonces (ex: MongoDB ObjectId révélant la création le 1er nov à 14h22) et recherche inversée des pixels de suivi (Meta Pixel) pour démasquer les boutiques sœurs de l'escroc.
+          <strong>Étape 3.3 : Algorithme Actor Sphere Complet (Traversée Asymétrique Orientée)</strong>
+          Implémentation du parcours orienté : 1-hop strict sur arêtes entrantes ($u \to \text{Cible}$), propagation libre sur arêtes sortantes jusqu'aux nœuds Personnes frontières avec affichage explicite de l'arête d'arrivée. Déploiement du tiroir d'indices non-inclus rattaché à l'onglet.
         </div>
-      </div>
-
-      <h3 class="section-title">2. Architecture &amp; Spécifications Techniques</h3>
-      <div class="table-container">
-        <table class="spec-table">
-          <tr><th>Outils Intégrés</th><td>Conteneurs Docker autonomes : <code>PhoneInfoga</code>, <code>Ignorant</code>, <code>Maigret</code>, <code>httpx</code>, <code>subfinder</code>.</td></tr>
-          <tr><th>Orchestrateur de Tâches</th><td><strong>Temporal.io</strong> pour gérer les scans asynchrones, les reprises sur erreur et les délais de temporisation.</td></tr>
-          <tr><th>Protection &amp; Furtivité</th><td>Routage des requêtes externes à travers un pool de proxys anonymes (Gluetun VPN).</td></tr>
-        </table>
+        <div class="step-item">
+          <strong>Étape 3.4 : Piste Parallèle : Publication des 76 Briques OSINT (Lot B)</strong>
+          Intégration conteneurisée et publication dans le catalogue SPI des outils d'investigation réseau : <code>PhoneInfoga</code>, <code>Maigret</code>, <code>bbot</code>, dumpers sociaux et requêtes d'infrastructure.
+        </div>
       </div>
     </div>
 
@@ -375,39 +401,35 @@ docker compose up -d
       <div class="deliverable-banner">
         <div>
           <span class="badge badge-purple">APPLICATION FONCTIONNELLE v0.4</span>
-          <h2 style="font-size:1.25rem;color:#fff;margin:0.25rem 0;">Phase 4: Analyse Médias, Falsification &amp; Comparaison Faciale</h2>
-          <span style="font-size:0.84rem;color:var(--text-secondary);">Durée: Semaines 10 à 12 &bull; Focus: Criminalistique numérique &amp; Biométrie faciale</span>
+          <h2 style="font-size:1.25rem;color:#fff;margin:0.25rem 0;">Phase 4: Dynamic Dataflow Multimodal, Biométrie Vectorielle Qdrant &amp; Vision Lourde</h2>
+          <span style="font-size:0.84rem;color:var(--text-secondary);">Durée: Semaines 10 à 12 &bull; Focus: Inférence GPU Locale, ArcFace 512-d &amp; Jointures Spatiales</span>
         </div>
-        <span class="badge badge-emerald">Livrable: Module complet d'analyse multimédia hors-ligne</span>
+        <span class="badge badge-emerald">Livrable: Reconnaissance Faciale Sub-8ms &amp; Binder Sémantique</span>
       </div>
 
       <h3 class="section-title">1. Objectifs &amp; Expérience de l'Enquêteur</h3>
       <p class="section-subtitle">
-        L'enquêteur dispose désormais d'un laboratoire multimédia intégré : détection de faux documents, recherche de photos volées et comparaison faciale entre les photos de profil Telegram et Instagram.
+        L'enquêteur dépose une photo de rue ou une vidéo : les visages sont comparés instantanément à la base judiciaire par similarité cosinus sub-8ms, et le système fusionne automatiquement les plaques d'immatriculation détectées à l'intérieur des contours de véhicules.
       </p>
 
+      <h3 class="section-title">2. Étapes Détaillées &amp; Tâches d'Ingénierie</h3>
       <div class="step-list">
         <div class="step-item">
-          <strong>1. Détecteur de Falsification &amp; Retouche Photo (Sherloq)</strong>
-          Analyse du niveau d'erreur (ELA) et cohérence des bruits de capteur pour détecter si le montant d'un reçu de virement CCP ou une facture de pneus a été modifié.
+          <strong>Étape 4.1 : Intégration de Qdrant Vector DB au Blackboard</strong>
+          Déploiement de Qdrant gRPC pour le stockage et la recherche de plus proches voisins (HNSW) sur les vecteurs faciaux 512-d et les empreintes acoustiques.
         </div>
         <div class="step-item">
-          <strong>2. Comparaison Faciale Biométrique Hors-Ligne (DeepFace / ArcFace)</strong>
-          Comparaison automatisée entre deux visages avec score de similarité en pourcentage, permettant de lier formellement un profil Telegram et un compte Instagram sous deux pseudonymes différents.
+          <strong>Étape 4.2 : Dynamic Dataflow Engine &amp; Binders Sémantiques Spatiaux</strong>
+          Moteur de calcul instanciant les DAGs visuels. Module de corrélation spatiale : si les coordonnées normalisées $(x_1, y_1, x_2, y_2)$ d'une plaque ALPR sont géométriquement incluses dans la boîte d'une voiture détectée par YOLO, fusion en nœud unique `vehicule` enrichi.
         </div>
         <div class="step-item">
-          <strong>3. Transcription des Messages Vocaux (Faster-Whisper)</strong>
-          Transcription audio locale rapide supportant l'arabe, le français et la darija algérienne avec extraction automatique des noms et numéros prononcés.
+          <strong>Étape 4.3 : Piste Parallèle : Plugins Vision Lourds GPU CUDA (Lot C)</strong>
+          Qualification et publication des moteurs de criminalistique visuelle :
+          <br/>• <code>plugin-insightface-buffalo_l</code> : détection et extraction de vecteurs ArcFace 512-d.
+          <br/>• <code>plugin-yolov8x</code> : détection spatiale d'objets (véhicules, téléphones, armes, liasses).
+          <br/>• <code>plugin-paddleocr-alpr</code> : reconnaissance optique des immatriculations algériennes.
+          <br/>• <code>plugin-sherloq</code> : analyse forensique d'intégrité photo (bruit capteur, ELA).
         </div>
-      </div>
-
-      <h3 class="section-title">2. Architecture &amp; Spécifications Techniques</h3>
-      <div class="table-container">
-        <table class="spec-table">
-          <tr><th>Base Vectorielle</th><td><strong>Qdrant</strong> pour l'indexation et la recherche de similarité des vecteurs faciaux 512-d (ArcFace).</td></tr>
-          <tr><th>Moteurs de Criminalistique</th><td><code>ExifTool</code> (métadonnées d'appareils et GPS), <code>Sherloq</code> (OpenCV), <code>Faster-Whisper</code> (CTranslate2 GPU/CPU).</td></tr>
-          <tr><th>Confidentialité</th><td>Fonctionnement à <strong>100% hors-ligne</strong> sans envoyer aucune image vers des serveurs tiers.</td></tr>
-        </table>
       </div>
     </div>
 
@@ -416,39 +438,34 @@ docker compose up -d
       <div class="deliverable-banner">
         <div>
           <span class="badge badge-amber">APPLICATION FONCTIONNELLE v0.5</span>
-          <h2 style="font-size:1.25rem;color:#fff;margin:0.25rem 0;">Phase 5: Enquête Terrain, Bornage Télécom CDR &amp; Carte SIG</h2>
-          <span style="font-size:0.84rem;color:var(--text-secondary);">Durée: Semaines 13 à 15 &bull; Focus: Données opérateurs &amp; Analyse spatio-temporelle</span>
+          <h2 style="font-size:1.25rem;color:#fff;margin:0.25rem 0;">Phase 5: Télécoms Massifs (CDR Polars), Audio Darija &amp; Cartographie SIG</h2>
+          <span style="font-size:0.84rem;color:var(--text-secondary);">Durée: Semaines 13 à 15 &bull; Focus: Données Opérateurs Haute Volumétrie &amp; Diarisation Vocale</span>
         </div>
-        <span class="badge badge-emerald">Livrable: Synchronisation Graphe + Carte + Chronologie</span>
+        <span class="badge badge-emerald">Livrable: Moteur CDR Millions d'Appels &amp; Whisper Darija</span>
       </div>
 
       <h3 class="section-title">1. Objectifs &amp; Expérience de l'Enquêteur</h3>
       <p class="section-subtitle">
-        Intégration des données d'investigation judiciaire traditionnelles : fiches d'appels et bornages cellulaires fournis par les opérateurs de téléphonie mobile.
+        L'enquêteur glisse un listing d'appels téléphoniques (CDR Excel de 500 000 lignes) : les antennes relais sont géocodées instantanément, les co-déplacements de téléphones sont mis en évidence sur la carte SIG, et les messages vocaux WhatsApp en Darija algérienne sont transcrits et séparés par locuteur.
       </p>
 
+      <h3 class="section-title">2. Étapes Détaillées &amp; Tâches d'Ingénierie</h3>
       <div class="step-list">
         <div class="step-item">
-          <strong>1. Importateur Universel de Relevés Télécoms (CDR Excel / CSV)</strong>
-          Glisser-déposer des listings d'appels d'Ooredoo, Mobilis ou Djezzy : normalisation instantanée des numéros appelés, durées, IMEI et identifiants de relais.
+          <strong>Étape 5.1 : Moteur Haute Vitesse CDR (Polars + TimescaleDB)</strong>
+          Pipeline d'ingestion ultra-rapide capable de parser et normaliser 500 000 lignes de CDR opérateurs (Mobilis, Djezzy, Ooredoo) en moins de 2 secondes. Stockage optimisé en hypertables TimescaleDB.
         </div>
         <div class="step-item">
-          <strong>2. Carte Géographique des Déplacements &amp; Co-Déplacements</strong>
-          Tracé cartographique des déplacements du téléphone suspect et détection automatique des "téléphones jumeaux" bornant simultanément sur les mêmes antennes.
+          <strong>Étape 5.2 : Cartographie Spatio-Temporelle Avancée (MapLibre GL + Deck.gl)</strong>
+          Diagrammes de Voronoi pour la couverture cellulaire des antennes BTS, calcul de faisabilité des trajets routiers via OSRM et détection automatique des contradictions d'alibi physique.
         </div>
         <div class="step-item">
-          <strong>3. Détecteur de Contradictions d'Alibis</strong>
-          Calcul des vitesses de trajet et détection des impossibilités physiques entre deux bornages ou entre une déposition et une connexion technique.
+          <strong>Étape 5.3 : Piste Parallèle : Moteurs Audio Souverains (Lot D)</strong>
+          Qualification et publication des plugins de criminalistique acoustique :
+          <br/>• <code>plugin-whisper-darija-algerian</code> : transcription textuelle locale de l'arabe dialectal algérien.
+          <br/>• <code>plugin-pyannote-3.1</code> : diarisation et séparation de locuteurs (victime vs escroc).
+          <br/>• <code>plugin-audio-deepfake</code> : détection de clonage vocal et synthèse artificielle.
         </div>
-      </div>
-
-      <h3 class="section-title">2. Architecture &amp; Spécifications Techniques</h3>
-      <div class="table-container">
-        <table class="spec-table">
-          <tr><th>Cartographie SIG</th><td><strong>MapLibre GL JS + Deck.gl</strong> avec tuiles vectorielles hors-ligne (OpenStreetMap locales).</td></tr>
-          <tr><th>Chronologie Synchronisée</th><td>Composant <strong>Vis-Timeline</strong> interactif relié en temps réel aux nœuds du graphe.</td></tr>
-          <tr><th>Calcul d'Itinéraires</th><td>Moteur <strong>OSRM (Open Source Routing Machine)</strong> pour vérifier la faisabilité des trajets routiers.</td></tr>
-        </table>
       </div>
     </div>
 
@@ -457,39 +474,35 @@ docker compose up -d
       <div class="deliverable-banner">
         <div>
           <span class="badge badge-rose">APPLICATION COMPLÈTE v1.0</span>
-          <h2 style="font-size:1.25rem;color:#fff;margin:0.25rem 0;">Phase 6: Copilot IA, Comptes Secrets &amp; Rapport Judiciaire</h2>
-          <span style="font-size:0.84rem;color:var(--text-secondary);">Durée: Semaines 16 à 18 &bull; Focus: Clôture d'enquête &amp; Remise au parquet</span>
+          <h2 style="font-size:1.25rem;color:#fff;margin:0.25rem 0;">Phase 6: Mode 3 Récursif Autonome, Copilot IA Local &amp; Dossier Judiciaire</h2>
+          <span style="font-size:0.84rem;color:var(--text-secondary);">Durée: Semaines 16 à 18 &bull; Focus: Clôture d'Enquête, Autonomie Maximale &amp; PV Parquet</span>
         </div>
-        <span class="badge badge-emerald">Livrable: Plateforme Entreprise Complète &amp; Prête à l'Emploi</span>
+        <span class="badge badge-emerald">Livrable: Plateforme Souveraine Complète Prête au Déploiement</span>
       </div>
 
       <h3 class="section-title">1. Objectifs &amp; Expérience de l'Enquêteur</h3>
       <p class="section-subtitle">
-        L'enquêteur finalise son affaire : l'assistant IA synthétise les preuves accumulées, le coffre de comptes secrets protège les infiltrations Telegram/WhatsApp, et un clic génère le rapport officiel pour le juge d'instruction.
+        L'enquêteur finalise son dossier pénal : l'analyse en Mode 3 s'exécute de manière récursive jusqu'à saturation informationnelle, le Copilot IA souverain local synthétise l'affaire en français et en arabe, et un clic génère le rapport officiel de 30 pages certifié pour le procureur de la République.
       </p>
 
+      <h3 class="section-title">2. Étapes Détaillées &amp; Tâches d'Ingénierie</h3>
       <div class="step-list">
         <div class="step-item">
-          <strong>1. Assistant IA Copilot Spécialisé (Local ou Cloud)</strong>
-          Propose des plans d'investigation en français ou arabe, résume les faits marquants et rédige les synthèses chronologiques sans jamais inventer de fausses preuves.
+          <strong>Étape 6.1 : Déblocage Intégral du Mode 3 (Saturation Récursive Continue)</strong>
+          Boucle autonome complète pilotée par le Dynamic Dataflow Engine : les entités découvertes à l'étape $N$ déclenchent automatiquement de nouveaux outils à l'étape $N+1$ jusqu'à ce qu'aucune nouvelle information probatoire ne puisse être déduite.
         </div>
         <div class="step-item">
-          <strong>2. Coffre-fort Chiffré de Comptes d'Enquête (Sock-Puppets)</strong>
-          Gestion sécurisée des comptes de recherche pour Facebook, Telegram et WhatsApp avec gestion automatique de la 2FA (TOTP) et rotation anti-bannissement.
+          <strong>Étape 6.2 : Copilot IA Souverain 100% Hors-Ligne (Ollama / Qwen 2.5 32B)</strong>
+          Assistant d'investigation local exécuté sur carte graphique dédiée : synthèse chronologique, requêtes complexes en langage naturel traduites en Cypher (Text-to-Cypher) et suggestions de pistes criminelles.
         </div>
         <div class="step-item">
-          <strong>3. Générateur Automatique de Dossiers Judiciaires (PDF Officiel)</strong>
-          Édition d'un rapport PDF complet et numéroté, comprenant la chronologie des faits, la cartographie des relais, la liste des preuves hachées SHA-256 et les projets de réquisition judiciaire pour les opérateurs.
+          <strong>Étape 6.3 : Générateur Automatique de Procès-Verbal Judiciaire (Typst / WeasyPrint)</strong>
+          Édition d'un document officiel A4 conforme aux exigences du Code de Procédure Pénale algérien : chronologie des faits, cartographie des bornages, pièces à conviction hachées SHA-256 et signatures d'officiers de police judiciaire.
         </div>
-      </div>
-
-      <h3 class="section-title">2. Architecture &amp; Spécifications Techniques</h3>
-      <div class="table-container">
-        <table class="spec-table">
-          <tr><th>Passerelle IA</th><td><strong>LiteLLM</strong> avec support natif d'<strong>Ollama / vLLM</strong> (modèles <em>Qwen-2.5</em> ou <em>Llama-3.3</em> fonctionnant sur GPU local).</td></tr>
-          <tr><th>Moteur d'Édition PDF</th><td><strong>WeasyPrint / Typst</strong> pour composer des documents judiciaires conformes aux standards officiels.</td></tr>
-          <tr><th>Sécurité du Coffre</th><td>Chiffrement matériel AES-256-GCM des sessions et cookies des comptes d'infiltration.</td></tr>
-        </table>
+        <div class="step-item">
+          <strong>Étape 6.4 : Multi-Tenancy Wilayas (RLS) &amp; Durcissement Production</strong>
+          Cloisonnement strict des données judiciaires par Wilaya et brigade via Row-Level Security (RLS) PostgreSQL, audits de conformité ISO 27037 et packaging de déploiement sécurisé.
+        </div>
       </div>
     </div>
 
