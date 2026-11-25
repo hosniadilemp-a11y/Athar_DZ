@@ -316,6 +316,143 @@
           Audit des dépendances (`pip-audit`, `npm audit`), revue d'accessibilité WCAG 2.1 AA au clavier, vérification de la persistance de l'état et tagging de la release Git `v0.1-studio-core`.
         </div>
       </div>
+
+      <!-- Exhaustive List of Implemented Functionalities in Phase 1 -->
+      <h3 class="section-title" style="margin-top:2.5rem;color:#60a5fa;">📋 Inventaire Exhaustif des Fonctionnalités Implémentées &amp; Opérationnelles en Phase 1 (v0.1)</h3>
+      <p class="section-subtitle">
+        Cet inventaire recense l'intégralité des capacités logicielles développées, testées et validées par la suite de tests automatisés (42 tests pytest backend, 33 tests vitest frontend, 0 erreur TypeScript) dans le socle opérationnel <code>apps/studio-app/</code> :
+      </p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(340px, 1fr));gap:1rem;margin-bottom:1.5rem;">
+        
+        <!-- Category 1: Gestion d'Affaires -->
+        <div style="background:#090d16;border:1px solid #1e293b;border-top:3px solid #3b82f6;border-radius:8px;padding:1rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+            <span style="font-size:1.1rem;">📁</span>
+            <strong style="color:#60a5fa;font-size:0.88rem;">1. Gestion Complète des Dossiers Judiciaires (Cases)</strong>
+          </div>
+          <ul style="padding-left:1.1rem;margin:0;font-size:0.79rem;color:#cbd5e1;line-height:1.55;">
+            <li><strong>Création d'Affaire :</strong> Modale <code>NewCaseModal</code> avec référence parquet, titre, juridiction, date d'ouverture et OPJ assigné.</li>
+            <li><strong>Explorateur d'Affaires :</strong> Modale <code>OpenCaseModal</code> avec recherche, sélection et bascule instantanée entre dossiers.</li>
+            <li><strong>Propriétés du Dossier :</strong> Consultation et mise à jour des métadonnées légales de l'affaire active (<code>CasePropertiesModal</code>).</li>
+            <li><strong>Isolation Multi-Tenant :</strong> Cloisonnement strict des entités et relations par identifiant d'affaire <code>case_id</code> sur l'ensemble des routes API.</li>
+          </ul>
+        </div>
+
+        <!-- Category 2: Modèle GFPG & Registre -->
+        <div style="background:#090d16;border:1px solid #1e293b;border-top:3px solid #10b981;border-radius:8px;padding:1rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+            <span style="font-size:1.1rem;">🧬</span>
+            <strong style="color:#34d399;font-size:0.88rem;">2. Ontologie GFPG Canonique &amp; 5 Calques Forensiques</strong>
+          </div>
+          <ul style="padding-left:1.1rem;margin:0;font-size:0.79rem;color:#cbd5e1;line-height:1.55;">
+            <li><strong>Registre Unique (SSOT) :</strong> Fichier canonique <code>registry.json</code> exporté en TypeScript définissant <strong>37 types de nœuds</strong> et <strong>47 relations directionnelles</strong>.</li>
+            <li><strong>5 Calques Normés :</strong> Calque 1 <code>VERIFIED</code> (11 types), Calque 2 <code>OSINT_RAW</code> (8 types), Calque 3 <code>INFRA</code> (8 types), Calque 4 <code>HYPOTHESIS</code> (4 types), Calque 5 <code>FLOWS</code> (6 types).</li>
+            <li><strong>Validation de Schéma :</strong> Rejet strict de toute relation incompatible avec les types sources/cibles autorisés.</li>
+            <li><strong>Seed Idempotent :</strong> Cas réel Candy Wheels (100 nœuds, 126 relations) préchargé au démarrage dans Neo4j et PostgreSQL.</li>
+          </ul>
+        </div>
+
+        <!-- Category 3: Canevas Circulaire & Adaptateur -->
+        <div style="background:#090d16;border:1px solid #1e293b;border-top:3px solid #8b5cf6;border-radius:8px;padding:1rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+            <span style="font-size:1.1rem;">🎨</span>
+            <strong style="color:#c084fc;font-size:0.88rem;">3. Canevas Graphique Circulaire (GraphCanvasAdapter)</strong>
+          </div>
+          <ul style="padding-left:1.1rem;margin:0;font-size:0.79rem;color:#cbd5e1;line-height:1.55;">
+            <li><strong>Nœuds Circulaires SVG :</strong> Diamètre standard 56px, nœuds pivots 68px, icônes Lucide contextuelles et badges textuels.</li>
+            <li><strong>Anneaux de Calques :</strong> Bordures codées par couleur (Vert Émeraude, Cyan, Ardoise, Violet pointillés, Ambre).</li>
+            <li><strong>Épinglage Persistant (Pinning) :</strong> Verrouillage des coordonnées manuelles (<code>pinnedNodeIds</code>) mémorisé lors des réorganisations.</li>
+            <li><strong>Navigation Fluide :</strong> Zoom infini molette/boutons, panoramique (drag du fond de canevas), centrage automatique et minimap interactive (<code>CanvasMinimap</code>).</li>
+            <li><strong>Algorithmes de Disposition :</strong> Force-directed organique, hiérarchique, circulaire, étoile et grille.</li>
+            <li><strong>Mode Impact :</strong> Filtrage dynamique des nœuds à forte centralité d'intermédiarité.</li>
+          </ul>
+        </div>
+
+        <!-- Category 4: Interaction, Création & Menus -->
+        <div style="background:#090d16;border:1px solid #1e293b;border-top:3px solid #ec4899;border-radius:8px;padding:1rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+            <span style="font-size:1.1rem;">🖱️</span>
+            <strong style="color:#f472b6;font-size:0.88rem;">4. Création, Édition Forensique &amp; Raccourcis Clavier</strong>
+          </div>
+          <ul style="padding-left:1.1rem;margin:0;font-size:0.79rem;color:#cbd5e1;line-height:1.55;">
+            <li><strong>Accordéon Latéral (LeftAccordion) :</strong> 5 dossiers de calques dépliables avec les 37 types en glisser-déposer sur le canevas ou création au clavier.</li>
+            <li><strong>Mode Création de Liens :</strong> Bouton de tracé interactif permettant de relier deux nœuds avec sélection de la relation légale autorisée (<code>CreateRelationModal</code>).</li>
+            <li><strong>Menu Contextuel Universel :</strong> Clic-droit souris ou touche <code>Shift+F10</code> pour centrer, épingler, changer de calque, inspecter ou supprimer (soft delete).</li>
+            <li><strong>Contrôle ISO 27037 :</strong> Dialogue imposant la saisie obligatoire d'un motif d'OPJ (<code>reason</code>) avant toute promotion d'un nœud en <code>VERIFIED</code>.</li>
+            <li><strong>Undo / Redo Illimité :</strong> Historique complet des actions dans Zustand avec raccourcis universels <code>Ctrl+Z</code> et <code>Ctrl+Y</code>.</li>
+            <li><strong>Alternative Accessible (A11y) :</strong> Vue tabulaire accessible (<code>AccessibleListView</code>) navigable 100% au lecteur d'écran et au clavier.</li>
+          </ul>
+        </div>
+
+        <!-- Category 5: 16 Algorithmes SNA -->
+        <div style="background:#090d16;border:1px solid #1e293b;border-top:3px solid #f59e0b;border-radius:8px;padding:1rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+            <span style="font-size:1.1rem;">🔬</span>
+            <strong style="color:#fbbf24;font-size:0.88rem;">5. Les 16 Algorithmes SNA Déterministes (SnaPanel)</strong>
+          </div>
+          <ul style="padding-left:1.1rem;margin:0;font-size:0.79rem;color:#cbd5e1;line-height:1.55;">
+            <li><strong>Centralité d'Intermédiarité Brandes :</strong> Détection mathématique des intermédiaires et mules financières.</li>
+            <li><strong>Détection de Communautés Louvain :</strong> Partitionnement non supervisé en cellules criminelles étanches.</li>
+            <li><strong>Propagation d'Étiquettes :</strong> Détection de clans et réseaux d'influence.</li>
+            <li><strong>Prédiction de Liens Adamic-Adar &amp; Jaccard :</strong> Identification des liaisons cachées hautement probables.</li>
+            <li><strong>PageRank Personnalisé :</strong> Rayonnement et centralité de flux autour d'un suspect pivot.</li>
+            <li><strong>Classification de Rôles :</strong> Attribution des statuts (Leader, Opérationnel, Soutien, Neutre).</li>
+            <li><strong>Plus Court Chemin Dijkstra :</strong> Traçage de la chaîne minimale de contacts entre deux cibles.</li>
+            <li><strong>K-Core &amp; Top-K :</strong> Extraction du noyau dur de l'organisation criminelle.</li>
+            <li><strong>Profilage Territorial :</strong> Répartition des actes et présences sur les 58 Wilayas algériennes.</li>
+            <li><strong>Sous-Graphe &amp; Diff Temporel :</strong> Évolution structurelle avant et après une date d'infraction.</li>
+            <li><strong>Points d'Articulation &amp; Ponts :</strong> Détection des points de rupture uniques pour neutraliser le réseau.</li>
+            <li><strong>Centralité de Proximité &amp; Vecteur Propre :</strong> Vitesse de diffusion de l'information dans le graphe.</li>
+          </ul>
+        </div>
+
+        <!-- Category 6: Chaîne de Preuve & Audit -->
+        <div style="background:#090d16;border:1px solid #1e293b;border-top:3px solid #06b6d4;border-radius:8px;padding:1rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+            <span style="font-size:1.1rem;">🛡️</span>
+            <strong style="color:#22d3ee;font-size:0.88rem;">6. Chaîne de Preuve &amp; Registre d'Audit Cryptographique</strong>
+          </div>
+          <ul style="padding-left:1.1rem;margin:0;font-size:0.79rem;color:#cbd5e1;line-height:1.55;">
+            <li><strong>Journal Append-Only :</strong> Table PostgreSQL immuable interdisant toute modification ou suppression d'entrée judiciaire (<code>audit_service.py</code>).</li>
+            <li><strong>Chaînage Merkle SHA-256 :</strong> Chaque enregistrement intègre l'empreinte cryptographique de l'entrée précédente (<code>hash = SHA256(canonical_json + prev_hash)</code>).</li>
+            <li><strong>Vérification d'Intégrité en Ligne :</strong> Endpoint <code>/audit/verify</code> recalculant l'intégralité de la chaîne et détectant toute altération frauduleuse.</li>
+            <li><strong>Visualiseur d'Audit (AuditChainViewer) :</strong> Modale inspectant l'horodatage UTC, l'identifiant de l'acteur OPJ, l'action légale et l'état avant/après.</li>
+          </ul>
+        </div>
+
+        <!-- Category 7: Inspecteur & Neutralité Forensique -->
+        <div style="background:#090d16;border:1px solid #1e293b;border-top:3px solid #a855f7;border-radius:8px;padding:1rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+            <span style="font-size:1.1rem;">🔍</span>
+            <strong style="color:#d8b4fe;font-size:0.88rem;">7. Inspecteur Latéral Dual-Mode (InspectorPanel)</strong>
+          </div>
+          <ul style="padding-left:1.1rem;margin:0;font-size:0.79rem;color:#cbd5e1;line-height:1.55;">
+            <li><strong>Inspection de Nœud :</strong> Affichage des métadonnées typées, coordonnées GPS WGS84, niveau de confiance, calque, et actions contextuelles.</li>
+            <li><strong>Inspection d'Arête :</strong> Type de relation, confiance, horodatage, direction et attributs spécifiques de liaison.</li>
+            <li><strong>Neutralité Stricte Anti-Hallucination (D13) :</strong> Aucun statut inventé (élimination des faux statuts interpol/GAV), lecteur audio réservé exclusivement aux scellés audio authentiques.</li>
+            <li><strong>Édition Contrôlée :</strong> Mise à jour sécurisée des attributs métier avec traçage immédiat dans le journal d'audit.</li>
+          </ul>
+        </div>
+
+        <!-- Category 8: Vues Synchronisées & Finitions -->
+        <div style="background:#090d16;border:1px solid #1e293b;border-top:3px solid #e11d48;border-radius:8px;padding:1rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+            <span style="font-size:1.1rem;">🌐</span>
+            <strong style="color:#fb7185;font-size:0.88rem;">8. Vues Synchronisées, Internationalisation &amp; Export</strong>
+          </div>
+          <ul style="padding-left:1.1rem;margin:0;font-size:0.79rem;color:#cbd5e1;line-height:1.55;">
+            <li><strong>Vue Chronologique (TimelineView) :</strong> Distribution temporelle synchronisée des appels, messages, transactions et événements du dossier.</li>
+            <li><strong>Vue Cartographique SIG (MapView) :</strong> Projection Leaflet des antennes BTS, unités et scellés avec découpage officiel des 58 Wilayas algériennes.</li>
+            <li><strong>Palette de Commandes (CommandPalette) :</strong> Recherche et déclenchement rapide d'actions au clavier via <code>Ctrl+K</code>.</li>
+            <li><strong>Internationalisation Multilingue (i18n) :</strong> Support complet Français, Arabe (avec inversion automatique RTL droite-à-gauche) et Anglais (<code>I18nContext</code>).</li>
+            <li><strong>Thèmes Visuels :</strong> Dark Theme optimisé pour salles de veille et Light Theme pour magistrats (<code>tokens.css</code>).</li>
+            <li><strong>Exportateur Judiciaire (exportService) :</strong> Génération de synthèses PDF prêtes à imprimer et exports de données JSON normées.</li>
+            <li><strong>Préservation de la Maquette (Décision D10) :</strong> Tous les modules non-Phase 1 sont stylisés en gris avec attribut <code>aria-disabled="true"</code> et badge visible <code>Phase N</code>, ouvrant la fenêtre explicative <code>PhaseNoticeModal</code> au clic.</li>
+          </ul>
+        </div>
+
+      </div>
     </div>
 
     <!-- TAB 2: PHASE 2 DETAIL -->
