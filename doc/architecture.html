@@ -1259,10 +1259,120 @@
           </tbody>
         </table>
 
-        <!-- Sub-Section 3.5: Unified OSINT Artifact Processing & Recursive Event-Driven Orchestration -->
-        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">3.5 Traitement Unifié des Collectes OSINT &amp; Orchestration Événementielle Récursive (Temporal.io Loops)</h3>
+        <!-- Sub-Section 3.4: The 4-Pattern Hybrid Architecture & Universal Drag-and-Drop Ingestion -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">3.4 Architecture Hybride Quadruple : Blackboard, Dynamic Dataflow Engine, EDA &amp; Plugins SPI</h3>
         <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.6;">
-          Le pipeline d'ingestion par microservices (Option B) n'est pas limité aux fichiers glissés-déposés manuellement par l'enquêteur : <strong>il unifie l'ensemble des flux d'artefacts générés par les 76 outils OSINT</strong>. Lorsqu'un scraper ou un collecteur de réseau social capture la page d'une cible, les artefacts collectés déclenchent une cascade d'événements asynchrones pilotée par la machine à états <strong>Temporal.io v1.24</strong> :
+          Pour orchestrer le dépouillement forensique multi-formats sans rupture de la chaîne de preuve ISO 27037 et sans couplage rigide, Layer 2 s'articule autour de la synergie de <strong>quatre patrons de conception logicielle majeurs</strong> :
+        </p>
+
+        <!-- 4 Patterns Cards Grid -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;margin:1rem 0;">
+          <!-- 1. Blackboard -->
+          <div style="background:#0c1322;border:1px solid #1e293b;border-top:3px solid #f59e0b;border-radius:8px;padding:1rem;">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+              <span style="font-size:1.2rem;">📋</span>
+              <strong style="color:#fbbf24;font-size:0.9rem;">1. Patron Blackboard (Tableau Partagé)</strong>
+            </div>
+            <p style="color:#cbd5e1;font-size:0.78rem;line-height:1.5;margin:0;">
+              Espace de connaissances partagé (SSOT) hébergeant les assertions probatoires, le graphe de cas (Neo4j), les vecteurs biométriques (Qdrant), les index plein-texte (Elasticsearch 8.14), les scellés binaires WORM (MinIO) et le <em>Bassin d'Indices Non-Inclus</em>. Les moteurs d'analyse n'interagissent jamais en direct : ils lisent et écrivent leurs découvertes sous forme d'assertions horodatées sur le Blackboard.
+            </p>
+          </div>
+
+          <!-- 2. Dynamic Dataflow Engine -->
+          <div style="background:#0c1322;border:1px solid #1e293b;border-top:3px solid #38bdf8;border-radius:8px;padding:1rem;">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+              <span style="font-size:1.2rem;">⚡</span>
+              <strong style="color:#38bdf8;font-size:0.9rem;">2. Dynamic Dataflow Engine (Moteur de DAGs)</strong>
+            </div>
+            <p style="color:#cbd5e1;font-size:0.78rem;line-height:1.5;margin:0;">
+              Construit et exécute à la volée des graphes acycliques dirigés (DAG) de traitement selon le format du fichier déposé et le mode d'investigation choisi. Gère le fan-out parallèle, les barrières de synchronisation humaine, les jointures géométriques (ex: inclusion spatiale d'une plaque d'immatriculation dans la boîte d'un véhicule) et la fusion d'entités candidates.
+            </p>
+          </div>
+
+          <!-- 3. Event-Driven Architecture (EDA) -->
+          <div style="background:#0c1322;border:1px solid #1e293b;border-top:3px solid #a855f7;border-radius:8px;padding:1rem;">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+              <span style="font-size:1.2rem;">📡</span>
+              <strong style="color:#c084fc;font-size:0.9rem;">3. Event-Driven Architecture (Bus Événementiel)</strong>
+            </div>
+            <p style="color:#cbd5e1;font-size:0.78rem;line-height:1.5;margin:0;">
+              Bus d'événements asynchrones ultra-rapide (Redis Streams + WebSockets) propageant les signaux d'état : <code>NODE_DROPPED</code>, <code>PROCESS_CONFIGURED</code>, <code>STAGE_COMPLETED</code>, <code>UNMATCHED_FACE_DETECTED</code>. Maintient à jour en temps réel l'indicateur d'investigation active sur le canevas et la barre de progression de l'inspecteur.
+            </p>
+          </div>
+
+          <!-- 4. Plugin Architecture (SPI) -->
+          <div style="background:#0c1322;border:1px solid #1e293b;border-top:3px solid #10b981;border-radius:8px;padding:1rem;">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+              <span style="font-size:1.2rem;">🔌</span>
+              <strong style="color:#34d399;font-size:0.9rem;">4. Architecture de Plugins (Forensic SPI)</strong>
+            </div>
+            <p style="color:#cbd5e1;font-size:0.78rem;line-height:1.5;margin:0;">
+              Contrat d'interface standardisé (Forensic Service Provider Interface) régissant le cycle de vie, la découverte et l'exécution conteneurisée des 88 moteurs forensiques locaux. Chaque plugin déclare ses types MIME acceptés, ses schémas de sortie typés et ses contraintes matérielles (accélération GPU CUDA vs threads CPU).
+            </p>
+          </div>
+        </div>
+
+        <!-- Ingestion Experience: 3 Modes & Deferred Lifecycle -->
+        <div style="background:#090d16;border:1px solid #1e293b;border-radius:8px;padding:1.1rem;margin:1.2rem 0;">
+          <h4 style="color:#f8fafc;font-size:0.92rem;margin:0 0 0.6rem;">🎯 Ergonomie d'Ingestion Non-Intrusive par Drag &amp; Drop (3 Modes &amp; Contrôle Différé)</h4>
+          <p style="font-size:0.8rem;color:#cbd5e1;line-height:1.55;margin:0 0 0.8rem;">
+            Le dépôt d'un fichier (image, audio, document, vidéo, CDR) <strong>ne déclenche aucun traitement aveugle</strong>. Un nœud d'élément brut est immédiatement matérialisé avec son empreinte SHA-256 calculée côté client, et un popover contextuel présente les 3 modes opératoires :
+          </p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:0.8rem;">
+            <div style="background:#0f172a;border:1px solid #334155;border-radius:6px;padding:0.8rem;">
+              <strong style="color:#38bdf8;font-size:0.82rem;">🚀 Mode 1 : Analyse Rapide</strong>
+              <p style="color:#94a3b8;font-size:0.75rem;line-height:1.45;margin:0.4rem 0 0;">
+                Exécute les extracteurs légers essentiels (EXIF, hachage, dimensions, OCR préliminaire). Analyse quasi-instantanée sans mobilisation des cartes GPU.
+              </p>
+            </div>
+            <div style="background:#0f172a;border:1px solid #334155;border-radius:6px;padding:0.8rem;">
+              <strong style="color:#fbbf24;font-size:0.82rem;">🔍 Mode 2 : Étape par Étape (Human-in-the-Loop)</strong>
+              <p style="color:#94a3b8;font-size:0.75rem;line-height:1.45;margin:0.4rem 0 0;">
+                Pause à chaque palier d'extraction (ex: visages détectés, véhicules trouvés). L'enquêteur sélectionne manuellement les actions suivantes (reconnaissance faciale, requête ALPR).
+              </p>
+            </div>
+            <div style="background:#0f172a;border:1px solid #334155;border-radius:6px;padding:0.8rem;">
+              <strong style="color:#a855f7;font-size:0.82rem;">⚡ Mode 3 : Autonome Récursif</strong>
+              <p style="color:#94a3b8;font-size:0.75rem;line-height:1.45;margin:0.4rem 0 0;">
+                Contrôle complet confié au Dataflow Engine : exécution récursive continue jusqu'à saturation informationnelle (aucune nouvelle entité découvrable).
+              </p>
+            </div>
+          </div>
+          <div style="margin-top:0.8rem;padding-top:0.6rem;border-top:1px solid #1e293b;font-size:0.78rem;color:#94a3b8;">
+            💡 <em>L'enquêteur peut fermer le popover à tout moment : le nœud reste visible avec son badge <strong>« En cours d'investigation »</strong>, et l'analyse peut être lancée plus tard depuis le menu inspecteur latéral avec suivi de la barre de progression en temps réel.</em>
+          </div>
+        </div>
+
+        <!-- Distinction: Knowledge Graph vs Process Discovery Tree -->
+        <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:1.1rem;margin:1.2rem 0;">
+          <h4 style="color:#f8fafc;font-size:0.92rem;margin:0 0 0.6rem;">🌳 Distinction Architecturale : Graphe de Connaissances vs Arbre des Processus (Process Tree)</h4>
+          <p style="font-size:0.8rem;color:#cbd5e1;line-height:1.55;margin:0 0 0.8rem;">
+            Pour garantir une lisibilité sans faille, le système sépare strictement l'arborescence des calculs du graphe judiciaire :
+          </p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div style="background:#090d16;border:1px solid #1e293b;border-radius:6px;padding:0.8rem;">
+              <strong style="color:#0ea5e9;font-size:0.82rem;">🌐 Graphe de Connaissances (Knowledge Graph)</strong>
+              <ul style="color:#94a3b8;font-size:0.75rem;line-height:1.45;padding-left:1.1rem;margin:0.4rem 0 0;">
+                <li>Représente la <strong>réalité criminelle</strong> (Suspects, Téléphones, Sociétés, Comptes bancaires, Scènes).</li>
+                <li>Comporte uniquement des faits avérés ou validés par l'OPJ.</li>
+                <li>Positionné sur le canevas central d'investigation (Général ou Onglet Isolé).</li>
+              </ul>
+            </div>
+            <div style="background:#090d16;border:1px solid #1e293b;border-radius:6px;padding:0.8rem;">
+              <strong style="color:#10b981;font-size:0.82rem;">🌿 Arbre des Processus (Process Discovery Tree)</strong>
+              <ul style="color:#94a3b8;font-size:0.75rem;line-height:1.45;padding-left:1.1rem;margin:0.4rem 0 0;">
+                <li>Représente la <strong>provenance algorithmique</strong> (Fichier &rarr; Détection &rarr; Crops &rarr; Vecteurs &rarr; Match).</li>
+                <li>Croît dynamiquement à chaque nouvelle inférence des plugins.</li>
+                <li>Accessible dans l'inspecteur ou la vue isolée pour auditer chaque chaîne de décision.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-Section 3.5: Unified OSINT Artifact Processing & Recursive Event-Driven Orchestration -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">3.5 Traitement Unifié des Collectes OSINT &amp; Boucle Événementielle Récursive (EDA / Temporal.io)</h3>
+        <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.6;">
+          Le pipeline Dataflow et l'Arbre des Processus ne sont pas réservés aux seuls fichiers glissés-déposés : <strong>ils unifient l'ensemble des flux d'artefacts générés par les 76 outils OSINT</strong>. Lorsqu'un scraper ou un collecteur capture le profil d'une cible, les artefacts collectés déclenchent une cascade d'événements asynchrones pilotée par le Dynamic Dataflow Engine et la machine à états <strong>Temporal.io v1.24</strong> :
         </p>
 
         <!-- Scenario Flow Card -->
@@ -1277,21 +1387,21 @@
               <strong>1. Déclenchement Initial :</strong> L'outil OSINT (ex: <code>brick.socmint.facebook_dumper</code>) télécharge depuis le profil ciblé : <strong>3 photos</strong>, <strong>4 publications texte</strong> et <strong>1 vidéo</strong>.
             </p>
             <p style="margin:0 0 0.6rem;">
-              <strong>2. Dispatch Parallèle (Fan-Out) :</strong>
-              <br/>• <em>Les 4 posts texte</em> &rarr; envoyés à <code>srv-ner-arabic</code> (extrait téléphones, wilayas et montants en DZD).
-              <br/>• <em>La vidéo</em> &rarr; envoyée à <code>srv-ffmpeg</code> (extraction keyframes) puis <code>srv-yolo</code> (véhicules).
-              <br/>• <em>Les 3 photos</em> &rarr; distribuées en parallèle vers <code>srv-face</code> (InsightFace), <code>srv-ocr-alpr</code> et <code>srv-yolo</code>.
+              <strong>2. Dispatch Parallèle Dataflow (Fan-Out) :</strong>
+              <br/>• <em>Les 4 posts texte</em> &rarr; envoyés au plugin <code>plugin-ner-arabic</code> (extrait téléphones, wilayas et montants en DZD).
+              <br/>• <em>La vidéo</em> &rarr; envoyée au plugin <code>plugin-ffmpeg</code> (extraction keyframes) puis <code>plugin-yolo</code> (détection véhicules).
+              <br/>• <em>Les 3 photos</em> &rarr; distribuées en parallèle vers <code>plugin-insightface</code> (biométrie), <code>plugin-ocr-alpr</code> et <code>plugin-yolo</code>.
             </p>
             <p style="margin:0 0 0.6rem;">
               <strong>3. Traitement de la Photo #1 &amp; Découverte Biométrique :</strong>
-              <br/>Le microservice <code>srv-face</code> isole <strong>3 visages</strong> sur la photo :
+              <br/>Le plugin <code>plugin-insightface</code> isole <strong>3 visages</strong> sur la photo :
               <br/>&bull; <strong>Visage 1 :</strong> Correspondance exacte (&gt;92% dans Qdrant) avec le suspect principal déjà fiché (Amine B.). L'image est liée comme preuve de présence.
               <br/>&bull; <strong>Visages 2 et 3 :</strong> Inconnus dans la base de données criminelle (individus non identifiés accompagnant le suspect).
             </p>
             <p style="margin:0;">
-              <strong>4. Boucle Événementielle Récursive (Tool Chaining) :</strong>
-              <br/>Face à ces 2 visages inconnus, l'orchestrateur Temporal émet un événement <code>UNMATCHED_FACE_DETECTED</code>. Il <strong>déclenche automatiquement de nouveaux outils OSINT</strong> de recherche inversée et de reconnaissance faciale (PimEyes / Maigret / Face Search) pour tenter d'identifier ces complices.
-              <br/>Les résultats ne sont pas injectés aveuglément sur le graphe : ils sont versés dans le <strong>Bassin d'Indices Non-Inclus</strong> sous forme de propositions pour l'OPJ : <em>« 2 complices inconnus détectés sur la photo avec Amine B. ; profil potentiel trouvé : @karim_dz23 »</em>.
+              <strong>4. Boucle Événementielle Récursive (EDA Tool Chaining) :</strong>
+              <br/>Face à ces 2 visages inconnus, le système émet un événement <code>UNMATCHED_FACE_DETECTED</code>. Il <strong>déclenche automatiquement de nouveaux plugins OSINT</strong> de recherche inversée et de reconnaissance faciale (PimEyes / Maigret / Face Search) pour tenter d'identifier ces complices.
+              <br/>L'Arbre des Processus s'étend dynamiquement avec ces nouvelles branches, tandis que les résultats sont versés dans le <strong>Bassin d'Indices Non-Inclus</strong> sous forme de propositions pour l'OPJ : <em>« 2 complices inconnus détectés sur la photo avec Amine B. ; profil potentiel trouvé : @karim_dz23 »</em>.
             </p>
           </div>
         </div>
@@ -1302,7 +1412,7 @@
           <thead>
             <tr>
               <th>Type d'Artefact</th>
-              <th>Pipeline de Microservices Déclenché</th>
+              <th>Pipeline Dataflow &amp; Plugins SPI Déclenché</th>
               <th>Outils Déjà Téléchargés &amp; Opérationnels (.athar-tools)</th>
               <th>Statut &amp; Compléments Éventuels</th>
             </tr>

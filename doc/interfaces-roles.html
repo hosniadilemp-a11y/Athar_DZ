@@ -455,8 +455,8 @@
           </div>
         </div>
 
-        <!-- 1.10 Système Multi-Onglets d'Enquête & Algorithme d'Extraction "Actor Sphere" (Option A) -->
-        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">1.10 Système Multi-Onglets d'Enquête &amp; Algorithme "Actor Sphere" (Option A)</h3>
+        <!-- 1.10 Système Multi-Onglets d'Enquête & Algorithme d'Extraction Asymétrique Orientée (Option A) -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">1.10 Système Multi-Onglets d'Enquête &amp; Traversée Asymétrique Orientée (Option A)</h3>
         <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;">
           Inspiré des onglets de documents dans Photoshop et des graphes dérivés sous Palantir Gotham, le studio dispose d'une <strong>barre d'onglets de travail</strong> surmontant l'espace graphique :
         </p>
@@ -471,20 +471,20 @@
             </ul>
           </div>
           <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #38bdf8;border-radius:6px;padding:0.9rem;font-size:0.82rem;">
-            <strong style="color:#38bdf8;display:block;margin-bottom:0.35rem;">🛑 Algorithme "Stop-at-Actors BFS" (Anti-Hairball)</strong>
+            <strong style="color:#38bdf8;display:block;margin-bottom:0.35rem;">🛑 Règle de Traversée Asymétrique Orientée (Anti-Hairball)</strong>
             <ul style="padding-left:1.1rem;margin:0;color:#cbd5e1;line-height:1.6;">
-              <li><strong>Problème :</strong> Les graphes criminels sont non-convexes. Aspirer les voisins sans limite ramène 80% du dossier complet (saturation).</li>
-              <li><strong>Règle de Coupure :</strong> Le BFS traverse librement les actifs/traces (téléphones, SIMs, comptes, véhicules, notes vocales), mais <em>s'arrête strictement à tout autre nœud Personne</em>.</li>
-              <li><strong>Nœuds Frontières :</strong> L'autre personne apparaît en périphérie sous forme d'ancre fermée avec badge <em>« +N entités »</em>.</li>
-              <li><strong>Actifs Partagés :</strong> Les véhicules ou comptes en commun sont mis en surbrillance au centre du sous-graphe.</li>
+              <li><strong>Arêtes Entrantes (In-Edges) :</strong> <em>1-hop strict</em> vers la cible ($u \to \text{Cible}$), capturant les flux et preuves convergentes directes sans aspiration des réseaux amont.</li>
+              <li><strong>Arêtes Sortantes (Out-Edges) :</strong> Traversée orientée aval le long des flux émis jusqu'à rencontrer un <em>nœud Personne frontière</em> ou une feuille terminale.</li>
+              <li><strong>Liaisons Frontières Préservées :</strong> Les personnes atteintes aux extrémités sortantes sont explicitement rendues, et l'arête d'arrivée est tracée pour rendre la chaîne probatoire transparente.</li>
+              <li><strong>Actifs Partagés :</strong> Les véhicules ou comptes en commun sont mis en surbrillance au centre du sous-graphe avec marqueur doré.</li>
             </ul>
           </div>
         </div>
 
         <!-- 1.11 Synergie Option A & Option B : Tiroir du Bassin d'Indices Non-Inclus dans l'Onglet Suspect -->
-        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">1.11 Synergie Option A &amp; Option B : Bassin d'Indices Non-Inclus Pilotable par Onglet</h3>
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">1.11 Supervision Complète dans l'Onglet Isolé : Graphe, Processus Actifs &amp; Bassin d'Indices</h3>
         <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;">
-          Lorsqu'un suspect est isolé dans son onglet dédié, le studio ne se contente pas d'afficher ses nœuds actifs : il déploie un <strong>tiroir d'arbitrage latéral</strong> contenant tous les indices secondaires découverts autour de ce suspect mais non encore validés :
+          Lorsqu'un suspect ou objet est isolé dans son onglet dédié, le studio déploie une station d'analyse complète : le sous-graphe focalisé, l'état de tous les processus forensiques lancés, l'<strong>Arbre des Processus</strong> et le <strong>tiroir d'arbitrage latéral</strong> des indices non inclus :
         </p>
         <div style="background:#090d16;border:1px solid #1e293b;border-radius:8px;padding:1.1rem;margin:1rem 0;">
           <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1e293b;padding-bottom:0.5rem;margin-bottom:0.8rem;">
@@ -513,16 +513,20 @@
           </div>
         </div>
 
-        <!-- 1.12 Ingestion Drag & Drop Universelle & Microservices Coopératifs (Option B) -->
-        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">1.12 Ingestion Drag &amp; Drop par Microservices Coopératifs &amp; Groupement Anti-Saturation</h3>
+        <!-- 1.12 Ingestion Drag & Drop Universelle & Architecture Quadruple (Option B) -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">1.12 Ingestion Drag &amp; Drop Non-Intrusive, Popover à 3 Modes &amp; Arbre des Processus</h3>
         <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;">
-          L'ingestion de fichiers bruts (photos, vocaux, documents, CDRs) active une chaîne de microservices locaux hautement spécialisés qui coopèrent entre eux :
+          Le glisser-déposer de fichiers bruts ne lance aucun traitement aveugle : il crée immédiatement un nœud scellé sur le canevas avec son empreinte SHA-256 client et déploie un popover de sélection :
         </p>
         <div style="background:#0c1322;border:1px solid #1e293b;border-radius:8px;padding:1rem;margin:1rem 0;">
           <ul style="padding-left:1.2rem;margin:0;font-size:0.82rem;color:#cbd5e1;line-height:1.7;">
-            <li><strong>Chaining de Microservices :</strong> L'Ordonnanceur Média dispatche l'image en parallèle vers <code>srv-face</code> (InsightFace pour visages), <code>srv-ocr-alpr</code> (PaddleOCR pour matricules et textes) et <code>srv-yolo</code> (détection de véhicules, téléphones, armes).</li>
-            <li><strong>Binder Sémantique &amp; Spatial :</strong> Si une plaque d'immatriculation est détectée à l'intérieur de la boîte englobante d'un véhicule, les microservices coopèrent pour fusionner les attributs en un seul nœud <code>vehicule</code> enrichi de son matricule.</li>
-            <li><strong>Groupement Hiérarchique Anti-Saturation :</strong> La boîte de prévisualisation présente les entités par dossiers rétractables (Acteurs, Véhicules, Objets, Arrière-plan secondaire replié par défaut) pour ne jamais polluer visuellement le graphe de l'OPJ.</li>
+            <li><strong>Popover Contextuel à 3 Modes :</strong> Présente l'ensemble des processus disponibles pour le format. L'enquêteur choisit :
+              <br/>&bull; <em>1. Analyse Rapide :</em> Métadonnées EXIF, hachages et OCR préliminaire en quelques millisecondes.
+              <br/>&bull; <em>2. Analyse Étape par Étape (Human-in-the-Loop) :</em> Pause à chaque palier (visages, véhicules, textes) ; attend la validation de l'OPJ pour déclencher les étapes suivantes (ex: biométrie faciale ou requête ALPR).
+              <br/>&bull; <em>3. Analyse Autonome Récursive :</em> Exécution récursive continue jusqu'à saturation informationnelle.
+            </li>
+            <li><strong>Contrôle Différé &amp; Badge sur Nœud :</strong> L'enquêteur peut quitter le popover sans lancer de traitement. Le nœud arbore un badge <em>« En cours d'investigation »</em> (ou en attente). Les processus restent déclenchables depuis l'<strong>Inspecteur Latéral Droit</strong> avec suivi d'une <strong>barre de progression en temps réel</strong>.</li>
+            <li><strong>Arbre des Processus Interactif (Process Tree) :</strong> Séparé rigoureusement du graphe de connaissances judiciaire, cet arbre interactif croît à chaque nouvelle découverte (Crops &rarr; Vecteurs &rarr; Rapprochements) et permet d'explorer la chaîne algorithmique complète.</li>
           </ul>
         </div>
 
@@ -535,7 +539,7 @@
           <thead>
             <tr>
               <th>Format de Fichier</th>
-              <th>Pipeline de Microservices Requis</th>
+              <th>Pipeline Dataflow &amp; Plugins SPI Requis</th>
               <th>Outils &amp; Modèles Déjà Téléchargés (.athar-tools)</th>
               <th>Compléments à Télécharger / Activer</th>
             </tr>

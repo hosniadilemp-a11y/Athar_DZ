@@ -273,48 +273,176 @@ Inspiré de l'ergonomie des documents à onglets des suites graphiques (Photosho
 
 ---
 
-### 11.2 Problématique Topologique & Algorithme d'Extraction Ciblée ("Stop-at-Actors BFS")
+### 11.2 Problématique Topologique & Algorithme d'Extraction Asymétrique Orientée ("Directional Asymmetric Traversal with Boundary Person Anchors")
 
 #### La Problématique de Non-Convexité des Graphes Criminels
-Les graphes d'investigation ne sont pas partitionnés en composantes connexes isolées. En raison de la présence d'entités relais à forte centralité (antennes relais BTS 4G, pages Facebook publiques, commerçants ou guichets postaux GAB partagés) :
-- **Écueil du parcours naïf (Composante connexe complète)** : Extraire toutes les connexions directes et indirectes sans filtre aspire jusqu'à 80-90% du graphe global de l'affaire dans l'onglet, générant un effet d'encombrement (« hairball ») rendant l'onglet inutile.
-- **Écueil du 1-hop strict** : Limiter l'extraction aux voisins directs omet des chaînes médiées fondamentales (ex: `Personne -> Téléphone -> Carte SIM -> Enregistrement vocal` ou `Personne -> Compte BaridiMob -> Transaction -> Compte Récepteur`).
+Les graphes d'investigation judiciaire ne sont pas partitionnés en composantes convexes ou étanches. En raison de la présence d'entités relais à forte centralité (antennes relais BTS 4G, pages Facebook publiques, commerçants ou guichets postaux GAB partagés) :
+- **Écueil du parcours naïf (Composante connexe complète)** : Extraire toutes les connexions directes et indirectes sans filtre aspire jusqu'à 80-90% du graphe global de l'affaire dans l'onglet, générant un effet d'encombrement (« hairball ») rendant l'onglet illisible et inutile.
+- **Écueil du 1-hop strict non orienté** : Limiter l'extraction aux voisins directs omet des chaînes médiées fondamentales (ex: `Personne -> Téléphone -> Carte SIM -> Enregistrement vocal` ou `Personne -> Compte BaridiMob -> Transaction -> Compte Récepteur`).
 
-#### L'Algorithme "Actor Sphere" (Frontière d'Arrêt aux Acteurs Humains/Moraux)
-Pour résoudre ce dilemme, l'extraction de sous-graphe focalisé repose sur la distinction ontologique entre **Entités Sujets/Acteurs** (`personne`, `entreprise`) et **Entités Médiatrices/Actifs/Traces** (`telephone`, `carte_sim`, `compte_bancaire`, `vehicule`, `image_preuve`, `scelle_numerique`, `enregistrement_vocal`, `transaction_financiere`, etc.) :
+#### L'Algorithme d'Extraction Asymétrique Orientée
+Pour résoudre ce dilemme, l'extraction de sous-graphe focalisé applique une règle de parcours directionnelle stricte, asymétrique entre arêtes entrantes et arêtes sortantes :
 
-1. **Parcours Traversant Libre (Objets & Traces)** : En partant du nœud racine $P_1$, l'algorithme de parcours en largeur (BFS) franchit librement toutes les arêtes vers des nœuds qui ne sont pas de type `personne` ou `entreprise`.
-2. **Mur de Coupure aux Acteurs Tiers (Actor Cutoff Boundary)** : Dès qu'une liaison atteint un autre nœud Acteur $P_2 \neq P_1$ :
-   - Le nœud $P_2$ est **inclus** dans le sous-graphe pour matérialiser le lien relationnel.
-   - L'expansion récursive s'**arrête strictement** à $P_2$ (l'algorithme ne déploie pas le patrimoine ou les contacts personnels de $P_2$).
-   - $P_2$ est affiché avec un indicateur visuel de frontière (*Anchor Node* avec badge *« +N entités masquées »*).
-3. **Traitement des Collisions d'Actifs Partagés (Shared Asset Nodes)** : Lorsqu'un actif matériel ou financier (ex: un véhicule partagé ou un compte bancaire conjoint) est lié simultanément à $P_1$ et $P_2$, le nœud apparaît au centre de l'onglet avec une mise en surbrillance dorée (*Collision Marker*).
-4. **Amortissement des Nœuds Hubs d'Infrastructure (Hub Dampening)** : Les entités d'infrastructure générale à degré élevé ($d(v) > 20$, telles que les antennes BTS ou les sites web grand public) sont intégrées à l'onglet mais n'étendent pas leur voisinage, évitant l'aspiration de contacts collatéraux hors du périmètre de l'enquête.
+```
+[Flux Entrants : 1-Hop Strict]                      [Flux Sortants : Traversée Orientée jusqu'aux Acteurs Frontières]
+ (u1) ──[COMMUNIQUE_AVEC]──►                        ──► (Tel) ──► (SIM) ──► (Enregistrement) ──► [Feuille]
+ (u2) ────────[PAYE]───────► ┌───────────────────┐
+ (u3) ──────[CONDUIT]──────► │ Nœud Focal (Cible)│ ──► (Compte) ──► (Transaction) ──► [Personne Frontière P2]
+                             └───────────────────┘                              (Liaison explicite préservée)
+```
+
+1. **Arêtes Entrantes (In-Edges, $u \to \text{Cible}$) — 1-Hop Strict** :
+   - Sélectionne **exclusivement les voisins directs à 1 saut** disposant d'une arête pointant vers le nœud focal.
+   - Cela capture immédiatement tous les flux qui convergent vers l'entité (appels reçus, virements bancaires entrants, véhicules immatriculés au nom du suspect, scellés judiciaires directement rattachés).
+   - L'algorithme ne remonte aucun antécédent des nœuds entrants, évitant l'aspiration des réseaux amont.
+
+2. **Arêtes Sortantes (Out-Edges, $\text{Cible} \to v_1 \to v_2 \dots$) — Traversée Orientée avec Arrêt aux Acteurs** :
+   - L'algorithme se propage librement vers l'aval le long des arêtes sortantes (projections d'activités émises par le suspect) à travers toutes les entités médiatrices et traces (`telephone`, `carte_sim`, `compte_bancaire`, `vehicule`, `transaction_financiere`, `image_preuve`, `scelle_numerique`, `enregistrement_vocal`).
+   - **Frontière d'Arrêt aux Acteurs Humains/Moraux (`Personne`, `Entreprise`)** :
+     - Dès qu'un chemin sortant atteint un autre nœud d'acteur tiers $P_2 \neq P_1$, **le nœud $P_2$ est inclus dans le sous-graphe** et **la relation exacte qui le relie est explicitement tracée**.
+     - L'expansion s'arrête strictement à $P_2$ : ses relations propres, son patrimoine et ses contacts personnels ne sont pas aspirés dans l'onglet.
+     - $P_2$ est affiché avec un indicateur visuel de frontière (*Anchor Node* avec badge distinctif `[Frontière]`).
+   - **Feuilles Terminales** : Si une branche n'atteint aucun autre acteur, elle s'arrête naturellement à son nœud feuille ($d_{\text{out}}(v) = 0$).
+
+3. **Préservation Intégrale des Liaisons vers les Personnes Frontières (Endpoint Person Links)** :
+   - Contrairement aux approches qui tronquent l'affichage avant d'atteindre le tiers, l'algorithme garantit que la personne terminale et son lien d'arrivée sont parfaitement visibles sur le canevas. L'enquêteur comprend instantanément le cheminement complet de l'action criminelle sans extrapolation.
+
+4. **Traitement des Collisions d'Actifs Partagés (Shared Asset Nodes)** :
+   - Lorsqu'un actif matériel ou financier (ex: un véhicule partagé ou un compte bancaire conjoint) est lié simultanément au suspect focal et à un autre acteur, le nœud apparaît avec une mise en surbrillance dorée (*Collision Marker*).
+
+5. **Amortissement des Nœuds Hubs d'Infrastructure (Hub Dampening)** :
+   - Les entités d'infrastructure générale à degré élevé ($d(v) > 20$, telles que les antennes BTS ou les sites web publics) sont intégrées à l'onglet mais n'étendent pas leur voisinage, évitant l'aspiration de contacts collatéraux hors du périmètre de l'enquête.
 
 ---
 
-## Chapitre 12 : Ingestion Universelle Drag-and-Drop & Station de Dépouillement Forensique Multi-Formats
+### 11.3 Supervision dans l'Onglet Isolé : Processus Actifs, Découvertes Cachées & Arbre d'Exécution
 
-### 12.1 Ergonomie & Cibles de Dépôt Contextuelles (Contextual Drop Targets)
-La plateforme intègre un moteur de glisser-déposer (Drag & Drop) universel conforme aux standards d'ergonomie W3C HTML5 Drag and Drop API et aux exigences de preuve judiciaire ISO/IEC 27037 :
-
-1. **Dépôt sur Fond de Canevas ou Boîte d'Indices (Canvas / Staging Drop)** :
-   - Déclenche un surlignage lumineux de la zone d'ingestion (`canvas-drop-zone-overlay`).
-   - Calcule immédiatement l'empreinte cryptographique SHA-256 du fichier côté client avant tout envoi réseau.
-   - Ouvre la **Station de Dépouillement Forensique** pour analyse automatisée, extraction d'entités et validation par l'enquêteur.
-2. **Dépôt Direct sur un Nœud Existant (Targeted Entity Drop)** :
-   - Si une image est déposée directement sur un nœud `personne` : ouverture d'un menu d'action rapide permettant d'assigner l'image comme **photo d'identité principale (avatar)**, d'extraire son vecteur biométrique ArcFace 512-d (`empreinte_faciale`), ou de l'associer comme pièce probatoire liée (`image_preuve` avec arête `ASSOCIE_A`).
-   - Si un document PDF ou un fichier audio est déposé sur une entité : rattachement probatoire direct sous forme de scellé lié à l'entité cible.
+Lorsqu'un nœud est isolé dans son onglet dédié, l'enquêteur dispose d'une station de supervision à 3 panneaux :
+1. **Le Canevas du Sous-Graphe Faisceau (Graphe de Connaissances)** : La projection topologique filtrée selon la règle directionnelle asymétrique.
+2. **Le Tiroir d'Arbitrage des Indices Non-Inclus (Pending Clues Drawer)** : Présente toutes les entités secondaires découvertes par les outils d'analyse (ex: passants en arrière-plan, véhicules sans lien prouvé, numéros secondaires) rattachées au suspect mais en attente d'incorporation. L'enquêteur peut d'un clic : `[➕ Tout Inclure]` ou `[✕ Tout Écarter]`.
+3. **Le Panneau de l'Arbre des Processus (Process Discovery Tree)** : Affiche l'arborescence complète des calculs et pipelines exécutés sur l'objet focal, ses étapes franchies et ses découvertes en cascade, séparé rigoureusement du graphe de connaissances métier.
 
 ---
 
-### 12.2 Taxonomie Complète des Formats Ingestibles & Pipelines d'Extraction
+## Chapitre 12 : Ingestion Universelle Drag-and-Drop & Architecture Quadruple (Blackboard, Dataflow, EDA, Plugins)
 
-Le tableau normatif ci-dessous détaille le traitement forensique automatisé appliqué selon l'extension et le type MIME du fichier ingéré :
+### 12.1 Ergonomie d'Ingestion Non-Intrusive & Popover à 3 Modes
 
-| Famille de Fichiers | Extensions Détectées | Moteurs & Outils d'Extraction Locaux | Données & Attributs Extraits | Nœuds & Relations Générés dans Athar |
+Conformément aux normes forensiques **ISO/IEC 27037** et aux règles anti-saturation du dossier judiciaire, le glisser-déposer d'un fichier sur le canevas **ne déclenche jamais d'analyse lourde aveugle ou intrusive**.
+
+#### Déroulement de l'Ingestion sur le Canevas :
+1. **Création Immédiate du Nœud d'Objet Brut** :
+   - Dès le dépôt d'un fichier (image, audio, document, vidéo, relevé), l'application calcule instantanément son empreinte cryptographique **SHA-256 côté client** et crée sur le canevas un nœud d'élément probatoire (`scelle_numerique` / `element_brut`).
+   - Le nœud affiche son nom d'origine, son type MIME et sa taille en octets.
+2. **Affichage du Popover Contextuel de Découverte des Processus** :
+   - Un popover ciblé s'ouvre au-dessus du nœud nouvellement créé, présentant **l'inventaire complet des processus forensiques exécutables** sur ce format précis (ex: extraction EXIF, détection de visages, reconnaissance faciale, détection de plaques ALPR, détection d'objets YOLO).
+   - L'enquêteur se voit proposer **3 options d'exécution claires** :
+     - 🚀 **Option 1 : Analyse Rapide (Quick Analysis)** : Exécute uniquement les processus d'extraction légers et prioritaires (métadonnées EXIF, vignettes, hachages, OCR préliminaire des gros titres). Analyse quasi-instantanée avec faible consommation GPU/CPU.
+     - 🔍 **Option 2 : Analyse Complète Étape par Étape (Step-by-Step Human-in-the-Loop)** : Analyse exhaustive mais progressive. À chaque étape intermédiaire terminée (ex: détection de 3 visages et 1 véhicule), le système marque une pause et présente visuellement les résultats à l'enquêteur. Ce dernier valide expressément les prochaines étapes à lancer (ex: lancer la biométrie ArcFace sur le visage #1 uniquement, ou lancer la requête ALPR sur la plaque lue).
+     - ⚡ **Option 3 : Analyse Complète Autonome Récursive (Autonomous Recursive Analysis)** : L'enquêteur délègue le contrôle total au système. Le moteur de calcul déroule de manière autonome et récursive tous les processus d'extraction et de recoupement jusqu'à saturation informationnelle (arrêt lorsqu'aucune nouvelle entité n'est détectable).
+3. **Exécution Différée & Contrôle dans l'Inspecteur Latéral** :
+   - L'enquêteur peut à tout moment fermer ou quitter le popover (`Échap` ou clic extérieur) sans déclencher d'analyse.
+   - Le nœud demeure intact sur le canevas avec un badge discret : **« En cours d'investigation »** (`Active Investigation`) ou *« En attente d'analyse »*.
+   - L'ensemble des processus disponibles, le choix des 3 modes et le bouton de lancement restent en permanence accessibles dans le **Menu Latéral Inspecteur** du nœud.
+   - Dès qu'un traitement est lancé, l'inspecteur affiche une **barre de progression en temps réel** (`ProgressBar`) détaillant l'avancement pourcentage par pourcentage et l'étape active.
+
+---
+
+### 12.2 L'Architecture Hybride Quadruple (The 4-Pattern Architecture)
+
+Pour orchestrer ces traitements complexes sans rupture de la chaîne de preuve judiciaire et sans couplage monolithique, Athar combine de manière synergique **quatre patrons d'architecture logicielle majeurs** :
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                        1. PATRON BLACKBOARD (Tableau Partagé)                          │
+│  • GraphStore (Neo4j)        • Base Vectorielle (Qdrant)    • Registre de Cas WORM     │
+│  • Full-Text (Elasticsearch) • Objets Bruts (MinIO S3)      • Bassin d'Indices Attente │
+└───────────────────────▲────────────────────────────────────────▲───────────────────────┘
+                        │ Assertions & Hypothèses        │ Lectures d'État
+┌───────────────────────┴────────────────────────────────────────┴───────────────────────┐
+│                    2. DYNAMIC DATAFLOW ENGINE (Moteur de DAGs)                         │
+│  • Construction dynamique de graphes de tâches (DAG) selon type MIME & Mode sélectionné │
+│  • Résolution des dépendances, branchements conditionnels, fan-out & jointures         │
+└───────────────────────▲────────────────────────────────────────▲───────────────────────┘
+                        │ Déclenchements & Transitions   │ Événements & Résultats
+┌───────────────────────┴────────────────────────────────────────┴───────────────────────┐
+│                  3. EVENT-DRIVEN ARCHITECTURE (Bus Événementiel)                       │
+│  • Redis Streams / PubSub   • WebSockets (Frontend Live)   • Broker de Messages        │
+│  • Événements : NodeDropped, ProcessValidated, StageCompleted, UnmatchedEntityFound     │
+└───────────────────────▲────────────────────────────────────────▲───────────────────────┘
+                        │ Contrat d'Exécution SPI        │ Retours de Tâches
+┌───────────────────────┴────────────────────────────────────────┴───────────────────────┐
+│                    4. PLUGIN ARCHITECTURE (Moteurs d'Analyse SPI)                      │
+│  • InsightFace / ArcFace    • Faster-Whisper Darija        • PaddleOCR / ALPR          │
+│  • YOLOv8x Object Detector  • Trafilatura / WARC OSINT     • Jadx / PyMuPDF            │
+│  • Déclaration de capacités, prérequis GPU/CPU, entrées/sorties typées                 │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### Définition des Quatre Composants :
+1. **Blackboard (Tableau Partagé)** :
+   - Représente l'état global et unifié des connaissances forensiques de l'affaire.
+   - Il stocke l'ensemble des faits vérifiés (`VERIFIED`), des extractions brutes (`OSINT_RAW`), des hypothèses de travail (`HYPOTHESIS`), des vecteurs biométriques (Qdrant), des scellés binaires WORM (MinIO) et des candidats en attente (`Pending Clues Pool`).
+   - Les moteurs d'analyse n'interagissent jamais directement entre eux : ils lisent les données requises sur le Blackboard et y écrivent leurs découvertes et assertions sous forme d'événements horodatés.
+
+2. **Dynamic Dataflow Engine (Moteur de Flux de Données Dynamique)** :
+   - Construit à la volée un graphe acyclique dirigé (DAG) représentant la chaîne de calculs à exécuter pour un objet donné.
+   - S'adapte dynamiquement au mode choisi (Rapide, Pas à Pas, Récursif) :
+     - En **Mode Rapide**, il élague le DAG pour ne conserver que les tâches de surface.
+     - En **Mode Pas à Pas**, il matérialise des barrières de synchronisation (*Human Checkpoints*) imposant la validation de l'enquêteur avant de dériver le graphe de calcul aval.
+     - En **Mode Récursif**, il étend dynamiquement le DAG au fur et à mesure que de nouveaux objets sont découverts.
+   - Il gère les jointures sémantiques complexes : si le plugin OCR détecte une plaque d'immatriculation dont les coordonnées spatiales sont incluses dans la boîte englobante d'un véhicule détecté par le plugin YOLO, le Dataflow Engine assemble ces deux résultats en un nœud unique `vehicule` enrichi de sa plaque.
+
+3. **Event-Driven Architecture (Architecture Pilotée par les Événements)** :
+   - Assure la communication asynchrone non-bloquante entre le frontend, l'ordonnanceur et les workers d'analyse.
+   - Émet des signaux standardisés : `NODE_DROPPED`, `PROCESS_CONFIGURED`, `TASK_STARTED`, `PROGRESS_TICK`, `STAGE_COMPLETED`, `CANDIDATE_FOUND`, `INVESTIGATION_SATURATED`.
+   - Alimente en temps réel la barre de progression de l'inspecteur et le badge « En cours d'investigation » via WebSockets.
+
+4. **Plugin Architecture (Architecture de Plugins & SPI)** :
+   - Définit une interface unifiée (Forensic Service Provider Interface - SPI) pour l'ensemble des 88 moteurs forensiques locaux.
+   - Chaque plugin déclare :
+     - Ses formats d'entrée acceptés (ex: `image/jpeg`, `audio/ogg`, `application/pdf`).
+     - Ses exigences matérielles (CPU multi-cœurs, VRAM GPU CUDA, RAM minimale).
+     - Son schéma de sortie typé (bounding boxes, vecteurs 512-d, transcriptions horodatées, entités NER).
+     - Sa méthode d'exécution isolée (worker process ou container Docker sandboxed).
+
+---
+
+### 12.3 Distinction Fondamentale : Graphe de Connaissances vs Arbre des Processus (Process Tree)
+
+Pour préserver la clarté judiciaire et la navigabilité de l'enquête, l'application établit une séparation visuelle et sémantique absolue entre deux graphes de nature différente :
+
+| Dimension de Comparaison | **Graphe de Connaissances Métier (Knowledge Graph)** | **Arbre des Processus Forensiques (Process Tree)** |
+| :--- | :--- | :--- |
+| **Objet Modélisé** | La réalité criminelle réelle de l'affaire (Personnes, Téléphones, Sociétés, Comptes bancaires, Scènes de crime, Véhicules). | La chaîne computationnelle algorithmique d'analyse (Fichiers sources, Plugins, Découpages, Algorithmes, Inférences). |
+| **Nature des Nœuds** | Entités ontologiques judiciaires (`personne`, `compte_bancaire`, `vehicule`, `scelle_numerique`). | Tâches de traitement, étapes de calcul, plugins exécutés, résultats intermédiaires bruts. |
+| **Nature des Arêtes** | Relations probatoires (`COMMUNIQUE_AVEC`, `PROPRIETAIRE_DE`, `VIREMENT_VERS`, `CONDUIT`). | Dépendances de données (`INPUT_OF`, `GENERATED_BY`, `BRANCH_TO`, `RESOLVED_AS`). |
+| **Emplacement dans l'Interface** | Canevas central principal (Mode Onglet Général ou Onglet Isolé Suspect). | Vue dédiée de traçabilité, Panneau latéral d'investigation ou Sous-vue d'analyse de l'objet isolé. |
+| **Comportement Dynamique** | Ne croît qu'avec des faits vérifiés ou validés expressément par l'enquêteur. | Se ramifie dynamiquement et interactivement à chaque nouvelle découverte algorithmique. |
+
+#### Fonctionnement de l'Arbre des Processus (Process Discovery Tree) :
+Pour chaque objet déposé ou analysé, l'enquêteur peut ouvrir son **Arbre des Processus**. L'arbre grandit visuellement et interactivement au fur et à mesure des étapes :
+- **Nœud Racine** : Le fichier brut déposé (ex: `photo_scene_crime.jpg`, SHA-256: `3a7f...`).
+- **Nœuds Niveau 1** : Les plugins initiaux déclenchés (`Plugin ExifTool`, `Plugin YOLOv8x`, `Plugin InsightFace`, `Plugin PaddleOCR`).
+- **Nœuds Niveau 2 (Découvertes)** :
+  - Sous YOLO : `Détection Véhicule (SUV Noir, Confiance 96%)`.
+  - Sous PaddleOCR : `Texte Plaque "16-118-208"`.
+  - Sous InsightFace : `Visage Découpé #1 (Confiance 98%)`, `Visage Découpé #2 (Confiance 89%)`.
+- **Nœuds Niveau 3 (Analyses Secondaires & Recoupements)** :
+  - Sous Visage #1 : `ArcFace 512-d` $\rightarrow$ `Comparaison Qdrant` $\rightarrow$ `Match Suspect Amine B. (94%)`.
+  - Sous Visage #2 : `ArcFace 512-d` $\rightarrow$ `Comparaison Qdrant` $\rightarrow$ `Inconnu dans le dossier` $\rightarrow$ `Tâche OSINT Maigret / PimEyes`.
+  - Sous Véhicule + Plaque : `Moteur de Jointure Sémantique` $\rightarrow$ `Nœud Candidat Véhicule Enrichi`.
+L'enquêteur peut cliquer sur n'importe quel nœud de l'arbre pour inspecter les métadonnées de calcul, la durée d'inférence, le score de confiance et les tenseurs bruts.
+
+---
+
+### 12.4 Taxonomie Complète des Formats Ingestibles & Plugins d'Extraction
+
+Le tableau normatif ci-dessous détaille le traitement forensique appliqué selon le type de fichier ingéré via les plugins SPI :
+
+| Famille de Fichiers | Extensions Détectées | Plugins SPI & Moteurs Locaux | Données & Attributs Extraits | Nœuds & Relations Générés dans Athar |
 | :--- | :--- | :--- | :--- | :--- |
-| **1. Photographies & Captures d'Écran** | `.jpg`, `.jpeg`, `.png`, `.webp`, `.heic`, `.tiff` | • **ExifTool 12.84**<br>• **InsightFace / ArcFace**<br>• **PaddleOCR v2.7** | Coordonnées GPS latitude/longitude, modèle d'appareil photo, date/heure de capture, texte OCR (reçus, chèques, tickets), vecteurs faciaux 512-d, empreinte pHash anti-doublon. | • Nœud `image_preuve`<br>• Nœud `empreinte_faciale` (`CONTIENT_VISAGE`)<br>• Si GPS : projection sur `MapView`<br>• Si reçu financier : proposition de nœud `transaction_financiere`. |
+| **1. Photographies & Captures d'Écran** | `.jpg`, `.jpeg`, `.png`, `.webp`, `.heic`, `.tiff` | • **ExifTool 12.84**<br>• **InsightFace / ArcFace**<br>• **PaddleOCR v2.7**<br>• **YOLOv8x Object Detector** | Coordonnées GPS latitude/longitude, modèle d'appareil photo, date/heure de capture, texte OCR (reçus, chèques, tickets), vecteurs faciaux 512-d, empreinte pHash anti-doublon. | • Nœud `image_preuve`<br>• Nœud `empreinte_faciale` (`CONTIENT_VISAGE`)<br>• Si GPS : projection sur `MapView`<br>• Si reçu financier : proposition de nœud `transaction_financiere`. |
 | **2. Notes Vocales & Fichiers Audio** | `.opus`, `.m4a`, `.ogg`, `.mp3`, `.wav` | • **Faster-Whisper (fine-tuné Darija)**<br>• **PyAnnote Audio 3.1** | Transcription textuelle intégrale de l'arabe dialectal algérien (Darija), séparation acoustique locuteur victime / suspect (diarisation), détection de montants en DZD et toponymes de wilayas. | • Nœud `enregistrement_vocal`<br>• Propriété `transcription_texte`<br>• Relations `VOIX_DE` vers `personne`, `TRANSMIS_PAR` vers `telephone`. |
 | **3. Procès-Verbaux & Documents Texte** | `.pdf`, `.docx`, `.doc`, `.odt`, `.txt` | • **PyMuPDF / pdfplumber**<br>• **python-docx**<br>• **CAMeL Tools / Arabic-NER / Qwen 2.5** | Texte intégral, métadonnées auteur/imprimante, entités nommées (noms de suspects, matricules de police, numéros de comptes CCP/BaridiMob à 20 chiffres, numéros de téléphone mobiles algériens 05/06/07, immatriculations véhicules). | • Nœud `document_judiciaire` ou `scelle_numerique`<br>• Propositions d'instanciation de nœuds `personne`, `telephone`, `compte_bancaire`, `vehicule`. |
 | **4. Relevés Télécom & Extractions Bancaires** | `.csv`, `.xlsx`, `.xls`, `.tsv` | • **Moteur Heuristique Polars / Pandas**<br>• **Validateurs RegEx E.164 / RIP** | Détection automatique de schéma CDR (Call Detail Record) ou relevés bancaires : colonnes Appelant, Appelé, Horodatage, Durée d'appel, Identifiant Cell-ID BTS, Montants débit/crédit. | • Génération en masse d'arêtes `COMMUNIQUE_AVEC` entre nœuds `telephone`<br>• Horodatage pour la `TimelineView`<br>• Nœuds `antenne_bts` positionnés par géolocalisation. |
@@ -326,7 +454,7 @@ Le tableau normatif ci-dessous détaille le traitement forensique automatisé ap
 
 ---
 
-### 12.3 La Station de Dépouillement Forensique (Forensic Ingestion Station)
+### 12.5 La Station de Dépouillement Forensique (Pre-Flight Review & Scellement ISO 27037)
 
 Pour préserver l'admissibilité des preuves au regard du Code de Procédure Pénale algérien et de la norme **ISO/IEC 27037 (Conduite relative aux preuves numériques)**, l'ingestion n'injecte jamais directement des nœuds sans validation humaine. 
 
@@ -335,9 +463,9 @@ Elle s'articule autour d'un flux d'interaction en 4 étapes séquentielles :
 1. **Étape 1 — Scellement Cryptographique & Enregistrement d'Audit** :
    - Dès la réception des octets du fichier, l'application génère l'empreinte `SHA-256` et préserve le nom de fichier original, la taille en octets et la date de dernière modification.
    - Un jeton d'horodatage RFC 3161 est sollicité et consigné dans le journal d'audit Merkle.
-2. **Étape 2 — Extraction d'Entités en Arrière-Plan** :
-   - Le worker approprié (OCR, Whisper Darija, NER texte, parseur de relevés) s'exécute localement.
-   - Une boîte de dialogue modale haute fidélité s'affiche à l'écran : **« Station de Dépouillement Forensique — [Nom du Fichier] »**.
+2. **Étape 2 — Extraction d'Entités par le Dynamic Dataflow Engine** :
+   - Le moteur instancie le DAG approprié (OCR, Whisper Darija, NER texte, parseur de relevés) selon le mode sélectionné par l'enquêteur.
+   - Les plugins SPI exécutent les calculs dans des environnements locaux isolés et publient leurs tenseurs et entités brutes sur le Blackboard.
 3. **Étape 3 — Tableau de Réconciliation & Désambiguïsation (Pre-Flight Review)** :
    - Le système dresse la liste des entités découvertes avec une proposition de rapprochement automatique :
      - *Exemple 1* : Un numéro de téléphone `0555019283` correspond exactement à un nœud déjà existant sur le graphe $\rightarrow$ option par défaut : **Rattacher au nœud existant** (enrichissement de métadonnées).
@@ -349,56 +477,60 @@ Elle s'articule autour d'un flux d'interaction en 4 étapes séquentielles :
 
 ---
 
-### 12.4 Architecture en Microservices Composables & Coopératifs (Chained Microservices)
+### 12.6 Coopération Multimodale des Plugins sur le Blackboard (Scénario Photo & Binders Sémantiques)
 
-Pour éviter les architectures monolithiques lourdes et permettre une scalabilité horizontale sur des nœuds GPU/CPU hétérogènes, le moteur d'ingestion (Option B) repose sur une **chaîne de microservices coopératifs et composables** :
+Grâce au patron Blackboard et au moteur de flux dynamique, les plugins forensiques SPI coopèrent sans couplage direct point-à-point :
 
 ```
 [Fichier Déposé (ex: Photo)]
             │
             ▼
 ┌────────────────────────────────────────────────────────┐
-│  Microservice 1 : Ingress & Ordonnanceur Média         │
-│  • Valide le type MIME, calcule le SHA-256             │
-│  • Fan-out / Dispatche vers les services spécialisés   │
+│  Dynamic Dataflow Engine : DAG Instantiation           │
+│  • Valide le type MIME, horodate, calcule le SHA-256   │
+│  • Dispatche les tâches vers les Plugins SPI adéquats  │
 └───────────┬────────────────────┬───────────────────┬───┘
             │                    │                   │
             ▼                    ▼                   ▼
 ┌───────────────────────┐ ┌──────────────┐ ┌────────────────────────┐
-│ Microservice 2 :      │ │Microservice 3│ │ Microservice 4 :       │
-│ Extraction Faciale    │ │OCR, Textes   │ │ Détection d'Objets     │
-│ & Biométrie           │ │& Plaques ALPR│ │ (YOLOv8 / Grounding)   │
-│ (InsightFace/ArcFace) │ │(PaddleOCR)   │ │ (Voiture, Camion, Tel) │
+│ Plugin SPI Visages :  │ │Plugin SPI OCR│ │ Plugin SPI Objets :    │
+│ Détection & Biométrie │ │& Plaques     │ │ Détection Spatiale     │
+│ (InsightFace/ArcFace) │ │(PaddleOCR)   │ │ (YOLOv8x Detection)    │
 └───────────┬───────────┘ └──────┬───────┘ └─────────┬──────────────┘
             │                    │                   │
             └────────────────────┼───────────────────┘
-                                 │
-                                 ▼
+                                 ▼ Assertions d'État
 ┌────────────────────────────────────────────────────────┐
-│  Microservice 5 : Binder Sémantique & Corrélation      │
-│  • Associe la plaque "16-118-208" au nœud "Voiture"    │
-│  • Associe le visage recadré au nœud "Personne"        │
-│  • Synthétise les propositions d'entités structurées   │
+│  BLACKBOARD : Espace d'État Forensique Partagé         │
+│  • Stocke les boîtes englobantes, vecteurs & textes    │
+└────────────────────────────────┬───────────────────────┘
+                                 │
+                                 ▼ Déclencheur EDA
+┌────────────────────────────────────────────────────────┐
+│  Dataflow Engine : Binder Sémantique & Corrélation     │
+│  • Intersection IoU : Boîte Plaque ∈ Boîte Véhicule    │
+│  • Fusionne en 1 Nœud Candidat "Véhicule Immatriculé"  │
+│  • Indexe le Visage 512-d dans Qdrant vs Suspects      │
 └────────────────────────────────┬───────────────────────┘
                                  │
                                  ▼
 ┌────────────────────────────────────────────────────────┐
-│  Microservice 6 : Résolution d'Entités & Indexation    │
-│  • Requête Elasticsearch (BM25/Fuzzy) & Qdrant (ArcFace│
-│  • Classement : Ajoutés au Graphe vs Bassin Non-Inclus │
+│  Arbitrage Enquêteur : Graphe vs Bassin Non-Inclus     │
 └────────────────────────────────────────────────────────┘
 ```
 
-#### Exemple Concret de Coopération Multi-Services sur une Image :
-1. **Microservice d'Extraction Faciale (`srv-face`)** : Isole 2 visages, génère les imagettes recadrées et leurs vecteurs 512-d. Il appelle le microservice vectoriel Qdrant pour vérifier s'ils correspondent à un suspect connu.
-2. **Microservice OCR & Plaques (`srv-ocr-alpr`)** : Détecte un texte imprimé *"Hôtel El-Djazair"* et une plaque d'immatriculation algérienne *"04821 116 16"*.
-3. **Microservice Détecteur d'Objets (`srv-yolo-objects`)** : Repère une voiture noire (SUV), un téléphone portable sur une table et une liasse de billets.
-4. **Microservice Binder Sémantique (`srv-feature-binder`)** : Ce service fait coopérer les résultats :
-   - La boîte englobante de la plaque d'immatriculation est située **à l'intérieur** de la boîte de la voiture $\rightarrow$ il fusionne la détection pour proposer un nœud unique `vehicule` (Modèle: SUV Noir, Immatriculation: *04821 116 16*), plutôt que deux entités déconnectées !
+#### Exemple Concret de Coopération sur une Scène Complexe :
+1. **Plugin Détection Faciale (`plugin-insightface`)** : Isole 2 visages, génère les imagettes recadrées et leurs vecteurs ArcFace 512-d. Il les publie sur le Blackboard.
+2. **Plugin OCR & Plaques (`plugin-paddleocr-alpr`)** : Détecte une chaîne textuelle *"Hôtel El-Djazair"* et une plaque algérienne *"04821 116 16"* avec leurs coordonnées spatiales normalisées $(x_1, y_1, x_2, y_2)$.
+3. **Plugin Détecteur d'Objets (`plugin-yolo-v8`)** : Détecte un SUV noir, un smartphone sur une table et une liasse de billets.
+4. **Étape de Synthèse & Binder Sémantique du Dataflow Engine** :
+   - Le moteur constate géométriquement que la boîte englobante de la plaque d'immatriculation est incluse dans le contour du SUV.
+   - Au lieu de créer deux nœuds déconnectés, il synthétise une entité unique et cohérente : un nœud `vehicule` (Attributs : Type SUV, Couleur Noire, Immatriculation : *04821 116 16*).
+   - Les visages sont immédiatement comparés aux profils fichés dans Qdrant pour identifier s'il s'agit d'un suspect connu ou de nouvelles cibles.
 
 ---
 
-### 12.5 Gestion Anti-Saturation : Groupement par Catégories & Bassin d'Indices Non-Inclus (Pending Clues Pool)
+### 12.7 Gestion Anti-Saturation : Groupement par Catégories & Bassin d'Indices Non-Inclus (Pending Clues Pool)
 
 #### Le Risque d'Engorgement du Graphe
 Une photo de rue ou une vidéo de surveillance peut révéler 15 piétons en arrière-plan, 12 voitures stationnées, 6 enseignes de magasins et 4 numéros de téléphone partiels. 
@@ -422,50 +554,52 @@ Une photo de rue ou une vidéo de surveillance peut révéler 15 piétons en arr
 
 2. **Le Bassin d'Indices Secondaires Non-Inclus (Searchable Staging Pool)** :
    - Les entités que l'enquêteur choisit de **ne pas cocher** ne sont **pas supprimées**.
-   - Elles sont stockées dans le dossier d'affaire sous le statut `status: PENDING_NON_INCLUDED` et indexées dans **Elasticsearch 8.14** (pour les textes/labels/métadonnées) et **Qdrant** (pour les empreintes de visages/véhicules).
+   - Elles sont stockées sur le Blackboard dans le dossier d'affaire sous le statut `status: PENDING_NON_INCLUDED` et indexées dans **Elasticsearch 8.14** (pour les textes/labels/métadonnées) et **Qdrant** (pour les empreintes de visages/véhicules).
    - **Recherche Rétroactive & Découverte Croisée** : 
      Si, 2 semaines plus tard, l'enquêteur intercepte une écoute mentionnant *"un SUV noir immatriculé 16"*, la recherche globale dans Athar lui signale :
      > 💡 **Recoupement Trouvé :** *Un véhicule correspondant (Plaque 04821 116 16) a été détecté dans l'arrière-plan de la photo #IMG-089 versée le 23/11. Voulez-vous promouvoir cette entité sur le graphe actif ?*
 
 ---
 
-### 12.6 Généralisation aux Autres Types de Fichiers
+### 12.8 Généralisation Multimodale aux Autres Types de Fichiers
 
-La chaîne de microservices coopératifs et le bassin d'indices non-inclus s'appliquent identiquement à tous les formats :
+Le couplage Blackboard + Dynamic Dataflow Engine + Plugins SPI s'applique identiquement à tous les formats :
 
-| Type de Fichier | Chaîne de Microservices Coopératifs | Entités Prioritaires (Graphe) | Bassin d'Indices Non-Inclus (Index Recherche) |
+| Type de Fichier | Chaîne de Plugins Dataflow | Entités Prioritaires (Graphe) | Bassin d'Indices Non-Inclus (Index Recherche) |
 | :--- | :--- | :--- | :--- |
-| **Audio / Vocaux** | `srv-audio-clean` $\rightarrow$ `srv-whisper-darija` $\rightarrow$ `srv-pyannote-diarize` $\rightarrow$ `srv-voiceprint` $\rightarrow$ `srv-arabic-ner` | Locuteurs principaux (Victime, Escroc), montants et lieux clés de RDV. | Bruits de fond (sirène, adhan, musique), locuteurs tertiaires, mots isolés. |
-| **Documents PDF/Word** | `srv-doc-parser` $\rightarrow$ `srv-layout-lm` $\rightarrow$ `srv-ner-qwen` $\rightarrow$ `srv-geo-resolver` | Suspects nommés, comptes bancaires, numéros de téléphone visés par la plainte. | Greffiers, articles de loi cités, signatures, 40 mentions administratives secondaires. |
-| **Relevés CDR (CSV)** | `srv-cdr-csv-parser` $\rightarrow$ `srv-operator-id` $\rightarrow$ `srv-bts-geocoder` $\rightarrow$ `srv-frequency-analyzer` | Les 5 correspondants les plus fréquents du suspect et les bornages suspects. | Les 4 500 autres appels ordinaires du mois, consultables par filtre horaire/numéro. |
-| **Captures Web HTML** | `srv-web-trafilatura` $\rightarrow$ `srv-tracker-extractor` $\rightarrow$ `srv-social-links` $\rightarrow$ `srv-whois-ip` | Titulaire de la page, profil Telegram/WhatsApp de contact, identifiant Google Analytics pivot. | Les 150 liens hypertextes sortants, cookies tiers et ressources CSS archivés en WARC. |
-| **Vidéos MP4** | `srv-ffmpeg-keyframes` $\rightarrow$ `srv-bytetrack` $\rightarrow$ `srv-yolo-alpr` $\rightarrow$ `srv-insightface` | Individus et véhicules interagissant directement sur la scène de l'infraction. | Les centaines d'autres passants et voitures en circulation durant l'enregistrement. |
+| **Audio / Vocaux** | `plugin-audio-clean` $\rightarrow$ `plugin-whisper-darija` $\rightarrow$ `plugin-pyannote-diarize` $\rightarrow$ `plugin-voiceprint` $\rightarrow$ `plugin-arabic-ner` | Locuteurs principaux (Victime, Escroc), montants et lieux clés de RDV. | Bruits de fond (sirène, adhan, musique), locuteurs tertiaires, mots isolés. |
+| **Documents PDF/Word** | `plugin-doc-parser` $\rightarrow$ `plugin-layout-lm` $\rightarrow$ `plugin-ner-qwen` $\rightarrow$ `plugin-geo-resolver` | Suspects nommés, comptes bancaires, numéros de téléphone visés par la plainte. | Greffiers, articles de loi cités, signatures, 40 mentions administratives secondaires. |
+| **Relevés CDR (CSV)** | `plugin-cdr-csv-parser` $\rightarrow$ `plugin-operator-id` $\rightarrow$ `plugin-bts-geocoder` $\rightarrow$ `plugin-frequency-analyzer` | Les 5 correspondants les plus fréquents du suspect et les bornages suspects. | Les 4 500 autres appels ordinaires du mois, consultables par filtre horaire/numéro. |
+| **Captures Web HTML** | `plugin-web-trafilatura` $\rightarrow$ `plugin-tracker-extractor` $\rightarrow$ `plugin-social-links` $\rightarrow$ `plugin-whois-ip` | Titulaire de la page, profil Telegram/WhatsApp de contact, identifiant Google Analytics pivot. | Les 150 liens hypertextes sortants, cookies tiers et ressources CSS archivés en WARC. |
+| **Vidéos MP4** | `plugin-ffmpeg-keyframes` $\rightarrow$ `plugin-bytetrack` $\rightarrow$ `plugin-yolo-alpr` $\rightarrow$ `plugin-insightface` | Individus et véhicules interagissant directement sur la scène de l'infraction. | Les centaines d'autres passants et voitures en circulation durant l'enregistrement. |
 
 ---
 
-### 12.7 Unification de l'Ingestion OSINT & Orchestration Événementielle Récursive (Event Loops)
+### 12.9 Unification de l'Ingestion OSINT, Orchestration Événementielle Récursive & Expansion de l'Arbre des Processus
 
-Le pipeline de microservices d'extraction n'est pas un système isolé réservé aux seuls fichiers glissés-déposés par l'enquêteur : **il s'applique de manière unifiée à tous les artefacts rapatriés par les 76 briques OSINT de la plateforme**.
+Le pipeline de calcul Dataflow n'est pas un système isolé réservé aux seuls fichiers glissés-déposés par l'enquêteur : **il s'applique de manière unifiée à tous les artefacts rapatriés par les 76 briques OSINT de la plateforme**.
 
-#### Architecture de la Boucle Récursive (Feedback Loop Temporal.io) :
+#### Architecture de la Boucle Récursive (Feedback Loop Temporal.io / EDA) :
 Lorsqu'un connecteur OSINT (ex. `brick.socmint.facebook_dumper` ou scraper Instagram/Telegram) collecte le profil d'une cible, il rapatrie un faisceau d'objets multimédias bruts (par exemple : **3 photographies**, **4 publications textuelles** et **1 vidéo**). 
 
 1. **Phase 1 — Ingestion & Dispatch Parallèle (Fan-Out)** :
-   - L'orchestrateur de workflow **Temporal.io v1.24** instancie un workflow d'affaire et dispatche chaque objet vers son microservice d'analyse spécialisé :
-     - Les 4 publications texte $\rightarrow$ transmises au modèle NER arabe/français (`CAMeL-Lab` / `Qwen 2.5`).
-     - La vidéo $\rightarrow$ transmise à `FFmpeg` (découpage de keyframes) puis `YOLOv8x` (détection d'objets mobiles).
+   - L'orchestrateur de workflow **Temporal.io v1.24** instancie un workflow d'affaire et le Dynamic Dataflow Engine dispatche chaque objet vers les plugins SPI spécialisés :
+     - Les 4 publications texte $\rightarrow$ transmises au plugin NER arabe/français (`CAMeL-Lab` / `Qwen 2.5`).
+     - La vidéo $\rightarrow$ transmise au plugin `FFmpeg` (découpage de keyframes) puis `YOLOv8x` (détection d'objets mobiles).
      - Les 3 photographies $\rightarrow$ envoyées en parallèle vers `InsightFace` (biométrie), `PaddleOCR` (textes/plaques) et `YOLOv8x`.
+   - L'**Arbre des Processus** s'enrichit immédiatement des branches initiales d'exécution.
 
 2. **Phase 2 — Rapprochement & Détection d'Entités Inconnues** :
    - Supposons que sur la **Photo #1**, `InsightFace` isole **3 visages** :
      - **Visage 1** : L'interrogation de la base vectorielle **Qdrant** révèle une similarité de 94% avec le suspect principal déjà fiché (Amine B.). Le système associe la photo à sa fiche comme confirmation de présence.
      - **Visages 2 et 3** : Le vecteur ArcFace 512-d ne correspond à aucun profil existant dans le dossier. Il s'agit de **complices ou contacts non identifiés**.
 
-3. **Phase 3 — Déclenchement Événementiel Récursif (Tool Chaining)** :
-   - Au lieu de laisser ces visages sans suite, l'orchestrateur émet un événement `UNMATCHED_FACE_DETECTED`.
-   - Cet événement déclenche automatiquement un sous-workflow d'investigation :
-     - Appel aux outils de recherche inversée d'images et reconnaissance faciale OSINT (PimEyes / Maigret / OSINT Search).
+3. **Phase 3 — Déclenchement Événementiel Récursif (EDA Tool Chaining)** :
+   - Au lieu de laisser ces visages sans suite, l'architecture EDA émet un événement `UNMATCHED_FACE_DETECTED`.
+   - En **Mode 3 (Récursif)** ou après validation en **Mode 2 (Pas à Pas)**, cet événement déclenche automatiquement un sous-workflow d'investigation :
+     - Appel aux plugins de recherche inversée d'images et reconnaissance faciale OSINT (PimEyes / Maigret / OSINT Search).
      - Recherche de comptes sociaux associés aux silhouettes découvertes.
+   - L'**Arbre des Processus** dérive de nouvelles branches interactives filles sous chaque visage.
 
 4. **Phase 4 — Versement dans le Bassin d'Indices Non-Inclus de l'Onglet Suspect** :
    - Conformément aux règles anti-saturation et à la norme ISO 27037, les profils potentiellement découverts ne sont **pas directement injectés sur le graphe principal**.
