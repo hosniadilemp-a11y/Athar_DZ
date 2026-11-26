@@ -418,6 +418,16 @@ export const KNOWN_RELATIONS_DICT: Record<string, RelationTranslation> = {
     ar: 'مستخرج من الدليل',
     en: 'Extracted from Evidence',
   },
+  UTILISE_EMAIL: {
+    fr: 'Utilise l’adresse e-mail',
+    ar: 'يستخدم البريد الإلكتروني',
+    en: 'Uses email address',
+  },
+  IMPLIQUE_TRANSACTION: {
+    fr: 'Implique la transaction DZD',
+    ar: 'يشمل المعاملة المالية',
+    en: 'Involves financial transaction',
+  },
   TITULAIRE_LIGNE_SIM: {
     fr: 'Titulaire officiel de la ligne / SIM',
     ar: 'صاحب الخط أو الشريحة المسجّل',

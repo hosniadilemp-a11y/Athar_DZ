@@ -74,10 +74,12 @@ def test_gps_enabled_node_types_exact_8() -> None:
     assert len(gps_nodes) == 8
 
 
-def test_relation_types_exact_48() -> None:
-    """Must have exactly 48 defined canonical relations (incl. D16/D17 EXTRAIT_DE)."""
-    assert len(RELATION_TYPES) == 48
+def test_relation_types_exact_50() -> None:
+    """Must have exactly 50 defined canonical relations (incl. D16/D17/D18)."""
+    assert len(RELATION_TYPES) == 50
     assert "EXTRAIT_DE" in RELATION_TYPES
+    assert "UTILISE_EMAIL" in RELATION_TYPES
+    assert "IMPLIQUE_TRANSACTION" in RELATION_TYPES
     extrait_de = RELATION_TYPES["EXTRAIT_DE"]
     for html_entity in ("publication_sociale", "message_chat", "serveur_c2", "fichier_apk"):
         assert html_entity in extrait_de.allowed_sources
@@ -145,7 +147,7 @@ def test_export_registry(tmp_path: Path) -> None:
     """Export functions must generate valid JSON matching counts."""
     data = export_registry_dict()
     assert data["metadata"]["total_node_types"] == 37
-    assert data["metadata"]["total_relation_types"] == 48
+    assert data["metadata"]["total_relation_types"] == 50
     assert data["metadata"]["gps_enabled_count"] == 8
 
     out_file = tmp_path / "registry.json"

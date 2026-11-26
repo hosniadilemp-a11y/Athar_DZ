@@ -141,7 +141,7 @@ registry, types, i18n -> (nothing from src)
 
 | Data | Source | Consumers |
 |---|---|---|
-| 37 node types, 47 relations, layers, labels, icons | one registry source in the backend domain | frontend via `shared/generated/registry.json` and `frontend/src/registry/` (generated) |
+| 37 node types, 50 relations (47 base + 3 Phase 2A), layers, labels, icons | one registry source in the backend domain | frontend via `shared/generated/registry.json` and `frontend/src/registry/` (generated) |
 | Design tokens | `frontend/src/styles/tokens.css` | everything else via `var(--...)` |
 | Settings and secrets | environment variables via `backend/app/core/config.py` | everything else |
 | API types | backend Pydantic schemas -> OpenAPI | frontend `src/api/` (generated) |

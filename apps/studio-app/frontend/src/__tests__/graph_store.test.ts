@@ -226,15 +226,21 @@ describe('useGraphStore & Reversible Undo/Redo Engine', () => {
     useGraphStore.getState().setLinkSourceNodeId('node-link-1');
     expect(useGraphStore.getState().linkSourceNodeId).toBe('node-link-1');
 
-    // Create edge between nodeA and nodeB
+    // Create edge between nodeA and nodeB (defaults to 100% validated VERIFIED unless overridden)
     useGraphStore.getState().createManualEdge('node-link-1', 'node-link-2');
 
     expect(useGraphStore.getState().edges).toHaveLength(1);
     expect(useGraphStore.getState().edges[0]?.source_id).toBe('node-link-1');
     expect(useGraphStore.getState().edges[0]?.target_id).toBe('node-link-2');
+    expect(useGraphStore.getState().edges[0]?.layer).toBe('VERIFIED');
+    expect(useGraphStore.getState().edges[0]?.confidence).toBe(1.0);
     expect(useGraphStore.getState().isLinkMode).toBe(true);
     expect(useGraphStore.getState().linkSourceNodeId).toBeNull();
     expect(useGraphStore.getState().undoStack).toHaveLength(1);
+
+    // Explicitly passing layer and confidence overrides the default 100% VERIFIED
+    useGraphStore.getState().createManualEdge('node-link-2', 'node-link-1', 'RELIE_A', 'HYPOTHESIS', 0.6);
+    expect(useGraphStore.getState().edges).toHaveLength(1); // Duplicate undirected pair check ignores same endpoints
 
     // Undo edge creation
     useGraphStore.getState().undo();
@@ -694,5 +700,161 @@ describe('useGraphStore & Reversible Undo/Redo Engine', () => {
     expect(secondStep).toBe('exited_link_mode');
     expect(useGraphStore.getState().isLinkMode).toBe(false);
     expect(useGraphStore.getState().linkSourceNodeId).toBeNull();
+  });
+
+  it('preserves pre-validation candidate (x, y) position on promoted node and preserves simulated coordinates on POST reconciliation', async () => {
+    const focalNode: GraphNode = {
+      id: 'ev-doc-1',
+      case_id: 'case-pos-1',
+      type: 'document',
+      layer: 'VERIFIED',
+      label: '01_pv.pdf',
+      confidence: 1.0,
+      provenance: 'LOCAL_FILE_DROP',
+      latitude: null,
+      longitude: null,
+      x: 500,
+      y: 350,
+      properties: {},
+    };
+    const candItem = {
+      id: 'cand-1',
+      run_id: 'run-1',
+      case_id: 'case-pos-1',
+      source_node_id: 'ev-doc-1',
+      entity_type: 'personne',
+      label: 'Amine Test',
+      normalized_value: 'amine test',
+      confidence: 0.9,
+      suggested_layer: 'OSINT_RAW',
+      stage_number: 1,
+      source_page: 1,
+      source_locator: 'p.1',
+      quote_snippet: 'Amine Test',
+      extractor_tool: 'spacy',
+      attributes: {},
+      validation_status: 'PENDING' as const,
+      matched_existing_node_id: null,
+      promoted_node_id: null,
+      validated_by: null,
+      validated_at: null,
+      blackboard_sync_status: 'PENDING',
+    };
+
+    useGraphStore.setState({
+      activeCase: { id: 'case-pos-1', title: 'Affaire Pos', code: 'AFF-POS', description: '', status: 'OPEN', created_at: '', updated_at: '', nodes_count: 1, edges_count: 0 },
+      nodes: [focalNode],
+      edges: [],
+      tabs: [
+        {
+          id: 'tab-actor-ev-doc-1',
+          kind: 'actor_sphere',
+          title: '01_pv.pdf',
+          closable: true,
+          focalNodeId: 'ev-doc-1',
+          snapshot: {
+            panX: 0,
+            panY: 0,
+            zoom: 1,
+            activeLayout: 'force',
+            activeLayers: ['VERIFIED', 'OSINT_RAW', 'INFRA', 'HYPOTHESIS', 'FLOWS'],
+            isPersonOnlyGraph: false,
+            isImpactOnly: false,
+            selectedNodeId: null,
+            nodePositions: { 'ev-doc-1': { x: 500, y: 350 } },
+          },
+        },
+      ],
+      activeTabId: 'tab-actor-ev-doc-1',
+      candidatesByNodeId: { 'ev-doc-1': [candItem] },
+      relationsByNodeId: {},
+      candidatePositions: { 'cand:cand-1': { x: 777, y: 333 } },
+    });
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({
+          created_nodes: [
+            {
+              id: 'promoted-1',
+              case_id: 'case-pos-1',
+              type: 'personne',
+              layer: 'OSINT_RAW',
+              label: 'Amine Test',
+              confidence: 1.0,
+              provenance: 'PDF_STATIC:spacy',
+              latitude: null,
+              longitude: null,
+              properties: {},
+            },
+          ],
+          created_edges: [],
+          candidates: [{ ...candItem, validation_status: 'VALIDATED', promoted_node_id: 'promoted-1' }],
+          relations: [],
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )) as typeof fetch;
+
+    try {
+      await useGraphStore.getState().validateCandidates('ev-doc-1', {
+        action: 'validate',
+        candidate_ids: ['cand-1'],
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    const promoted = useGraphStore.getState().nodes.find((n) => n.id === 'promoted-1');
+    expect(promoted?.x).toBe(777);
+    expect(promoted?.y).toBe(333);
+    expect(
+      useGraphStore.getState().tabs[0]?.snapshot?.nodePositions?.['promoted-1']
+    ).toEqual({ x: 777, y: 333 });
+    expect(useGraphStore.getState().candidatePositions['cand:cand-1']).toBeUndefined();
+
+    // Test reconcileOptimisticNodeId retains simulated live coordinates
+    useGraphStore.setState({
+      nodes: [
+        {
+          ...focalNode,
+          id: 'temp-opt-1',
+          x: 612,
+          y: 418,
+        },
+      ],
+      tabs: [
+        {
+          id: 'tab-actor-ev-doc-1',
+          kind: 'actor_sphere',
+          title: '01_pv.pdf',
+          closable: true,
+          focalNodeId: 'temp-opt-1',
+          snapshot: {
+            panX: 0,
+            panY: 0,
+            zoom: 1,
+            activeLayout: 'force',
+            activeLayers: ['VERIFIED', 'OSINT_RAW', 'INFRA', 'HYPOTHESIS', 'FLOWS'],
+            isPersonOnlyGraph: false,
+            isImpactOnly: false,
+            selectedNodeId: null,
+            nodePositions: { 'temp-opt-1': { x: 612, y: 418 } },
+          },
+        },
+      ],
+    });
+    useGraphStore.getState().reconcileOptimisticNodeId('temp-opt-1', {
+      ...focalNode,
+      id: 'real-server-1',
+      x: 10,
+      y: 20,
+    });
+    const reconciled = useGraphStore.getState().nodes.find((n) => n.id === 'real-server-1');
+    expect(reconciled?.x).toBe(612);
+    expect(reconciled?.y).toBe(418);
+    expect(
+      useGraphStore.getState().tabs[0]?.snapshot?.nodePositions?.['real-server-1']
+    ).toEqual({ x: 612, y: 418 });
   });
 });

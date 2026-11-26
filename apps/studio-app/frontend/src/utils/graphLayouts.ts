@@ -454,6 +454,26 @@ function computeGridLayout(nodes: GraphNode[], cx: number, cy: number): GraphNod
 }
 
 /**
+ * Computes default radial ring coordinates around the focal source evidence node
+ * for staged extraction candidate previews before manual dragging or live physics.
+ */
+export function computeDefaultCandidatePosition(
+  focalX: number,
+  focalY: number,
+  idx: number,
+  totalPending: number
+): { x: number; y: number } {
+  const ring = Math.floor(idx / 10);
+  const countInRing = Math.min(10, Math.max(1, totalPending - ring * 10));
+  const angle = (2 * Math.PI * (idx % 10)) / Math.max(1, countInRing) - Math.PI / 2;
+  const radiusDist = 175 + ring * 88;
+  return {
+    x: Math.round(focalX + Math.cos(angle) * radiusDist),
+    y: Math.round(focalY + Math.sin(angle) * radiusDist),
+  };
+}
+
+/**
  * Single tick of live force simulation for real-time physics loop.
  * Dampens displacements so nodes smoothly float towards organic equilibrium without jitter.
  */

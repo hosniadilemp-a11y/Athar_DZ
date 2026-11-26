@@ -164,15 +164,15 @@
     <!-- TAB 0: OVERVIEW -->
     <div id="tab-overview" class="tab-content-panel active">
       <!-- Active Phase Status Banner -->
-      <div class="deliverable-banner" style="border-left: 4px solid #3b82f6;">
+      <div class="deliverable-banner" style="border-left: 4px solid #10b981;">
         <div>
-          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;">
-            <span class="badge badge-blue">PHASE ACTUELLE : PHASE 1 (v0.1)</span>
-            <span class="badge badge-emerald">Jalons 1A à 1G Validés (100%)</span>
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;flex-wrap:wrap;">
+            <span class="badge badge-emerald">PHASE 1 (v0.1) : 100% CLÔTURÉE</span>
+            <span class="badge badge-cyan">PHASE 2A (PDF/HTML + NER GPU + D16–D20) : LIVRÉE</span>
           </div>
-          <strong style="color:#60a5fa;font-size:1.05rem;">Studio d'Enquête Visuel, Calques &amp; 16 Algorithmes SNA</strong>
+          <strong style="color:#60a5fa;font-size:1.05rem;">Studio d'Enquête Visuel, Calques, 16 Algorithmes SNA &amp; Extraction PDF/HTML Isolée</strong>
           <p style="font-size:0.84rem;color:var(--text-secondary);margin:0.2rem 0 0;">
-            Le socle fonctionnel complet (FastAPI, Neo4j, PostgreSQL, Redis, React 19, 37 entités, 5 calques, 16 SNA) est 100% opérationnel. La finalisation en cours porte sur le durcissement (1G) et les surfaces UI d'ingestion et d'onglets.
+            Le socle Phase 1 (FastAPI, Neo4j, PostgreSQL/TimescaleDB, Redis, React 19, 37 entités, 50 relations, 5 calques, 16 SNA, onglets Actor Sphere, KPI dynamiques, isolation modale <code>inert</code>) et l'incrément Phase 2A (extraction statique PDF/HTML hors-ligne + CAMeL &amp; WikiNEuRal NER GPU, validation isolée D16–D20) sont 100% vérifiés (<strong>60 tests pytest + 99 tests vitest</strong>, 0 erreur <code>tsc/eslint/ruff/mypy</code>).
           </p>
         </div>
         <a href="maquette.html" class="btn btn-emerald" style="text-decoration:none;">
@@ -220,17 +220,17 @@
           <tbody>
             <tr>
               <td><span class="badge badge-blue">PHASE 1</span><br/><strong>App v0.1</strong><br/><em>(Socle Studio)</em></td>
-              <td><strong>Studio d'Enquête Visuel &amp; 16 Algorithmes SNA</strong><br/>Canevas 37 entités, 5 calques, seed 100 nœuds, pinning, audit Merkle SHA-256, surface UI multi-onglets (Option A) et ingestion non-intrusive 3 modes (Option B).</td>
-              <td>Créer/ouvrir des dossiers, manipuler les nœuds circulaires, commuter les 5 calques, lancer les 16 SNA, tester l'export de rapport et déposer un fichier ouvrant le popover 3 modes.</td>
-              <td><strong>Reporté Phase 2 :</strong> Taxonomie UI côté frontend uniquement (<code>fileIngestion.ts</code>).</td>
+              <td><strong>Studio d'Enquête Visuel, 16 SNA, KPI Réels &amp; Isolation Modale</strong><br/>Canevas 37 entités, 50 relations, 5 calques, seed 100 nœuds, pinning + physique directe, audit Merkle SHA-256, onglets Actor Sphere (Option A), glisser-déposer SHA-256 (Option B), KPI dynamiques réels, cascade géographique responsive, <code>ModalPortal</code> (<code>inert</code>).</td>
+              <td>Créer/ouvrir des dossiers, manipuler les nœuds circulaires avec physique live, commuter les 5 calques sans blocage (D19), lancer les 16 SNA, basculer entre <em>Dossier Général</em> et onglets isolés, naviguer au clavier dans les modales (<code>Entrée</code>/<code>Échap</code>).</td>
+              <td><strong>Taxonomie UI + Contrat D16–D20 :</strong> Modèle d'ingestion frontend (<code>fileIngestion.ts</code>) et règles de validation <code>EXTRAIT_DE</code> / liaisons manuelles à 100%.</td>
               <td><span class="badge badge-emerald">Livrée (100%)</span></td>
             </tr>
             <tr>
-              <td><span class="badge badge-cyan">PHASE 2</span><br/><strong>App v0.2</strong><br/><em>(WORM &amp; Text)</em></td>
-              <td><strong>Blackboard WORM, Elasticsearch &amp; Ingestion Texte/EXIF</strong><br/>MinIO S3 WORM Compliance (ISO 27037) + RFC 3161, Elasticsearch 8.14 (BM25 Arabe/FR + Bassin d'Indices Non-Inclus), exécution opérationnelle des Modes 1 &amp; 2.</td>
-              <td>Déposer un PV de plainte (PDF) ou une photo : extraction réelle du SHA-256, des métadonnées EXIF, des entités nommées (noms, téléphones, RIB BaridiMob) avec prévisualisation et versement contrôlé.</td>
-              <td><strong>Socle SPI + Lot A (Prêt) :</strong> Formalisation backend <code>ForensicPluginSPI</code> &amp; <code>ProcessRegistry</code>, puis <code>plugin-exiftool</code>, <code>plugin-pymupdf-ocr</code>, <code>plugin-ner-qwen</code>, <code>plugin-baridimob-validator</code>.</td>
-              <td><span class="badge badge-blue">Planifiée</span></td>
+              <td><span class="badge badge-cyan">PHASE 2</span><br/><strong>App v0.2</strong><br/><em>(WORM &amp; Extraction)</em></td>
+              <td><strong>Incrément 2A Livré + Infrastructure WORM/Elasticsearch Planifiée</strong><br/><em>Livré (2A/2A+) :</em> Extraction statique PDF (Modes 1 &amp; 2 PyMuPDF/pdfplumber) &amp; HTML hors-ligne (BS4/lxml anti-SSRF/XSS), double NER GPU (CAMeL arabe + WikiNEuRal latin), staging PostgreSQL, <code>CandidateValidationPanel</code> filtré par catégorie.<br/><em>Planifié :</em> MinIO S3 WORM Compliance + RFC 3161, Elasticsearch 8.14, EXIF Photos.</td>
+              <td>Déposer un PV de plainte PDF ou une capture HTML OSINT : extraction hors-ligne en 3 paliers, aperçu sécurisé sandbox, validation/fusion/édition/suppression des entités et relations sémantiques dans l'onglet isolé avec continuité exacte de position.</td>
+              <td><strong>2A PDF/HTML/NER : Livrée.</strong><br/><strong>Restant :</strong> Socle SPI complet + <code>plugin-exiftool</code>, <code>plugin-ocr-alpr</code>, MinIO WORM.</td>
+              <td><span class="badge badge-cyan">2A Livrée / Core Planifié</span></td>
             </tr>
             <tr>
               <td><span class="badge badge-emerald">PHASE 3</span><br/><strong>App v0.3</strong><br/><em>(EDA &amp; OSINT)</em></td>
@@ -282,45 +282,47 @@
           <strong style="color:#10b981;font-size:0.9rem;display:block;margin-bottom:0.5rem;">✔ Ce qui est FAIT et VÉRIFIÉ (100% Opérationnel)</strong>
           <ul style="padding-left:1.1rem;margin:0;font-size:0.8rem;color:#cbd5e1;line-height:1.6;">
             <li><strong>Jalon 1A (Fondation) :</strong> 5 conteneurs Docker (backend FastAPI, frontend React 19, Neo4j 5.20, PostgreSQL 16 PostGIS, Redis 7.2) avec healthchecks et volumes nommés.</li>
-            <li><strong>Jalon 1B (Registre &amp; Schéma) :</strong> Registre unique de 37 types de nœuds, 47 relations, 5 calques forensiques (11/8/8/4/6 = 37) et seed idempotent du cas Candy Wheels (100 nœuds).</li>
+            <li><strong>Jalon 1B (Registre &amp; Schéma) :</strong> Registre unique de 37 types de nœuds, 50 relations, 5 calques forensiques (11/8/8/4/6 = 37) et seed idempotent du cas Candy Wheels (100 nœuds).</li>
             <li><strong>Jalon 1C (API REST Graphe) :</strong> Routes `/api/v1/cases/...`, CRUD, expansion 1-hop/2-hop, changement de calque avec motif OPJ obligatoire, chaîne d'audit Merkle SHA-256 avec détection de falsification.</li>
             <li><strong>Jalon 1D (Canevas Graphique) :</strong> `GraphCanvasAdapter`, nœuds circulaires SVG (56px standard, 68px pivot), anneaux de calques, zoom/pan/drag, mode impact (`betweenness`), menu contextuel (`Shift+F10`), inspector panel, undo/redo Zustand, vue tabulaire accessible, épinglage (`pinnedNodeIds`).</li>
             <li><strong>Jalon 1E (16 Algorithmes SNA) :</strong> 16 algorithmes déterministes NetworkX en Python via l'API et le panneau `SnaPanel.tsx`.</li>
             <li><strong>Jalon 1F (Vues &amp; Finitions) :</strong> Accordéon gauche (5 calques, 37 types), Timeline synchronisée, Carte SIG 58 Wilayas, export PDF/JSON, i18n FR/AR(RTL)/EN, thèmes Dark/Light, viewer d'audit Merkle, boutons grisés `aria-disabled="true"` avec notices Phase N (Décision D10).</li>
-            <li><strong>Validation Technique :</strong> 42 tests backend pytest au vert, 33 tests frontend vitest au vert, build TypeScript 0 erreur.</li>
+            <li><strong>Validation Technique :</strong> 60 tests backend pytest au vert, 99 tests frontend vitest au vert (14 suites), 0 erreur TypeScript/ESLint/ruff/mypy, build Vite propre.</li>
+            <li><strong>Jalon 1G (Hardening Clôturé) :</strong> Isolation modale (<code>ModalPortal</code>, <code>inert</code>, <code>hasOpenModal</code>, confirmation <code>Entrée</code>), KPI dynamiques réels (<code>caseMetrics.ts</code>), cascade géo responsive (<code>.geo-cascade-grid</code>), confiance entités 100% par défaut (<code>entityConfidence.ts</code>), continuité de position candidat &amp; physique directe, onglets multi-enquête actifs, ingestion SHA-256 drag &amp; drop opérationnelle.</li>
+            <li><strong>Phase 2A (Extraction Statique &amp; Règles D16–D20) :</strong> PDF (PyMuPDF + pdfplumber + CAMeL NER, Modes 1 &amp; 2 en 3 étapes), HTML (BeautifulSoup4 + lxml anti-SSRF/XSS, <code>&lt;iframe sandbox&gt;</code>), NER multilingue GPU WikiNEuRal, tables de staging PostgreSQL (<code>extracted_candidates</code>, <code>extracted_relation_candidates</code>), <code>CandidateValidationPanel</code> avec filtres par catégorie et CRUD relations (<code>PATCH</code>/<code>DELETE</code>), 3 nouvelles relations (<code>EXTRAIT_DE</code>, <code>UTILISE_EMAIL</code>, <code>IMPLIQUE_TRANSACTION</code>).</li>
           </ul>
         </div>
 
-        <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #f59e0b;border-radius:8px;padding:1rem;">
-          <strong style="color:#fbbf24;font-size:0.9rem;display:block;margin-bottom:0.5rem;">⏳ Ce qu'il RESTE à Faire pour Clôturer la Phase 1</strong>
+        <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #10b981;border-radius:8px;padding:1rem;">
+          <strong style="color:#10b981;font-size:0.9rem;display:block;margin-bottom:0.5rem;">✔ Phase 1 + Phase 2A — 100% Clôturée &amp; Vérifiée</strong>
           <ul style="padding-left:1.1rem;margin:0;font-size:0.8rem;color:#cbd5e1;line-height:1.6;">
-            <li><strong>Option B (Surface Ingestion UI) :</strong> Activer le glisser-déposer de fichiers bruts sur le canevas : calcul SHA-256 client immédiat, création du nœud `scelle_numerique` sur le canevas, ouverture du Popover 3 Modes. Clic sur lancer &rarr; affiche la notice explicative D10 (*« Disponible en Phase 2 / Phase N »*), place le badge *« En cours d'investigation »* sur le nœud et met à jour l'inspecteur.</li>
-            <li><strong>Option A (Surface Multi-Tab UI) :</strong> Rendre la barre d'onglets (`[🌐 Dossier Général]` et `[👤 Suspect : Amine B.]`) active dans `useGraphStore.ts` pour commuter l'affichage du sous-graphe du suspect sans charger le graphe complet.</li>
-            <li><strong>Jalon 1G (Hardening &amp; Clôture) :</strong> Exécuter `pip-audit` et `npm audit`, valider l'accessibilité 100% clavier sur le canevas, et finaliser la documentation de remise.</li>
+            <li><strong>Socle Phase 1 + Extraction Statique Phase 2A :</strong> Intégralement implémentés, testés (60 pytest + 99 vitest) et validés sans erreur statique.</li>
+            <li><strong>Règles Forensiques D19 &amp; D20 :</strong> Promotion auto de <code>EXTRAIT_DE</code> à la validation, défaut <code>VERIFIED</code> (100%) sur les liaisons manuelles, changement de calque direct audité ISO 27037 sans modale bloquante.</li>
+            <li><strong>Restant Phase 2 Core :</strong> MinIO WORM S3 Compliance, Elasticsearch 8.14, EXIF Photos &amp; orchestration dynamique (Temporal.io / EDA).</li>
           </ul>
         </div>
       </div>
 
-      <h3 class="section-title">Étapes Détaillées &amp; Tâches à Réaliser pour Achever la Phase 1</h3>
+      <h3 class="section-title">Étapes de Clôture Réalisées pour Phase 1 &amp; Phase 2A</h3>
       <div class="step-list">
         <div class="step-item">
-          <strong>Étape 1.1 : Intégration du Glisser-Déposer de Surface &amp; Popover 3 Modes (Option B)</strong>
-          Écouter l'événement <code>drop</code> HTML5 sur le canevas. Calculer l'empreinte SHA-256 via Web Crypto API. Créer le nœud scellé et déployer le popover contextuel proposant les 3 options (Rapide, Pas à Pas, Récursif). Le clic sur lancer ouvre la modale PhaseNoticeModal (Décision D10) et bascule le badge du nœud en « En cours d'investigation » avec barre de progression live dans l'inspecteur.
+          <strong>✔ Étape 1.1 (Livrée) : Glisser-Déposer, SHA-256, Popover 3 Modes &amp; Extraction PDF/HTML Réelle (Option B + 2A)</strong>
+          Écoute de l'événement <code>drop</code> sur le canevas, hachage SHA-256 client + serveur, création du nœud <code>scelle_numerique</code>, popover 3 modes (Modes 1 &amp; 2 connectés au backend PDF/HTML + NER GPU ; Mode 3 avec notice D10) et panneau de validation isolé.
         </div>
         <div class="step-item">
-          <strong>Étape 1.2 : Activation de la Barre d'Onglets d'Enquête (Option A)</strong>
-          Ajouter le slice `activeWorkspaceTabId` dans Zustand (`useGraphStore.ts`). Lors du clic sur `[👤 Suspect : Amine B.]`, filtrer les nœuds rendus pour n'afficher que le sous-graphe centré sur le suspect tout en conservant l'état intact dans le store.
+          <strong>✔ Étape 1.2 (Livrée) : Barre d'Onglets Multi-Enquête &amp; Isolement Strict (Option A + Actor Sphere)</strong>
+          Slices <code>activeWorkspaceTabId</code> et onglets <code>actor_sphere</code> actifs dans <code>useGraphStore.ts</code> : les entités candidates en attente s'affichent exclusivement dans l'onglet isolé de la pièce (jamais dans le <code>Dossier Général</code>), avec conservation exacte des coordonnées avant/après validation.
         </div>
         <div class="step-item">
-          <strong>Étape 1.3 : Hardening Final &amp; Scellement de la Version v0.1 (Jalon 1G)</strong>
-          Audit des dépendances (`pip-audit`, `npm audit`), revue d'accessibilité WCAG 2.1 AA au clavier, vérification de la persistance de l'état et tagging de la release Git `v0.1-studio-core`.
+          <strong>✔ Étape 1.3 (Livrée) : Hardening Final, Isolation Modale &amp; Clôture Tests (Jalon 1G)</strong>
+          <code>ModalPortal</code> avec attribut <code>inert</code> sur le studio, garde <code>hasOpenModal()</code>, 60 tests backend <code>pytest</code>, 99 tests frontend <code>vitest</code>, zéro erreur <code>tsc</code>/<code>eslint</code>/<code>ruff</code>/<code>mypy</code>, et documentation technique complète (<code>EXTRACTION_LOGIC.md</code>, <code>DECISIONS.md</code> D1–D20).
         </div>
       </div>
 
       <!-- Exhaustive List of Implemented Functionalities in Phase 1 -->
-      <h3 class="section-title" style="margin-top:2.5rem;color:#60a5fa;">📋 Inventaire Exhaustif des Fonctionnalités Implémentées &amp; Opérationnelles en Phase 1 (v0.1)</h3>
+      <h3 class="section-title" style="margin-top:2.5rem;color:#60a5fa;">📋 Inventaire Exhaustif des Fonctionnalités Implémentées &amp; Opérationnelles (Phase 1 v0.1 + Phase 2A)</h3>
       <p class="section-subtitle">
-        Cet inventaire recense l'intégralité des capacités logicielles développées, testées et validées par la suite de tests automatisés (42 tests pytest backend, 33 tests vitest frontend, 0 erreur TypeScript) dans le socle opérationnel <code>apps/studio-app/</code> :
+        Cet inventaire recense l'intégralité des capacités logicielles développées, testées et validées par la suite de tests automatisés (<strong>60 tests pytest backend, 99 tests vitest frontend</strong>, 0 erreur TypeScript/ESLint/ruff/mypy) dans le socle opérationnel <code>apps/studio-app/</code> :
       </p>
 
       <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(340px, 1fr));gap:1rem;margin-bottom:1.5rem;">
@@ -346,7 +348,7 @@
             <strong style="color:#34d399;font-size:0.88rem;">2. Ontologie GFPG Canonique &amp; 5 Calques Forensiques</strong>
           </div>
           <ul style="padding-left:1.1rem;margin:0;font-size:0.79rem;color:#cbd5e1;line-height:1.55;">
-            <li><strong>Registre Unique (SSOT) :</strong> Fichier canonique <code>registry.json</code> exporté en TypeScript définissant <strong>37 types de nœuds</strong> et <strong>47 relations directionnelles</strong>.</li>
+            <li><strong>Registre Unique (SSOT) :</strong> Fichier canonique <code>registry.json</code> exporté en TypeScript définissant <strong>37 types de nœuds</strong> et <strong>50 relations directionnelles</strong> (47 socle + <code>EXTRAIT_DE</code>, <code>UTILISE_EMAIL</code>, <code>IMPLIQUE_TRANSACTION</code>).</li>
             <li><strong>5 Calques Normés :</strong> Calque 1 <code>VERIFIED</code> (11 types), Calque 2 <code>OSINT_RAW</code> (8 types), Calque 3 <code>INFRA</code> (8 types), Calque 4 <code>HYPOTHESIS</code> (4 types), Calque 5 <code>FLOWS</code> (6 types).</li>
             <li><strong>Validation de Schéma :</strong> Rejet strict de toute relation incompatible avec les types sources/cibles autorisés.</li>
             <li><strong>Seed Idempotent :</strong> Cas réel Candy Wheels (100 nœuds, 126 relations) préchargé au démarrage dans Neo4j et PostgreSQL.</li>
@@ -452,6 +454,47 @@
           </ul>
         </div>
 
+        <!-- Category 9: Phase 2A Extraction PDF/HTML & NER GPU -->
+        <div style="background:#090d16;border:1px solid #1e293b;border-top:3px solid #0ea5e9;border-radius:8px;padding:1rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+            <span style="font-size:1.1rem;">📄</span>
+            <strong style="color:#38bdf8;font-size:0.88rem;">9. Phase 2A — Extraction PDF/HTML Hors-Ligne &amp; NER GPU (D16–D18)</strong>
+          </div>
+          <ul style="padding-left:1.1rem;margin:0;font-size:0.79rem;color:#cbd5e1;line-height:1.55;">
+            <li><strong>Extraction PDF &amp; HTML :</strong> <code>pdf_extractor.py</code> (PyMuPDF + pdfplumber, Modes 1 &amp; 2 en 3 paliers) et <code>html_extractor.py</code> (BeautifulSoup4 + lxml, zéro réseau, aperçu <code>&lt;iframe sandbox=""&gt;</code>).</li>
+            <li><strong>Double NER GPU Hors-Ligne :</strong> <code>CAMeL-Lab</code> (arabe) et <code>WikiNEuRal</code> (<code>wikineural_ner.py</code>, FR/EN/latin en <code>float16</code> sur CUDA) + unification RIP BaridiMob/CCP.</li>
+            <li><strong>Validation Isolée Filtrable :</strong> Panneau <code>CandidateValidationPanel</code> actif uniquement dans les onglets <code>actor_sphere</code> (jamais dans <em>Dossier Général</em>) avec filtres par catégorie (Acteurs, Télécoms, Finances, etc.) et groupes de relations sémantiques pliables.</li>
+            <li><strong>Localisation en Attributs (D18) :</strong> Mentions <code>wilaya</code>/<code>commune</code> attachées comme métadonnées d'attributs sans nœuds orphelins à valider.</li>
+          </ul>
+        </div>
+
+        <!-- Category 10: Ergonomie Probatique D19/D20 -->
+        <div style="background:#090d16;border:1px solid #1e293b;border-top:3px solid #22c55e;border-radius:8px;padding:1rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+            <span style="font-size:1.1rem;">⚖️</span>
+            <strong style="color:#4ade80;font-size:0.88rem;">10. Règles D19/D20, Confiance 100% &amp; CRUD Liaisons</strong>
+          </div>
+          <ul style="padding-left:1.1rem;margin:0;font-size:0.79rem;color:#cbd5e1;line-height:1.55;">
+            <li><strong>Périmètre Strict (D20) :</strong> Seules les entités extraites et les relations sémantiques inter-entités requièrent validation humaine ; les arêtes <code>EXTRAIT_DE</code> vers la pièce glissée sont auto-vérifiées à la validation de chaque entité.</li>
+            <li><strong>Liaisons Manuelles &amp; Confiance (D19/D20) :</strong> Toute liaison manuelle créée par défaut est en <code>VERIFIED</code> (<code>100%</code>) ; toute entité affiche <code>100%</code> par défaut (<code>entityConfidence.ts</code>) jusqu'à modification manuelle ; atteindre <code>100%</code> sélectionne automatiquement le calque <code>VERIFIED</code>.</li>
+            <li><strong>Transition de Calque Sans Blocage :</strong> Changement de calque direct sans modale bloquante avec journalisation ISO 27037 automatique + édition/suppression persistante (<code>PATCH</code>/<code>DELETE</code>) sur chaque relation du graphe.</li>
+          </ul>
+        </div>
+
+        <!-- Category 11: KPI Dynamiques, Modal Inert & Physique -->
+        <div style="background:#090d16;border:1px solid #1e293b;border-top:3px solid #f43f5e;border-radius:8px;padding:1rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+            <span style="font-size:1.1rem;">🛡️</span>
+            <strong style="color:#fb7185;font-size:0.88rem;">11. KPI Réels, Isolation Modale &amp; Continuité Spatiale</strong>
+          </div>
+          <ul style="padding-left:1.1rem;margin:0;font-size:0.79rem;color:#cbd5e1;line-height:1.55;">
+            <li><strong>Synthèse Dynamique (<code>caseMetrics.ts</code>) :</strong> Calcul en temps réel des KPI du dossier actif (Préjudice DZD, Victimes, Suspects, Wilayas, Objets Analysés / À Investiguer / À Valider) et Boîte d'Arbitrage en direct — zéro chiffre statique de démo.</li>
+            <li><strong>Cascade Territoriale Responsive :</strong> Grille <code>Wilaya → Daïra → Commune</code> (<code>.geo-cascade-grid</code>) sans chevauchement ni troncature.</li>
+            <li><strong>Isolation Modale <code>inert</code> (<code>ModalPortal</code>) :</strong> Portail hors canevas, attribut <code>inert</code> sur <code>.studio-shell</code>, piégeage <code>Tab</code>, garde <code>hasOpenModal()</code> clavier/molette, et confirmation par touche <code>Entrée</code> sur <code>DeleteNodesModal</code>.</li>
+            <li><strong>Continuité &amp; Physique Directe :</strong> Réaction directe des nouveaux nœuds à la simulation physique et préservation exacte des coordonnées <code>(X, Y)</code> des entités candidates avant et après validation.</li>
+          </ul>
+        </div>
+
       </div>
     </div>
 
@@ -459,11 +502,18 @@
     <div id="tab-phase2" class="tab-content-panel">
       <div class="deliverable-banner">
         <div>
-          <span class="badge badge-cyan">APPLICATION FONCTIONNELLE v0.2</span>
-          <h2 style="font-size:1.25rem;color:#fff;margin:0.25rem 0;">Phase 2: Blackboard WORM, Elasticsearch &amp; Ingestion Texte/EXIF (Modes 1 &amp; 2)</h2>
-          <span style="font-size:0.84rem;color:var(--text-secondary);">Durée: Semaines 4 à 6 &bull; Focus: Préservation légale ISO 27037 &amp; Ingestion Opérationnelle</span>
+          <span class="badge badge-cyan">APPLICATION FONCTIONNELLE v0.2 (INCRÉMENT 2A LIVRÉ)</span>
+          <h2 style="font-size:1.25rem;color:#fff;margin:0.25rem 0;">Phase 2: Blackboard WORM, Elasticsearch &amp; Ingestion Texte/HTML/EXIF (Modes 1 &amp; 2)</h2>
+          <span style="font-size:0.84rem;color:var(--text-secondary);">Statut : Incrément Phase 2A (Extraction PDF/HTML + NER GPU + D16–D20) livré et testé • Restant : MinIO WORM, Elasticsearch 8.14, EXIF Photos</span>
         </div>
-        <span class="badge badge-emerald">Livrable: MinIO WORM S3 + Elasticsearch 8.14 + Ingestion Opérationnelle</span>
+        <span class="badge badge-emerald">Livrable: Extraction PDF/HTML Opérationnelle + MinIO WORM / ES 8.14 (Core)</span>
+      </div>
+
+      <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #10b981;border-radius:8px;padding:1rem;margin-bottom:1.25rem;">
+        <strong style="color:#10b981;font-size:0.9rem;display:block;margin-bottom:0.4rem;">✔ Incrément Phase 2A / 2A+ Déjà Livré &amp; Vérifié (Décisions D16 à D20)</strong>
+        <p style="font-size:0.8rem;color:#cbd5e1;line-height:1.55;margin:0;">
+          Les pipelines d'extraction statique <strong>PDF</strong> (<code>PyMuPDF</code> + <code>pdfplumber</code>, Modes 1 &amp; 2 en 3 paliers) et <strong>HTML</strong> 100% hors-ligne (<code>BeautifulSoup4</code> + <code>lxml</code>, anti-SSRF/XSS, aperçu <code>&lt;iframe sandbox=""&gt;</code>), le double moteur <strong>NER GPU local</strong> (<code>CAMeL-Lab</code> arabe + <code>WikiNEuRal</code> multilingue FR/EN/latin), les tables de staging PostgreSQL (<code>extraction_runs</code>, <code>extracted_candidates</code>, <code>extracted_relation_candidates</code>), les 3 relations (<code>EXTRAIT_DE</code>, <code>UTILISE_EMAIL</code>, <code>IMPLIQUE_TRANSACTION</code>), l'attributisation géo <code>wilaya</code>/<code>commune</code>, le panneau filtrable isolé <code>CandidateValidationPanel</code> et l'ensemble des règles D19/D20 sont opérationnels (réf. <a href="EXTRACTION_LOGIC.md" style="color:#38bdf8;"><code>EXTRACTION_LOGIC.md</code></a>).
+        </p>
       </div>
 
       <h3 class="section-title">1. Objectifs &amp; Expérience de l'Enquêteur</h3>

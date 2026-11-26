@@ -103,9 +103,11 @@ def format_ground_truth_md(
     author: str,
     pages: int,
     embedded_images: int,
+    locations: str,
     entities: list[tuple[str, str, str, int, str, str]],
+    relations: list[tuple[str, str, str, str, str, str, str]] | None = None,
 ) -> str:
-    """Format expected metadata and entities as a clean Markdown benchmark file."""
+    """Format expected metadata, entities and relations as a clean Markdown benchmark file."""
     lines = [
         f"# Ground Truth — `{pdf_name}`",
         "",
@@ -117,6 +119,7 @@ def format_ground_truth_md(
         f"- **author**: `{author}`",
         f"- **pages**: `{pages}`",
         f"- **embedded_images**: `{embedded_images}`",
+        f"- **locations**: `{locations}`",
         "",
         "## Expected Entities",
         "",
@@ -126,6 +129,20 @@ def format_ground_truth_md(
     for etype, norm, label, page, min_mode, notes in entities:
         lines.append(f"| `{etype}` | `{norm}` | {label} | {page} | `{min_mode}` | {notes} |")
     lines.append("")
+    if relations:
+        lines.extend(
+            [
+                "## Expected Relations",
+                "",
+                "| relation_type | source_type | source_value | target_type | target_value | min_mode | notes |",
+                "| :--- | :--- | :--- | :--- | :--- | :--- | :--- |",
+            ]
+        )
+        for rtype, stype, svalue, ttype, tvalue, min_mode, notes in relations:
+            lines.append(
+                f"| `{rtype}` | `{stype}` | `{svalue}` | `{ttype}` | `{tvalue}` | `{min_mode}` | {notes} |"
+            )
+        lines.append("")
     return "\n".join(lines)
 
 
@@ -179,18 +196,23 @@ def build_samples() -> list[tuple[str, str, str]]:
             author="OPJ Brigade Cybercriminalite Fictive - Alger",
             pages=1,
             embedded_images=0,
+            locations="Alger; Kouba",
             entities=[
                 ("telephone", "+2135550101", "+2135550101", 1, "quick", "Téléphone du plaignant"),
                 ("telephone", "+213661550102", "+213661550102", 1, "quick", "Téléphone du suspect"),
-                ("compte_bancaire", "00799999001234567890", "RIP 00799999001234567890", 1, "quick", "Compte BaridiMob destinataire"),
-                ("compte_bancaire", "0012345678", "CCP 0012345678", 1, "quick", "Compte CCP associé"),
+                ("compte_bancaire", "00799999001234567890", "RIP 00799999001234567890", 1, "quick", "Compte BaridiMob destinataire (inclut CCP 0012345678)"),
                 ("adresse_email", "ventes.atlas.fictif@example.com", "ventes.atlas.fictif@example.com", 1, "quick", "Courriel de contact"),
                 ("site_web", "https://pneus-promo-fictif.example.com/offre-2026", "https://pneus-promo-fictif.example.com/offre-2026", 1, "quick", "URL annonce frauduleuse"),
                 ("transaction_financiere", "185000 DZD", "185000 DZD", 1, "step_by_step", "Montant du virement déclaré (Stage 2)"),
                 ("personne", "Karim Mansouri", "Karim Mansouri", 1, "step_by_step", "Plaignant (Stage 3)"),
                 ("personne", "Yacine Benali", "Yacine Benali", 1, "step_by_step", "Suspect mis en cause (Stage 3)"),
-                ("wilaya", "Alger", "Alger", 1, "step_by_step", "Wilaya (Stage 3)"),
-                ("commune", "Kouba", "Kouba", 1, "step_by_step", "Commune (Stage 3)"),
+            ],
+            relations=[
+                ("UTILISE_EMAIL", "site_web", "https://pneus-promo-fictif.example.com/offre-2026", "adresse_email", "ventes.atlas.fictif@example.com", "quick", "Site lié au courriel"),
+                ("UTILISE_TELEPHONE", "personne", "Karim Mansouri", "telephone", "+2135550101", "step_by_step", "Plaignant -> téléphone"),
+                ("UTILISE_TELEPHONE", "personne", "Yacine Benali", "telephone", "+213661550102", "step_by_step", "Suspect -> téléphone"),
+                ("DETIENT_COMPTE_BANCAIRE", "personne", "Yacine Benali", "compte_bancaire", "00799999001234567890", "step_by_step", "Coréférence suspect -> compte destinataire"),
+                ("IMPLIQUE_TRANSACTION", "compte_bancaire", "00799999001234567890", "transaction_financiere", "185000 DZD", "step_by_step", "Compte destinataire -> montant préjudice"),
             ],
         ),
         encoding="utf-8",
@@ -218,6 +240,7 @@ def build_samples() -> list[tuple[str, str, str]]:
                 "## CLIENT DESTINATAIRE ET LOGISTIQUE",
                 "Client : EURL Nord Logistique Fictive",
                 "Directrice : Samira Boudiaf",
+                "Beneficiaire : Yacine Benali | Relais logistique : 0661 55 01 02",
                 "Vehicule livreur immatricule : 04821-116-16",
                 "---",
                 "## DETAIL DES PRESTATIONS FACTUREES",
@@ -225,6 +248,7 @@ def build_samples() -> list[tuple[str, str, str]]:
                 "2026-11-04 | Frais transport inter-wilayas    | Montant : 135000 DZD",
                 "Total TTC facture regle par virement : 555000 DZD",
                 "Reglement a effectuer sur RIP BaridiMob : 00799999009876543210",
+                "Compte de secours RIP BaridiMob : 00799999001234567890",
             ]
         ],
     )
@@ -232,15 +256,18 @@ def build_samples() -> list[tuple[str, str, str]]:
     md2.write_text(
         format_ground_truth_md(
             pdf_name=pdf2.name,
-            description="Facture commerciale entre deux sociétés fictives (Oran / Bir El Djir).",
+            description="Facture commerciale entre deux sociétés fictives avec recoupements multi-pièces (Oran / Bir El Djir).",
             title="FACTURE PROFORMA N° FAC-2026-0842",
             author="Service Comptable Fictif Oran",
             pages=1,
             embedded_images=0,
+            locations="Oran; Bir El Djir",
             entities=[
                 ("telephone", "+213770550109", "+213770550109", 1, "quick", "Téléphone contact fournisseur"),
+                ("telephone", "+213661550102", "+213661550102", 1, "quick", "Téléphone relais (recoupement PV plainte 01)"),
                 ("adresse_email", "facturation@atlas-import-fictif.example.com", "facturation@atlas-import-fictif.example.com", 1, "quick", "Email facturation"),
                 ("compte_bancaire", "00799999009876543210", "RIP 00799999009876543210", 1, "quick", "RIP BaridiMob règlement"),
+                ("compte_bancaire", "00799999001234567890", "RIP 00799999001234567890", 1, "quick", "RIP secours (recoupement PV plainte 01)"),
                 ("vehicule", "04821-116-16", "04821-116-16", 1, "quick", "Plaque immatriculation véhicule livreur"),
                 ("transaction_financiere", "420000 DZD", "420000 DZD", 1, "step_by_step", "Ligne facture 1 (Stage 2)"),
                 ("transaction_financiere", "135000 DZD", "135000 DZD", 1, "step_by_step", "Ligne facture 2 (Stage 2)"),
@@ -249,8 +276,12 @@ def build_samples() -> list[tuple[str, str, str]]:
                 ("entreprise", "EURL Nord Logistique Fictive", "EURL Nord Logistique Fictive", 1, "step_by_step", "Société cliente (Stage 3)"),
                 ("personne", "Nabil Khelifi", "Nabil Khelifi", 1, "step_by_step", "Gérant (Stage 3)"),
                 ("personne", "Samira Boudiaf", "Samira Boudiaf", 1, "step_by_step", "Directrice (Stage 3)"),
-                ("wilaya", "Oran", "Oran", 1, "step_by_step", "Wilaya (Stage 3)"),
-                ("commune", "Bir El Djir", "Bir El Djir", 1, "step_by_step", "Commune (Stage 3)"),
+                ("personne", "Yacine Benali", "Yacine Benali", 1, "step_by_step", "Relais logistique (recoupement PV 01 & HTML 03)"),
+            ],
+            relations=[
+                ("UTILISE_TELEPHONE", "personne", "Nabil Khelifi", "telephone", "+213770550109", "step_by_step", "Gérant -> téléphone"),
+                ("DIRIGE_ENTREPRISE", "personne", "Samira Boudiaf", "entreprise", "EURL Nord Logistique Fictive", "step_by_step", "Directrice -> société"),
+                ("UTILISE_TELEPHONE", "personne", "Yacine Benali", "telephone", "+213661550102", "step_by_step", "Bénéficiaire -> téléphone"),
             ],
         ),
         encoding="utf-8",
@@ -283,6 +314,9 @@ def build_samples() -> list[tuple[str, str, str]]:
                 "## SUITE DES OPERATIONS ET RETRAITS GAB (PAGE 2)",
                 "2026-10-18 | Retrait especes guichet GAB-BLIDA-0904 | 60000 DZD",
                 "2026-10-21 | Virement vers RIP 00799999001122334455 | 210000 DZD",
+                "2026-10-24 | Virement vers RIP 00799999009876543210 | 185000 DZD",
+                "Beneficiaire : Yacine Benali | Contact associe : 0661 55 01 88",
+                "Virement recu de RIP 00799999001234567890 (alerte dev.phish.fictif@example.org)",
                 "---",
                 "Fin de releve synthetique - Donnees 100% fictives.",
             ],
@@ -292,25 +326,40 @@ def build_samples() -> list[tuple[str, str, str]]:
     md3.write_text(
         format_ground_truth_md(
             pdf_name=pdf3.name,
-            description="Relevé multi-pages CCP / BaridiMob avec virements et retrait GAB (Blida).",
+            description="Relevé multi-pages CCP / BaridiMob avec virements croisés et retrait GAB (Blida).",
             title="RELEVE OPERATIONS CCP / BARIDIMOB FICTIF",
             author="Centre National Cheques Postaux Fictif",
             pages=2,
             embedded_images=0,
+            locations="Blida",
             entities=[
                 ("compte_bancaire", "00799999004455667788", "RIP 00799999004455667788", 1, "quick", "RIP principal titulaire"),
                 ("compte_bancaire", "00799999001122334455", "RIP 00799999001122334455", 1, "quick", "RIP destinataire 1"),
                 ("compte_bancaire", "00799999005566778899", "RIP 00799999005566778899", 1, "quick", "RIP destinataire 2"),
+                ("compte_bancaire", "00799999009876543210", "RIP 00799999009876543210", 2, "quick", "RIP croisé Facture 02"),
+                ("compte_bancaire", "00799999001234567890", "RIP 00799999001234567890", 2, "quick", "RIP croisé PV Plainte 01"),
                 ("telephone", "+2135550144", "+2135550144", 1, "quick", "Téléphone OTP"),
+                ("telephone", "+213661550188", "+213661550188", 2, "quick", "Téléphone croisé Rapport OSINT 04"),
+                ("adresse_email", "dev.phish.fictif@example.org", "dev.phish.fictif@example.org", 2, "quick", "Email croisé HTML Phishing 02"),
                 ("transaction_financiere", "95000 DZD", "95000 DZD", 1, "step_by_step", "Virement 2026-10-12 (Stage 2)"),
                 ("transaction_financiere", "140000 DZD", "140000 DZD", 1, "step_by_step", "Virement 2026-10-14 (Stage 2)"),
                 ("transaction_financiere", "60000 DZD", "60000 DZD", 2, "step_by_step", "Retrait GAB 2026-10-18 (Stage 2)"),
                 ("transaction_financiere", "210000 DZD", "210000 DZD", 2, "step_by_step", "Virement 2026-10-21 (Stage 2)"),
+                ("transaction_financiere", "185000 DZD", "185000 DZD", 2, "step_by_step", "Virement 2026-10-24 (Stage 2)"),
                 ("guichet_gab", "GAB-BLIDA-0904", "GAB-BLIDA-0904", 2, "step_by_step", "Guichet automatique (Stage 3)"),
                 ("personne", "Farid Ziani", "Farid Ziani", 1, "step_by_step", "Titulaire compte (Stage 3)"),
                 ("personne", "Mourad Saidi", "Mourad Saidi", 1, "step_by_step", "Bénéficiaire 1 (Stage 3)"),
                 ("personne", "Hichem Toumi", "Hichem Toumi", 1, "step_by_step", "Bénéficiaire 2 (Stage 3)"),
-                ("wilaya", "Blida", "Blida", 1, "step_by_step", "Wilaya (Stage 3)"),
+                ("personne", "Yacine Benali", "Yacine Benali", 2, "step_by_step", "Bénéficiaire croisé (Stage 3)"),
+            ],
+            relations=[
+                ("RECOIT_OTP_BARIDIMOB", "telephone", "+2135550144", "compte_bancaire", "00799999004455667788", "quick", "Téléphone OTP lié au RIP"),
+                ("EFFECTUE_VIREMENT_VERS", "compte_bancaire", "00799999004455667788", "compte_bancaire", "00799999001122334455", "quick", "Virement sortant (95000 DZD)"),
+                ("IMPLIQUE_TRANSACTION", "compte_bancaire", "00799999001122334455", "transaction_financiere", "95000 DZD", "step_by_step", "Virement 95000 DZD"),
+                ("IMPLIQUE_TRANSACTION", "compte_bancaire", "00799999005566778899", "transaction_financiere", "140000 DZD", "step_by_step", "Virement 140000 DZD"),
+                ("DETIENT_COMPTE_BANCAIRE", "personne", "Farid Ziani", "compte_bancaire", "00799999004455667788", "step_by_step", "Titulaire -> RIP principal"),
+                ("DETIENT_COMPTE_BANCAIRE", "personne", "Mourad Saidi", "compte_bancaire", "00799999001122334455", "step_by_step", "Bénéficiaire -> RIP destinataire 1"),
+                ("UTILISE_TELEPHONE", "personne", "Yacine Benali", "telephone", "+213661550188", "step_by_step", "Contact associé"),
             ],
         ),
         encoding="utf-8",
@@ -331,6 +380,7 @@ def build_samples() -> list[tuple[str, str, str]]:
                 "## SYNTHESE D'INVESTIGATION TECHNIQUE OSINT",
                 "Localisation operationnelle presumee : Wilaya d'Alger",
                 "Suspect : Walid Cherif (pseudonyme utilise : dz_phantom_fictif)",
+                "Complice presume — Beneficiaire : Yacine Benali | Relais tel : 0661 55 01 02",
                 "Telephone de recuperation : 0661 55 01 88",
                 "---",
                 "## INFRASTRUCTURE WEB ET RESEAU",
@@ -339,9 +389,10 @@ def build_samples() -> list[tuple[str, str, str]]:
                 "Adresse IPv4 serveur C2 : 198.51.100.42",
                 "Adresse IPv4 relais API : 203.0.113.77",
                 "Email registrar WHOIS : admin-ops@hosting-fictif.example.org",
+                "Email technique phishing associe : dev.phish.fictif@example.org",
                 "---",
                 "## MESSAGERIE ET PORTEFEUILLES CRYPTO",
-                "Canal Telegram diffuseur : @alerte_dz_fictif",
+                "Canal Telegram diffuseur : @alerte_dz_fictif | Canal relai : @p2p_dz_fictif",
                 "Lien invitation : https://t.me/alerte_dz_fictif",
                 "Portefeuille Bitcoin (BTC) : bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
                 "Portefeuille USDT (TRC20) : TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE",
@@ -352,23 +403,32 @@ def build_samples() -> list[tuple[str, str, str]]:
     md4.write_text(
         format_ground_truth_md(
             pdf_name=pdf4.name,
-            description="Note technique cyber/OSINT (URLs, IPv4, Telegram, Crypto, Suspect).",
+            description="Note technique cyber/OSINT avec recoupements multi-documents (URLs, IPv4, Telegram, Crypto, Suspects).",
             title="NOTE TECHNIQUE OSINT CYBER N° OSINT-2026-04",
             author="Cellule Analyse Cyber Fictive",
             pages=1,
             embedded_images=0,
+            locations="Alger",
             entities=[
                 ("telephone", "+213661550188", "+213661550188", 1, "quick", "Téléphone récupération"),
+                ("telephone", "+213661550102", "+213661550102", 1, "quick", "Téléphone complice (recoupement PV 01 & HTML 03)"),
                 ("site_web", "https://baridimob-verif-fictif.example.com/login", "https://baridimob-verif-fictif.example.com/login", 1, "quick", "Domaine phishing principal"),
                 ("site_web", "https://cdn-pay-fictif.example.net", "https://cdn-pay-fictif.example.net", 1, "quick", "Serveur CDN secondaire"),
                 ("identifiant_infrastructure", "198.51.100.42", "198.51.100.42", 1, "quick", "IPv4 serveur C2"),
                 ("identifiant_infrastructure", "203.0.113.77", "203.0.113.77", 1, "quick", "IPv4 relais API"),
                 ("adresse_email", "admin-ops@hosting-fictif.example.org", "admin-ops@hosting-fictif.example.org", 1, "quick", "Email registrar WHOIS"),
+                ("adresse_email", "dev.phish.fictif@example.org", "dev.phish.fictif@example.org", 1, "quick", "Email phishing (recoupement HTML 02)"),
                 ("canal_telegram", "@alerte_dz_fictif", "@alerte_dz_fictif", 1, "quick", "Canal Telegram"),
+                ("canal_telegram", "@p2p_dz_fictif", "@p2p_dz_fictif", 1, "quick", "Canal Telegram croisé HTML 04"),
                 ("crypto_wallet", "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh", "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh", 1, "quick", "Wallet BTC"),
                 ("crypto_wallet", "TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE", "TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE", 1, "quick", "Wallet TRC20"),
                 ("personne", "Walid Cherif", "Walid Cherif", 1, "step_by_step", "Suspect principal (Stage 3)"),
-                ("wilaya", "Alger", "Alger", 1, "step_by_step", "Wilaya (Stage 3)"),
+                ("personne", "Yacine Benali", "Yacine Benali", 1, "step_by_step", "Complice croisé (Stage 3)"),
+            ],
+            relations=[
+                ("UTILISE_EMAIL", "site_web", "https://baridimob-verif-fictif.example.com/login", "adresse_email", "admin-ops@hosting-fictif.example.org", "quick", "WHOIS email"),
+                ("UTILISE_EMAIL", "site_web", "https://baridimob-verif-fictif.example.com/login", "adresse_email", "dev.phish.fictif@example.org", "quick", "Email phishing"),
+                ("UTILISE_TELEPHONE", "personne", "Yacine Benali", "telephone", "+213661550102", "step_by_step", "Complice -> téléphone"),
             ],
         ),
         encoding="utf-8",
@@ -399,36 +459,41 @@ def build_samples() -> list[tuple[str, str, str]]:
                 "3. Smartphone #1 : ligne +213 555 0171 | IMEI : 351234567890123",
                 "4. Smartphone #2 : ligne 0770 55 01 72 | IMEI : 359876543210987",
                 "5. Somme en especes saisie sous scelle : 750000 DZD",
+                "6. Carte BaridiMob saisie : RIP 00799999004455667788 | Vehicule repere : 04821-116-16",
+                "7. Messagerie retrouvee sur cle USB : ventes.atlas.fictif@example.com",
                 "---",
                 "## PLANCHE PHOTOGRAPHIQUE INTEGRÉE AU PV :",
             ]
         ],
-        embedded_png=(0, fitz.Rect(48, 390, 548, 594), png_bytes),
+        embedded_png=(0, fitz.Rect(48, 425, 548, 629), png_bytes),
     )
     md5 = OUT_DIR / "05_pv_perquisition_saisie.md"
     md5.write_text(
         format_ground_truth_md(
             pdf_name=pdf5.name,
-            description="PV de perquisition multi-saisies avec 1 image intégrée (Constantine / Sétif).",
+            description="PV de perquisition multi-saisies avec 1 image intégrée et recoupements cross-pièces (Constantine / Sétif).",
             title="PV DE PERQUISITION ET INVENTAIRE DES SCELLES N° 2026-05",
             author="OPJ Section Economique Fictive - Constantine",
             pages=1,
             embedded_images=1,
+            locations="Constantine; Setif",
             entities=[
                 ("vehicule", "09124-121-25", "09124-121-25", 1, "quick", "Véhicule saisi 1"),
                 ("vehicule", "11209-119-19", "11209-119-19", 1, "quick", "Véhicule saisi 2"),
+                ("vehicule", "04821-116-16", "04821-116-16", 1, "quick", "Véhicule croisé Facture 02 & HTML 01"),
                 ("telephone", "+2135550171", "+2135550171", 1, "quick", "Smartphone 1"),
                 ("telephone", "+213770550172", "+213770550172", 1, "quick", "Smartphone 2"),
                 ("adresse_email", "sofiane.b.fictif@example.com", "sofiane.b.fictif@example.com", 1, "quick", "Courriel sur poste saisi"),
+                ("adresse_email", "ventes.atlas.fictif@example.com", "ventes.atlas.fictif@example.com", 1, "quick", "Courriel croisé PV Plainte 01"),
+                ("compte_bancaire", "00799999004455667788", "RIP 00799999004455667788", 1, "quick", "Carte BaridiMob croisée Relevé 03 & HTML 02"),
                 ("transaction_financiere", "750000 DZD", "750000 DZD", 1, "step_by_step", "Espèces saisies (Stage 2)"),
                 ("image_preuve", "embedded_image_p1_1", "Image integree p.1 #1", 1, "step_by_step", "Planche photo intégrée (Stage 1)"),
                 ("appareil_mobile", "351234567890123", "IMEI 351234567890123", 1, "step_by_step", "Smartphone 1 IMEI (Stage 3)"),
                 ("appareil_mobile", "359876543210987", "IMEI 359876543210987", 1, "step_by_step", "Smartphone 2 IMEI (Stage 3)"),
                 ("personne", "Sofiane Brahimi", "Sofiane Brahimi", 1, "step_by_step", "Suspect (Stage 3)"),
                 ("personne", "Amel Haddad", "Amel Haddad", 1, "step_by_step", "Témoin (Stage 3)"),
-                ("wilaya", "Constantine", "Constantine", 1, "step_by_step", "Wilaya 1 (Stage 3)"),
-                ("wilaya", "Setif", "Setif", 1, "step_by_step", "Wilaya 2 (Stage 3)"),
             ],
+            relations=[],
         ),
         encoding="utf-8",
     )

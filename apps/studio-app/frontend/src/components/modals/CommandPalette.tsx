@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Search, X, Layers, Activity, Wrench, Database } from 'lucide-react';
 import { useGraphStore } from '../../store/useGraphStore';
 import { useI18n } from '../../context/I18nContext';
+import { ModalPortal } from '../common/ModalPortal';
 import type { ActiveViewMode } from '../canvas/Toolbar';
 
 interface CommandPaletteProps {
@@ -261,6 +262,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   if (!isOpen) return null;
 
   return (
+    <ModalPortal>
     <div
       className="modal-backdrop"
       role="dialog"
@@ -384,5 +386,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 };

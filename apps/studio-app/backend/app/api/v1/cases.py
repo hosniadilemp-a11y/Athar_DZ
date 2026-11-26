@@ -11,8 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 from app.core.config import get_settings
 from app.db.session import get_neo4j_driver, get_pg_engine
-from app.schemas.case import CaseCreate, CaseResponse
-from app.services.graph_service import create_case, get_case, list_cases
+from app.schemas.case import CaseCreate, CaseResponse, CaseUpdate
+from app.services.graph_service import create_case, get_case, list_cases, update_case
 
 router = APIRouter(prefix="/cases", tags=["cases"])
 
@@ -48,3 +48,15 @@ async def get_case_endpoint(
 ) -> CaseResponse:
     """Retrieve case by UUID."""
     return await get_case(engine, case_id)
+
+
+@router.patch("/{case_id}", response_model=CaseResponse)
+async def update_case_endpoint(
+    case_id: uuid.UUID,
+    payload: CaseUpdate,
+    engine: AsyncEngine = Depends(get_pg_engine),
+    neo4j_driver: AsyncDriver = Depends(get_neo4j_driver),
+    actor_id: str = Depends(get_actor_id),
+) -> CaseResponse:
+    """Update judicial investigation metadata (unit, magistrate, jurisdiction, wilaya)."""
+    return await update_case(engine, neo4j_driver, case_id, payload, actor_id)

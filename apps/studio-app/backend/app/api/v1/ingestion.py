@@ -11,21 +11,40 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from app.api.v1.cases import get_actor_id
 from app.db.session import get_neo4j_driver, get_pg_engine
 from app.schemas.ingestion import (
+    CandidateUpdateRequest,
+    CaseIngestionSummaryResponse,
     EvidenceUploadResponse,
     ExtractPdfRequest,
     NodeCandidatesResponse,
+    RelationUpdateRequest,
     ValidateCandidatesRequest,
     ValidateCandidatesResponse,
+    ValidateRelationsRequest,
+    ValidateRelationsResponse,
 )
 from app.services.ingestion_service import (
     advance_evidence_stage,
+    delete_extracted_relation,
+    get_case_ingestion_summary,
     get_node_candidates,
     start_evidence_extraction,
+    update_extracted_candidate,
+    update_extracted_relation,
     upload_evidence_file,
     validate_candidates,
+    validate_relations,
 )
 
 router = APIRouter(prefix="/cases/{case_id}/ingestion", tags=["ingestion"])
+
+
+@router.get("/summary", response_model=CaseIngestionSummaryResponse)
+async def get_case_ingestion_summary_endpoint(
+    case_id: uuid.UUID,
+    engine: AsyncEngine = Depends(get_pg_engine),
+) -> CaseIngestionSummaryResponse:
+    """Fetch all extraction runs and staged candidates/relations across an investigation case."""
+    return await get_case_ingestion_summary(engine=engine, case_id=case_id)
 
 
 @router.post("/nodes/{node_id}/upload", response_model=EvidenceUploadResponse, status_code=201)
@@ -106,6 +125,24 @@ async def get_candidates_endpoint(
     )
 
 
+@router.patch("/candidates/{candidate_id}", response_model=NodeCandidatesResponse)
+async def update_candidate_endpoint(
+    case_id: uuid.UUID,
+    candidate_id: uuid.UUID,
+    payload: CandidateUpdateRequest,
+    engine: AsyncEngine = Depends(get_pg_engine),
+    actor_id: str = Depends(get_actor_id),
+) -> NodeCandidatesResponse:
+    """Edit staged PENDING candidate properties before validation."""
+    return await update_extracted_candidate(
+        engine=engine,
+        case_id=case_id,
+        candidate_id=candidate_id,
+        payload=payload,
+        actor_id=actor_id,
+    )
+
+
 @router.post("/nodes/{node_id}/candidates/validate", response_model=ValidateCandidatesResponse)
 async def validate_candidates_endpoint(
     case_id: uuid.UUID,
@@ -117,6 +154,62 @@ async def validate_candidates_endpoint(
 ) -> ValidateCandidatesResponse:
     """Validate one-by-one, merge, reject, or select-all bulk validate staged candidates."""
     return await validate_candidates(
+        engine=engine,
+        neo4j_driver=neo4j_driver,
+        case_id=case_id,
+        source_node_id=node_id,
+        payload=payload,
+        actor_id=actor_id,
+    )
+
+
+@router.patch("/relations/{relation_id}", response_model=NodeCandidatesResponse)
+async def update_relation_candidate_endpoint(
+    case_id: uuid.UUID,
+    relation_id: uuid.UUID,
+    payload: RelationUpdateRequest,
+    engine: AsyncEngine = Depends(get_pg_engine),
+    actor_id: str = Depends(get_actor_id),
+) -> NodeCandidatesResponse:
+    """Update a staged PENDING relation candidate (type, direction, layer, confidence)."""
+    return await update_extracted_relation(
+        engine=engine,
+        case_id=case_id,
+        relation_id=relation_id,
+        payload=payload,
+        actor_id=actor_id,
+    )
+
+
+@router.delete("/relations/{relation_id}", response_model=NodeCandidatesResponse)
+async def delete_relation_candidate_endpoint(
+    case_id: uuid.UUID,
+    relation_id: uuid.UUID,
+    engine: AsyncEngine = Depends(get_pg_engine),
+    neo4j_driver: AsyncDriver = Depends(get_neo4j_driver),
+    actor_id: str = Depends(get_actor_id),
+) -> NodeCandidatesResponse:
+    """Delete a staged relation candidate before validation."""
+    return await delete_extracted_relation(
+        engine=engine,
+        neo4j_driver=neo4j_driver,
+        case_id=case_id,
+        relation_id=relation_id,
+        actor_id=actor_id,
+    )
+
+
+@router.post("/nodes/{node_id}/relations/validate", response_model=ValidateRelationsResponse)
+async def validate_relations_endpoint(
+    case_id: uuid.UUID,
+    node_id: uuid.UUID,
+    payload: ValidateRelationsRequest,
+    engine: AsyncEngine = Depends(get_pg_engine),
+    neo4j_driver: AsyncDriver = Depends(get_neo4j_driver),
+    actor_id: str = Depends(get_actor_id),
+) -> ValidateRelationsResponse:
+    """Validate or reject staged semantic relation candidates (one-by-one or select-all)."""
+    return await validate_relations(
         engine=engine,
         neo4j_driver=neo4j_driver,
         case_id=case_id,

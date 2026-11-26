@@ -843,6 +843,36 @@ export const CANVAS_PHRASES: PhraseBook = {
   'Étape suivante exécutée': { ar: 'تم تنفيذ المرحلة التالية', en: 'Next stage executed' },
   'Extraction': { ar: 'الاستخراج الجنائي', en: 'Extraction' },
   'Extraction PDF': { ar: 'استخراج PDF', en: 'PDF Extraction' },
+  'Relations sémantiques détectées': {
+    ar: 'العلاقات الدلالية المستخرجة',
+    en: 'Detected semantic relations',
+  },
+  'Relation mise à jour': { ar: 'تم تحديث العلاقة', en: 'Relation updated' },
+  'Relation supprimée': { ar: 'تم حذف العلاقة', en: 'Relation deleted' },
+  'Relation supprimée du dossier': {
+    ar: 'تم حذف العلاقة من الملف',
+    en: 'Relation deleted from case',
+  },
+  'Relation validée et ajoutée au graphe': {
+    ar: 'تم اعتماد العلاقة وإضافتها إلى المخطط',
+    en: 'Relation validated and added to graph',
+  },
+  '{n} relation(s) validée(s) et ajoutée(s) au graphe': {
+    ar: 'تم اعتماد {n} علاقة وإضافتها إلى المخطط',
+    en: '{n} relation(s) validated and added to graph',
+  },
+  'Supprimer la relation': { ar: 'حذف العلاقة', en: 'Delete relation' },
+  'Confirmer la suppression définitive de cette relation ?': {
+    ar: 'تأكيد الحذف النهائي لهذه العلاقة؟',
+    en: 'Confirm permanent deletion of this relation?',
+  },
+  'Enregistrer la Relation': { ar: 'حفظ العلاقة', en: 'Save Relation' },
+  'Type de Relation': { ar: 'نوع العلاقة', en: 'Relation Type' },
+  'Valider ({n})': { ar: 'اعتماد ({n})', en: 'Validate ({n})' },
+  'Inverser': { ar: 'عكس الاتجاه', en: 'Swap direction' },
+  'Sens inversé': { ar: 'تم عكس الاتجاه', en: 'Direction swapped' },
+  'Modifier': { ar: 'تعديل', en: 'Edit' },
+  'Supprimer': { ar: 'حذف', en: 'Delete' },
   'Indice écarté': { ar: 'تم استبعاد المؤشر', en: 'Candidate rejected' },
   'Indice fusionné avec le nœud existant': {
     ar: 'تم دمج المؤشر مع العقدة الحالية',
@@ -892,5 +922,253 @@ export const CANVAS_PHRASES: PhraseBook = {
   'Utiliser la relation personnalisée : {name}': {
     ar: 'استخدام علاقة مخصصة : {name}',
     en: 'Use custom relation: {name}',
+  },
+  'Unité Enquêteuse :': { ar: 'الوحدة المحققة :', en: 'Investigating Unit:' },
+  'Magistrat Instructeur :': { ar: 'قاضي التحقيق :', en: 'Instructing Magistrate:' },
+  'Juridiction Compétente :': { ar: 'الجهة القضائية المختصة :', en: 'Competent Jurisdiction:' },
+  'Wilaya :': { ar: 'الولاية :', en: 'Wilaya:' },
+  'Wilaya(s) Rattachée(s) :': { ar: 'الولاية (الولايات) المعنية :', en: 'Associated Wilaya(s):' },
+  "Métadonnées de l'affaire enregistrées.": {
+    ar: 'تم حفظ البيانات الوصفية للقضية.',
+    en: 'Case metadata saved.',
+  },
+  'Dossier Judiciaire': { ar: 'الملف القضائي', en: 'Judicial Case' },
+  "Échec de la mise à jour des métadonnées de l'affaire.": {
+    ar: 'فشل تحديث البيانات الوصفية للقضية.',
+    en: 'Failed to update case metadata.',
+  },
+  'Enregistrer': { ar: 'حفظ', en: 'Save' },
+  'Déjà présent dans la base : {name}': {
+    ar: 'موجود مسبقاً في قاعدة البيانات : {name}',
+    en: 'Already present in database: {name}',
+  },
+  "Finaliser l'analyse (100%)": {
+    ar: 'إكمال التحليل (100%)',
+    en: 'Complete analysis (100%)',
+  },
+  'Méta & Images': {
+    ar: 'البيانات الوصفية والصور',
+    en: 'Meta & Images',
+  },
+  'Texte & Regex': {
+    ar: 'النصوص والمعرفات',
+    en: 'Text & Regex',
+  },
+  'NER & Entités': {
+    ar: 'الكيانات والمحلل اللغوي',
+    en: 'NER & Entities',
+  },
+  'Qualification : {status}': {
+    ar: 'الصفة القضائية : {status}',
+    en: 'Judicial role: {status}',
+  },
+  'Valider et ajouter au graphe': {
+    ar: 'اعتماد وإضافة إلى المخطط',
+    en: 'Validate and add to graph',
+  },
+  'Écarter cet indice': {
+    ar: 'استبعاد هذا المؤشر',
+    en: 'Discard this clue',
+  },
+  'Modifier les informations': {
+    ar: 'تعديل المعلومات',
+    en: 'Edit information',
+  },
+  'Ajouter un attribut': {
+    ar: 'إضافة خاصية',
+    en: 'Add attribute',
+  },
+  'Nom du champ': {
+    ar: 'اسم الحقل',
+    en: 'Field name',
+  },
+  'Modifications enregistrées': {
+    ar: 'تم حفظ التعديلات',
+    en: 'Changes saved',
+  },
+  'Tout déplier': {
+    ar: 'توسيع الكل',
+    en: 'Expand all',
+  },
+  'Tout replier': {
+    ar: 'طي الكل',
+    en: 'Collapse all',
+  },
+  'Filtrer par type': {
+    ar: 'تصفية حسب النوع',
+    en: 'Filter by type',
+  },
+  'Déjà en base': {
+    ar: 'موجود مسبقاً',
+    en: 'Already in DB',
+  },
+  // Dynamic Case Overview KPIs & Geo Cascade Labels
+  'Aucun flux financier saisi': {
+    ar: 'لا يوجد تدفق مالي مسجل',
+    en: 'No financial flow recorded',
+  },
+  'Transactions financières': {
+    ar: 'المعاملات المالية',
+    en: 'Financial transactions',
+  },
+  '{n} plaignant(s)': {
+    ar: '{n} شاكي/شاكين',
+    en: '{n} complainant(s)',
+  },
+  'Suspects & Mis en Cause': {
+    ar: 'المشتبه بهم والمتورطون',
+    en: 'Suspects & Implicated',
+  },
+  'Acteurs mis en cause': {
+    ar: 'الأطراف المشتبه بها',
+    en: 'Implicated actors',
+  },
+  'Aucune wilaya identifiée': {
+    ar: 'لم يتم تحديد أي ولاية',
+    en: 'No wilaya identified',
+  },
+  '{n} wilaya(s)': {
+    ar: '{n} ولاية',
+    en: '{n} wilaya(s)',
+  },
+  'Aucun objet analysé': {
+    ar: 'لا يوجد أي عنصر محلل',
+    en: 'No analyzed object',
+  },
+  '{pct}% SHA-256 vérifiés': {
+    ar: '{pct}% تم التحقق منها بـ SHA-256',
+    en: '{pct}% SHA-256 verified',
+  },
+  'À Investiguer & À Valider': {
+    ar: 'قيد التحقيق والمصادقة',
+    en: 'To Investigate & Validate',
+  },
+  '{inv} à analyser • {val} à valider': {
+    ar: '{inv} للتحليل • {val} للمصادقة',
+    en: '{inv} to analyze • {val} to validate',
+  },
+  'Aucun indice en attente de validation pour ce dossier.': {
+    ar: 'لا توجد مؤشرات في انتظار المصادقة لهذا الملف.',
+    en: 'No clues pending validation for this case.',
+  },
+  '{n} relation(s) en attente de validation': {
+    ar: '{n} علاقة في انتظار المصادقة',
+    en: '{n} relation(s) pending validation',
+  },
+  'Inspecter': {
+    ar: 'فحص',
+    en: 'Inspect',
+  },
+  'Indice versé au dossier judiciaire': {
+    ar: 'تم إدراج الدليل في الملف القضائي',
+    en: 'Clue added to judicial case',
+  },
+  'Validation': {
+    ar: 'مصادقة',
+    en: 'Validation',
+  },
+  'Échec de la validation': {
+    ar: 'فشل في المصادقة',
+    en: 'Validation failed',
+  },
+  'Rejet': {
+    ar: 'استبعاد',
+    en: 'Dismissed',
+  },
+  'Échec du rejet': {
+    ar: 'فشل في الاستبعاد',
+    en: 'Dismissal failed',
+  },
+  'Localisation Administrative (Wilaya → Daïra → Commune)': {
+    ar: 'التحديد الإداري (الولاية ← الدائرة ← البلدية)',
+    en: 'Administrative Location (Wilaya → Daïra → Commune)',
+  },
+  '1. Wilaya (58) *': {
+    ar: '1. الولاية (58) *',
+    en: '1. Wilaya (58) *',
+  },
+  'Rechercher code ou nom (ex: 16, Alger)...': {
+    ar: 'ابحث بالرمز أو الاسم (مثال: 16، الجزائر)...',
+    en: 'Search code or name (e.g. 16, Algiers)...',
+  },
+  '2. Daïra *': {
+    ar: '2. الدائرة *',
+    en: '2. Daïra *',
+  },
+  'Rechercher une daïra...': {
+    ar: 'ابحث عن دائرة...',
+    en: 'Search daïra...',
+  },
+  '3. Commune *': {
+    ar: '3. البلدية *',
+    en: '3. Commune *',
+  },
+  'Rechercher une commune...': {
+    ar: 'ابحث عن بلدية...',
+    en: 'Search commune...',
+  },
+  'Rue, Numéro, Bâtiment / Repère (Optionnel)': {
+    ar: 'الشارع، الرقم، المبنى / المعلم (اختياري)',
+    en: 'Street, Number, Building / Landmark (Optional)',
+  },
+  'ex: 14 Rue Didouche Mourad, Zone Industrielle...': {
+    ar: 'مثال: 14 شارع ديدوش مراد، المنطقة الصناعية...',
+    en: 'e.g. 14 Rue Didouche Mourad, Industrial Zone...',
+  },
+  'SOCMINT': {
+    ar: 'الشبكات الاجتماعية OSINT',
+    en: 'SOCMINT',
+  },
+  'Catégories': {
+    ar: 'الفئات',
+    en: 'Categories',
+  },
+  'Types': {
+    ar: 'الأنواع',
+    en: 'Types',
+  },
+  'Télécoms & CDR': {
+    ar: 'الاتصالات وسجلات المكالمات',
+    en: 'Telecoms & CDR',
+  },
+  'Finances & Virements': {
+    ar: 'المالية والتحويلات',
+    en: 'Finance & Transfers',
+  },
+  'Réseaux Sociaux & OSINT': {
+    ar: 'الشبكات الاجتماعية والاستخبارات',
+    en: 'Social Media & OSINT',
+  },
+  'Procédure & Justice': {
+    ar: 'الإجراءات والقضاء',
+    en: 'Procedure & Justice',
+  },
+  'Relations Générales': {
+    ar: 'العلاقات العامة',
+    en: 'General Relations',
+  },
+  '{n} relation(s) écartée(s)': {
+    ar: 'تم استبعاد {n} علاقة',
+    en: '{n} relation(s) dismissed',
+  },
+  "Confirmer l'ajout de {n} relation(s) au graphe d'enquête ?": {
+    ar: 'تأكيد إضافة {n} علاقة إلى مخطط التحقيق؟',
+    en: 'Confirm adding {n} relation(s) to the investigation graph?',
+  },
+  'Confirmer le rejet de {n} relation(s) ?': {
+    ar: 'تأكيد استبعاد {n} علاقة؟',
+    en: 'Confirm rejecting {n} relation(s)?',
+  },
+  'Calque': {
+    ar: 'الطبقة',
+    en: 'Layer',
+  },
+  'Promouvoir en VERIFIED': {
+    ar: 'ترقية إلى VERIFIED',
+    en: 'Promote to VERIFIED',
+  },
+  'Échec de la mise à jour du calque sur le serveur.': {
+    ar: 'فشل تحديث الطبقة على الخادم.',
+    en: 'Failed to update layer on server.',
   },
 };

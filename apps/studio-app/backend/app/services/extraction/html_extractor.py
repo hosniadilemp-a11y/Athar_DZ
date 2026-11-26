@@ -13,24 +13,34 @@ import hashlib
 import json
 import logging
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from typing import Any
 
 from bs4 import BeautifulSoup, Comment, Tag
 
-from app.services.extraction.camel_ner import resolve_camel_model_dir
+from app.services.extraction.camel_ner import get_camel_ner_device, resolve_camel_model_dir
 from app.services.extraction.common_extractors import (
     AMOUNT_RE,
     DATE_ISO_RE,
     TELEGRAM_RE,
     ExtractedCandidateItem,
+    ExtractedRelationItem,
     build_extraction_summary,
     default_non_verified_layer,
+    enrich_candidates_with_locations,
     extract_contextual_entities,
+    extract_cooccurrence_relations,
     extract_deterministic_identifiers,
+    extract_location_attributes,
     fuse_candidates,
-    normalize_dz_phone,
+    fuse_relations,
+    normalize_phone,
     sanitize_snippet,
+)
+from app.services.extraction.wikineural_ner import (
+    get_wikineural_ner_device,
+    resolve_wikineural_model_dir,
 )
 
 logger = logging.getLogger(__name__)
@@ -52,7 +62,8 @@ DATA_IMAGE_RE = re.compile(
 APK_URL_RE = re.compile(r"([A-Za-z0-9._\-]+\.apk)\b", re.IGNORECASE)
 META_CHARSET_RE = re.compile(rb"charset\s*=\s*['\"]?([a-zA-Z0-9_\-]+)", re.IGNORECASE)
 CANAL_TELEGRAM_TEXT_RE = re.compile(
-    r"(?:Canal\s+Telegram|Telegram)\s*[:\-]?\s*@([a-zA-Z][a-zA-Z0-9_]{4,31})\b",
+    r"(?:Canal\s+Telegram|Telegram\s+Channel|Telegram|قناة\s+تيليغرام|تيليغرام)\s*[:\-]?\s*"
+    r"@([a-zA-Z][a-zA-Z0-9_]{4,31})\b",
     re.IGNORECASE,
 )
 
@@ -106,6 +117,7 @@ class HtmlExtractionStageOutput:
     stage_number: int
     candidates: list[ExtractedCandidateItem]
     summary: dict[str, Any]
+    relations: list[ExtractedRelationItem] = field(default_factory=list)
 
 
 @dataclass
@@ -256,10 +268,13 @@ def _parse_html_dom(html_bytes: bytes) -> _ParsedHtmlDom:
     for tag_name in ("script", "style", "noscript"):
         for t in body_clone.find_all(tag_name):
             t.decompose()
-    visible_text = "\n".join(
-        line.strip()
-        for line in body_clone.get_text("\n").splitlines()
-        if line.strip()
+    visible_text = unicodedata.normalize(
+        "NFKC",
+        "\n".join(
+            line.strip()
+            for line in body_clone.get_text("\n").splitlines()
+            if line.strip()
+        ),
     )
 
     metadata = HtmlMetadataResult(
@@ -453,8 +468,8 @@ def _extract_trackers_and_forms(
                     )
                 )
         elif lower.startswith("tel:"):
-            norm = normalize_dz_phone(href[4:])
-            if len(norm) >= 12:
+            norm = normalize_phone(href[4:])
+            if len(norm) >= 8:
                 items.append(
                     ExtractedCandidateItem(
                         entity_type="telephone",
@@ -816,31 +831,310 @@ def _build_text_segments(dom: _ParsedHtmlDom) -> list[tuple[int, str, str]]:
     return segments
 
 
+def _extract_html_dom_relations(
+    dom: _ParsedHtmlDom,
+    candidates: list[ExtractedCandidateItem],
+    stage_number: int,
+) -> list[ExtractedRelationItem]:
+    """Infer DOM, JSON-LD, article, Telegram, tracker, and co-occurrence relations."""
+    segments = _build_text_segments(dom)
+    rels = extract_cooccurrence_relations(segments, candidates, stage_number)
+
+    by_type: dict[str, list[ExtractedCandidateItem]] = {}
+    for c in candidates:
+        by_type.setdefault(c.entity_type, []).append(c)
+
+    sites = by_type.get("site_web", [])
+    primary_site = next(
+        (s for s in sites if s.source_locator in {"head:canonical", "form:action#0"}),
+        sites[0] if sites else None,
+    )
+
+    if primary_site is not None:
+        for trk in by_type.get("identifiant_infrastructure", []):
+            if trk.attributes.get("type_tracker"):
+                rels.append(
+                    ExtractedRelationItem(
+                        relation_type="EMBARQUE_PIXEL_TRACKER",
+                        source_entity_type="site_web",
+                        source_normalized_value=primary_site.normalized_value,
+                        target_entity_type="identifiant_infrastructure",
+                        target_normalized_value=trk.normalized_value,
+                        suggested_layer="INFRA",
+                        attributes={},
+                        confidence=0.94,
+                        extractor_tool="html-dom-tracker",
+                        stage_number=stage_number,
+                        source_page=1,
+                        quote_snippet=f"{primary_site.label} -> {trk.label}"[:180],
+                        source_locator=trk.source_locator or "script:tracker",
+                    )
+                )
+        for c2 in by_type.get("serveur_c2", []):
+            rels.append(
+                ExtractedRelationItem(
+                    relation_type="RESOLU_VERS_IP_C2",
+                    source_entity_type="site_web",
+                    source_normalized_value=primary_site.normalized_value,
+                    target_entity_type="serveur_c2",
+                    target_normalized_value=c2.normalized_value,
+                    suggested_layer="INFRA",
+                    attributes={},
+                    confidence=0.92,
+                    extractor_tool="html-dom-c2",
+                    stage_number=stage_number,
+                    source_page=1,
+                    quote_snippet=f"{primary_site.label} -> {c2.label}"[:180],
+                    source_locator=c2.source_locator or "script:inline",
+                )
+            )
+        for apk in by_type.get("fichier_apk", []):
+            dl_url = str(apk.attributes.get("download_url") or primary_site.normalized_value)
+            rels.append(
+                ExtractedRelationItem(
+                    relation_type="DISTRIBUE_APPLICATION_APK",
+                    source_entity_type="site_web",
+                    source_normalized_value=dl_url,
+                    target_entity_type="fichier_apk",
+                    target_normalized_value=apk.normalized_value,
+                    suggested_layer="INFRA",
+                    attributes={},
+                    confidence=0.96,
+                    extractor_tool="html-dom-apk",
+                    stage_number=stage_number,
+                    source_page=1,
+                    quote_snippet=f"{dl_url} -> {apk.label}"[:180],
+                    source_locator="body:link",
+                )
+            )
+        for email in by_type.get("adresse_email", []):
+            if email.source_locator.startswith("html:comment") or dom.metadata.forms_count > 0:
+                rels.append(
+                    ExtractedRelationItem(
+                        relation_type="UTILISE_EMAIL",
+                        source_entity_type="site_web",
+                        source_normalized_value=primary_site.normalized_value,
+                        target_entity_type="adresse_email",
+                        target_normalized_value=email.normalized_value,
+                        suggested_layer="OSINT_RAW",
+                        attributes={},
+                        confidence=0.84,
+                        extractor_tool="html-dom-email",
+                        stage_number=stage_number,
+                        source_page=1,
+                        quote_snippet=email.quote_snippet,
+                        source_locator=email.source_locator,
+                    )
+                )
+
+    # JSON-LD Person / Organization relations
+    for idx, block in enumerate(dom.json_ld_objects):
+        btype = str(block.get("@type") or "").lower()
+        name = sanitize_snippet(str(block.get("name") or ""), 200)
+        alt = sanitize_snippet(str(block.get("alternateName") or ""), 120)
+        if btype == "person" and name:
+            if alt.startswith("@"):
+                rels.append(
+                    ExtractedRelationItem(
+                        relation_type="POSSEDE_PROFIL_SOCIAL",
+                        source_entity_type="personne",
+                        source_normalized_value=name,
+                        target_entity_type="compte_social",
+                        target_normalized_value=alt,
+                        suggested_layer="OSINT_RAW",
+                        attributes={},
+                        confidence=0.96,
+                        extractor_tool="html-jsonld-relation",
+                        stage_number=stage_number,
+                        source_page=1,
+                        quote_snippet=f"{name} ({alt})"[:180],
+                        source_locator=f"script:ld+json#{idx}",
+                    )
+                )
+            tel_val = str(block.get("telephone") or "").strip()
+            if tel_val:
+                rels.append(
+                    ExtractedRelationItem(
+                        relation_type="UTILISE_TELEPHONE",
+                        source_entity_type="personne",
+                        source_normalized_value=name,
+                        target_entity_type="telephone",
+                        target_normalized_value=normalize_phone(tel_val),
+                        suggested_layer="OSINT_RAW",
+                        attributes={},
+                        confidence=0.96,
+                        extractor_tool="html-jsonld-relation",
+                        stage_number=stage_number,
+                        source_page=1,
+                        quote_snippet=f"{name} -> {tel_val}"[:180],
+                        source_locator=f"script:ld+json#{idx}",
+                    )
+                )
+            em_val = str(block.get("email") or "").strip().lower()
+            if em_val:
+                rels.append(
+                    ExtractedRelationItem(
+                        relation_type="UTILISE_EMAIL",
+                        source_entity_type="personne",
+                        source_normalized_value=name,
+                        target_entity_type="adresse_email",
+                        target_normalized_value=em_val,
+                        suggested_layer="OSINT_RAW",
+                        attributes={},
+                        confidence=0.96,
+                        extractor_tool="html-jsonld-relation",
+                        stage_number=stage_number,
+                        source_page=1,
+                        quote_snippet=f"{name} -> {em_val}"[:180],
+                        source_locator=f"script:ld+json#{idx}",
+                    )
+                )
+        elif btype == "organization" and name:
+            em_val = str(block.get("email") or "").strip().lower()
+            if em_val:
+                rels.append(
+                    ExtractedRelationItem(
+                        relation_type="UTILISE_EMAIL",
+                        source_entity_type="entreprise",
+                        source_normalized_value=name,
+                        target_entity_type="adresse_email",
+                        target_normalized_value=em_val,
+                        suggested_layer="OSINT_RAW",
+                        attributes={},
+                        confidence=0.95,
+                        extractor_tool="html-jsonld-relation",
+                        stage_number=stage_number,
+                        source_page=1,
+                        quote_snippet=f"{name} -> {em_val}"[:180],
+                        source_locator=f"script:ld+json#{idx}",
+                    )
+                )
+
+    # <article> posts -> author compte_social & mentioned phones
+    for post in by_type.get("publication_sociale", []):
+        author = str(post.attributes.get("auteur") or "").strip()
+        if author.startswith("@"):
+            rels.append(
+                ExtractedRelationItem(
+                    relation_type="PUBLIE_ANNONCE_SCAM",
+                    source_entity_type="compte_social",
+                    source_normalized_value=author,
+                    target_entity_type="publication_sociale",
+                    target_normalized_value=post.normalized_value,
+                    suggested_layer="OSINT_RAW",
+                    attributes={},
+                    confidence=0.94,
+                    extractor_tool="html-article-relation",
+                    stage_number=stage_number,
+                    source_page=1,
+                    quote_snippet=post.quote_snippet,
+                    source_locator=post.source_locator,
+                )
+            )
+        post_text = str(post.attributes.get("contenu_texte") or "")
+        for ph in by_type.get("telephone", []):
+            digits = re.sub(r"\D", "", ph.normalized_value)[-8:]
+            if digits and digits in re.sub(r"\D", "", post_text):
+                rels.append(
+                    ExtractedRelationItem(
+                        relation_type="MENTIONNE_TELEPHONE",
+                        source_entity_type="publication_sociale",
+                        source_normalized_value=post.normalized_value,
+                        target_entity_type="telephone",
+                        target_normalized_value=ph.normalized_value,
+                        suggested_layer="OSINT_RAW",
+                        attributes={},
+                        confidence=0.92,
+                        extractor_tool="html-article-relation",
+                        stage_number=stage_number,
+                        source_page=1,
+                        quote_snippet=post.quote_snippet,
+                        source_locator=post.source_locator,
+                    )
+                )
+
+    # Telegram channel -> message_chat & admin compte_social
+    channels = by_type.get("canal_telegram", [])
+    messages = by_type.get("message_chat", [])
+    if channels and messages:
+        ch = channels[0]
+        for msg in messages:
+            rels.append(
+                ExtractedRelationItem(
+                    relation_type="HEBERGE_MESSAGES",
+                    source_entity_type="canal_telegram",
+                    source_normalized_value=ch.normalized_value,
+                    target_entity_type="message_chat",
+                    target_normalized_value=msg.normalized_value,
+                    suggested_layer="OSINT_RAW",
+                    attributes={},
+                    confidence=0.95,
+                    extractor_tool="html-telegram-relation",
+                    stage_number=stage_number,
+                    source_page=1,
+                    quote_snippet=msg.quote_snippet,
+                    source_locator=msg.source_locator,
+                )
+            )
+    if channels:
+        for cs in by_type.get("compte_social", []):
+            if "admin" in cs.quote_snippet.lower() or "admin" in dom.visible_text.lower():
+                rels.append(
+                    ExtractedRelationItem(
+                        relation_type="ADMINISTRE_CANAL",
+                        source_entity_type="compte_social",
+                        source_normalized_value=cs.normalized_value,
+                        target_entity_type="canal_telegram",
+                        target_normalized_value=channels[0].normalized_value,
+                        suggested_layer="OSINT_RAW",
+                        attributes={},
+                        confidence=0.89,
+                        extractor_tool="html-telegram-relation",
+                        stage_number=stage_number,
+                        source_page=1,
+                        quote_snippet=f"{cs.normalized_value} -> {channels[0].normalized_value}",
+                        source_locator="body:text",
+                    )
+                )
+
+    return fuse_relations(rels)
+
+
 def extract_html_mode1_quick(html_bytes: bytes) -> HtmlExtractionStageOutput:
     """Mode 1 (Analyse Rapide): offline DOM metadata, trackers, forms, and identifiers."""
     dom = _parse_html_dom(html_bytes)
+    segments = _build_text_segments(dom)
+    locations, per_page_locs = extract_location_attributes(segments)
     structural = _extract_trackers_and_forms(dom, stage_number=1)
     deterministic = extract_deterministic_identifiers(
-        segments=_build_text_segments(dom),
+        segments=segments,
         stage_number=1,
         include_transactions=False,
         extract_bare_at_as_telegram=False,
         ipv4_as_c2_when_script=True,
     )
-    candidates = fuse_candidates([*structural, *deterministic])
+    candidates = enrich_candidates_with_locations(
+        fuse_candidates([*structural, *deterministic]), per_page_locs
+    )
+    relations = _extract_html_dom_relations(dom, candidates, stage_number=1)
     return HtmlExtractionStageOutput(
         metadata=dom.metadata,
         stage_number=1,
         candidates=candidates,
+        relations=relations,
         summary=build_extraction_summary(
             mode="quick",
             stage=None,
             candidates=candidates,
+            relations=relations,
+            locations=locations,
             extra={
                 "forms_count": dom.metadata.forms_count,
                 "scripts_count": dom.metadata.scripts_count,
                 "json_ld_blocks": dom.metadata.json_ld_blocks,
                 "embedded_images": dom.metadata.embedded_images_count,
+                "camel_ner_device": get_camel_ner_device(),
+                "wikineural_ner_device": get_wikineural_ner_device(),
             },
         ),
     )
@@ -852,7 +1146,10 @@ def extract_html_mode2_stage(html_bytes: bytes, stage: int) -> HtmlExtractionSta
         raise ValueError(f"Unsupported Mode 2 stage: {stage} (expected 1, 2, or 3)")
 
     dom = _parse_html_dom(html_bytes)
+    segments = _build_text_segments(dom)
+    locations, per_page_locs = extract_location_attributes(segments)
     candidates: list[ExtractedCandidateItem] = []
+    relations: list[ExtractedRelationItem] = []
 
     if stage == 1:
         structural = _extract_trackers_and_forms(dom, stage_number=1)
@@ -889,19 +1186,25 @@ def extract_html_mode2_stage(html_bytes: bytes, stage: int) -> HtmlExtractionSta
                     source_locator=f"body:img#{idx - 1}",
                 )
             )
-        candidates = fuse_candidates([*structural, *script_net, *img_items])
+        candidates = enrich_candidates_with_locations(
+            fuse_candidates([*structural, *script_net, *img_items]), per_page_locs
+        )
+        relations = _extract_html_dom_relations(dom, candidates, stage_number=1)
     elif stage == 2:
         json_ld = _extract_json_ld_candidates(dom, stage_number=2, include_stage3_types=False)
         tables = _extract_html_tables(dom, stage_number=2)
         social = _extract_social_handles(dom, stage_number=2)
         deterministic = extract_deterministic_identifiers(
-            segments=_build_text_segments(dom),
+            segments=segments,
             stage_number=2,
             include_transactions=True,
             extract_bare_at_as_telegram=False,
             ipv4_as_c2_when_script=True,
         )
-        candidates = fuse_candidates([*json_ld, *tables, *social, *deterministic])
+        candidates = enrich_candidates_with_locations(
+            fuse_candidates([*json_ld, *tables, *social, *deterministic]), per_page_locs
+        )
+        relations = _extract_html_dom_relations(dom, candidates, stage_number=2)
     else:
         json_ld_entities = _extract_json_ld_candidates(
             dom, stage_number=3, include_stage3_types=True
@@ -911,22 +1214,48 @@ def extract_html_mode2_stage(html_bytes: bytes, stage: int) -> HtmlExtractionSta
             segments=[(1, "body:text", dom.visible_text)],
             stage_number=3,
         )
-        candidates = fuse_candidates([*json_ld_entities, *posts_msgs, *contextual])
+        stage3_entities = enrich_candidates_with_locations(
+            fuse_candidates([*json_ld_entities, *posts_msgs, *contextual]), per_page_locs
+        )
+        candidates = stage3_entities
+
+        # Combine prior stages' entities for complete Stage 3 relation linking
+        s1_structural = _extract_trackers_and_forms(dom, stage_number=1)
+        s2_json_ld = _extract_json_ld_candidates(dom, stage_number=2, include_stage3_types=False)
+        s2_tables = _extract_html_tables(dom, stage_number=2)
+        s2_social = _extract_social_handles(dom, stage_number=2)
+        s2_det = extract_deterministic_identifiers(
+            segments=segments,
+            stage_number=2,
+            include_transactions=True,
+            extract_bare_at_as_telegram=False,
+            ipv4_as_c2_when_script=True,
+        )
+        all_entities = fuse_candidates(
+            [*s1_structural, *s2_json_ld, *s2_tables, *s2_social, *s2_det, *stage3_entities]
+        )
+        relations = _extract_html_dom_relations(dom, all_entities, stage_number=3)
 
     return HtmlExtractionStageOutput(
         metadata=dom.metadata,
         stage_number=stage,
         candidates=candidates,
+        relations=relations,
         summary=build_extraction_summary(
             mode="step_by_step",
             stage=stage,
             candidates=candidates,
+            relations=relations,
+            locations=locations,
             extra={
                 "forms_count": dom.metadata.forms_count,
                 "scripts_count": dom.metadata.scripts_count,
                 "json_ld_blocks": dom.metadata.json_ld_blocks,
                 "embedded_images": dom.metadata.embedded_images_count,
                 "camel_ner_available": resolve_camel_model_dir() is not None,
+                "camel_ner_device": get_camel_ner_device(),
+                "wikineural_ner_available": resolve_wikineural_model_dir() is not None,
+                "wikineural_ner_device": get_wikineural_ner_device(),
             },
         ),
     )

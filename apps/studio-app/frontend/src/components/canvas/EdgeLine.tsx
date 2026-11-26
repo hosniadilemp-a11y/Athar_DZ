@@ -82,6 +82,7 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
 
   const color = LAYER_EDGE_COLORS[edge.layer] || 'var(--color-border-default)';
   const isHypothesis = edge.layer === 'HYPOTHESIS';
+  const isCandidatePreview = Boolean(edge.properties?.__is_candidate_edge);
   const isMediated = Boolean(edge.properties?.is_mediated);
   const mediatedCount = (edge.properties?.mediated_count as number) || 0;
   const intermediateNodeIds = (edge.properties?.intermediate_node_ids as string[]) || [];
@@ -171,8 +172,20 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
         y2={endY}
         stroke={isSelected ? 'var(--color-accent-primary)' : isHovered ? 'var(--color-accent-text)' : color}
         strokeWidth={finalStrokeWidth}
-        strokeDasharray={isHypothesis ? '3,3' : undefined}
-        strokeOpacity={isSelected ? 0.95 : isHovered ? 0.85 : 0.55}
+        strokeDasharray={isCandidatePreview ? '6,4' : isHypothesis ? '3,3' : undefined}
+        strokeOpacity={
+          isCandidatePreview
+            ? isSelected
+              ? 0.8
+              : isHovered
+              ? 0.65
+              : 0.4
+            : isSelected
+            ? 0.95
+            : isHovered
+            ? 0.9
+            : 0.78
+        }
         markerEnd={`url(#arrow-${edge.layer})`}
         style={{
           transition: 'stroke-width 0.15s ease, stroke 0.15s ease, stroke-opacity 0.15s ease',

@@ -17,19 +17,28 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from app.core.config import get_settings
-from app.domain.registry import LayerId, validate_relation
+from app.domain.registry import NODE_TYPES, LayerId, validate_relation
 from app.schemas.edge import EdgeCreate, EdgeResponse
 from app.schemas.ingestion import (
+    CandidateUpdateRequest,
+    CaseIngestionSummaryResponse,
     EvidenceUploadResponse,
     ExtractedCandidateResponse,
+    ExtractedRelationResponse,
     ExtractionRunResponse,
     NodeCandidatesResponse,
+    RelationUpdateRequest,
     ValidateCandidatesRequest,
     ValidateCandidatesResponse,
+    ValidateRelationsRequest,
+    ValidateRelationsResponse,
 )
 from app.schemas.node import NodeCreate, NodeResponse
 from app.services.audit_service import log_audit_event
-from app.services.extraction.common_extractors import ExtractedCandidateItem
+from app.services.extraction.common_extractors import (
+    ExtractedCandidateItem,
+    ExtractedRelationItem,
+)
 from app.services.extraction.html_extractor import (
     extract_html_metadata,
     extract_html_mode1_quick,
@@ -330,6 +339,14 @@ async def upload_evidence_pdf(
     )
 
 
+def _normalize_match_token(raw: str) -> str:
+    """Compact token for resilient DB duplicate matching (strips spaces and punctuation)."""
+    s = raw.strip().lower()
+    if s.startswith("rip "):
+        s = s[4:].strip()
+    return "".join(ch for ch in s if ch.isalnum() or ch in ("+", "@", "."))
+
+
 async def _find_existing_case_node_matches(
     engine: AsyncEngine, case_id: uuid.UUID
 ) -> dict[str, uuid.UUID]:
@@ -345,28 +362,48 @@ async def _find_existing_case_node_matches(
         rows = res.fetchall()
 
     lookup: dict[str, uuid.UUID] = {}
+
+    def register(val: object, nid: uuid.UUID) -> None:
+        if not isinstance(val, str):
+            return
+        cleaned = val.strip().lower()
+        if not cleaned:
+            return
+        lookup.setdefault(cleaned, nid)
+        compact = _normalize_match_token(cleaned)
+        if compact and len(compact) >= 4:
+            lookup.setdefault(compact, nid)
+
     for nid, label, props_raw in rows:
-        lbl_key = str(label or "").strip().lower()
-        if lbl_key and lbl_key not in lookup:
-            lookup[lbl_key] = nid
+        register(label, nid)
         props = _parse_jsonb(props_raw, {})
         for k in (
             "numero_e164",
+            "msisdn",
+            "numero",
             "rip",
+            "numero_rip_rib",
             "ccp",
             "email",
+            "adresse_email",
             "url",
+            "url_site",
+            "url_profil",
             "nom_domaine",
             "handle",
+            "identifiant",
+            "identifiant_compte",
             "identifiant_unique",
             "immatriculation",
+            "plaque",
             "imei",
             "ip_address",
+            "adresse_ip",
             "raison_sociale",
+            "nom_fr",
+            "code_gab",
         ):
-            val = props.get(k)
-            if isinstance(val, str) and val.strip():
-                lookup[val.strip().lower()] = nid
+            register(props.get(k), nid)
     return lookup
 
 
@@ -397,8 +434,11 @@ async def _persist_stage_candidates(
             if dedup_key in existing_keys:
                 continue
             existing_keys.add(dedup_key)
-            matched_id = match_map.get(item.normalized_value.lower()) or match_map.get(
-                item.label.lower()
+            matched_id = (
+                match_map.get(item.normalized_value.lower())
+                or match_map.get(_normalize_match_token(item.normalized_value))
+                or match_map.get(item.label.lower())
+                or match_map.get(_normalize_match_token(item.label))
             )
             if matched_id == source_node_id:
                 matched_id = None
@@ -456,6 +496,117 @@ async def _count_pending_candidates(
             {"cid": case_id, "nid": source_node_id},
         )
         return int(res.scalar() or 0)
+
+
+async def _count_pending_relations(
+    engine: AsyncEngine, case_id: uuid.UUID, source_node_id: uuid.UUID
+) -> int:
+    async with engine.connect() as conn:
+        res = await conn.execute(
+            text(
+                "SELECT count(*) FROM extracted_relation_candidates "
+                "WHERE case_id = :cid AND source_node_id = :nid AND validation_status = 'PENDING';"
+            ),
+            {"cid": case_id, "nid": source_node_id},
+        )
+        return int(res.scalar() or 0)
+
+
+async def _persist_stage_relations(
+    engine: AsyncEngine,
+    case_id: uuid.UUID,
+    run_id: uuid.UUID,
+    source_node_id: uuid.UUID,
+    relations: list[ExtractedRelationItem],
+) -> int:
+    """Persist staged semantic relation candidates linking staged entity candidates."""
+    if not relations:
+        return 0
+
+    async with engine.connect() as conn:
+        cand_res = await conn.execute(
+            text(
+                "SELECT id, entity_type, lower(normalized_value), validation_status "
+                "FROM extracted_candidates WHERE case_id = :cid AND source_node_id = :nid;"
+            ),
+            {"cid": case_id, "nid": source_node_id},
+        )
+        cand_map: dict[tuple[str, str], uuid.UUID] = {}
+        for cid, etype, nval, status in cand_res.fetchall():
+            if str(status) == "REJECTED":
+                continue
+            cand_map[(str(etype), str(nval))] = cid
+
+        rel_res = await conn.execute(
+            text(
+                "SELECT relation_type, source_candidate_id, target_candidate_id "
+                "FROM extracted_relation_candidates "
+                "WHERE case_id = :cid AND source_node_id = :nid;"
+            ),
+            {"cid": case_id, "nid": source_node_id},
+        )
+        existing_rels = {(str(r[0]), r[1], r[2]) for r in rel_res.fetchall()}
+
+    inserted = 0
+    async with engine.begin() as conn:
+        for rel in relations:
+            src_cid = cand_map.get((rel.source_entity_type, rel.source_normalized_value.lower()))
+            tgt_cid = cand_map.get((rel.target_entity_type, rel.target_normalized_value.lower()))
+            if src_cid is None or tgt_cid is None or src_cid == tgt_cid:
+                continue
+            dedup_key = (rel.relation_type, src_cid, tgt_cid)
+            if dedup_key in existing_rels:
+                continue
+            existing_rels.add(dedup_key)
+
+            await conn.execute(
+                text(
+                    """
+                    INSERT INTO extracted_relation_candidates (
+                        id, case_id, run_id, source_node_id, relation_type,
+                        source_entity_type, source_normalized_value,
+                        target_entity_type, target_normalized_value,
+                        source_candidate_id, target_candidate_id,
+                        suggested_layer, attributes_json, confidence,
+                        extractor_tool, stage_number, source_page,
+                        source_locator, quote_snippet, validation_status,
+                        blackboard_sync_status
+                    ) VALUES (
+                        :id, :cid, :rid, :nid, :rtype,
+                        :stype, :sval,
+                        :ttype, :tval,
+                        :scid, :tcid,
+                        :slayer, CAST(:attrs AS JSONB), :conf,
+                        :tool, :stage, :page,
+                        :locator, :quote, 'PENDING',
+                        'NOT_PUBLISHED'
+                    );
+                    """
+                ),
+                {
+                    "id": uuid.uuid4(),
+                    "cid": case_id,
+                    "rid": run_id,
+                    "nid": source_node_id,
+                    "rtype": rel.relation_type,
+                    "stype": rel.source_entity_type,
+                    "sval": rel.source_normalized_value,
+                    "ttype": rel.target_entity_type,
+                    "tval": rel.target_normalized_value,
+                    "scid": src_cid,
+                    "tcid": tgt_cid,
+                    "slayer": rel.suggested_layer,
+                    "attrs": json.dumps(rel.attributes),
+                    "conf": rel.confidence,
+                    "tool": rel.extractor_tool,
+                    "stage": rel.stage_number,
+                    "page": rel.source_page,
+                    "locator": rel.source_locator,
+                    "quote": rel.quote_snippet,
+                },
+            )
+            inserted += 1
+    return inserted
 
 
 async def _load_evidence_bytes_for_node(
@@ -571,7 +722,7 @@ async def start_evidence_extraction(
         total_stages = 1
         status = "COMPLETED"
         progress = 100
-        stage_label = f"Extraction rapide terminee ({len(output.candidates)} candidats)"
+        stage_label = f"Extraction rapide terminée ({len(output.candidates)} candidat(s))"
         inv_status = "saturated"
         completed_at: datetime | None = datetime.now(timezone.utc)
     else:
@@ -579,9 +730,9 @@ async def start_evidence_extraction(
         status = "WAITING_HUMAN"
         progress = 33
         stage_label = (
-            "Etape 1/3 terminee (DOM, Traceurs & Images) — en attente"
+            "Étape 1/3 terminée (DOM, Traceurs & Images) — en attente"
             if kind == "html"
-            else "Etape 1/3 terminee (Metadonnees & Images) — en attente"
+            else "Étape 1/3 terminée (Métadonnées & Images) — en attente"
         )
         inv_status = "active_investigation"
         completed_at = None
@@ -614,9 +765,13 @@ async def start_evidence_extraction(
         )
 
     await _persist_stage_candidates(engine, case_id, run_id, node_id, output.candidates)
+    await _persist_stage_relations(engine, case_id, run_id, node_id, output.relations)
     pending_count = await _count_pending_candidates(engine, case_id, node_id)
+    pending_rel_count = await _count_pending_relations(engine, case_id, node_id)
 
     meta_dict = output.metadata.to_dict()
+    if output.summary.get("extracted_locations"):
+        meta_dict["extracted_locations"] = output.summary["extracted_locations"]
     meta_prop_key = "html_metadata" if kind == "html" else "pdf_metadata"
     await _merge_node_properties(
         engine,
@@ -629,6 +784,7 @@ async def start_evidence_extraction(
             "analysis_progress": progress,
             "analysis_stage": stage_label,
             "pending_candidates_count": pending_count,
+            "pending_relations_count": pending_rel_count,
             "evidence_metadata": meta_dict,
             meta_prop_key: meta_dict,
         },
@@ -700,19 +856,21 @@ async def advance_evidence_stage(
     output, kind = _run_extractor_for_mime(file_bytes, mime_type, "step_by_step", stage=next_stage)
 
     await _persist_stage_candidates(engine, case_id, run_id, source_node_id, output.candidates)
+    await _persist_stage_relations(engine, case_id, run_id, source_node_id, output.relations)
     pending_count = await _count_pending_candidates(engine, case_id, source_node_id)
+    pending_rel_count = await _count_pending_relations(engine, case_id, source_node_id)
 
     is_done = next_stage >= total_stages
     new_status = "COMPLETED" if is_done else "WAITING_HUMAN"
     completed_at = datetime.now(timezone.utc) if is_done else None
     progress = 100 if is_done else 66
     stage_label = (
-        f"Analyse etape par etape terminee ({pending_count} candidats en attente)"
+        f"Analyse étape par étape terminée ({pending_count} candidat(s) en attente)"
         if is_done
         else (
-            "Etape 2/3 terminee (JSON-LD, Tableaux & Identifiants) — en attente"
+            "Étape 2/3 terminée (JSON-LD, Tableaux & Identifiants) — en attente"
             if kind == "html"
-            else "Etape 2/3 terminee (Texte, Tableaux & Identifiants) — en attente"
+            else "Étape 2/3 terminée (Texte, Tableaux & Identifiants) — en attente"
         )
     )
     inv_status = "saturated" if is_done else "active_investigation"
@@ -744,6 +902,7 @@ async def advance_evidence_stage(
             "analysis_progress": progress,
             "analysis_stage": stage_label,
             "pending_candidates_count": pending_count,
+            "pending_relations_count": pending_rel_count,
         },
     )
 
@@ -769,10 +928,43 @@ async def advance_evidence_stage(
 advance_pdf_extraction_stage = advance_evidence_stage
 
 
+def _row_to_relation(row: Any, labels_by_id: dict[uuid.UUID, str]) -> ExtractedRelationResponse:
+    src_cid = row[9]
+    tgt_cid = row[10]
+    return ExtractedRelationResponse(
+        id=row[0],
+        case_id=row[1],
+        run_id=row[2],
+        source_node_id=row[3],
+        relation_type=str(row[4]),
+        source_entity_type=str(row[5]),
+        source_normalized_value=str(row[6]),
+        target_entity_type=str(row[7]),
+        target_normalized_value=str(row[8]),
+        source_candidate_id=src_cid,
+        target_candidate_id=tgt_cid,
+        source_label=labels_by_id.get(src_cid, str(row[6])),
+        target_label=labels_by_id.get(tgt_cid, str(row[8])),
+        suggested_layer=str(row[11]),
+        attributes=dict(_parse_jsonb(row[12], {})),
+        confidence=float(row[13]),
+        extractor_tool=str(row[14]),
+        stage_number=int(row[15]),
+        source_page=int(row[16]),
+        source_locator=str(row[17] or ""),
+        quote_snippet=str(row[18]),
+        validation_status=str(row[19]),
+        promoted_edge_id=row[20],
+        validated_by=row[21],
+        validated_at=row[22],
+        blackboard_sync_status=str(row[23]),
+    )
+
+
 async def get_node_candidates(
     engine: AsyncEngine, case_id: uuid.UUID, source_node_id: uuid.UUID
 ) -> NodeCandidatesResponse:
-    """Return latest extraction run and all staged candidates for an evidence node."""
+    """Return latest extraction run and all staged entity & relation candidates for a node."""
     await _ensure_evidence_node(engine, case_id, source_node_id)
 
     async with engine.connect() as conn:
@@ -801,12 +993,38 @@ async def get_node_candidates(
         )
         cand_rows = cand_res.fetchall()
 
+        rel_res = await conn.execute(
+            text(
+                "SELECT id, case_id, run_id, source_node_id, relation_type, "
+                "source_entity_type, source_normalized_value, target_entity_type, "
+                "target_normalized_value, source_candidate_id, target_candidate_id, "
+                "suggested_layer, attributes_json, confidence, extractor_tool, "
+                "stage_number, source_page, source_locator, quote_snippet, "
+                "validation_status, promoted_edge_id, validated_by, validated_at, "
+                "blackboard_sync_status "
+                "FROM extracted_relation_candidates "
+                "WHERE case_id = :cid AND source_node_id = :nid "
+                "ORDER BY stage_number ASC, source_page ASC, created_at ASC;"
+            ),
+            {"cid": case_id, "nid": source_node_id},
+        )
+        rel_rows = rel_res.fetchall()
+
     candidates = [_row_to_candidate(r) for r in cand_rows]
+    labels_by_id = {c.id: c.label for c in candidates}
+    relations = [_row_to_relation(r, labels_by_id) for r in rel_rows]
+
     counts = {"pending": 0, "validated": 0, "merged": 0, "rejected": 0, "total": len(candidates)}
     for c in candidates:
         key = c.validation_status.lower()
         if key in counts:
             counts[key] += 1
+
+    rel_counts = {"pending": 0, "validated": 0, "rejected": 0, "total": len(relations)}
+    for rel in relations:
+        rkey = rel.validation_status.lower()
+        if rkey in rel_counts:
+            rel_counts[rkey] += 1
 
     return NodeCandidatesResponse(
         case_id=case_id,
@@ -814,6 +1032,89 @@ async def get_node_candidates(
         latest_run=_row_to_run(run_row) if run_row else None,
         candidates=candidates,
         counts=counts,
+        relations=relations,
+        relation_counts=rel_counts,
+    )
+
+
+async def get_case_ingestion_summary(
+    engine: AsyncEngine, case_id: uuid.UUID
+) -> CaseIngestionSummaryResponse:
+    """Return all latest extraction runs and staged candidates/relations across an active case."""
+    await get_case(engine, case_id)
+
+    async with engine.connect() as conn:
+        run_res = await conn.execute(
+            text(
+                "SELECT DISTINCT ON (r.source_node_id) "
+                "r.id, r.case_id, r.source_node_id, r.mode, r.current_stage, r.total_stages, "
+                "r.status, r.selected_tools, r.summary_json, r.started_at, r.completed_at "
+                "FROM extraction_runs r "
+                "JOIN nodes n ON n.id = r.source_node_id AND n.case_id = r.case_id "
+                "WHERE r.case_id = :cid AND n.deleted_at IS NULL "
+                "ORDER BY r.source_node_id, r.started_at DESC;"
+            ),
+            {"cid": case_id},
+        )
+        run_rows = run_res.fetchall()
+
+        cand_res = await conn.execute(
+            text(
+                "SELECT c.id, c.case_id, c.run_id, c.source_node_id, c.entity_type, "
+                "c.suggested_layer, "
+                "c.label, c.normalized_value, c.attributes_json, c.confidence, c.extractor_tool, "
+                "c.stage_number, c.source_page, c.source_locator, c.quote_snippet, "
+                "c.matched_existing_node_id, c.validation_status, c.promoted_node_id, "
+                "c.validated_by, c.validated_at, c.blackboard_sync_status "
+                "FROM extracted_candidates c "
+                "JOIN nodes n ON n.id = c.source_node_id AND n.case_id = c.case_id "
+                "WHERE c.case_id = :cid AND n.deleted_at IS NULL "
+                "ORDER BY c.stage_number ASC, c.source_page ASC, c.created_at ASC;"
+            ),
+            {"cid": case_id},
+        )
+        cand_rows = cand_res.fetchall()
+
+        rel_res = await conn.execute(
+            text(
+                "SELECT r.id, r.case_id, r.run_id, r.source_node_id, r.relation_type, "
+                "r.source_entity_type, r.source_normalized_value, r.target_entity_type, "
+                "r.target_normalized_value, r.source_candidate_id, r.target_candidate_id, "
+                "r.suggested_layer, r.attributes_json, r.confidence, r.extractor_tool, "
+                "r.stage_number, r.source_page, r.source_locator, r.quote_snippet, "
+                "r.validation_status, r.promoted_edge_id, r.validated_by, r.validated_at, "
+                "r.blackboard_sync_status "
+                "FROM extracted_relation_candidates r "
+                "JOIN nodes n ON n.id = r.source_node_id AND n.case_id = r.case_id "
+                "WHERE r.case_id = :cid AND n.deleted_at IS NULL "
+                "ORDER BY r.stage_number ASC, r.source_page ASC, r.created_at ASC;"
+            ),
+            {"cid": case_id},
+        )
+        rel_rows = rel_res.fetchall()
+
+    runs_by_node: dict[str, ExtractionRunResponse] = {}
+    for row in run_rows:
+        run_obj = _row_to_run(row)
+        runs_by_node[str(run_obj.source_node_id)] = run_obj
+
+    candidates_by_node: dict[str, list[ExtractedCandidateResponse]] = {}
+    labels_by_id: dict[uuid.UUID, str] = {}
+    for row in cand_rows:
+        cand_obj = _row_to_candidate(row)
+        labels_by_id[cand_obj.id] = cand_obj.label
+        candidates_by_node.setdefault(str(cand_obj.source_node_id), []).append(cand_obj)
+
+    relations_by_node: dict[str, list[ExtractedRelationResponse]] = {}
+    for row in rel_rows:
+        rel_obj = _row_to_relation(row, labels_by_id)
+        relations_by_node.setdefault(str(rel_obj.source_node_id), []).append(rel_obj)
+
+    return CaseIngestionSummaryResponse(
+        case_id=case_id,
+        runs_by_node_id=runs_by_node,
+        candidates_by_node_id=candidates_by_node,
+        relations_by_node_id=relations_by_node,
     )
 
 
@@ -842,6 +1143,8 @@ async def _create_extrait_de_edge_if_absent(
             return None
 
     is_canonical_ok, _ = validate_relation(extracted_node_type, "EXTRAIT_DE", source_pdf_type)
+    # D20: Provenance edge linking a validated entity back to its dragged source evidence
+    # is automatically 100% validated (VERIFIED, confidence=1.0).
     return await create_edge(
         engine=engine,
         neo4j_driver=neo4j_driver,
@@ -850,13 +1153,92 @@ async def _create_extrait_de_edge_if_absent(
             type="EXTRAIT_DE",
             source_id=extracted_node_id,
             target_id=source_pdf_id,
-            layer=edge_layer,
-            confidence=confidence,
+            layer=LayerId.VERIFIED.value,
+            confidence=1.0,
             allow_custom_relation=not is_canonical_ok,
             properties=props,
         ),
         actor_id=actor_id,
     )
+
+
+async def _promote_relation_to_graph_edge(
+    engine: AsyncEngine,
+    neo4j_driver: AsyncDriver,
+    case_id: uuid.UUID,
+    source_evidence_node_id: uuid.UUID,
+    rel: ExtractedRelationResponse,
+    src_graph_id: uuid.UUID,
+    src_graph_type: str,
+    tgt_graph_id: uuid.UUID,
+    tgt_graph_type: str,
+    effective_layer: LayerId,
+    actor_id: str,
+    now: datetime,
+    created_edges: list[EdgeResponse],
+) -> None:
+    """Create canonical graph edge (if absent) and mark staged relation VALIDATED."""
+    async with engine.connect() as conn:
+        dup_res = await conn.execute(
+            text(
+                "SELECT id FROM edges WHERE case_id = :cid AND source_id = :src "
+                "AND target_id = :tgt AND type = :rtype AND deleted_at IS NULL;"
+            ),
+            {
+                "cid": case_id,
+                "src": src_graph_id,
+                "tgt": tgt_graph_id,
+                "rtype": rel.relation_type,
+            },
+        )
+        existing_edge = dup_res.fetchone()
+
+    if existing_edge:
+        promoted_edge_id: uuid.UUID = existing_edge[0]
+    else:
+        is_canon_ok, _ = validate_relation(src_graph_type, rel.relation_type, tgt_graph_type)
+        edge = await create_edge(
+            engine=engine,
+            neo4j_driver=neo4j_driver,
+            case_id=case_id,
+            payload=EdgeCreate(
+                type=rel.relation_type,
+                source_id=src_graph_id,
+                target_id=tgt_graph_id,
+                layer=effective_layer.value,
+                confidence=rel.confidence,
+                allow_custom_relation=not is_canon_ok,
+                properties={
+                    **rel.attributes,
+                    "source_evidence_node_id": str(source_evidence_node_id),
+                    "extractor_tool": rel.extractor_tool,
+                    "source_page": rel.source_page,
+                    "source_locator": rel.source_locator,
+                    "quote_snippet": rel.quote_snippet,
+                    "blackboard_sync_status": "READY_FOR_BLACKBOARD",
+                },
+            ),
+            actor_id=actor_id,
+        )
+        created_edges.append(edge)
+        promoted_edge_id = edge.id
+
+    async with engine.begin() as conn:
+        await conn.execute(
+            text(
+                "UPDATE extracted_relation_candidates SET validation_status = 'VALIDATED', "
+                "promoted_edge_id = :peid, validated_by = :actor, validated_at = :now, "
+                "blackboard_sync_status = 'READY_FOR_BLACKBOARD' "
+                "WHERE id = :rid AND case_id = :cid;"
+            ),
+            {
+                "peid": promoted_edge_id,
+                "actor": actor_id,
+                "now": now,
+                "rid": rel.id,
+                "cid": case_id,
+            },
+        )
 
 
 async def validate_candidates(
@@ -869,15 +1251,6 @@ async def validate_candidates(
 ) -> ValidateCandidatesResponse:
     """Validate one-by-one, merge, reject, or select-all bulk validate candidates."""
     source_node_type, _ = await _ensure_evidence_node(engine, case_id, source_node_id)
-
-    if payload.target_layer == LayerId.VERIFIED and len(payload.reason.strip()) < 5:
-        raise HTTPException(
-            status_code=400,
-            detail={
-                "code": "VERIFIED_REASON_REQUIRED",
-                "message": "Promoting to VERIFIED requires a judicial reason (>= 5 chars).",
-            },
-        )
 
     if not payload.select_all and not payload.candidate_ids:
         raise HTTPException(
@@ -952,6 +1325,15 @@ async def validate_candidates(
                     ),
                     {"actor": actor_id, "now": now, "cid_row": cand.id, "cid": case_id},
                 )
+                await conn.execute(
+                    text(
+                        "UPDATE extracted_relation_candidates SET validation_status = 'REJECTED', "
+                        "validated_by = :actor, validated_at = :now "
+                        "WHERE case_id = :cid AND validation_status = 'PENDING' "
+                        "AND (source_candidate_id = :cid_row OR target_candidate_id = :cid_row);"
+                    ),
+                    {"actor": actor_id, "now": now, "cid_row": cand.id, "cid": case_id},
+                )
             updated_ids.append(cand.id)
             continue
 
@@ -983,7 +1365,7 @@ async def validate_candidates(
                 engine, neo4j_driver, case_id,
                 cand.matched_existing_node_id, str(m_row[0]),
                 source_node_id, source_node_type,
-                actor_id, str(m_row[1]), cand.confidence,
+                actor_id, LayerId.VERIFIED.value, 1.0,
                 {
                     "extractor_tool": cand.extractor_tool,
                     "source_page": cand.source_page,
@@ -1014,9 +1396,12 @@ async def validate_candidates(
             continue
 
         # Action == "validate"
-        effective_layer = payload.target_layer or LayerId(cand.suggested_layer)
-        if effective_layer == LayerId.VERIFIED and len(payload.reason.strip()) < 5:
-            effective_layer = LayerId.OSINT_RAW
+        if payload.target_layer is not None:
+            effective_layer = payload.target_layer
+        elif cand.confidence >= 1.0:
+            effective_layer = LayerId.VERIFIED
+        else:
+            effective_layer = LayerId(cand.suggested_layer)
 
         provenance_prefix = "HTML_STATIC" if evidence_mime == "text/html" else "PDF_STATIC"
         node_props = {
@@ -1036,7 +1421,9 @@ async def validate_candidates(
             payload=NodeCreate(
                 type=cand.entity_type,
                 label=cand.label,
-                confidence=cand.confidence,
+                confidence=(
+                    cand.confidence if cand.attributes.get("confidence_user_modified") else 1.0
+                ),
                 properties=node_props,
             ),
             actor_id=actor_id,
@@ -1049,7 +1436,7 @@ async def validate_candidates(
             engine, neo4j_driver, case_id,
             new_node.id, new_node.type,
             source_node_id, source_node_type,
-            actor_id, effective_layer.value, cand.confidence,
+            actor_id, LayerId.VERIFIED.value, 1.0,
             {
                 "extractor_tool": cand.extractor_tool,
                 "source_page": cand.source_page,
@@ -1079,12 +1466,16 @@ async def validate_candidates(
         updated_ids.append(cand.id)
 
     pending_remaining = await _count_pending_candidates(engine, case_id, source_node_id)
+    pending_rel_remaining = await _count_pending_relations(engine, case_id, source_node_id)
     await _merge_node_properties(
         engine,
         neo4j_driver,
         case_id,
         source_node_id,
-        {"pending_candidates_count": pending_remaining},
+        {
+            "pending_candidates_count": pending_remaining,
+            "pending_relations_count": pending_rel_remaining,
+        },
     )
 
     if updated_ids:
@@ -1115,4 +1506,621 @@ async def validate_candidates(
         created_edges=created_edges,
         updated_candidates=updated_candidates,
         pending_remaining=pending_remaining,
+    )
+
+
+async def update_extracted_candidate(
+    engine: AsyncEngine,
+    case_id: uuid.UUID,
+    candidate_id: uuid.UUID,
+    payload: CandidateUpdateRequest,
+    actor_id: str,
+) -> NodeCandidatesResponse:
+    """Edit staged candidate fields (label, type, layer, confidence, attrs) before validation."""
+    await get_case(engine, case_id)
+
+    if payload.entity_type is not None and payload.entity_type not in NODE_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": "INVALID_ENTITY_TYPE",
+                "message": f"Unknown ontology entity type: {payload.entity_type}",
+            },
+        )
+
+    async with engine.connect() as conn:
+        res = await conn.execute(
+            text(
+                "SELECT source_node_id, entity_type, suggested_layer, label, normalized_value, "
+                "attributes_json, confidence, validation_status "
+                "FROM extracted_candidates WHERE id = :cid AND case_id = :case_id;"
+            ),
+            {"cid": candidate_id, "case_id": case_id},
+        )
+        row = res.fetchone()
+
+    if not row:
+        raise HTTPException(
+            status_code=404,
+            detail={"code": "CANDIDATE_NOT_FOUND", "message": "Candidate not found."},
+        )
+    if str(row[7]) != "PENDING":
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": "CANDIDATE_NOT_PENDING",
+                "message": "Only PENDING candidates can be edited.",
+            },
+        )
+
+    source_node_id: uuid.UUID = row[0]
+    next_type = payload.entity_type if payload.entity_type is not None else str(row[1])
+    existing_attrs = dict(row[5] or {}) if isinstance(row[5], dict) else {}
+    next_attrs = dict(payload.attributes) if payload.attributes is not None else existing_attrs
+    next_conf = float(payload.confidence) if payload.confidence is not None else float(row[6])
+    if payload.suggested_layer is not None:
+        next_layer = payload.suggested_layer.value
+    elif payload.confidence is not None and next_conf >= 1.0:
+        next_layer = LayerId.VERIFIED.value
+    else:
+        next_layer = str(row[2])
+    next_label = payload.label.strip() if payload.label is not None else str(row[3])
+    if not next_label:
+        next_label = str(row[3])
+    next_norm = (
+        payload.normalized_value.strip()
+        if payload.normalized_value is not None
+        else (next_label if payload.label is not None else str(row[4]))
+    )
+
+    match_lookup = await _find_existing_case_node_matches(engine, case_id)
+    matched_id = (
+        match_lookup.get(_normalize_match_token(next_norm))
+        or match_lookup.get(_normalize_match_token(next_label))
+    )
+    if matched_id == source_node_id:
+        matched_id = None
+
+    async with engine.begin() as conn:
+        await conn.execute(
+            text(
+                "UPDATE extracted_candidates SET entity_type = :etype, suggested_layer = :layer, "
+                "label = :label, normalized_value = :norm, "
+                "attributes_json = CAST(:attrs AS JSONB), "
+                "confidence = :conf, matched_existing_node_id = :matched "
+                "WHERE id = :cid AND case_id = :case_id;"
+            ),
+            {
+                "etype": next_type,
+                "layer": next_layer,
+                "label": next_label,
+                "norm": next_norm,
+                "attrs": json.dumps(next_attrs),
+                "conf": next_conf,
+                "matched": matched_id,
+                "cid": candidate_id,
+                "case_id": case_id,
+            },
+        )
+        # Keep endpoint metadata synchronized in staged PENDING relations
+        await conn.execute(
+            text(
+                "UPDATE extracted_relation_candidates "
+                "SET source_entity_type = :etype, source_normalized_value = :norm "
+                "WHERE case_id = :case_id AND source_candidate_id = :cid "
+                "AND validation_status = 'PENDING';"
+            ),
+            {"etype": next_type, "norm": next_norm, "case_id": case_id, "cid": candidate_id},
+        )
+        await conn.execute(
+            text(
+                "UPDATE extracted_relation_candidates "
+                "SET target_entity_type = :etype, target_normalized_value = :norm "
+                "WHERE case_id = :case_id AND target_candidate_id = :cid "
+                "AND validation_status = 'PENDING';"
+            ),
+            {"etype": next_type, "norm": next_norm, "case_id": case_id, "cid": candidate_id},
+        )
+
+    await log_audit_event(
+        engine=engine,
+        case_id=case_id,
+        actor_id=actor_id,
+        action="CANDIDATE_UPDATED",
+        entity_type="candidate",
+        entity_id=candidate_id,
+        after_state={
+            "entity_type": next_type,
+            "suggested_layer": next_layer,
+            "label": next_label,
+            "confidence": next_conf,
+            "attributes": next_attrs,
+        },
+        reason="Investigator edited extracted candidate metadata prior to validation",
+    )
+
+    return await get_node_candidates(engine, case_id, source_node_id)
+
+
+async def update_extracted_relation(
+    engine: AsyncEngine,
+    case_id: uuid.UUID,
+    relation_id: uuid.UUID,
+    payload: RelationUpdateRequest,
+    actor_id: str,
+) -> NodeCandidatesResponse:
+    """Edit staged PENDING relation candidate (type, direction, layer, confidence, attrs)."""
+    await get_case(engine, case_id)
+
+    async with engine.connect() as conn:
+        res = await conn.execute(
+            text(
+                "SELECT source_node_id, relation_type, source_entity_type, "
+                "source_normalized_value, target_entity_type, target_normalized_value, "
+                "source_candidate_id, target_candidate_id, suggested_layer, "
+                "attributes_json, confidence, validation_status "
+                "FROM extracted_relation_candidates WHERE id = :rid AND case_id = :cid;"
+            ),
+            {"rid": relation_id, "cid": case_id},
+        )
+        row = res.fetchone()
+
+    if not row:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": "RELATION_CANDIDATE_NOT_FOUND",
+                "message": "Relation candidate not found.",
+            },
+        )
+    if str(row[11]) != "PENDING":
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": "RELATION_CANDIDATE_NOT_PENDING",
+                "message": "Only PENDING relation candidates can be edited.",
+            },
+        )
+
+    source_node_id: uuid.UUID = row[0]
+    src_etype = str(row[2])
+    src_val = str(row[3])
+    tgt_etype = str(row[4])
+    tgt_val = str(row[5])
+    src_cid = row[6]
+    tgt_cid = row[7]
+    if payload.swap_direction:
+        src_etype, tgt_etype = tgt_etype, src_etype
+        src_val, tgt_val = tgt_val, src_val
+        src_cid, tgt_cid = tgt_cid, src_cid
+
+    next_rtype = payload.relation_type.strip() if payload.relation_type else str(row[1])
+    if not payload.allow_custom_relation:
+        is_ok, reason = validate_relation(src_etype, next_rtype, tgt_etype)
+        if not is_ok:
+            raise HTTPException(
+                status_code=400,
+                detail={"code": "INVALID_RELATION_FOR_NODES", "message": reason},
+            )
+
+    existing_attrs = _parse_jsonb(row[9], {})
+    next_attrs = dict(payload.attributes) if payload.attributes is not None else existing_attrs
+    next_conf = float(payload.confidence) if payload.confidence is not None else float(row[10])
+    if payload.suggested_layer is not None:
+        next_layer = payload.suggested_layer.value
+    elif payload.confidence is not None and next_conf >= 1.0:
+        next_layer = LayerId.VERIFIED.value
+    else:
+        next_layer = str(row[8])
+
+    async with engine.begin() as conn:
+        await conn.execute(
+            text(
+                "UPDATE extracted_relation_candidates SET relation_type = :rtype, "
+                "source_entity_type = :stype, source_normalized_value = :sval, "
+                "target_entity_type = :ttype, target_normalized_value = :tval, "
+                "source_candidate_id = :scid, target_candidate_id = :tcid, "
+                "suggested_layer = :layer, attributes_json = CAST(:attrs AS JSONB), "
+                "confidence = :conf WHERE id = :rid AND case_id = :cid;"
+            ),
+            {
+                "rtype": next_rtype,
+                "stype": src_etype,
+                "sval": src_val,
+                "ttype": tgt_etype,
+                "tval": tgt_val,
+                "scid": src_cid,
+                "tcid": tgt_cid,
+                "layer": next_layer,
+                "attrs": json.dumps(next_attrs),
+                "conf": next_conf,
+                "rid": relation_id,
+                "cid": case_id,
+            },
+        )
+
+    await log_audit_event(
+        engine=engine,
+        case_id=case_id,
+        actor_id=actor_id,
+        action="RELATION_CANDIDATE_UPDATED",
+        entity_type="relation_candidate",
+        entity_id=relation_id,
+        after_state={
+            "relation_type": next_rtype,
+            "source_entity_type": src_etype,
+            "target_entity_type": tgt_etype,
+            "suggested_layer": next_layer,
+            "confidence": next_conf,
+        },
+        reason="Investigator edited staged relation candidate prior to validation",
+    )
+
+    return await get_node_candidates(engine, case_id, source_node_id)
+
+
+async def delete_extracted_relation(
+    engine: AsyncEngine,
+    neo4j_driver: AsyncDriver,
+    case_id: uuid.UUID,
+    relation_id: uuid.UUID,
+    actor_id: str,
+) -> NodeCandidatesResponse:
+    """Delete a staged relation candidate before validation."""
+    await get_case(engine, case_id)
+    async with engine.begin() as conn:
+        res = await conn.execute(
+            text(
+                "DELETE FROM extracted_relation_candidates "
+                "WHERE id = :rid AND case_id = :cid RETURNING source_node_id, relation_type;"
+            ),
+            {"rid": relation_id, "cid": case_id},
+        )
+        row = res.fetchone()
+    if not row:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": "RELATION_CANDIDATE_NOT_FOUND",
+                "message": "Relation candidate not found.",
+            },
+        )
+
+    source_node_id: uuid.UUID = row[0]
+    pending_rel = await _count_pending_relations(engine, case_id, source_node_id)
+    await _merge_node_properties(
+        engine,
+        neo4j_driver,
+        case_id,
+        source_node_id,
+        {"pending_relations_count": pending_rel},
+    )
+    await log_audit_event(
+        engine=engine,
+        case_id=case_id,
+        actor_id=actor_id,
+        action="RELATION_CANDIDATE_DELETED",
+        entity_type="relation_candidate",
+        entity_id=relation_id,
+        before_state={"relation_type": str(row[1])},
+        after_state={"deleted": True},
+        reason="Investigator deleted staged relation candidate",
+    )
+    return await get_node_candidates(engine, case_id, source_node_id)
+
+
+async def _ensure_candidate_promoted_node(
+    engine: AsyncEngine,
+    neo4j_driver: AsyncDriver,
+    case_id: uuid.UUID,
+    source_evidence_node_id: uuid.UUID,
+    source_evidence_node_type: str,
+    evidence_mime: str,
+    candidate_id: uuid.UUID,
+    actor_id: str,
+    created_nodes: list[NodeResponse],
+    created_edges: list[EdgeResponse],
+) -> tuple[uuid.UUID, str]:
+    """Return promoted graph node (id, type) for a candidate, promoting if still PENDING."""
+    async with engine.connect() as conn:
+        res = await conn.execute(
+            text(
+                "SELECT id, case_id, run_id, source_node_id, entity_type, suggested_layer, "
+                "label, normalized_value, attributes_json, confidence, extractor_tool, "
+                "stage_number, source_page, source_locator, quote_snippet, "
+                "matched_existing_node_id, validation_status, promoted_node_id, "
+                "validated_by, validated_at, blackboard_sync_status "
+                "FROM extracted_candidates WHERE id = :cid_row AND case_id = :cid;"
+            ),
+            {"cid_row": candidate_id, "cid": case_id},
+        )
+        row = res.fetchone()
+    if not row:
+        raise HTTPException(
+            status_code=404,
+            detail={"code": "CANDIDATE_NOT_FOUND", "message": "Endpoint entity candidate missing."},
+        )
+    cand = _row_to_candidate(row)
+    if cand.promoted_node_id is not None:
+        return cand.promoted_node_id, cand.entity_type
+
+    now = datetime.now(timezone.utc)
+    if cand.matched_existing_node_id is not None:
+        async with engine.connect() as conn:
+            m_res = await conn.execute(
+                text(
+                    "SELECT type, layer FROM nodes "
+                    "WHERE id = :mid AND case_id = :cid AND deleted_at IS NULL;"
+                ),
+                {"mid": cand.matched_existing_node_id, "cid": case_id},
+            )
+            m_row = m_res.fetchone()
+        if m_row:
+            edge = await _create_extrait_de_edge_if_absent(
+                engine, neo4j_driver, case_id,
+                cand.matched_existing_node_id, str(m_row[0]),
+                source_evidence_node_id, source_evidence_node_type,
+                actor_id, LayerId.VERIFIED.value, 1.0,
+                {
+                    "extractor_tool": cand.extractor_tool,
+                    "source_page": cand.source_page,
+                    "source_locator": cand.source_locator,
+                    "quote_snippet": cand.quote_snippet,
+                },
+            )
+            if edge:
+                created_edges.append(edge)
+            async with engine.begin() as conn:
+                await conn.execute(
+                    text(
+                        "UPDATE extracted_candidates SET validation_status = 'MERGED', "
+                        "promoted_node_id = :pid, validated_by = :actor, validated_at = :now, "
+                        "blackboard_sync_status = 'READY_FOR_BLACKBOARD' "
+                        "WHERE id = :cid_row AND case_id = :cid;"
+                    ),
+                    {
+                        "pid": cand.matched_existing_node_id,
+                        "actor": actor_id,
+                        "now": now,
+                        "cid_row": cand.id,
+                        "cid": case_id,
+                    },
+                )
+            return cand.matched_existing_node_id, str(m_row[0])
+
+    effective_layer = (
+        LayerId.VERIFIED
+        if cand.confidence >= 1.0
+        else LayerId(cand.suggested_layer)
+    )
+    provenance_prefix = "HTML_STATIC" if evidence_mime == "text/html" else "PDF_STATIC"
+    node_props = {
+        **cand.attributes,
+        "source_evidence_node_id": str(source_evidence_node_id),
+        "source_pdf_node_id": str(source_evidence_node_id),
+        "extractor_tool": cand.extractor_tool,
+        "source_page": cand.source_page,
+        "source_locator": cand.source_locator,
+        "quote_snippet": cand.quote_snippet,
+        "blackboard_sync_status": "READY_FOR_BLACKBOARD",
+    }
+    new_node = await create_node(
+        engine=engine,
+        neo4j_driver=neo4j_driver,
+        case_id=case_id,
+        payload=NodeCreate(
+            type=cand.entity_type,
+            label=cand.label,
+            confidence=(
+                cand.confidence if cand.attributes.get("confidence_user_modified") else 1.0
+            ),
+            properties=node_props,
+        ),
+        actor_id=actor_id,
+        layer_override=effective_layer,
+        provenance_override=f"{provenance_prefix}:{cand.extractor_tool}",
+    )
+    created_nodes.append(new_node)
+
+    ext_edge = await _create_extrait_de_edge_if_absent(
+        engine, neo4j_driver, case_id,
+        new_node.id, new_node.type,
+        source_evidence_node_id, source_evidence_node_type,
+        actor_id, LayerId.VERIFIED.value, 1.0,
+        {
+            "extractor_tool": cand.extractor_tool,
+            "source_page": cand.source_page,
+            "source_locator": cand.source_locator,
+            "quote_snippet": cand.quote_snippet,
+        },
+    )
+    if ext_edge:
+        created_edges.append(ext_edge)
+
+    async with engine.begin() as conn:
+        await conn.execute(
+            text(
+                "UPDATE extracted_candidates SET validation_status = 'VALIDATED', "
+                "promoted_node_id = :pid, validated_by = :actor, validated_at = :now, "
+                "blackboard_sync_status = 'READY_FOR_BLACKBOARD' "
+                "WHERE id = :cid_row AND case_id = :cid;"
+            ),
+            {
+                "pid": new_node.id,
+                "actor": actor_id,
+                "now": now,
+                "cid_row": cand.id,
+                "cid": case_id,
+            },
+        )
+    return new_node.id, new_node.type
+
+
+async def validate_relations(
+    engine: AsyncEngine,
+    neo4j_driver: AsyncDriver,
+    case_id: uuid.UUID,
+    source_node_id: uuid.UUID,
+    payload: ValidateRelationsRequest,
+    actor_id: str,
+) -> ValidateRelationsResponse:
+    """Validate or reject staged semantic relation candidates (auto-promoting endpoints)."""
+    source_node_type, _ = await _ensure_evidence_node(engine, case_id, source_node_id)
+
+    if not payload.select_all and not payload.relation_ids:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": "NO_RELATIONS_SELECTED",
+                "message": "Provide relation_ids or set select_all=true.",
+            },
+        )
+
+    async with engine.connect() as conn:
+        mime_res = await conn.execute(
+            text("SELECT mime_type FROM evidence_files WHERE case_id = :cid AND node_id = :nid;"),
+            {"cid": case_id, "nid": source_node_id},
+        )
+        mime_row = mime_res.fetchone()
+        evidence_mime = str(mime_row[0]) if mime_row else "application/pdf"
+
+        if payload.select_all:
+            res = await conn.execute(
+                text(
+                    "SELECT id, case_id, run_id, source_node_id, relation_type, "
+                    "source_entity_type, source_normalized_value, target_entity_type, "
+                    "target_normalized_value, source_candidate_id, target_candidate_id, "
+                    "suggested_layer, attributes_json, confidence, extractor_tool, "
+                    "stage_number, source_page, source_locator, quote_snippet, "
+                    "validation_status, promoted_edge_id, validated_by, validated_at, "
+                    "blackboard_sync_status "
+                    "FROM extracted_relation_candidates "
+                    "WHERE case_id = :cid AND source_node_id = :nid "
+                    "AND validation_status = 'PENDING';"
+                ),
+                {"cid": case_id, "nid": source_node_id},
+            )
+        else:
+            res = await conn.execute(
+                text(
+                    "SELECT id, case_id, run_id, source_node_id, relation_type, "
+                    "source_entity_type, source_normalized_value, target_entity_type, "
+                    "target_normalized_value, source_candidate_id, target_candidate_id, "
+                    "suggested_layer, attributes_json, confidence, extractor_tool, "
+                    "stage_number, source_page, source_locator, quote_snippet, "
+                    "validation_status, promoted_edge_id, validated_by, validated_at, "
+                    "blackboard_sync_status "
+                    "FROM extracted_relation_candidates "
+                    "WHERE case_id = :cid AND source_node_id = :nid AND id = ANY(:ids);"
+                ),
+                {"cid": case_id, "nid": source_node_id, "ids": payload.relation_ids},
+            )
+        rows = res.fetchall()
+
+    if not rows:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": "RELATIONS_NOT_FOUND",
+                "message": "No matching pending relation candidates found.",
+            },
+        )
+
+    created_nodes: list[NodeResponse] = []
+    created_edges: list[EdgeResponse] = []
+    updated_ids: list[uuid.UUID] = []
+    now = datetime.now(timezone.utc)
+
+    for row in rows:
+        rel = _row_to_relation(row, {})
+        if rel.validation_status != "PENDING":
+            continue
+
+        if payload.action == "reject":
+            async with engine.begin() as conn:
+                await conn.execute(
+                    text(
+                        "UPDATE extracted_relation_candidates SET validation_status = 'REJECTED', "
+                        "validated_by = :actor, validated_at = :now "
+                        "WHERE id = :rid AND case_id = :cid;"
+                    ),
+                    {"actor": actor_id, "now": now, "rid": rel.id, "cid": case_id},
+                )
+            updated_ids.append(rel.id)
+            continue
+
+        if rel.source_candidate_id is None or rel.target_candidate_id is None:
+            continue
+
+        src_graph_id, src_graph_type = await _ensure_candidate_promoted_node(
+            engine, neo4j_driver, case_id, source_node_id, source_node_type,
+            evidence_mime, rel.source_candidate_id, actor_id, created_nodes, created_edges,
+        )
+        tgt_graph_id, tgt_graph_type = await _ensure_candidate_promoted_node(
+            engine, neo4j_driver, case_id, source_node_id, source_node_type,
+            evidence_mime, rel.target_candidate_id, actor_id, created_nodes, created_edges,
+        )
+
+        effective_layer = payload.target_layer or (
+            LayerId.VERIFIED if rel.confidence >= 1.0 else LayerId(rel.suggested_layer)
+        )
+
+        await _promote_relation_to_graph_edge(
+            engine=engine,
+            neo4j_driver=neo4j_driver,
+            case_id=case_id,
+            source_evidence_node_id=source_node_id,
+            rel=rel,
+            src_graph_id=src_graph_id,
+            src_graph_type=src_graph_type,
+            tgt_graph_id=tgt_graph_id,
+            tgt_graph_type=tgt_graph_type,
+            effective_layer=effective_layer,
+            actor_id=actor_id,
+            now=now,
+            created_edges=created_edges,
+        )
+        updated_ids.append(rel.id)
+
+    pending_cand_rem = await _count_pending_candidates(engine, case_id, source_node_id)
+    pending_rel_rem = await _count_pending_relations(engine, case_id, source_node_id)
+    await _merge_node_properties(
+        engine,
+        neo4j_driver,
+        case_id,
+        source_node_id,
+        {
+            "pending_candidates_count": pending_cand_rem,
+            "pending_relations_count": pending_rel_rem,
+        },
+    )
+
+    if updated_ids:
+        await log_audit_event(
+            engine=engine,
+            case_id=case_id,
+            actor_id=actor_id,
+            action="VALIDATE_EXTRACTED_RELATION",
+            entity_type="node",
+            entity_id=source_node_id,
+            after_state={
+                "action": payload.action,
+                "processed_count": len(updated_ids),
+                "created_edge_ids": [str(e.id) for e in created_edges],
+                "pending_relations_remaining": pending_rel_rem,
+            },
+            reason=payload.reason or f"Human {payload.action} of extracted relations",
+        )
+
+    latest = await get_node_candidates(engine, case_id, source_node_id)
+    updated_set = set(updated_ids)
+    updated_relations = [r for r in latest.relations if r.id in updated_set]
+
+    return ValidateRelationsResponse(
+        action=payload.action,
+        processed_count=len(updated_ids),
+        created_nodes=created_nodes,
+        created_edges=created_edges,
+        updated_relations=updated_relations,
+        pending_relations_remaining=pending_rel_rem,
     )

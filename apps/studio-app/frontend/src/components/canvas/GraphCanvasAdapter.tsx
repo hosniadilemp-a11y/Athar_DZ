@@ -6,8 +6,10 @@ import { EdgeLine } from './EdgeLine';
 import { CanvasFloatingPalette } from './CanvasFloatingPalette';
 import { CanvasMinimap } from './CanvasMinimap';
 import { CreateRelationModal } from '../modals/CreateRelationModal';
+import { hasOpenModal } from '../common/ModalPortal';
 import { useGraphStore } from '../../store/useGraphStore';
 import {
+  computeDefaultCandidatePosition,
   stepLiveForcePhysics,
   computePersonGraphProjection,
   computeGraphFitViewport,
@@ -15,6 +17,7 @@ import {
   MAX_GRAPH_ZOOM,
 } from '../../utils/graphLayouts';
 import { computeTabScopedGraph } from '../../utils/tabScope';
+import { findMatchedExistingNode } from '../../utils/candidateMatching';
 import { Link2, Sparkles, X } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
 import { getEdgeCategory } from '../../i18n/phrases/relations';
@@ -102,6 +105,9 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
   const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [livePositions, setLivePositions] = useState<Map<string, { x: number; y: number }>>(new Map());
+  const candidatePositions = useGraphStore((s) => s.candidatePositions);
+  const setCandidatePosition = useGraphStore((s) => s.setCandidatePosition);
+  const updateCandidatePositions = useGraphStore((s) => s.updateCandidatePositions);
   const dragPosRef = useRef<{ id: string; x: number; y: number } | null>(null);
 
   // Canvas Drag & Drop State (Feature 1 + Option B Raw File Drop)
@@ -158,18 +164,112 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
           })
         : scopedNodes;
 
+      // Include isolated-tab pending candidate ghost nodes & preview edges in live simulation
+      let physicsNodes = positionedNodes;
+      let physicsEdges = scopedEdges;
+      if (currentTab?.kind === 'actor_sphere' && currentTab.focalNodeId) {
+        const fId = currentTab.focalNodeId;
+        const focal = positionedNodes.find((n) => n.id === fId);
+        const pendingCands = (store.candidatesByNodeId[fId] ?? []).filter(
+          (c) => c.validation_status === 'PENDING'
+        );
+        if (focal && pendingCands.length > 0) {
+          const fx = focal.x ?? 600;
+          const fy = focal.y ?? 420;
+          const ghostSimNodes: GraphNode[] = [];
+          const ghostSimEdges: GraphEdge[] = [];
+          const idByCand = new Map<string, string>();
+          (store.candidatesByNodeId[fId] ?? []).forEach((c) => {
+            if (c.validation_status === 'PENDING') {
+              idByCand.set(c.id, `cand:${c.id}`);
+            } else if (c.promoted_node_id) {
+              idByCand.set(c.id, c.promoted_node_id);
+            }
+          });
+
+          pendingCands.forEach((cand, idx) => {
+            const ghostId = `cand:${cand.id}`;
+            const savedPos =
+              store.candidatePositions[ghostId] ??
+              computeDefaultCandidatePosition(fx, fy, idx, pendingCands.length);
+            ghostSimNodes.push({
+              id: ghostId,
+              case_id: cand.case_id,
+              type: cand.entity_type,
+              layer: cand.suggested_layer as LayerId,
+              label: cand.label,
+              confidence: cand.confidence,
+              provenance: '',
+              properties: {},
+              latitude: null,
+              longitude: null,
+              x: savedPos.x,
+              y: savedPos.y,
+            });
+            ghostSimEdges.push({
+              id: `cand-sim-edge:${cand.id}`,
+              case_id: cand.case_id,
+              type: 'EXTRAIT_DE',
+              source_id: ghostId,
+              target_id: fId,
+              layer: 'VERIFIED',
+              confidence: 1.0,
+              provenance: '',
+              properties: {},
+            });
+          });
+
+          (store.relationsByNodeId[fId] ?? [])
+            .filter((r) => r.validation_status === 'PENDING')
+            .forEach((rel) => {
+              if (!rel.source_candidate_id || !rel.target_candidate_id) return;
+              const sId = idByCand.get(rel.source_candidate_id);
+              const tId = idByCand.get(rel.target_candidate_id);
+              if (sId && tId && sId !== tId) {
+                ghostSimEdges.push({
+                  id: `cand-sim-rel:${rel.id}`,
+                  case_id: rel.case_id,
+                  type: rel.relation_type,
+                  source_id: sId,
+                  target_id: tId,
+                  layer: 'HYPOTHESIS',
+                  confidence: rel.confidence,
+                  provenance: '',
+                  properties: {},
+                });
+              }
+            });
+
+          physicsNodes = [...positionedNodes, ...ghostSimNodes];
+          physicsEdges = [...scopedEdges, ...ghostSimEdges];
+        }
+      }
+
       const cx = containerSize.w > 100 ? containerSize.w / 2 : 600;
       const cy = containerSize.h > 100 ? containerSize.h / 2 : 450;
       const stepMap = stepLiveForcePhysics(
-        positionedNodes,
-        scopedEdges,
+        physicsNodes,
+        physicsEdges,
         cx,
         cy,
         draggingNodeId,
         store.pinnedNodeIds
       );
 
-      store.updateActiveTabNodePositions(stepMap);
+      const realPosMap = new Map<string, { x: number; y: number }>();
+      const candPosMap = new Map<string, { x: number; y: number }>();
+      stepMap.forEach((pos, id) => {
+        if (id.startsWith('cand:')) {
+          candPosMap.set(id, pos);
+        } else {
+          realPosMap.set(id, pos);
+        }
+      });
+
+      store.updateActiveTabNodePositions(realPosMap);
+      if (candPosMap.size > 0) {
+        store.updateCandidatePositions(candPosMap);
+      }
 
       animId = requestAnimationFrame(tick);
     };
@@ -180,6 +280,7 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
 
   // Handle Node Click (Selection or Link Creation Mode)
   const candidatesByNodeId = useGraphStore((s) => s.candidatesByNodeId);
+  const relationsByNodeId = useGraphStore((s) => s.relationsByNodeId);
   const selectedCandidateId = useGraphStore((s) => s.selectedCandidateId);
   const selectCandidate = useGraphStore((s) => s.selectCandidate);
 
@@ -188,11 +289,17 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
       if (nodeId.startsWith('cand:')) {
         const candId = nodeId.slice(5);
         selectCandidate(candId);
-        const tabFocal = useGraphStore
-          .getState()
-          .tabs.find((t) => t.id === useGraphStore.getState().activeTabId)?.focalNodeId;
+        const state = useGraphStore.getState();
+        const tabFocal = state.tabs.find((t) => t.id === state.activeTabId)?.focalNodeId;
         if (tabFocal) {
           onSelectNode(tabFocal, false);
+        } else {
+          for (const [srcId, list] of Object.entries(state.candidatesByNodeId)) {
+            if (list.some((c) => c.id === candId)) {
+              onSelectNode(srcId, false);
+              break;
+            }
+          }
         }
         return;
       }
@@ -281,35 +388,62 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
     });
   }, [projectedEdges, hiddenEdgeCategories]);
 
-  // Phase 2A: Ghost candidate nodes & dashed edges visible ONLY inside an isolated evidence node tab
-  const { ghostNodes, ghostEdges } = React.useMemo(() => {
-    if (activeTab?.kind !== 'actor_sphere' || !activeTab.focalNodeId) {
-      return { ghostNodes: [] as GraphNode[], ghostEdges: [] as GraphEdge[] };
+  // Phase 2A/2B: Ghost candidate nodes, dashed edges & DB duplicate highlights
+  // Shown strictly inside isolated evidence tabs (`actor_sphere`), NEVER in Dossier Général (`master`).
+  const { ghostNodes, ghostEdges, dbMatchNodeIds, selectedMatchPair } = React.useMemo(() => {
+    const focalId = activeTab?.kind === 'actor_sphere' ? activeTab.focalNodeId ?? null : null;
+    if (!focalId) {
+      return {
+        ghostNodes: [] as GraphNode[],
+        ghostEdges: [] as GraphEdge[],
+        dbMatchNodeIds: new Set<string>(),
+        selectedMatchPair: null as { ghostId: string; dbNodeId: string } | null,
+      };
     }
-    const focalId = activeTab.focalNodeId;
-    const focal = visibleNodes.find((n) => n.id === focalId) ?? tabScopedNodes.find((n) => n.id === focalId);
+    const focal =
+      visibleNodes.find((n) => n.id === focalId) ?? tabScopedNodes.find((n) => n.id === focalId);
     if (!focal) {
-      return { ghostNodes: [] as GraphNode[], ghostEdges: [] as GraphEdge[] };
+      return {
+        ghostNodes: [] as GraphNode[],
+        ghostEdges: [] as GraphEdge[],
+        dbMatchNodeIds: new Set<string>(),
+        selectedMatchPair: null as { ghostId: string; dbNodeId: string } | null,
+      };
     }
     const pending = (candidatesByNodeId[focalId] ?? []).filter(
       (c) => c.validation_status === 'PENDING'
     );
-    if (pending.length === 0) {
-      return { ghostNodes: [] as GraphNode[], ghostEdges: [] as GraphEdge[] };
+    const pendingRels = (relationsByNodeId[focalId] ?? []).filter(
+      (r) => r.validation_status === 'PENDING'
+    );
+    if (pending.length === 0 && pendingRels.length === 0) {
+      return {
+        ghostNodes: [] as GraphNode[],
+        ghostEdges: [] as GraphEdge[],
+        dbMatchNodeIds: new Set<string>(),
+        selectedMatchPair: null as { ghostId: string; dbNodeId: string } | null,
+      };
     }
     const cx = focal.x ?? 600;
     const cy = focal.y ?? 420;
     const gNodes: GraphNode[] = [];
     const gEdges: GraphEdge[] = [];
+    const matchedIds = new Set<string>();
+    let activePair: { ghostId: string; dbNodeId: string } | null = null;
 
     pending.forEach((cand, idx) => {
-      const ring = Math.floor(idx / 10);
-      const countInRing = Math.min(10, pending.length - ring * 10);
-      const angle = (2 * Math.PI * (idx % 10)) / Math.max(1, countInRing) - Math.PI / 2;
-      const radiusDist = 175 + ring * 88;
-      const gx = Math.round(cx + Math.cos(angle) * radiusDist);
-      const gy = Math.round(cy + Math.sin(angle) * radiusDist);
+      const defPos = computeDefaultCandidatePosition(cx, cy, idx, pending.length);
       const ghostId = `cand:${cand.id}`;
+      const overridePos = candidatePositions[ghostId];
+      const finalGx = overridePos ? overridePos.x : defPos.x;
+      const finalGy = overridePos ? overridePos.y : defPos.y;
+      const matchedDbNode = findMatchedExistingNode(cand, nodes);
+      if (matchedDbNode) {
+        matchedIds.add(matchedDbNode.id);
+        if (selectedCandidateId === cand.id) {
+          activePair = { ghostId, dbNodeId: matchedDbNode.id };
+        }
+      }
 
       gNodes.push({
         id: ghostId,
@@ -318,7 +452,7 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
         layer: cand.suggested_layer as LayerId,
         label: cand.label,
         confidence: cand.confidence,
-        provenance: cand.extractor_tool,
+        provenance: '',
         properties: {
           ...cand.attributes,
           __is_extraction_candidate: true,
@@ -328,8 +462,8 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
         },
         latitude: null,
         longitude: null,
-        x: gx,
-        y: gy,
+        x: finalGx,
+        y: finalGy,
         radius: 26,
       });
 
@@ -341,13 +475,69 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
         target_id: focal.id,
         layer: 'HYPOTHESIS',
         confidence: cand.confidence,
-        provenance: cand.extractor_tool,
+        provenance: '',
         properties: { __is_candidate_edge: true },
       });
     });
 
-    return { ghostNodes: gNodes, ghostEdges: gEdges };
-  }, [activeTab, visibleNodes, tabScopedNodes, candidatesByNodeId]);
+    // D18: Preview semantic relation candidates between ghost/promoted nodes
+    const allCands = candidatesByNodeId[focalId] ?? [];
+    const endpointNodeIdByCandidateId = new Map<string, string>();
+    allCands.forEach((c) => {
+      if (c.validation_status === 'PENDING') {
+        endpointNodeIdByCandidateId.set(c.id, `cand:${c.id}`);
+      } else if (c.promoted_node_id) {
+        endpointNodeIdByCandidateId.set(c.id, c.promoted_node_id);
+      }
+    });
+    pendingRels.forEach((rel) => {
+      if (!rel.source_candidate_id || !rel.target_candidate_id) return;
+      const srcId = endpointNodeIdByCandidateId.get(rel.source_candidate_id);
+      const tgtId = endpointNodeIdByCandidateId.get(rel.target_candidate_id);
+      if (!srcId || !tgtId || srcId === tgtId) return;
+      gEdges.push({
+        id: `cand-rel:${rel.id}`,
+        case_id: rel.case_id,
+        type: rel.relation_type,
+        source_id: srcId,
+        target_id: tgtId,
+        layer: 'HYPOTHESIS',
+        confidence: rel.confidence,
+        provenance: '',
+        properties: { __is_candidate_edge: true, __is_semantic_candidate_rel: true },
+      });
+    });
+
+    return {
+      ghostNodes: gNodes,
+      ghostEdges: gEdges,
+      dbMatchNodeIds: matchedIds,
+      selectedMatchPair: activePair,
+    };
+  }, [
+    activeTab,
+    selectedCandidateId,
+    visibleNodes,
+    tabScopedNodes,
+    candidatesByNodeId,
+    relationsByNodeId,
+    candidatePositions,
+    nodes,
+  ]);
+
+  // Freeze newly placed ghost candidate coordinates in store so dragging or validating one never shifts siblings
+  useEffect(() => {
+    if (ghostNodes.length === 0) return;
+    const missingMap = new Map<string, { x: number; y: number }>();
+    ghostNodes.forEach((gn) => {
+      if (!candidatePositions[gn.id] && typeof gn.x === 'number' && typeof gn.y === 'number') {
+        missingMap.set(gn.id, { x: gn.x, y: gn.y });
+      }
+    });
+    if (missingMap.size > 0) {
+      updateCandidatePositions(missingMap);
+    }
+  }, [ghostNodes, candidatePositions, updateCandidatePositions]);
 
   const displayNodes = React.useMemo(
     () => (ghostNodes.length > 0 ? [...visibleNodes, ...ghostNodes] : visibleNodes),
@@ -406,6 +596,7 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
     if (!el) return;
 
     const onNativeWheel = (e: WheelEvent) => {
+      if (hasOpenModal()) return;
       e.preventDefault();
       e.stopPropagation();
 
@@ -554,10 +745,10 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
     }
   }, [draggingNodeId, canvasToolMode, isSpacePressed, isLinkMode, viewport]);
 
-  // Handle Node Drag Start
+  // Handle Node Drag Start (supports both persisted nodes and extracted candidate ghost nodes)
   const handleNodeDragStart = useCallback((e: React.MouseEvent, nodeId: string) => {
     e.stopPropagation();
-    const node = nodeMap.get(nodeId);
+    const node = displayNodeMap.get(nodeId) ?? nodeMap.get(nodeId);
     if (!node) return;
     setDraggingNodeId(nodeId);
     dragPosRef.current = { id: nodeId, x: node.x ?? 0, y: node.y ?? 0 };
@@ -565,11 +756,12 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
       x: e.clientX - (node.x ?? 0) * viewport.zoom - viewport.panX,
       y: e.clientY - (node.y ?? 0) * viewport.zoom - viewport.panY,
     });
-  }, [nodeMap, viewport]);
+  }, [displayNodeMap, nodeMap, viewport]);
 
   // Spacebar temporary pan modifier
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      if (hasOpenModal()) return;
       if (e.code === 'Space' && !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) {
         setIsSpacePressed(true);
       }
@@ -653,8 +845,12 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
       }
       if (draggingNodeId) {
         const latest = dragPosRef.current;
-        if (latest && latest.id === draggingNodeId && onNodeDragEnd) {
-          onNodeDragEnd(draggingNodeId, latest.x, latest.y);
+        if (latest && latest.id === draggingNodeId) {
+          if (draggingNodeId.startsWith('cand:')) {
+            setCandidatePosition(draggingNodeId, latest.x, latest.y);
+          } else if (onNodeDragEnd) {
+            onNodeDragEnd(draggingNodeId, latest.x, latest.y);
+          }
         }
         setLivePositions((prev) => {
           const next = new Map(prev);
@@ -674,10 +870,11 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
         window.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isPanning, panStart, draggingNodeId, dragOffset, marqueeBox, visibleNodes, viewport, onViewportChange, onNodeDragEnd]);
+  }, [isPanning, panStart, draggingNodeId, dragOffset, marqueeBox, visibleNodes, viewport, onViewportChange, onNodeDragEnd, setCandidatePosition]);
 
   // Keyboard navigation on canvas
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (hasOpenModal()) return;
     const step = e.shiftKey ? 80 : 30;
     if (e.key === 'ArrowLeft') {
       e.preventDefault();
@@ -860,17 +1057,47 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
             </marker>
           </defs>
 
-          {displayEdges.map((edge) => (
-            <EdgeLine
-              key={edge.id}
-              edge={edge}
-              sourceNode={displayNodeMap.get(edge.source_id)}
-              targetNode={displayNodeMap.get(edge.target_id)}
-              isSelected={selectedEdgeId === edge.id}
-              zoom={viewport.zoom}
-              onSelect={onSelectEdge}
-            />
-          ))}
+          {displayEdges.map((edge) => {
+            const rawSrc = displayNodeMap.get(edge.source_id);
+            const rawTgt = displayNodeMap.get(edge.target_id);
+            const srcLive = rawSrc ? livePositions.get(rawSrc.id) : undefined;
+            const tgtLive = rawTgt ? livePositions.get(rawTgt.id) : undefined;
+            const sourceNode = rawSrc && srcLive ? { ...rawSrc, x: srcLive.x, y: srcLive.y } : rawSrc;
+            const targetNode = rawTgt && tgtLive ? { ...rawTgt, x: tgtLive.x, y: tgtLive.y } : rawTgt;
+            return (
+              <EdgeLine
+                key={edge.id}
+                edge={edge}
+                sourceNode={sourceNode}
+                targetNode={targetNode}
+                isSelected={selectedEdgeId === edge.id}
+                zoom={viewport.zoom}
+                onSelect={onSelectEdge}
+              />
+            );
+          })}
+
+          {/* Amber dashed cross-reference link when selected candidate matches an existing DB node */}
+          {selectedMatchPair && (() => {
+            const ghost = displayNodeMap.get(selectedMatchPair.ghostId);
+            const dbNode = displayNodeMap.get(selectedMatchPair.dbNodeId);
+            if (!ghost || !dbNode) return null;
+            const gLive = livePositions.get(ghost.id);
+            const dLive = livePositions.get(dbNode.id);
+            return (
+              <line
+                x1={gLive?.x ?? ghost.x ?? 0}
+                y1={gLive?.y ?? ghost.y ?? 0}
+                x2={dLive?.x ?? dbNode.x ?? 0}
+                y2={dLive?.y ?? dbNode.y ?? 0}
+                stroke="var(--color-status-warning)"
+                strokeWidth={2.5}
+                strokeDasharray="6 4"
+                pointerEvents="none"
+                opacity={0.95}
+              />
+            );
+          })()}
 
           {/* Dynamic rubber-band guide line during link creation */}
           {isLinkMode && linkSourceNode && (
@@ -906,6 +1133,8 @@ export const GraphCanvasAdapter: React.FC<GraphCanvasAdapterProps> = ({
               isDragging={draggingNodeId === node.id}
               isBoundaryAnchor={Boolean(actorSphere?.boundaryActorIds.has(node.id))}
               isSharedAsset={Boolean(actorSphere?.sharedAssetIds.has(node.id))}
+              isDbMatch={!isCandidate && dbMatchNodeIds.has(node.id)}
+              isDbMatchHighlighted={!isCandidate && selectedMatchPair?.dbNodeId === node.id}
               zoom={viewport.zoom}
               hiddenNeighborsCount={hiddenNeighborCountByNode.get(node.id) || 0}
               expandedNeighborsCount={expandedNeighborCountByNode.get(node.id) || 0}

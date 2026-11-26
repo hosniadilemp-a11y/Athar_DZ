@@ -179,9 +179,9 @@
             </p>
           </div>
           <div class="card" style="border-left:4px solid #a855f7;">
-            <strong style="color:#a855f7;">🔗 Mode Création de Liaisons (47 Relations)</strong>
+            <strong style="color:#a855f7;">🔗 Mode Création de Liaisons (50 Relations)</strong>
             <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem;">
-              Outil interactif de connexion point-à-point : cliquez sur le nœud source puis cible pour qualifier la relation (virement BaridiMob, bornage BTS, appel téléphonique, trojan APK) avec degré de certitude.
+              Outil interactif de connexion point-à-point : cliquez sur le nœud source puis cible pour qualifier la relation (virement BaridiMob, bornage BTS, e-mail, transaction DZD, trojan APK) créée par défaut en <code>VERIFIED</code> (100%, Décision D20).
             </p>
           </div>
         </div>
@@ -222,9 +222,9 @@
         </div>
 
         <!-- 1.3 Mode Création de Liaisons -->
-        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:1.5rem;margin-bottom:0.6rem;">1.3 Mode Interactif de Création de Liaisons (47 Relations GFPG)</h3>
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:1.5rem;margin-bottom:0.6rem;">1.3 Mode Interactif de Création de Liaisons (50 Relations GFPG)</h3>
         <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;">
-          L'enquêteur peut connecter deux entités à tout moment via l'outil <strong>« Mode Création de Liaison »</strong> :
+          L'enquêteur peut connecter deux entités à tout moment via l'outil <strong>« Mode Création de Liaison »</strong> (ou modifier/supprimer toute relation via CRUD audité) :
         </p>
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:0.75rem;margin:1rem 0;">
@@ -233,8 +233,8 @@
             <p style="color:#94a3b8;margin:0;">L'enquêteur clique sur le nœud A (halo orange) puis sur le nœud B (halo vert). Le bandeau supérieur du canevas guide chaque étape.</p>
           </div>
           <div style="background:#090d16;border:1px solid #1e293b;border-radius:6px;padding:0.8rem;font-size:0.8rem;">
-            <strong style="color:#38bdf8;display:block;margin-bottom:0.3rem;">Étape 2 : Qualification Juridique</strong>
-            <p style="color:#94a3b8;margin:0;">Une boîte de dialogue propose les relations compatibles parmi les 47 types formels (ex: <code>[:COMMUNIQUE_AVEC]</code>, <code>[:EMET_VIREMENT]</code>, <code>[:INFECTE_PAR]</code>).</p>
+            <strong style="color:#38bdf8;display:block;margin-bottom:0.3rem;">Étape 2 : Qualification Juridique (VERIFIED 100% par défaut)</strong>
+            <p style="color:#94a3b8;margin:0;">Une boîte de dialogue propose les relations compatibles parmi les 50 types formels (ex: <code>[:COMMUNIQUE_AVEC]</code>, <code>[:UTILISE_EMAIL]</code>, <code>[:IMPLIQUE_TRANSACTION]</code>, <code>[:EXTRAIT_DE]</code>). Toute liaison créée manuellement est par défaut validée à <strong>100% (<code>VERIFIED</code>)</strong> (D20).</p>
           </div>
           <div style="background:#090d16;border:1px solid #1e293b;border-radius:6px;padding:0.8rem;font-size:0.8rem;">
             <strong style="color:#10b981;display:block;margin-bottom:0.3rem;">Étape 3 : Traçage &amp; Flèche Orientée</strong>
@@ -528,6 +528,28 @@
             <li><strong>Contrôle Différé &amp; Badge sur Nœud :</strong> L'enquêteur peut quitter le popover sans lancer de traitement. Le nœud arbore un badge <em>« En cours d'investigation »</em> (ou en attente). Les processus restent déclenchables depuis l'<strong>Inspecteur Latéral Droit</strong> avec suivi d'une <strong>barre de progression en temps réel</strong>.</li>
             <li><strong>Arbre des Processus Interactif (Process Tree) :</strong> Séparé rigoureusement du graphe de connaissances judiciaire, cet arbre interactif croît à chaque nouvelle découverte (Crops &rarr; Vecteurs &rarr; Rapprochements) et permet d'explorer la chaîne algorithmique complète.</li>
           </ul>
+        </div>
+
+        <!-- 1.12b Validation Isolée Phase 2A, Règles D19/D20, KPI Réels & Isolation Modale -->
+        <h3 style="color:#f8fafc;font-size:1.05rem;margin-top:2rem;margin-bottom:0.6rem;">1.12b Ergonomie Opérationnelle Implémentée : Validation Isolée (D19/D20), KPI Réels &amp; Isolation Modale</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1rem;margin:1rem 0;">
+          <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #10b981;border-radius:6px;padding:0.9rem;font-size:0.82rem;">
+            <strong style="color:#10b981;display:block;margin-bottom:0.35rem;">🧩 Validation Isolée &amp; Continuité Spatiale (D16–D20)</strong>
+            <ul style="padding-left:1.1rem;margin:0;color:#cbd5e1;line-height:1.6;">
+              <li><strong>Isolement Absolu :</strong> Les entités extraites en attente (<code>CandidateValidationPanel</code>) s'affichent <em>uniquement dans l'onglet isolé</em> de la pièce déposée — jamais dans le <em>Dossier Général</em> — avec filtres par catégorie (<code>Acteurs</code>, <code>Télécoms</code>, <code>Finances</code>, etc.) et groupes de relations pliables.</li>
+              <li><strong>Périmètre D20 &amp; Confiance 100% :</strong> Seules les entités extraites et relations inter-entités requièrent validation humaine ; <code>EXTRAIT_DE</code> vers la pièce glissée est auto-vérifié (100%) et les entités affichent 100% par défaut jusqu'à modification.</li>
+              <li><strong>Position Préservée &amp; Physique Directe :</strong> Tout nœud candidat conserve exactement sa position <code>(X, Y)</code> avant et après validation, et les nouveaux nœuds réagissent directement aux forces de simulation.</li>
+              <li><strong>Changement de Calque Direct (D19) :</strong> Aucun blocage modal sur le changement de calque (motif automatique enregistré en audit ISO 27037) ; passer la confiance à 100% sélectionne automatiquement <code>VERIFIED</code>.</li>
+            </ul>
+          </div>
+          <div style="background:#090d16;border:1px solid #1e293b;border-left:4px solid #38bdf8;border-radius:6px;padding:0.9rem;font-size:0.82rem;">
+            <strong style="color:#38bdf8;display:block;margin-bottom:0.35rem;">📊 KPI Réels, Cascade Géo &amp; Modales <code>inert</code></strong>
+            <ul style="padding-left:1.1rem;margin:0;color:#cbd5e1;line-height:1.6;">
+              <li><strong>Synthèse Dynamique (<code>caseMetrics.ts</code>) :</strong> Zéro métrique figée : Préjudice Estimé (DZD), Victimes/Plaintes, Suspects, Wilayas, Objets Analysés / À Investiguer / À Valider et Boîte d'Arbitrage reflètent l'affaire réelle en cours.</li>
+              <li><strong>Cascade Wilaya → Daïra → Commune :</strong> Grille responsive <code>.geo-cascade-grid</code> sans débordement ni troncature de libellés.</li>
+              <li><strong>Isolation Modale Complète (<code>ModalPortal</code>) :</strong> Portail hors canevas, attribut HTML <code>inert</code> sur <code>.studio-shell</code>, piégeage <code>Tab</code>, garde <code>hasOpenModal()</code> empêchant les événements clavier/molette en arrière-plan, et validation par touche <code>Entrée</code> sur <code>DeleteNodesModal</code>.</li>
+            </ul>
+          </div>
         </div>
 
         <!-- 1.13 Matrice Exhaustive des Outils Requis par Type de Fichier -->

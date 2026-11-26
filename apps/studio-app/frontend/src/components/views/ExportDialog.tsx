@@ -5,6 +5,7 @@ import { exportCaseToJson, printForensicReport } from '../../services/exportServ
 import { API_BASE } from '../../config';
 import { FileDown, Printer, ShieldCheck, X } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
+import { ModalPortal } from '../common/ModalPortal';
 
 interface ExportDialogProps {
   isOpen: boolean;
@@ -46,6 +47,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) =
   };
 
   return (
+    <ModalPortal>
     <div
       role="dialog"
       aria-modal="true"
@@ -160,6 +162,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) =
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 };
 

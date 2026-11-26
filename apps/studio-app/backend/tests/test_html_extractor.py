@@ -26,6 +26,16 @@ class HtmlGroundTruthEntity:
     min_mode: str
 
 
+@dataclass(frozen=True)
+class HtmlGroundTruthRelation:
+    relation_type: str
+    source_type: str
+    source_value: str
+    target_type: str
+    target_value: str
+    min_mode: str
+
+
 def _resolve_html_samples_dir() -> Path:
     container_mount = Path("/app/tests/fixtures/html_samples")
     if container_mount.exists():
@@ -45,12 +55,19 @@ def _resolve_html_samples_dir() -> Path:
 META_BULLET_RE = re.compile(r"^-\s+\*\*(\w+)\*\*:\s*`(.*)`$")
 
 
-def _parse_ground_truth(md_path: Path) -> tuple[dict[str, str], list[HtmlGroundTruthEntity]]:
+def _parse_ground_truth(
+    md_path: Path,
+) -> tuple[dict[str, str], list[HtmlGroundTruthEntity], list[HtmlGroundTruthRelation]]:
     meta: dict[str, str] = {}
     entities: list[HtmlGroundTruthEntity] = []
+    relations: list[HtmlGroundTruthRelation] = []
+    section = ""
     for raw_line in md_path.read_text(encoding="utf-8").splitlines():
         line = raw_line.strip()
         if not line:
+            continue
+        if line.startswith("## "):
+            section = line[3:].strip()
             continue
         bullet_match = META_BULLET_RE.match(line)
         if bullet_match:
@@ -59,10 +76,22 @@ def _parse_ground_truth(md_path: Path) -> tuple[dict[str, str], list[HtmlGroundT
         if (
             line.startswith("|")
             and not line.startswith("| entity_type")
+            and not line.startswith("| relation_type")
             and not line.startswith("| :---")
         ):
             parts = [p.strip().strip("`") for p in line.strip("|").split("|")]
-            if len(parts) >= 5:
+            if section == "Expected Relations" and len(parts) >= 6:
+                relations.append(
+                    HtmlGroundTruthRelation(
+                        relation_type=parts[0],
+                        source_type=parts[1],
+                        source_value=parts[2],
+                        target_type=parts[3],
+                        target_value=parts[4],
+                        min_mode=parts[5],
+                    )
+                )
+            elif len(parts) >= 5:
                 entities.append(
                     HtmlGroundTruthEntity(
                         entity_type=parts[0],
@@ -72,7 +101,7 @@ def _parse_ground_truth(md_path: Path) -> tuple[dict[str, str], list[HtmlGroundT
                         min_mode=parts[4],
                     )
                 )
-    return meta, entities
+    return meta, entities, relations
 
 
 HTML_SAMPLE_NAMES = [
@@ -86,10 +115,12 @@ HTML_SAMPLE_NAMES = [
 
 @pytest.mark.parametrize("sample_stem", HTML_SAMPLE_NAMES)
 def test_html_ground_truth_mode1_and_mode2(sample_stem: str) -> None:
-    """Every entity documented in the .md ground truth must be extracted offline."""
+    """Every entity & relation documented in the .md ground truth must be extracted offline."""
     samples_dir = _resolve_html_samples_dir()
     html_bytes = (samples_dir / f"{sample_stem}.html").read_bytes()
-    meta_expected, gt_entities = _parse_ground_truth(samples_dir / f"{sample_stem}.md")
+    meta_expected, gt_entities, gt_relations = _parse_ground_truth(
+        samples_dir / f"{sample_stem}.md"
+    )
     assert len(gt_entities) > 0, f"Parsed 0 ground-truth entities from {sample_stem}.md"
 
     m1 = extract_html_mode1_quick(html_bytes)
@@ -109,10 +140,34 @@ def test_html_ground_truth_mode1_and_mode2(sample_stem: str) -> None:
                 f"Mode 1 missed {(gt.entity_type, gt.normalized_value)} in {sample_stem}"
             )
 
+    m1_rel_tuples = {
+        (
+            r.relation_type,
+            r.source_entity_type,
+            r.source_normalized_value,
+            r.target_entity_type,
+            r.target_normalized_value,
+        )
+        for r in m1.relations
+    }
+    for gtr in gt_relations:
+        if gtr.min_mode == "quick":
+            assert (
+                gtr.relation_type,
+                gtr.source_type,
+                gtr.source_value,
+                gtr.target_type,
+                gtr.target_value,
+            ) in m1_rel_tuples, f"Mode 1 missed relation {gtr} in {sample_stem}"
+
     m2_all = []
+    m2_rels = []
+    last_summary: dict[str, Any] = {}
     for stage in (1, 2, 3):
         out = extract_html_mode2_stage(html_bytes, stage=stage)
         m2_all.extend(out.candidates)
+        m2_rels.extend(out.relations)
+        last_summary = out.summary
 
     m2_pairs = {(c.entity_type, c.normalized_value) for c in m2_all}
     for gt in gt_entities:
@@ -120,10 +175,44 @@ def test_html_ground_truth_mode1_and_mode2(sample_stem: str) -> None:
             f"Mode 2 missed {(gt.entity_type, gt.normalized_value)} in {sample_stem}"
         )
 
+    m2_rel_tuples = {
+        (
+            r.relation_type,
+            r.source_entity_type,
+            r.source_normalized_value,
+            r.target_entity_type,
+            r.target_normalized_value,
+        )
+        for r in m2_rels
+    }
+    for gtr in gt_relations:
+        assert (
+            gtr.relation_type,
+            gtr.source_type,
+            gtr.source_value,
+            gtr.target_type,
+            gtr.target_value,
+        ) in m2_rel_tuples, f"Mode 2 missed relation {gtr} in {sample_stem}"
+
     for cand in [*m1.candidates, *m2_all]:
+        assert cand.entity_type not in {"wilaya", "commune"}
         assert cand.suggested_layer != "VERIFIED"
         assert "<script" not in cand.label.lower()
         assert "<script" not in cand.quote_snippet.lower()
+
+    expected_locs = {
+        loc.strip()
+        for loc in meta_expected.get("locations", "").split(";")
+        if loc.strip()
+    }
+    if expected_locs:
+        extracted_locs = last_summary.get("extracted_locations", {})
+        found_locs = set(extracted_locs.get("wilayas", [])) | set(
+            extracted_locs.get("communes", [])
+        )
+        assert expected_locs.issubset(found_locs), (
+            f"Missing expected locations {expected_locs - found_locs} in {sample_stem}"
+        )
 
 
 def test_html_extractor_zero_network_and_xss_ssrf_safety(monkeypatch: pytest.MonkeyPatch) -> None:

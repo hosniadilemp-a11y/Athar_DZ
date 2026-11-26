@@ -3,6 +3,7 @@ import { useI18n } from '../../context/I18nContext';
 import { API_BASE } from '../../config';
 import type { CaseItem } from '../../types/graph';
 import { FolderOpen, X, Search, Check } from 'lucide-react';
+import { ModalPortal } from '../common/ModalPortal';
 
 interface OpenCaseModalProps {
   isOpen: boolean;
@@ -58,6 +59,7 @@ export const OpenCaseModal: React.FC<OpenCaseModalProps> = ({
   const dateLocale = locale === 'ar' ? 'ar-DZ' : locale === 'en' ? 'en-GB' : 'fr-FR';
 
   return (
+    <ModalPortal>
     <div
       className="modal-backdrop"
       role="dialog"
@@ -296,5 +298,6 @@ export const OpenCaseModal: React.FC<OpenCaseModalProps> = ({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 };

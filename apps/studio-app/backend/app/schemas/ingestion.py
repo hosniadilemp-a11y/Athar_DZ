@@ -84,8 +84,41 @@ class ExtractedCandidateResponse(BaseModel):
     blackboard_sync_status: str
 
 
+class ExtractedRelationResponse(BaseModel):
+    """A staged semantic relation candidate between extracted entities."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: UUID
+    case_id: UUID
+    run_id: UUID
+    source_node_id: UUID
+    relation_type: str
+    source_entity_type: str
+    source_normalized_value: str
+    target_entity_type: str
+    target_normalized_value: str
+    source_candidate_id: UUID | None = None
+    target_candidate_id: UUID | None = None
+    source_label: str = ""
+    target_label: str = ""
+    suggested_layer: str
+    attributes: dict[str, Any]
+    confidence: float
+    extractor_tool: str
+    stage_number: int
+    source_page: int
+    source_locator: str = ""
+    quote_snippet: str
+    validation_status: str
+    promoted_edge_id: UUID | None = None
+    validated_by: str | None = None
+    validated_at: datetime | None = None
+    blackboard_sync_status: str
+
+
 class NodeCandidatesResponse(BaseModel):
-    """Combined latest run + staged candidates + counts for an isolated PDF node."""
+    """Combined latest run + staged entity & relation candidates for an evidence node."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -94,6 +127,46 @@ class NodeCandidatesResponse(BaseModel):
     latest_run: ExtractionRunResponse | None = None
     candidates: list[ExtractedCandidateResponse]
     counts: dict[str, int]
+    relations: list[ExtractedRelationResponse] = Field(default_factory=list)
+    relation_counts: dict[str, int] = Field(default_factory=dict)
+
+
+class RelationUpdateRequest(BaseModel):
+    """Update a staged PENDING relation candidate before validation (type, direction, layer)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    relation_type: str | None = Field(default=None, min_length=1, max_length=64)
+    suggested_layer: LayerId | None = None
+    confidence: float | None = Field(default=None, ge=0.0, le=1.0)
+    swap_direction: bool = False
+    allow_custom_relation: bool = False
+    attributes: dict[str, Any] | None = None
+
+
+class ValidateRelationsRequest(BaseModel):
+    """Validate or reject one, a subset, or all staged semantic relation candidates."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    action: Literal["validate", "reject"]
+    relation_ids: list[UUID] = Field(default_factory=list, max_length=500)
+    select_all: bool = False
+    target_layer: LayerId | None = None
+    reason: str = Field(default="", max_length=1000)
+
+
+class ValidateRelationsResponse(BaseModel):
+    """Outcome of validating or rejecting staged semantic relation candidates."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    action: str
+    processed_count: int
+    created_nodes: list[NodeResponse]
+    created_edges: list[EdgeResponse]
+    updated_relations: list[ExtractedRelationResponse]
+    pending_relations_remaining: int
 
 
 class ValidateCandidatesRequest(BaseModel):
@@ -108,6 +181,19 @@ class ValidateCandidatesRequest(BaseModel):
     reason: str = Field(default="", max_length=1000)
 
 
+class CandidateUpdateRequest(BaseModel):
+    """Update editable fields of a staged PENDING candidate before validation."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    label: str | None = Field(default=None, min_length=1, max_length=300)
+    entity_type: str | None = Field(default=None, min_length=1, max_length=64)
+    suggested_layer: LayerId | None = None
+    confidence: float | None = Field(default=None, ge=0.0, le=1.0)
+    normalized_value: str | None = Field(default=None, max_length=300)
+    attributes: dict[str, Any] | None = None
+
+
 class ValidateCandidatesResponse(BaseModel):
     """Outcome of validating/merging/rejecting staged candidates."""
 
@@ -119,3 +205,14 @@ class ValidateCandidatesResponse(BaseModel):
     created_edges: list[EdgeResponse]
     updated_candidates: list[ExtractedCandidateResponse]
     pending_remaining: int
+
+
+class CaseIngestionSummaryResponse(BaseModel):
+    """Case-wide extraction runs, entity candidates, and semantic relation candidates by node."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    case_id: UUID
+    runs_by_node_id: dict[str, ExtractionRunResponse] = Field(default_factory=dict)
+    candidates_by_node_id: dict[str, list[ExtractedCandidateResponse]] = Field(default_factory=dict)
+    relations_by_node_id: dict[str, list[ExtractedRelationResponse]] = Field(default_factory=dict)

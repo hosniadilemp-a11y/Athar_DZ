@@ -9,6 +9,7 @@ import {
   GitFork,
   ListChecks,
   Lock,
+  Play,
   ScanSearch,
   Settings,
   SlidersHorizontal,
@@ -31,12 +32,14 @@ import { useI18n } from '../../context/I18nContext';
 
 export interface IngestionInspectorSectionProps {
   node: GraphNode;
+  isLoading?: boolean;
   onLaunchMode: (
     nodeId: string,
     mode: AnalysisMode,
     stageLabel: string,
     selectedPlugins: string[]
   ) => void;
+  onCompleteAnalysis?: (nodeId: string) => void;
   onIsolateNode?: (nodeId: string) => void;
   onOpenPopover: (nodeId: string) => void;
   onPreviewFile?: (entry: LocalFileEntry) => void;
@@ -51,7 +54,9 @@ function resolveStatusLabelFr(status: InvestigationStatus): string {
 
 export const IngestionInspectorSection: React.FC<IngestionInspectorSectionProps> = ({
   node,
+  isLoading = false,
   onLaunchMode,
+  onCompleteAnalysis,
   onIsolateNode,
   onOpenPopover,
   onPreviewFile,
@@ -163,16 +168,20 @@ export const IngestionInspectorSection: React.FC<IngestionInspectorSectionProps>
         </div>
       )}
 
-      {/* Native Accessible ProgressBar */}
+      {/* Native Accessible ProgressBar & 3-Stage Stepper */}
       <div className="ingestion-progress-block">
         <div className="ingestion-progress-label-row">
-          <span className="ingestion-progress-stage">{analysisStage}</span>
+          <span className="ingestion-progress-stage">
+            {isLoading ? tr('Analyse en cours...') : analysisStage}
+          </span>
           <bdi dir="ltr" className="ingestion-progress-pct">
             {progress}%
           </bdi>
         </div>
         <progress
-          className="ingestion-progress-native"
+          className={`ingestion-progress-native ${
+            progress >= 100 ? 'is-complete' : progress > 0 ? 'is-running' : ''
+          }`}
           role="progressbar"
           value={progress}
           max={100}
@@ -181,6 +190,60 @@ export const IngestionInspectorSection: React.FC<IngestionInspectorSectionProps>
           aria-valuenow={progress}
           aria-label={tr("Progression de l'analyse forensique")}
         />
+        {(analysisMode === 'step_by_step' || (progress > 0 && progress < 100)) && (
+          <div className="ingestion-stepper-row">
+            {[
+              { step: 1, threshold: 33, label: tr('Méta & Images') },
+              { step: 2, threshold: 66, label: tr('Texte & Regex') },
+              { step: 3, threshold: 100, label: tr('NER & Entités') },
+            ].map((item) => {
+              const isDone = progress >= item.threshold;
+              const isCurrent =
+                !isDone &&
+                ((item.step === 1 && progress > 0) ||
+                  (item.step === 2 && progress >= 33 && progress < 66) ||
+                  (item.step === 3 && progress >= 66 && progress < 100));
+              return (
+                <span
+                  key={item.step}
+                  className={`ingestion-step-pill ${
+                    isDone ? 'is-done' : isCurrent ? 'is-current' : ''
+                  }`}
+                >
+                  {isDone ? <Check size={10} aria-hidden="true" /> : <span>{item.step}.</span>}
+                  <span>{item.label}</span>
+                </span>
+              );
+            })}
+          </div>
+        )}
+        {status === 'active_investigation' &&
+          progress > 0 &&
+          progress < 100 &&
+          isIngestionModeLive('step_by_step', fileName, mimeType) && (
+            <button
+              type="button"
+              className="btn btn-primary btn-xs ingestion-resume-btn"
+              disabled={isLoading}
+              onClick={() => {
+                if (onCompleteAnalysis) {
+                  onCompleteAnalysis(node.id);
+                } else {
+                  onLaunchMode(
+                    node.id,
+                    'step_by_step',
+                    tr('Analyse Complète'),
+                    selectedPluginIds
+                  );
+                }
+              }}
+            >
+              <Play size={11} aria-hidden="true" />
+              <span>
+                {isLoading ? tr('Analyse en cours...') : tr("Finaliser l'analyse (100%)")}
+              </span>
+            </button>
+          )}
       </div>
 
       {/* Pre-seal File Identity & SHA-256 */}
@@ -222,19 +285,23 @@ export const IngestionInspectorSection: React.FC<IngestionInspectorSectionProps>
           <SlidersHorizontal size={11} aria-hidden="true" />
           <span>{tr("Changer ou lancer un mode d'analyse")}</span>
         </div>
-        <div className="ingestion-inspector-mode-grid">
+        <div className="ingestion-inspector-mode-grid ingestion-inspector-mode-grid--two">
           {INGESTION_MODES.map((modeSpec) => {
             const isSelected = analysisMode === modeSpec.key;
             const phaseNum = modeSpec.targetPhase.replace('Phase ', '');
             const isLive = isIngestionModeLive(modeSpec.key, fileName, mimeType);
+            const isFullWidth = modeSpec.key === 'recursive';
             return (
               <button
                 key={modeSpec.key}
                 type="button"
                 aria-disabled={isLive ? undefined : 'true'}
+                disabled={isLoading && isLive}
                 className={`ingestion-inspector-mode-btn ${
                   isLive ? 'is-live-phase' : 'is-future-phase'
-                } ${isSelected ? 'is-selected' : ''}`}
+                } ${isSelected ? 'is-selected' : ''} ${
+                  isFullWidth ? 'is-full-span' : ''
+                }`}
                 title={tr(modeSpec.descriptionFr)}
                 onClick={() => {
                   onLaunchMode(node.id, modeSpec.key, tr(modeSpec.stageFr), selectedPluginIds);
@@ -277,7 +344,12 @@ export const IngestionInspectorSection: React.FC<IngestionInspectorSectionProps>
       <div className="ingestion-inspector-footer">
         <div className="ingestion-plugins-chips">
           {taxonomy.plugins
-            .filter((p) => selectedPluginIds.includes(p.id))
+            .filter((p) => {
+              if (!selectedPluginIds.includes(p.id)) return false;
+              if (mimeType === 'application/pdf' && p.id === 'python-docx') return false;
+              if (fileName.toLowerCase().endsWith('.docx') && p.id === 'pymupdf') return false;
+              return true;
+            })
             .slice(0, 4)
             .map((plugin) => (
               <span key={plugin.id} className="ingestion-plugin-chip" title={tr(plugin.descriptionFr)}>

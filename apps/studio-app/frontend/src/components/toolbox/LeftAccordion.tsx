@@ -36,12 +36,11 @@ interface LeftAccordionProps {
 
 const LAYER_KEYS: LayerId[] = ['VERIFIED', 'OSINT_RAW', 'INFRA', 'HYPOTHESIS', 'FLOWS'];
 
-type DomainType = 'all' | 'territory' | 'actors' | 'telecom' | 'finance' | 'socmint' | 'cyber' | 'biometrics' | 'legal';
+type DomainType = 'all' | 'actors' | 'telecom' | 'finance' | 'socmint' | 'cyber' | 'biometrics' | 'legal';
 
 const DOMAIN_COLORS: Record<DomainType, string> = {
   all: 'var(--color-text-secondary)',
-  territory: 'var(--color-domain-territoire, #10b981)',
-  actors: 'var(--color-domain-acteurs, #3b82f6)',
+  actors: 'var(--color-domain-acteurs, #22c55e)',
   telecom: 'var(--color-domain-telecoms, #6366f1)',
   finance: 'var(--color-domain-finances, #f59e0b)',
   socmint: 'var(--color-domain-socmint, #06b6d4)',
@@ -56,15 +55,7 @@ interface NodeItemDef {
   dbBadge: string;
 }
 
-const ALL_37_NODES: NodeItemDef[] = [
-  // Territory
-  { key: 'wilaya', domain: 'territory', dbBadge: 'Cadastre' },
-  { key: 'daira', domain: 'territory', dbBadge: 'Cadastre' },
-  { key: 'commune', domain: 'territory', dbBadge: 'Cadastre' },
-  { key: 'unite', domain: 'territory', dbBadge: 'Procédure CPP' },
-  { key: 'affaire', domain: 'territory', dbBadge: 'Procédure CPP' },
-  { key: 'magistrat', domain: 'territory', dbBadge: 'Procédure CPP' },
-
+const OPERATIONAL_NODE_TYPES: NodeItemDef[] = [
   // Actors
   { key: 'personne', domain: 'actors', dbBadge: 'Identité Cible' },
   { key: 'entreprise', domain: 'actors', dbBadge: 'Registre Commerce' },
@@ -166,10 +157,10 @@ export const LeftAccordion: React.FC<LeftAccordionProps> = ({
     return counts;
   }, [nodes]);
 
-  // Filter 37 nodes by selected domain
+  // Filter operational node types by selected domain
   const filteredNodes = useMemo(() => {
-    if (selectedDomain === 'all') return ALL_37_NODES;
-    return ALL_37_NODES.filter((n) => n.domain === selectedDomain);
+    if (selectedDomain === 'all') return OPERATIONAL_NODE_TYPES;
+    return OPERATIONAL_NODE_TYPES.filter((n) => n.domain === selectedDomain);
   }, [selectedDomain]);
 
   const handleDragStart = (e: React.DragEvent, typeKey: string) => {
@@ -181,7 +172,6 @@ export const LeftAccordion: React.FC<LeftAccordionProps> = ({
 
   const domainChips: [DomainType, string][] = [
     ['all', tr('Tous')],
-    ['territory', tr('Territoire')],
     ['actors', tr('Acteurs')],
     ['telecom', tr('Télécoms')],
     ['finance', tr('Finances')],
@@ -404,7 +394,7 @@ export const LeftAccordion: React.FC<LeftAccordionProps> = ({
             <span>{t.creationTitle}</span>
           </div>
           <div className="accordion-header-right">
-            <span className="chip chip-neutral font-mono text-xs">37</span>
+            <span className="chip chip-neutral font-mono text-xs">{OPERATIONAL_NODE_TYPES.length}</span>
             <ChevronDown
               size={12}
               className={`accordion-chevron ${openSections.toolbox ? 'is-open' : ''}`}

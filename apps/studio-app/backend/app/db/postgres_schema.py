@@ -21,10 +21,18 @@ POSTGRES_DDL_STATEMENTS: Sequence[str] = (
         title VARCHAR(255) NOT NULL,
         description TEXT DEFAULT '',
         status VARCHAR(32) NOT NULL DEFAULT 'OPEN',
+        unit_name VARCHAR(255) DEFAULT '',
+        magistrate_name VARCHAR(255) DEFAULT '',
+        jurisdiction VARCHAR(255) DEFAULT '',
+        wilaya VARCHAR(128) DEFAULT '',
         created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
     """,
+    "ALTER TABLE cases ADD COLUMN IF NOT EXISTS unit_name VARCHAR(255) DEFAULT '';",
+    "ALTER TABLE cases ADD COLUMN IF NOT EXISTS magistrate_name VARCHAR(255) DEFAULT '';",
+    "ALTER TABLE cases ADD COLUMN IF NOT EXISTS jurisdiction VARCHAR(255) DEFAULT '';",
+    "ALTER TABLE cases ADD COLUMN IF NOT EXISTS wilaya VARCHAR(128) DEFAULT '';",
     # 2. Nodes table
     """
     CREATE TABLE IF NOT EXISTS nodes (
@@ -190,6 +198,44 @@ POSTGRES_DDL_STATEMENTS: Sequence[str] = (
     (
         "CREATE INDEX IF NOT EXISTS idx_candidates_bb_sync "
         "ON extracted_candidates(blackboard_sync_status);"
+    ),
+    # 9. Staged extracted semantic relation candidates (D18)
+    """
+    CREATE TABLE IF NOT EXISTS extracted_relation_candidates (
+        id UUID PRIMARY KEY,
+        case_id UUID NOT NULL REFERENCES cases(id) ON DELETE CASCADE,
+        run_id UUID NOT NULL REFERENCES extraction_runs(id) ON DELETE CASCADE,
+        source_node_id UUID NOT NULL REFERENCES nodes(id) ON DELETE CASCADE,
+        relation_type VARCHAR(64) NOT NULL,
+        source_entity_type VARCHAR(64) NOT NULL,
+        source_normalized_value VARCHAR(512) NOT NULL,
+        target_entity_type VARCHAR(64) NOT NULL,
+        target_normalized_value VARCHAR(512) NOT NULL,
+        source_candidate_id UUID REFERENCES extracted_candidates(id) ON DELETE CASCADE,
+        target_candidate_id UUID REFERENCES extracted_candidates(id) ON DELETE CASCADE,
+        suggested_layer VARCHAR(32) NOT NULL DEFAULT 'HYPOTHESIS',
+        attributes_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+        confidence DOUBLE PRECISION NOT NULL DEFAULT 0.85,
+        extractor_tool VARCHAR(128) NOT NULL,
+        stage_number INT NOT NULL DEFAULT 1,
+        source_page INT NOT NULL DEFAULT 1,
+        source_locator VARCHAR(128) NOT NULL DEFAULT '',
+        quote_snippet TEXT NOT NULL DEFAULT '',
+        validation_status VARCHAR(32) NOT NULL DEFAULT 'PENDING',
+        promoted_edge_id UUID,
+        validated_by VARCHAR(128),
+        validated_at TIMESTAMPTZ,
+        blackboard_sync_status VARCHAR(32) NOT NULL DEFAULT 'NOT_PUBLISHED',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    """,
+    (
+        "CREATE INDEX IF NOT EXISTS idx_rel_candidates_case_node "
+        "ON extracted_relation_candidates(case_id, source_node_id);"
+    ),
+    (
+        "CREATE INDEX IF NOT EXISTS idx_rel_candidates_status "
+        "ON extracted_relation_candidates(validation_status);"
     ),
 )
 

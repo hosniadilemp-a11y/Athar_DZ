@@ -23,6 +23,7 @@ import { WorkspaceTabsBar } from './components/canvas/WorkspaceTabsBar';
 import { Toolbar, type ActiveViewMode } from './components/canvas/Toolbar';
 import { ContextMenu } from './components/canvas/ContextMenu';
 import { LayerChangeDialog } from './components/canvas/LayerChangeDialog';
+import { hasOpenModal } from './components/common/ModalPortal';
 import { AccessibleListView } from './components/canvas/AccessibleListView';
 import { InspectorPanel } from './components/inspector/InspectorPanel';
 import { LeftAccordion } from './components/toolbox/LeftAccordion';
@@ -255,6 +256,7 @@ export function App() {
   // Global Keyboard Shortcuts (Ctrl+K, Ctrl+Z, Ctrl+Y, Ctrl+A, Ctrl+E, etc.)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (hasOpenModal()) return;
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsCommandPaletteOpen((prev) => !prev);
@@ -278,11 +280,11 @@ export function App() {
       } else if (e.key === '[') {
         if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
         e.preventDefault();
-        setLeftWidth((w) => Math.max(170, w - 24));
+        setLeftWidth((w) => Math.max(220, w - 24));
       } else if (e.key === ']') {
         if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
         e.preventDefault();
-        setLeftWidth((w) => Math.min(550, w + 24));
+        setLeftWidth((w) => Math.min(520, w + 24));
       } else if (e.key === 'Delete' || e.key === 'Backspace') {
         if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) return;
         const idsToDelete =
@@ -321,11 +323,11 @@ export function App() {
 
     const handleMouseMove = (e: MouseEvent) => {
       if (isResizingLeft) {
-        const newWidth = Math.min(Math.max(e.clientX, 170), 550);
+        const newWidth = Math.min(Math.max(e.clientX, 220), 520);
         setLeftWidth(newWidth);
       }
       if (isResizingRight) {
-        const newWidth = Math.min(Math.max(window.innerWidth - e.clientX, 240), 650);
+        const newWidth = Math.min(Math.max(window.innerWidth - e.clientX, 290), 650);
         setRightWidth(newWidth);
       }
     };
@@ -348,11 +350,11 @@ export function App() {
     const handleWindowResize = () => {
       const w = window.innerWidth;
       if (w < 1050) {
-        setLeftWidth((prev) => Math.min(prev, 220));
-        setRightWidth((prev) => Math.min(prev, 280));
+        setLeftWidth((prev) => Math.max(220, Math.min(prev, 230)));
+        setRightWidth((prev) => Math.max(290, Math.min(prev, 300)));
       } else if (w < 1250) {
-        setLeftWidth((prev) => Math.min(prev, 240));
-        setRightWidth((prev) => Math.min(prev, 310));
+        setLeftWidth((prev) => Math.max(220, Math.min(prev, 240)));
+        setRightWidth((prev) => Math.max(290, Math.min(prev, 315)));
       }
     };
     window.addEventListener('resize', handleWindowResize);
@@ -460,6 +462,8 @@ export function App() {
       useGraphStore.setState({ expandedHiddenNodeIds: initialExpanded, activeLayers: initialLayers });
 
       mergeExpandedNodes([optimisticNode], []);
+      registerTabAddedNode(tempId);
+      updateNodePosition(tempId, data.x, data.y, false);
       selectNode(tempId);
       setIsInspectorOpen(true);
       toast.success(`Entité "${optimisticNode.label}" ajoutée au graphe`, "Création d'entité");
@@ -474,6 +478,7 @@ export function App() {
         body: JSON.stringify({
           type: data.type,
           label: data.label,
+          layer: data.layer,
           confidence: data.confidence,
           provenance: 'INVESTIGATOR_MANUAL',
           properties: data.properties,
@@ -487,26 +492,22 @@ export function App() {
           }
           return r.json();
         })
-        .then((createdNode) => {
+        .then((createdNode: GraphNode) => {
           if (!createdNode || !createdNode.id) return;
-          createdNode.x = data.x;
-          createdNode.y = data.y;
-          if (data.layer) createdNode.layer = data.layer;
-          // Reconcile optimistic node with server response
           const store = useGraphStore.getState();
-          const nextExpanded = new Set(store.expandedHiddenNodeIds);
-          nextExpanded.delete(tempId);
-          nextExpanded.add(createdNode.id);
+          const curTab = store.tabs.find((t) => t.id === store.activeTabId);
+          const tabPos =
+            curTab?.kind === 'actor_sphere' ? curTab.snapshot.nodePositions?.[tempId] : undefined;
+          const existingTemp = store.nodes.find((n) => n.id === tempId);
+          createdNode.x = tabPos?.x ?? existingTemp?.x ?? data.x;
+          createdNode.y = tabPos?.y ?? existingTemp?.y ?? data.y;
+          if (data.layer) createdNode.layer = data.layer;
+
           const nextLayers = new Set(store.activeLayers);
           if (createdNode.layer) nextLayers.add(createdNode.layer);
+          useGraphStore.setState({ activeLayers: nextLayers });
 
-          useGraphStore.setState({
-            nodes: store.nodes.map((n) => (n.id === tempId ? createdNode : n)),
-            selectedNodeId: store.selectedNodeId === tempId ? createdNode.id : store.selectedNodeId,
-            selectedNodeIds: store.selectedNodeIds.map((id) => (id === tempId ? createdNode.id : id)),
-            expandedHiddenNodeIds: nextExpanded,
-            activeLayers: nextLayers,
-          });
+          reconcileOptimisticNodeId(tempId, createdNode);
         })
         .catch((err) => {
           console.error('Erreur création nœud:', err);
@@ -522,7 +523,7 @@ export function App() {
           toast.error(err instanceof Error ? err.message : 'Erreur serveur', "Échec de création");
         });
     },
-    [activeCase, mergeExpandedNodes, selectNode, toast]
+    [activeCase, mergeExpandedNodes, reconcileOptimisticNodeId, registerTabAddedNode, selectNode, toast, updateNodePosition]
   );
 
   const handleTriggerPhaseNotice = (name: string, phase: string) => {
@@ -644,13 +645,17 @@ export function App() {
           })
           .then((createdNode: GraphNode) => {
             if (!createdNode || !createdNode.id) return;
-            createdNode.x = dropX;
-            createdNode.y = dropY;
+            const storeNow = useGraphStore.getState();
+            const curTab = storeNow.tabs.find((t) => t.id === storeNow.activeTabId);
+            const tabPos =
+              curTab?.kind === 'actor_sphere' ? curTab.snapshot.nodePositions?.[tempId] : undefined;
+            const existingTemp = storeNow.nodes.find((n) => n.id === tempId);
+            createdNode.x = tabPos?.x ?? existingTemp?.x ?? dropX;
+            createdNode.y = tabPos?.y ?? existingTemp?.y ?? dropY;
             createdNode.layer = createdNode.layer || 'VERIFIED';
 
             rebindLocalFileNodeId(tempId, createdNode.id);
 
-            const storeNow = useGraphStore.getState();
             const layersNow = new Set(storeNow.activeLayers);
             layersNow.add(createdNode.layer);
             useGraphStore.setState({ activeLayers: layersNow });
@@ -760,7 +765,10 @@ export function App() {
       )}
 
       {/* 3. Main Workspace Area: Left Panel + Center Stage + Right Inspector */}
-      <main className="main-workspace" style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }}>
+      <main
+        className={`main-workspace ${isResizingLeft || isResizingRight ? 'is-panel-resizing' : ''}`}
+        style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }}
+      >
         {/* Left Toolbox and Layers Accordion (resizable & collapsible) */}
         <LeftAccordion
           style={{ width: `${leftWidth}px`, flexShrink: 0 }}
@@ -824,8 +832,8 @@ export function App() {
             aria-orientation="vertical"
             aria-label="Redimensionner le panneau gauche"
             aria-valuenow={leftWidth}
-            aria-valuemin={170}
-            aria-valuemax={550}
+            aria-valuemin={220}
+            aria-valuemax={520}
             onMouseDown={(e) => {
               e.preventDefault();
               setIsResizingLeft(true);
@@ -833,10 +841,10 @@ export function App() {
             onKeyDown={(e) => {
               if (e.key === 'ArrowLeft') {
                 e.preventDefault();
-                setLeftWidth((w) => Math.max(170, w - 16));
+                setLeftWidth((w) => Math.max(220, w - 16));
               } else if (e.key === 'ArrowRight') {
                 e.preventDefault();
-                setLeftWidth((w) => Math.min(550, w + 16));
+                setLeftWidth((w) => Math.min(520, w + 16));
               }
             }}
           />
@@ -1026,7 +1034,7 @@ export function App() {
               aria-orientation="vertical"
               aria-label="Redimensionner l'inspecteur judiciaire"
               aria-valuenow={rightWidth}
-              aria-valuemin={240}
+              aria-valuemin={290}
               aria-valuemax={650}
               onMouseDown={(e) => {
                 e.preventDefault();
@@ -1038,7 +1046,7 @@ export function App() {
                   setRightWidth((w) => Math.min(650, w + 16));
                 } else if (e.key === 'ArrowRight') {
                   e.preventDefault();
-                  setRightWidth((w) => Math.max(240, w - 16));
+                  setRightWidth((w) => Math.max(290, w - 16));
                 }
               }}
             />
@@ -1115,6 +1123,7 @@ export function App() {
         activeCase={activeCase}
         nodeCount={nodes.length}
         edgeCount={edges.length}
+        onCaseUpdated={(updated) => setActiveCase(updated)}
       />
 
       <PhaseNoticeModal

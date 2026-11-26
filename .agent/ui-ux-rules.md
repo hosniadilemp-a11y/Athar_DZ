@@ -177,3 +177,30 @@ Build once, reuse everywhere. No one-off copies.
      - Visual styling: muted text, grayscale filter (80%), reduced opacity (0.55).
      - A visible phase badge indicating its milestone (e.g., `Phase 2`, `Phase 3`, `Phase 5`).
      - Never use native HTML `disabled` that drops keyboard and click events. When activated by click or Enter, trigger an informative notice explaining the feature's scheduled phase.
+
+---
+
+## 16. Real Investigation Data & Compound Geo / Selector UX (Anti-Regression Rules)
+
+1. **Zero Hardcoded Demo Metrics or Static Clues in Runtime Views**:
+   - Never display hardcoded case KPI strings (`1 450 000 DZD`, `6 Victimes`, `Alger, Oran, Blida`, `100% SHA-256`, etc.) or `useState([...])` static clue lists inside `InspectorPanel`, overview dashboards, or `translations.ts`.
+   - All case summary counters (**Préjudice Estimé**, **Victimes & Plaintes**, **Suspects**, **Wilayas Impliquées**, **Objets Analysés**, **À Investiguer**, **Éléments à Valider**) and the **Boîte d'Arbitrage des Indices** MUST derive strictly from the active investigation's store/API data, showing `0`, `—`, or an explicit empty state when no records exist.
+2. **Valid Design Tokens Only (No Broken Padding or Corner Radii)**:
+   - Never use undefined variables (`--space-2-5`, `--radius-xs`) anywhere in stylesheets or JSX. Every spacing, color, typography, and radius token MUST exist in `src/styles/tokens.css`.
+3. **Responsive Compound Selectors (`Localisation Administrative : Wilaya → Daïra → Commune`)**:
+   - Never place searchable cascading dropdowns inside rigid `1fr 1fr 1fr` sub-150px inline-styled columns or below `12px` font size (`fontSize: 10px/10.5px/11px`).
+   - Always use reusable CSS classes (`.geo-cascade-grid`, `.geo-select-wrap`, `.geo-select-dropdown`, `.geo-select-option`) with:
+     - `grid-template-columns: repeat(auto-fit, minmax(175px, 1fr))` so fields wrap cleanly on narrow panels or modals without clipping labels or placeholders;
+     - Minimum `var(--text-xs)` (`12px`) font size, minimum `var(--target-size-min)` (`32px`) interactive hit targets, valid `var(--radius-sm)` / `var(--radius-md)` corners, and opaque hover/focus-visible dropdown rows (`min-width: 100%`).
+
+
+---
+
+## 17. Modal Focus Isolation & Event Containment
+
+1. **Portal + `inert` Background Isolation**:
+   - Every blocking modal (`aria-modal="true"`) MUST render through `ModalPortal` so it portals into `document.body` outside the graph canvas DOM tree, applies `inert` to `.studio-shell`, auto-focuses the dialog/primary button, traps `Tab`/`Shift+Tab`, and stops `wheel`, `mousedown`, and `contextmenu` propagation.
+2. **Global Shortcut & Canvas Listener Guard**:
+   - Global `window` keydown listeners and background canvas wheel/keyboard handlers MUST check `hasOpenModal()` and return early while any blocking modal is open.
+3. **Enter Confirmation on Alert/Delete Modals**:
+   - Confirmation dialogs (e.g., `DeleteNodesModal`) MUST confirm on `Enter` (when focus is not on an explicit Cancel/Close button) and dismiss on `Escape`.

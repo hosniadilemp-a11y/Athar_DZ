@@ -3,6 +3,7 @@ import { useGraphStore } from '../../store/useGraphStore';
 import { useI18n } from '../../context/I18nContext';
 import type { LayerId } from '../../types/registry';
 import {
+  Check,
   Compass,
   GitBranch,
   Layers,
@@ -34,8 +35,12 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   const {
     contextMenu,
     closeContextMenu,
-    openLayerChangeModal,
+    changeNodeLayer,
     nodes,
+    candidatesByNodeId,
+    selectNode,
+    selectCandidate,
+    validateCandidates,
     updateNodePosition,
     setLinkMode,
     setLinkSourceNodeId,
@@ -47,15 +52,30 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     selectedNodeIds,
     requestDeleteNodes,
   } = useGraphStore();
-  const { tr, dir } = useI18n();
+  const { tr } = useI18n();
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const targetNode = nodes.find((n) => n.id === contextMenu.targetNodeId);
+  const targetId = contextMenu.targetNodeId || '';
+  const isCandidateTarget = targetId.startsWith('cand:');
+  const candidateId = isCandidateTarget ? targetId.slice(5) : null;
+  const candidateMatch = (() => {
+    if (!candidateId) return null;
+    for (const [sourceNodeId, list] of Object.entries(candidatesByNodeId)) {
+      const found = list.find((c) => c.id === candidateId);
+      if (found) return { sourceNodeId, candidate: found };
+    }
+    return null;
+  })();
+
+  const targetNode = !isCandidateTarget ? nodes.find((n) => n.id === targetId) : undefined;
+  const isOpen = contextMenu.isOpen && (Boolean(targetNode) || Boolean(candidateMatch));
 
   useEffect(() => {
-    if (!contextMenu.isOpen) return;
+    if (!isOpen) return;
 
-    const firstItem = menuRef.current?.querySelector<HTMLButtonElement>('[role="menuitem"]:not([aria-disabled="true"])');
+    const firstItem = menuRef.current?.querySelector<HTMLButtonElement>(
+      '[role="menuitem"]:not([aria-disabled="true"])'
+    );
     firstItem?.focus();
 
     const handleClickOutside = (e: MouseEvent) => {
@@ -70,14 +90,15 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         closeContextMenu();
       } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();
-        const items = Array.from(menuRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]') || []);
+        const items = Array.from(
+          menuRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]') || []
+        );
+        if (items.length === 0) return;
         const currentIndex = items.indexOf(document.activeElement as HTMLButtonElement);
         if (e.key === 'ArrowDown') {
-          const nextIndex = (currentIndex + 1) % items.length;
-          items[nextIndex]?.focus();
+          items[(currentIndex + 1) % items.length]?.focus();
         } else {
-          const prevIndex = (currentIndex - 1 + items.length) % items.length;
-          items[prevIndex]?.focus();
+          items[(currentIndex - 1 + items.length) % items.length]?.focus();
         }
       }
     };
@@ -88,18 +109,100 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       window.removeEventListener('mousedown', handleClickOutside);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [contextMenu.isOpen, closeContextMenu]);
+  }, [isOpen, closeContextMenu]);
 
-  if (!contextMenu.isOpen || !targetNode) return null;
+  if (!isOpen) return null;
+
+  const clampedX =
+    typeof window !== 'undefined'
+      ? Math.min(contextMenu.x, Math.max(8, window.innerWidth - 270))
+      : contextMenu.x;
+  const clampedY =
+    typeof window !== 'undefined'
+      ? Math.min(contextMenu.y, Math.max(8, window.innerHeight - 400))
+      : contextMenu.y;
+
+  // Context Menu for extracted candidate ghost nodes (`cand:xxx`)
+  if (candidateMatch) {
+    const { sourceNodeId, candidate } = candidateMatch;
+
+    return (
+      <div
+        ref={menuRef}
+        role="menu"
+        className="context-menu-panel"
+        aria-label={candidate.label}
+        style={{ left: `${clampedX}px`, top: `${clampedY}px` }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="context-menu-header">
+          <span className="context-menu-node-name">
+            <bdi dir="ltr">{candidate.label}</bdi>
+          </span>
+        </div>
+
+        <button
+          type="button"
+          role="menuitem"
+          className="context-menu-item is-accent"
+          onClick={() => {
+            closeContextMenu();
+            selectNode(sourceNodeId, false);
+            selectCandidate(candidate.id);
+            onInspect();
+          }}
+        >
+          <Info size={16} aria-hidden="true" />
+          <span>{tr('Inspecter les propriétés')}</span>
+        </button>
+
+        <button
+          type="button"
+          role="menuitem"
+          className="context-menu-item is-success"
+          onClick={() => {
+            closeContextMenu();
+            void validateCandidates(sourceNodeId, {
+              action: 'validate',
+              candidate_ids: [candidate.id],
+            });
+          }}
+        >
+          <Check size={16} aria-hidden="true" />
+          <span>{tr('Valider et ajouter au graphe')}</span>
+        </button>
+
+        <div className="context-menu-divider" />
+
+        <button
+          type="button"
+          role="menuitem"
+          className="context-menu-item is-danger"
+          onClick={() => {
+            closeContextMenu();
+            void validateCandidates(sourceNodeId, {
+              action: 'reject',
+              candidate_ids: [candidate.id],
+            });
+          }}
+        >
+          <Trash2 size={16} aria-hidden="true" />
+          <span>{tr('Écarter cet indice')}</span>
+        </button>
+      </div>
+    );
+  }
+
+  if (!targetNode) return null;
 
   const handlePromoteToVerified = () => {
     closeContextMenu();
-    openLayerChangeModal(targetNode.id, 'VERIFIED');
+    void changeNodeLayer(targetNode.id, 'VERIFIED');
   };
 
   const handleMoveToLayer = (layer: LayerId) => {
     closeContextMenu();
-    openLayerChangeModal(targetNode.id, layer);
+    void changeNodeLayer(targetNode.id, layer);
   };
 
   const handleHideNode = () => {
@@ -109,69 +212,19 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     }
   };
 
-  const menuItemStyle: React.CSSProperties = {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    gap: 'var(--space-2)',
-    padding: 'var(--space-2) var(--space-3)',
-    backgroundColor: 'transparent',
-    border: 'none',
-    color: 'var(--color-text-primary)',
-    fontSize: 'var(--text-sm)',
-    cursor: 'pointer',
-    textAlign: dir === 'rtl' ? 'right' : 'left',
-  };
-
-  const disabledItemStyle: React.CSSProperties = {
-    ...menuItemStyle,
-    color: 'var(--color-text-muted)',
-    cursor: 'not-allowed',
-  };
-
-  const phaseBadgeStyle: React.CSSProperties = {
-    fontSize: 'var(--text-xs)',
-    fontFamily: 'var(--font-mono)',
-    padding: '1px 4px',
-    borderRadius: 'var(--radius-sm)',
-    backgroundColor: 'var(--color-bg-subtle)',
-    color: 'var(--color-accent-text)',
-    border: '1px solid var(--color-border-default)',
-  };
-
-  const clampedX = typeof window !== 'undefined' ? Math.min(contextMenu.x, Math.max(8, window.innerWidth - 250)) : contextMenu.x;
-  const clampedY = typeof window !== 'undefined' ? Math.min(contextMenu.y, Math.max(8, window.innerHeight - 320)) : contextMenu.y;
-
   return (
     <div
       ref={menuRef}
       role="menu"
-      aria-label={`${targetNode.label} — ${targetNode.type}`}
-      style={{
-        position: 'fixed',
-        left: `${clampedX}px`,
-        top: `${clampedY}px`,
-        backgroundColor: 'var(--color-bg-elevated)',
-        border: '1px solid var(--color-border-default)',
-        borderRadius: 'var(--radius-md)',
-        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.45)',
-        zIndex: 1200,
-        minWidth: '220px',
-        padding: 'var(--space-1) 0',
-      }}
+      className="context-menu-panel"
+      aria-label={targetNode.label}
+      style={{ left: `${clampedX}px`, top: `${clampedY}px` }}
       onClick={(e) => e.stopPropagation()}
     >
-      <div
-        style={{
-          padding: 'var(--space-2) var(--space-3)',
-          borderBottom: '1px solid var(--color-border-subtle)',
-          fontSize: 'var(--text-xs)',
-          color: 'var(--color-text-muted)',
-          fontFamily: 'var(--font-mono)',
-          textAlign: dir === 'rtl' ? 'right' : 'left',
-        }}
-      >
-        {targetNode.label} ({targetNode.type})
+      <div className="context-menu-header">
+        <span className="context-menu-node-name">
+          <bdi dir="ltr">{targetNode.label}</bdi>
+        </span>
       </div>
 
       {activeView === 'graph' ? (
@@ -179,10 +232,13 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           <button
             type="button"
             role="menuitem"
-            style={menuItemStyle}
-            onClick={() => { closeContextMenu(); onExpand(1); }}
+            className="context-menu-item"
+            onClick={() => {
+              closeContextMenu();
+              onExpand(1);
+            }}
           >
-            <Compass size={16} />
+            <Compass size={16} aria-hidden="true" />
             <span>{tr('Explorer voisinage (1 bond)')}</span>
           </button>
 
@@ -190,13 +246,13 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             <button
               type="button"
               role="menuitem"
-              style={{ ...menuItemStyle, color: 'var(--color-accent-text)' }}
+              className="context-menu-item is-accent"
               onClick={() => {
                 closeContextMenu();
                 toggleExpandNodeConnections(targetNode.id);
               }}
             >
-              <GitBranch size={16} />
+              <GitBranch size={16} aria-hidden="true" />
               <span>{tr('Déplier / Replier ses entités cachées liées')}</span>
             </button>
           )}
@@ -204,17 +260,20 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           <button
             type="button"
             role="menuitem"
-            style={menuItemStyle}
-            onClick={() => { closeContextMenu(); onExpand(2); }}
+            className="context-menu-item"
+            onClick={() => {
+              closeContextMenu();
+              onExpand(2);
+            }}
           >
-            <GitBranch size={16} />
+            <GitBranch size={16} aria-hidden="true" />
             <span>{tr('Explorer réseau élargi (2 bonds)')}</span>
           </button>
 
           <button
             type="button"
             role="menuitem"
-            style={menuItemStyle}
+            className="context-menu-item"
             onClick={() => {
               closeContextMenu();
               togglePinNode(targetNode.id);
@@ -222,11 +281,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           >
             <Pin
               size={16}
-              style={{
-                color: pinnedNodeIds.has(targetNode.id)
-                  ? 'var(--color-status-warning)'
-                  : 'inherit',
-              }}
+              className={pinnedNodeIds.has(targetNode.id) ? 'is-pinned-icon' : ''}
+              aria-hidden="true"
             />
             <span>
               {pinnedNodeIds.has(targetNode.id)
@@ -240,13 +296,13 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           <button
             type="button"
             role="menuitem"
-            style={{ ...menuItemStyle, color: 'var(--color-accent-text)' }}
+            className="context-menu-item is-accent"
             onClick={() => {
               closeContextMenu();
               onLocateInGraph(targetNode.id);
             }}
           >
-            <Network size={16} />
+            <Network size={16} aria-hidden="true" />
             <span>{tr('Localiser sur le Graphe')}</span>
           </button>
         )
@@ -255,23 +311,28 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       <button
         type="button"
         role="menuitem"
-        style={menuItemStyle}
+        className="context-menu-item"
         onClick={() => {
           closeContextMenu();
           openActorTab(targetNode.id);
         }}
       >
-        <FolderOpen size={16} style={{ color: 'var(--color-layer-4-hypothesis)' }} />
+        <FolderOpen size={16} className="is-hypothesis-icon" aria-hidden="true" />
         <span>{tr("Ouvrir dans un nouvel onglet d'investigation")}</span>
       </button>
 
       <button
         type="button"
         role="menuitem"
-        style={menuItemStyle}
-        onClick={() => { closeContextMenu(); onInspect(); }}
+        className="context-menu-item"
+        onClick={() => {
+          closeContextMenu();
+          selectCandidate(null);
+          selectNode(targetNode.id, false);
+          onInspect();
+        }}
       >
-        <Info size={16} />
+        <Info size={16} aria-hidden="true" />
         <span>{tr('Inspecter les propriétés')}</span>
       </button>
 
@@ -279,39 +340,49 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         <button
           type="button"
           role="menuitem"
-          style={menuItemStyle}
+          className="context-menu-item"
           onClick={() => {
             closeContextMenu();
             setLinkMode(true);
             setLinkSourceNodeId(targetNode.id);
           }}
         >
-          <Link2 size={16} style={{ color: 'var(--color-status-warning)' }} />
+          <Link2 size={16} className="is-warning-icon" aria-hidden="true" />
           <span>{tr('Créer une liaison depuis cette entité...')}</span>
         </button>
       )}
 
-      <div style={{ height: '1px', backgroundColor: 'var(--color-border-subtle)', margin: 'var(--space-1) 0' }} />
+      <div className="context-menu-divider" />
 
-      <button
-        type="button"
-        role="menuitem"
-        style={menuItemStyle}
-        onClick={() => handleMoveToLayer(targetNode.layer === 'VERIFIED' ? 'HYPOTHESIS' : 'VERIFIED')}
-      >
-        <Layers size={16} style={{ color: 'var(--color-accent-text)' }} />
-        <span>{tr('Changer de calque')}</span>
-      </button>
+      <div className="context-menu-layer-group" role="group" aria-label={tr('Calque')}>
+        <span className="context-menu-layer-heading">
+          <Layers size={14} className="is-accent-icon" aria-hidden="true" />
+          <span>{tr('Calque')}</span>
+        </span>
+        <div className="context-menu-layer-pills">
+          {(['VERIFIED', 'OSINT_RAW', 'INFRA', 'HYPOTHESIS', 'FLOWS'] as LayerId[]).map((layerId) => (
+            <button
+              key={layerId}
+              type="button"
+              role="menuitem"
+              className={`context-menu-layer-pill${targetNode.layer === layerId ? ' is-active' : ''}`}
+              onClick={() => handleMoveToLayer(layerId)}
+            >
+              {layerId}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {targetNode.layer !== 'VERIFIED' && (
         <button
           type="button"
           role="menuitem"
-          style={{ ...menuItemStyle, color: 'var(--color-layer-1-verified)' }}
+          className="context-menu-item is-success"
           onClick={handlePromoteToVerified}
         >
-          <Lock size={16} />
-          <span>{tr('Promouvoir en VERIFIED (Justification requise)')}</span>
+          <Lock size={16} aria-hidden="true" />
+          <span>{tr('Promouvoir en VERIFIED')}</span>
         </button>
       )}
 
@@ -319,32 +390,32 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         type="button"
         role="menuitem"
         aria-disabled="true"
-        style={disabledItemStyle}
+        className="context-menu-item is-disabled"
         onClick={() => alert(tr("L'analyse prédictive IA sera disponible en Phase 3."))}
       >
-        <Wand2 size={16} />
-        <span style={{ flex: 1, textAlign: dir === 'rtl' ? 'right' : 'left' }}>{tr('Enrichissement IA')}</span>
-        <span style={phaseBadgeStyle}>{tr('Phase {n}', { n: 3 })}</span>
+        <Wand2 size={16} aria-hidden="true" />
+        <span className="context-menu-grow">{tr('Enrichissement IA')}</span>
+        <span className="phase-badge">{tr('Phase {n}', { n: 3 })}</span>
       </button>
 
       {activeView === 'graph' && (
         <>
-          <div style={{ height: '1px', backgroundColor: 'var(--color-border-subtle)', margin: 'var(--space-1) 0' }} />
+          <div className="context-menu-divider" />
 
           <button
             type="button"
             role="menuitem"
-            style={{ ...menuItemStyle, color: 'var(--color-status-danger)' }}
+            className="context-menu-item is-danger"
             onClick={handleHideNode}
           >
-            <EyeOff size={16} />
+            <EyeOff size={16} aria-hidden="true" />
             <span>{tr('Masquer du graphe')}</span>
           </button>
 
           <button
             type="button"
             role="menuitem"
-            style={{ ...menuItemStyle, color: 'var(--color-status-danger)' }}
+            className="context-menu-item is-danger"
             onClick={() => {
               const targetIds =
                 selectedNodeIds.includes(targetNode.id) && selectedNodeIds.length > 1
@@ -354,7 +425,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
               requestDeleteNodes(targetIds);
             }}
           >
-            <Trash2 size={16} />
+            <Trash2 size={16} aria-hidden="true" />
             <span>
               {selectedNodeIds.includes(targetNode.id) && selectedNodeIds.length > 1
                 ? tr('Supprimer la sélection ({n})', { n: selectedNodeIds.length })

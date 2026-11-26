@@ -15,17 +15,23 @@ import networkx as nx
 
 from app.schemas.sna import SnaNodeMetric, SnaResultResponse, SuggestedEdge
 
+NON_OPERATIONAL_SNA_TYPES: frozenset[str] = frozenset(
+    {"wilaya", "daira", "commune", "unite", "affaire", "magistrat"}
+)
+
 
 def build_networkx_graph(
     nodes: list[dict[str, Any]],
     edges: list[dict[str, Any]],
     directed: bool = False,
 ) -> tuple[nx.Graph, dict[str, dict[str, Any]]]:
-    """Build NetworkX graph snapshot with node attributes sorted by ID for determinism."""
+    """Build NetworkX graph snapshot excluding administrative/territory hubs for determinism."""
     G = nx.DiGraph() if directed else nx.Graph()
     node_attr_map: dict[str, dict[str, Any]] = {}
 
     for n in sorted(nodes, key=lambda x: str(x["id"])):
+        if str(n.get("type", "")).lower() in NON_OPERATIONAL_SNA_TYPES:
+            continue
         nid = str(n["id"])
         node_attr_map[nid] = n
         G.add_node(nid, **n)

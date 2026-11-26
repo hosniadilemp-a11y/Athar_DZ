@@ -2,7 +2,7 @@
 
 > **Scope:** Exact technical & functional specification for Phase 1 (`App v0.1`), delivered in gated milestones **1A to 1G**.  
 > **Rule Files:** `.agent/phase1-implementation-rules.md`, `.agent/ui-ux-rules.md`, `.agent/llm-no-mistakes-rules.md`, `.agent/SKILL.md`.  
-> **Blocking Open Decisions:** See `DECISIONS.md` (D1–D10).
+> **Blocking Open Decisions:** See `DECISIONS.md` (D1–D20; Phase 1 core covered by D1–D15, Phase 2A & validation ergonomics by D16–D20).
 
 ---
 
@@ -10,7 +10,7 @@
 
 ### Included in Phase 1 (`v0.1`)
 - **2-Tier Dockerized Infrastructure:** App Tier (`backend` FastAPI + `frontend` React 19/TypeScript) and Data Tier (`neo4j:5.20`, `postgis/postgis:16-3.4`, `redis:7.2`) with pinned versions, healthchecks, and named volumes.
-- **Canonical Data Registry:** Single source of truth for all **37 node types** (mapped to **5 forensic layers**: 11 / 8 / 8 / 4 / 6) and **47 directional relationships**, exported/generated cleanly to TypeScript.
+- **Canonical Data Registry:** Single source of truth for all **37 node types** (mapped to **5 forensic layers**: 11 / 8 / 8 / 4 / 6) and **50 directional relationships** (47 Phase 1 core + 3 Phase 2A additions: `EXTRAIT_DE`, `UTILISE_EMAIL`, `IMPLIQUE_TRANSACTION`), exported/generated cleanly to TypeScript.
 - **100-Node Seed Dataset:** Idempotent startup seeding from `doc/examples/candy_wheels_100_nodes/mock-case-candy-wheels.json` into Neo4j and PostgreSQL (fictional data only).
 - **Case & Graph REST API (`/api/v1/cases/{case_id}/...`):** Case CRUD, impact-filtered graph retrieval (`impact_only=true`), 1-hop/2-hop neighborhood expansion, node/edge CRUD, layer promotion (with mandatory human reason), contextual tool proposals, and hash-chained append-only audit ledger.
 - **Circular Graph Studio (`GraphCanvasAdapter`):** Custom React + SVG/HTML circular nodes (`56px` standard, `68px` pivot), layer border colors + dashed hypothesis border, right-click & keyboard (`Shift+F10` / `...`) context menu, Drag & Drop + keyboard node creation from Left Accordion, Link creation mode, undo/redo store (Zustand), accessible list/table alternative, and coordinate pinning (`pinnedNodeIds`).
@@ -38,9 +38,9 @@
 | Milestone | Scope | Exit Criteria | Status |
 | :--- | :--- | :--- | :---: |
 | **1A Foundation** | `docker-compose.yml`, `.env.example`, `/health` (Neo4j/PG/Redis), FastAPI & React/TS shells, `tokens.css` | `docker compose up --build` all green, `tsc`, `eslint`, `pytest` pass | <span style="color:#10b981;">✔ COMPLETED</span> |
-| **1B Data** | Single-source registry (37 nodes, 47 relations, 5 layers), generated TS types, Neo4j constraints, PG/PostGIS schema, idempotent 100-node seed | Seed idempotent, layer count tests (`11/8/8/4/6 = 37`) pass | <span style="color:#10b981;">✔ COMPLETED</span> |
-| **1C Graph API** | `/api/v1/cases/{case_id}/...`, impact rule (`visible_count`/`total_count`), expand, CRUD, layer change w/ reason, SHA-256 audit chain + verify | `pytest` 42 passed, audit tamper test passes | <span style="color:#10b981;">✔ COMPLETED</span> |
-| **1D Canvas** | `GraphCanvasAdapter`, `CircularGraphCanvas`, Zustand slices + undo/redo, context menu, inspector, table alternative, pinning (`pinnedNodeIds`) | Keyboard walkthrough clean, `tsc`, `vitest` 33 passed, `build` clean | <span style="color:#10b981;">✔ COMPLETED</span> |
+| **1B Data** | Single-source registry (37 nodes, 50 relations incl. D16/D18, 5 layers), generated TS types, Neo4j constraints, PG/PostGIS schema, idempotent 100-node seed | Seed idempotent, layer count tests (`11/8/8/4/6 = 37`) & `total_relation_types == 50` pass | <span style="color:#10b981;">✔ COMPLETED</span> |
+| **1C Graph API** | `/api/v1/cases/{case_id}/...`, impact rule (`visible_count`/`total_count`), expand, CRUD (incl. edge `PATCH`/`DELETE`), frictionless layer change (D19), SHA-256 audit chain + verify | Backend `pytest` passes (60 cumulative tests across API, registry, extraction & SNA), audit tamper test passes | <span style="color:#10b981;">✔ COMPLETED</span> |
+| **1D Canvas** | `GraphCanvasAdapter`, circular SVG canvas, Zustand slices + undo/redo, context menu, inspector, table alternative, pinning (`pinnedNodeIds`), modal `inert` isolation (`ModalPortal`), candidate position preservation, 100% default confidence | Keyboard walkthrough clean, `tsc --noEmit`, `eslint`, `vitest` (99 cumulative tests across 14 files), `build` clean | <span style="color:#10b981;">✔ COMPLETED</span> |
 | **1E SNA (16x)** | 16 pure deterministic algorithms in Python NetworkX, SNA panel with method/params display | All 16 registered, tested, and timed on 100-node seed | <span style="color:#10b981;">✔ COMPLETED</span> |
 | **1F Views & Polish** | Left accordion (5 layers, 37 DnD/kbd), Timeline, GIS Map, PDF/JSON export, FR/AR/EN + RTL, Dark/Light, disabled Phase N badges | `ui-ux-rules.md` DoD passes on every view | <span style="color:#10b981;">✔ COMPLETED</span> |
 | **1G Hardening & UI Hooks** | Full test suite, `pip-audit`, `npm audit`, accessibility pass, Option A tab toggle, Option B surface popover 3 modes | All milestone checklists green; Phase 1 closed cleanly | <span style="color:#10b981;">✔ COMPLETED</span> |

@@ -4,7 +4,21 @@ import type { LayerId } from '../../types/registry';
 import { NodeIcon } from './NodeIcon';
 import registryDataRaw from '../../registry/registry.json';
 import type { RegistryData } from '../../types/registry';
-import { MoreHorizontal, Volume2, Pin, Shield, Clock, ScanSearch } from 'lucide-react';
+import {
+  ArrowLeftRight,
+  Clock,
+  Eye,
+  HeartHandshake,
+  MoreHorizontal,
+  Pin,
+  ScanSearch,
+  Shield,
+  ShieldAlert,
+  User,
+  UserCheck,
+  Users,
+  Volume2,
+} from 'lucide-react';
 import { useGraphStore, ONTOLOGY_CATEGORY_COLORS, NODE_TYPE_TO_CATEGORY } from '../../store/useGraphStore';
 import { getLocalFileEntry } from '../../utils/localFileStore';
 import { useI18n } from '../../context/I18nContext';
@@ -18,6 +32,8 @@ interface CircularNodeProps {
   isDragging?: boolean;
   isBoundaryAnchor?: boolean;
   isSharedAsset?: boolean;
+  isDbMatch?: boolean;
+  isDbMatchHighlighted?: boolean;
   zoom?: number;
   hiddenNeighborsCount?: number;
   expandedNeighborsCount?: number;
@@ -74,6 +90,8 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
   isDragging = false,
   isBoundaryAnchor = false,
   isSharedAsset = false,
+  isDbMatch = false,
+  isDbMatchHighlighted = false,
   zoom,
   hiddenNeighborsCount = 0,
   expandedNeighborsCount = 0,
@@ -167,8 +185,43 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
   const hasPhoto = Boolean(photoUrl);
   const showPhoto = hasPhoto && (graphCustomization?.showNodePhotos !== false) && !imgError;
 
-  // Enquêteur Judicial Status
-  const statusJudiciaire = (node.properties?.status_judiciaire as string) || (node.properties?.role_judiciaire as string);
+  // Enquêteur Judicial Status (Suspect / Victime / Témoin / Complice / Mule / Plaignant)
+  const statusJudiciaire =
+    (node.properties?.status_judiciaire as string) ||
+    (node.properties?.role_judiciaire as string) ||
+    (node.properties?.role as string) ||
+    '';
+  const normalizedStatus = statusJudiciaire
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+  const actorStatusBadge = (() => {
+    if (!normalizedStatus && node.type !== 'personne') return null;
+    if (normalizedStatus.includes('suspect') || normalizedStatus.includes('mis en cause')) {
+      return { kind: 'suspect', label: 'Suspect', Icon: ShieldAlert };
+    }
+    if (normalizedStatus.includes('victime')) {
+      return { kind: 'victime', label: 'Victime', Icon: HeartHandshake };
+    }
+    if (normalizedStatus.includes('plaignant')) {
+      return { kind: 'plaignant', label: 'Plaignant', Icon: UserCheck };
+    }
+    if (normalizedStatus.includes('complice') || normalizedStatus.includes('co-auteur')) {
+      return { kind: 'complice', label: 'Complice', Icon: Users };
+    }
+    if (normalizedStatus.includes('mule') || normalizedStatus.includes('prete-nom')) {
+      return { kind: 'mule', label: 'Prête-nom / Mule', Icon: ArrowLeftRight };
+    }
+    if (normalizedStatus.includes('temoin')) {
+      return { kind: 'temoin', label: 'Témoin', Icon: Eye };
+    }
+    if (normalizedStatus.includes('tiers')) {
+      return { kind: 'tiers', label: 'Tiers', Icon: User };
+    }
+    return null;
+  })();
 
   // Level of Detail (LOD) Strategy based on Zoom & Label Density Mode
   const labelDensityMode = graphCustomization?.labelDensityMode || 'smart';
@@ -227,12 +280,14 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
         transition: isDragging
           ? 'none'
           : 'left 0.45s cubic-bezier(0.16, 1, 0.3, 1), top 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
-        zIndex: isHovered ? 60 : isDragging ? 50 : isSelected ? 30 : 10,
+        zIndex: isHovered ? 60 : isDragging ? 50 : isDbMatchHighlighted ? 35 : isSelected ? 30 : 10,
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={`canvas-circular-node ${isDragging ? 'is-dragging' : ''} ${
         isSharedAsset ? 'is-shared-asset' : ''
+      } ${isDbMatch ? 'is-db-match' : ''} ${
+        isDbMatchHighlighted ? 'is-db-match-highlighted' : ''
       } ${node.properties?.__is_extraction_candidate ? 'is-extraction-candidate' : ''}`}
     >
       {/* Circular Body (Interior = Category, Border = Forensic Calque) */}
@@ -270,13 +325,18 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
           borderWidth: '3.5px',
           borderStyle:
             isHypothesis || node.properties?.__is_extraction_candidate ? 'dashed' : 'solid',
-          borderColor: isLinkSource
-            ? 'var(--color-status-warning)'
-            : activeBorderColor,
+          borderColor:
+            isLinkSource || isDbMatchHighlighted || isDbMatch
+              ? 'var(--color-status-warning)'
+              : activeBorderColor,
           boxShadow: isHovered
             ? `0 0 0 3.5px var(--color-accent-primary), 0 8px 24px rgba(0, 0, 0, 0.7)`
             : isLinkSource
             ? '0 0 0 4px var(--color-status-warning), 0 0 16px rgba(245, 158, 11, 0.6)'
+            : isDbMatchHighlighted || (isSelected && Boolean(node.properties?.__is_extraction_candidate))
+            ? '0 0 0 4.5px var(--color-status-warning), 0 0 22px rgba(245, 158, 11, 0.85)'
+            : isDbMatch
+            ? '0 0 0 3px rgba(245, 158, 11, 0.45), 0 0 14px rgba(245, 158, 11, 0.45)'
             : snaColor
             ? `0 0 0 3px ${snaColor}44, 0 0 14px ${snaColor}88`
             : isSelected
@@ -313,6 +373,23 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
             style={{ color: iconOrFillColor }}
           />
         )}
+
+        {/* Small judicial status icon badge for person/actor nodes (Suspect, Victime, etc.) */}
+        {actorStatusBadge && (() => {
+          const StatusIcon = actorStatusBadge.Icon;
+          const statusTitle = tr('Qualification : {status}', {
+            status: tr(actorStatusBadge.label),
+          });
+          return (
+            <span
+              className={`node-judicial-role-badge is-${actorStatusBadge.kind}`}
+              title={statusTitle}
+              aria-label={statusTitle}
+            >
+              <StatusIcon size={11} aria-hidden="true" />
+            </span>
+          );
+        })()}
 
         {/* Small badge icon indicating audio wiretap / vocal evidence attached */}
         {(Boolean(node.properties?.audio_url) || node.type === 'enregistrement_vocal') && (

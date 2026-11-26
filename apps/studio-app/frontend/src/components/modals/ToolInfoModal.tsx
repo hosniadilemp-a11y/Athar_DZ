@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Wrench, Database, CheckCircle } from 'lucide-react';
+import { ModalPortal } from '../common/ModalPortal';
 
 export interface ToolSpec {
   id: string;
@@ -31,6 +32,7 @@ export const ToolInfoModal: React.FC<ToolInfoModalProps> = ({
   const isPhase1 = tool.phase === 'Phase 1';
 
   return (
+    <ModalPortal>
     <div
       className="modal-backdrop"
       role="dialog"
@@ -153,5 +155,6 @@ export const ToolInfoModal: React.FC<ToolInfoModalProps> = ({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 };

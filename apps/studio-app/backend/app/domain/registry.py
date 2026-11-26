@@ -1209,6 +1209,34 @@ RELATION_TYPES: dict[str, RelationTypeDefinition] = {
             "numérique ou au procès-verbal source (Décisions D16 & D17)."
         ),
     ),
+    "UTILISE_EMAIL": RelationTypeDefinition(
+        name="UTILISE_EMAIL",
+        label_fr="Utilise l'Adresse E-mail",
+        label_en="Uses Email Address",
+        label_ar="يستخدم البريد الإلكتروني",
+        allowed_sources=["personne", "entreprise", "compte_social", "site_web"],
+        allowed_targets=["adresse_email"],
+        cardinality="N:M",
+        is_directed=True,
+        description_fr=(
+            "Utilisation, enregistrement WHOIS ou affichage d'une adresse e-mail "
+            "par un acteur, une société ou un site web (Décision D18)."
+        ),
+    ),
+    "IMPLIQUE_TRANSACTION": RelationTypeDefinition(
+        name="IMPLIQUE_TRANSACTION",
+        label_fr="Implique la Transaction DZD",
+        label_en="Involves Financial Transaction",
+        label_ar="يشمل المعاملة المالية",
+        allowed_sources=["personne", "entreprise", "compte_bancaire"],
+        allowed_targets=["transaction_financiere"],
+        cardinality="N:M",
+        is_directed=True,
+        description_fr=(
+            "Rattachement d'un mouvement financier en DZD à un compte, un individu "
+            "ou une société figurant sur le relevé ou l'acte (Décision D18)."
+        ),
+    ),
 }
 
 

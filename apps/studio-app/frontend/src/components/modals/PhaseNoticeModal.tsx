@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertCircle, X, ShieldAlert } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
+import { ModalPortal } from '../common/ModalPortal';
 
 interface PhaseNoticeModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export const PhaseNoticeModal: React.FC<PhaseNoticeModalProps> = ({
   if (!isOpen) return null;
 
   return (
+    <ModalPortal>
     <div
       className="modal-backdrop"
       role="dialog"
@@ -86,5 +88,6 @@ export const PhaseNoticeModal: React.FC<PhaseNoticeModalProps> = ({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 };

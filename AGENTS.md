@@ -7,6 +7,7 @@ All AI coding assistants and automation agents operating in this repository must
 - **Reliability & Anti-Hallucination**: [`.agent/llm-no-mistakes-rules.md`](.agent/llm-no-mistakes-rules.md)
 - **Phase 1 Implementation & Milestone Gating**: [`.agent/phase1-implementation-rules.md`](.agent/phase1-implementation-rules.md)
 - **Forensic Security & Evidentiary Safety**: [`.agent/security-rules.md`](.agent/security-rules.md)
+- **Extraction, Validation & Link Rules**: [`.agent/investigation-validation-rules.md`](.agent/investigation-validation-rules.md)
 - **UI/UX & Desktop Ergonomics**: [`.agent/ui-ux-rules.md`](.agent/ui-ux-rules.md)
 - **Repository Structure & Tier Boundaries**: [`.agent/repo-structure-rules.md`](.agent/repo-structure-rules.md)
 - **Architectural Decisions Log**: [`DECISIONS.md`](DECISIONS.md)
@@ -14,5 +15,5 @@ All AI coding assistants and automation agents operating in this repository must
 ### Key Rules
 1. **Mock Parity**: The desktop forensic interface must match [`doc/maquette.html`](doc/maquette.html) in styling, layout, desktop menubar, sub-bar, and dual-mode inspector.
 2. **Phase Gating (Decision D10)**: Non-Phase 1 buttons and tools must be styled gray (`aria-disabled="true"`) with a visible `Phase N` badge, opening an explanation on click.
-3. **Forensic Integrity**: Never automatically promote evidence to Verified without human reason and ISO 27037 audit entry.
+3. **Forensic Integrity (Decisions D19 & D20)**: Only extracted entities and inter-entity extracted relations require explicit validation before promotion; `EXTRAIT_DE` links to dragged source files and investigator-created manual links default to `VERIFIED` (`100%`). Direct layer changes require no blocking modal while writing an ISO 27037 hash-chained audit entry.
 4. **Verification**: Always quote actual terminal execution outputs (`npm test`, `tsc --noEmit`, `pytest`).

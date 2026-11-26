@@ -4,6 +4,7 @@ import type { LocalFileEntry } from '../../utils/localFileStore';
 import { openLocalFileInNewTab } from '../../utils/localFileStore';
 import { formatByteSize, truncateSha256 } from '../../utils/fileIngestion';
 import { useI18n } from '../../context/I18nContext';
+import { ModalPortal } from '../common/ModalPortal';
 
 export interface FilePreviewModalProps {
   entry: LocalFileEntry | null;
@@ -36,6 +37,7 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({ entry, onClo
   const isText = Boolean(entry.textPreview && !isHtml);
 
   return (
+    <ModalPortal>
     <div
       className="file-preview-backdrop"
       role="dialog"
@@ -168,5 +170,6 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({ entry, onClo
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 };

@@ -189,6 +189,8 @@ export const IngestionPopover: React.FC<IngestionPopoverProps> = ({
       aria-label={tr("Choix du mode d'investigation forensique")}
       onMouseDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
+      onWheel={(e) => e.stopPropagation()}
+      onKeyDown={(e) => e.stopPropagation()}
     >
       {/* 1. Compact Header: Filename + Close */}
       <header className="ingestion-popover-header">
@@ -307,7 +309,7 @@ export const IngestionPopover: React.FC<IngestionPopoverProps> = ({
                 type="button"
                 aria-disabled={isLive ? undefined : 'true'}
                 className={`btn btn-sm ingestion-mode-launch-btn ${
-                  isLive ? 'btn-primary is-live-phase' : 'is-future-phase'
+                  isLive ? 'btn-primary is-live-phase' : 'btn-secondary is-future-phase'
                 }`}
                 onClick={() => {
                   onLaunchMode(node.id, modeSpec.key, tr(modeSpec.stageFr), selectedPlugins);
@@ -317,7 +319,7 @@ export const IngestionPopover: React.FC<IngestionPopoverProps> = ({
                 }}
               >
                 {renderModeIcon(modeSpec.iconName)}
-                <span>{tr(modeSpec.shortTitleFr)}</span>
+                <span className="ingestion-mode-btn-label">{tr(modeSpec.shortTitleFr)}</span>
                 <span className="phase-badge">
                   {isLive ? tr('Actif') : tr('Phase {n}', { n: phaseNum })}
                 </span>
@@ -328,6 +330,7 @@ export const IngestionPopover: React.FC<IngestionPopoverProps> = ({
                   <button
                     type="button"
                     className="ingestion-icon-circle-btn"
+                    title={tr(modeSpec.subtitleFr)}
                     aria-label={`${tr(modeSpec.shortTitleFr)} — ${tr(modeSpec.descriptionFr)}`}
                   >
                     <Info size={13} aria-hidden="true" />
@@ -338,7 +341,7 @@ export const IngestionPopover: React.FC<IngestionPopoverProps> = ({
                   </div>
                 </div>
 
-                {supportsTree && (
+                {supportsTree ? (
                   <button
                     type="button"
                     className={`ingestion-icon-circle-btn ingestion-gear-btn ${isEditingThisTree ? 'is-active' : ''}`}
@@ -349,6 +352,8 @@ export const IngestionPopover: React.FC<IngestionPopoverProps> = ({
                   >
                     <Settings size={13} aria-hidden="true" />
                   </button>
+                ) : (
+                  <span className="ingestion-icon-slot-spacer" aria-hidden="true" />
                 )}
               </div>
             </div>

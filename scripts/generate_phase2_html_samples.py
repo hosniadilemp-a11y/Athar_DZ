@@ -58,9 +58,11 @@ def format_ground_truth_md(
     scripts_count: int,
     json_ld_blocks: int,
     comments_count: int,
+    locations: str,
     entities: list[tuple[str, str, str, str, str, str]],
+    relations: list[tuple[str, str, str, str, str, str, str]] | None = None,
 ) -> str:
-    """Format expected metadata and entities as a clean Markdown benchmark file."""
+    """Format expected metadata, entities and relations as a clean Markdown benchmark file."""
     lines = [
         f"# Ground Truth — `{html_name}`",
         "",
@@ -76,6 +78,7 @@ def format_ground_truth_md(
         f"- **scripts_count**: `{scripts_count}`",
         f"- **json_ld_blocks**: `{json_ld_blocks}`",
         f"- **comments_count**: `{comments_count}`",
+        f"- **locations**: `{locations}`",
         "",
         "## Expected Entities",
         "",
@@ -85,6 +88,20 @@ def format_ground_truth_md(
     for etype, norm, label, locator, min_mode, notes in entities:
         lines.append(f"| `{etype}` | `{norm}` | {label} | `{locator}` | `{min_mode}` | {notes} |")
     lines.append("")
+    if relations:
+        lines.extend(
+            [
+                "## Expected Relations",
+                "",
+                "| relation_type | source_type | source_value | target_type | target_value | min_mode | notes |",
+                "| :--- | :--- | :--- | :--- | :--- | :--- | :--- |",
+            ]
+        )
+        for rtype, stype, svalue, ttype, tvalue, min_mode, notes in relations:
+            lines.append(
+                f"| `{rtype}` | `{stype}` | `{svalue}` | `{ttype}` | `{tvalue}` | `{min_mode}` | {notes} |"
+            )
+        lines.append("")
     return "\n".join(lines)
 
 
@@ -135,7 +152,7 @@ def build_samples() -> list[tuple[str, str, str]]:
     </article>
     <article class="post-card" data-post-id="post-202">
       <header><strong>@karim_auto_fictif</strong> <time datetime="2026-11-16T14:15:00Z">2026-11-16 14:15</time></header>
-      <p>Nouvel arrivage disponible au dépôt fictif d'Alger — règlement uniquement sur place ou via portail officiel.</p>
+      <p>Nouvel arrivage disponible au dépôt fictif d'Alger — Gérant : Yacine Benali · Tél : +213 661 55 01 02 · Offre publiée sur <a href="https://pneus-promo-fictif.example.com/offre-2026">https://pneus-promo-fictif.example.com/offre-2026</a>.</p>
     </article>
   </main>
 </body>
@@ -143,7 +160,7 @@ def build_samples() -> list[tuple[str, str, str]]:
 """
     s1_md = format_ground_truth_md(
         html_name="01_profil_osint_social.html",
-        description="Capture HTML d'un profil réseau social OSINT avec JSON-LD, traceurs et posts archivés (données 100 % fictives).",
+        description="Capture HTML d'un profil réseau social OSINT avec JSON-LD, traceurs, posts archivés et recoupements cross-pièces (données 100 % fictives).",
         title="Profil OSINT Fictif — @karim_auto_fictif (example.com)",
         lang="fr",
         canonical_url="https://social.example.com/u/karim_auto_fictif",
@@ -152,20 +169,32 @@ def build_samples() -> list[tuple[str, str, str]]:
         scripts_count=2,
         json_ld_blocks=1,
         comments_count=0,
+        locations="Alger; Hussein Dey",
         entities=[
             ("site_web", "https://social.example.com/u/karim_auto_fictif", "https://social.example.com/u/karim_auto_fictif", "head:canonical", "quick", "URL canonique du profil"),
+            ("site_web", "https://pneus-promo-fictif.example.com/offre-2026", "https://pneus-promo-fictif.example.com/offre-2026", "body:link", "quick", "Offre promotionnelle (recoupement PV 01)"),
             ("identifiant_infrastructure", "UA-481200-1", "UA-481200-1", "script:tracker", "quick", "Tracker Google Analytics"),
             ("identifiant_infrastructure", "fb-pixel-991122334455", "Meta Pixel 991122334455", "script:tracker", "quick", "Pixel Meta fbq"),
             ("telephone", "+2135550112", "+2135550112", "body:text", "quick", "Téléphone principal profil"),
             ("telephone", "+2135550113", "+2135550113", "body:text", "quick", "Téléphone secondaire dans post"),
+            ("telephone", "+213661550102", "+213661550102", "body:text", "quick", "Téléphone partenaire (recoupement PV 01 & Facture 02)"),
             ("adresse_email", "karim.auto.fictif@example.com", "karim.auto.fictif@example.com", "body:link", "quick", "Email profil"),
             ("vehicule", "04821-116-16", "04821-116-16", "body:text", "quick", "Plaque algérienne dans publication"),
             ("compte_social", "@karim_auto_fictif", "@karim_auto_fictif", "script:ld+json#0", "step_by_step", "Identifiant social JSON-LD (Stage 2)"),
             ("publication_sociale", "post-201", "Post #post-201 (@karim_auto_fictif)", "body:article#0", "step_by_step", "Publication archivée 1 (Stage 3)"),
             ("publication_sociale", "post-202", "Post #post-202 (@karim_auto_fictif)", "body:article#1", "step_by_step", "Publication archivée 2 (Stage 3)"),
             ("personne", "Karim Mansouri", "Karim Mansouri", "script:ld+json#0", "step_by_step", "Personne JSON-LD (Stage 3)"),
-            ("wilaya", "Alger", "Alger", "body:text", "step_by_step", "Wilaya (Stage 3)"),
-            ("commune", "Hussein Dey", "Hussein Dey", "body:text", "step_by_step", "Commune (Stage 3)"),
+            ("personne", "Yacine Benali", "Yacine Benali", "body:text", "step_by_step", "Gérant partenaire croisé (Stage 3)"),
+        ],
+        relations=[
+            ("EMBARQUE_PIXEL_TRACKER", "site_web", "https://social.example.com/u/karim_auto_fictif", "identifiant_infrastructure", "UA-481200-1", "quick", "Tracker GA sur page"),
+            ("EMBARQUE_PIXEL_TRACKER", "site_web", "https://social.example.com/u/karim_auto_fictif", "identifiant_infrastructure", "fb-pixel-991122334455", "quick", "Pixel Meta sur page"),
+            ("POSSEDE_PROFIL_SOCIAL", "personne", "Karim Mansouri", "compte_social", "@karim_auto_fictif", "quick", "JSON-LD Person -> alternateName"),
+            ("UTILISE_TELEPHONE", "personne", "Karim Mansouri", "telephone", "+2135550112", "quick", "JSON-LD Person -> telephone"),
+            ("UTILISE_EMAIL", "personne", "Karim Mansouri", "adresse_email", "karim.auto.fictif@example.com", "quick", "JSON-LD Person -> email"),
+            ("PUBLIE_ANNONCE_SCAM", "compte_social", "@karim_auto_fictif", "publication_sociale", "post-201", "step_by_step", "Article DOM -> compte social"),
+            ("MENTIONNE_TELEPHONE", "publication_sociale", "post-201", "telephone", "+2135550113", "step_by_step", "Téléphone dans post-201"),
+            ("UTILISE_TELEPHONE", "personne", "Yacine Benali", "telephone", "+213661550102", "step_by_step", "Gérant -> téléphone dans post-202"),
         ],
     )
     samples.append(("01_profil_osint_social.html", s1_html, s1_md))
@@ -185,7 +214,7 @@ def build_samples() -> list[tuple[str, str, str]]:
   </script>
 </head>
 <body>
-  <!-- dev: dev.phish.fictif@example.org | support t.me/baridi_support_fictif | mule RIP 00799999004455667788 -->
+  <!-- dev: dev.phish.fictif@example.org | support t.me/baridi_support_fictif | mule RIP 00799999004455667788 | mirror https://baridimob-verif-fictif.example.com/login | backup 0661 55 01 88 -->
   <main>
     <h1>Mise à jour obligatoire de votre compte BaridiMob (Page Test Fictive)</h1>
     <form id="phish-form" action="https://collect-otp-fictif.example.com/api/steal" method="post">
@@ -211,6 +240,7 @@ def build_samples() -> list[tuple[str, str, str]]:
         scripts_count=1,
         json_ld_blocks=0,
         comments_count=1,
+        locations="",
         entities=[
             ("site_web", "https://collect-otp-fictif.example.com/api/steal", "https://collect-otp-fictif.example.com/api/steal", "form:action#0", "quick", "Cible POST du formulaire phishing"),
             ("site_web", "https://cdn-apk-fictif.example.net/downloads/baridimob-update-fictif.apk", "https://cdn-apk-fictif.example.net/downloads/baridimob-update-fictif.apk", "body:link", "quick", "URL distribution APK"),
@@ -221,6 +251,15 @@ def build_samples() -> list[tuple[str, str, str]]:
             ("canal_telegram", "@baridi_support_fictif", "@baridi_support_fictif", "html:comment#0", "quick", "Canal Telegram en commentaire HTML"),
             ("compte_bancaire", "00799999004455667788", "RIP 00799999004455667788", "html:comment#0", "quick", "RIP mule en commentaire HTML"),
             ("telephone", "+2135550124", "+2135550124", "body:link", "quick", "Faux numéro assistance"),
+            ("site_web", "https://baridimob-verif-fictif.example.com/login", "https://baridimob-verif-fictif.example.com/login", "html:comment#0", "quick", "Miroir phishing (recoupement PDF 04)"),
+            ("telephone", "+213661550188", "+213661550188", "html:comment#0", "quick", "Téléphone backup (recoupement PDF 04)"),
+        ],
+        relations=[
+            ("EMBARQUE_PIXEL_TRACKER", "site_web", "https://collect-otp-fictif.example.com/api/steal", "identifiant_infrastructure", "GTM-FICTIF26", "quick", "Tag Manager sur portail"),
+            ("RESOLU_VERS_IP_C2", "site_web", "https://collect-otp-fictif.example.com/api/steal", "serveur_c2", "198.51.100.88", "quick", "Form action -> C2"),
+            ("DISTRIBUE_APPLICATION_APK", "site_web", "https://cdn-apk-fictif.example.net/downloads/baridimob-update-fictif.apk", "fichier_apk", "baridimob-update-fictif.apk", "quick", "URL -> APK"),
+            ("RECOIT_OTP_BARIDIMOB", "telephone", "+213661550188", "compte_bancaire", "00799999004455667788", "quick", "Commentaire HTML OTP/RIP"),
+            ("UTILISE_EMAIL", "site_web", "https://collect-otp-fictif.example.com/api/steal", "adresse_email", "dev.phish.fictif@example.org", "quick", "Email technique lié"),
         ],
     )
     samples.append(("02_page_phishing_baridimob.html", s2_html, s2_md))
@@ -261,8 +300,8 @@ def build_samples() -> list[tuple[str, str, str]]:
     <img src="{s3_img_uri}" alt="Photo annonce fictive" />
     <p>Vendeur : @atlas_motors_dz · Gérant : Yacine Benali</p>
     <p>SARL Atlas Motors Fictive (RC: 16/00-2211445B26 | NIF: 002631009988776) — Bir El Djir, Oran.</p>
-    <p>Acompte demandé : 450 000 DZD via BaridiMob RIP 00799999008877665544.</p>
-    <p>Livraison véhicule : 31045-120-31 · Contact : <a href="tel:+2135550135">+213 555 0135</a> · <a href="mailto:ventes@atlas-motors-fictif.example.com">ventes@atlas-motors-fictif.example.com</a></p>
+    <p>Acompte demandé : 450 000 DZD via BaridiMob RIP 00799999008877665544 ou RIP 00799999001234567890.</p>
+    <p>Livraison véhicule : 31045-120-31 · Contact : <a href="tel:+2135550135">+213 555 0135</a> · Relais : 0661 55 01 02 · <a href="mailto:ventes@atlas-motors-fictif.example.com">ventes@atlas-motors-fictif.example.com</a> · Secours : <a href="mailto:ventes.atlas.fictif@example.com">ventes.atlas.fictif@example.com</a></p>
   </article>
 </body>
 </html>
@@ -278,11 +317,15 @@ def build_samples() -> list[tuple[str, str, str]]:
         scripts_count=1,
         json_ld_blocks=1,
         comments_count=0,
+        locations="Oran; Bir El Djir",
         entities=[
             ("site_web", "https://souk-auto-fictif.example.com/annonce/8841", "https://souk-auto-fictif.example.com/annonce/8841", "head:canonical", "quick", "URL annonce canonique"),
             ("telephone", "+2135550135", "+2135550135", "body:link", "quick", "Téléphone vendeur"),
+            ("telephone", "+213661550102", "+213661550102", "body:text", "quick", "Téléphone relais (recoupement PDF 01/02 & HTML 01)"),
             ("adresse_email", "ventes@atlas-motors-fictif.example.com", "ventes@atlas-motors-fictif.example.com", "body:link", "quick", "Email vendeur"),
+            ("adresse_email", "ventes.atlas.fictif@example.com", "ventes.atlas.fictif@example.com", "body:link", "quick", "Email secours (recoupement PDF 01 & PDF 05)"),
             ("compte_bancaire", "00799999008877665544", "RIP 00799999008877665544", "body:text", "quick", "RIP réception acompte"),
+            ("compte_bancaire", "00799999001234567890", "RIP 00799999001234567890", "body:text", "quick", "RIP secondaire (recoupement PDF 01/02)"),
             ("vehicule", "31045-120-31", "31045-120-31", "body:text", "quick", "Plaque véhicule"),
             ("image_preuve", "embedded_html_img_1", "Image intégrée HTML #1", "body:img#0", "step_by_step", "Image base64 embarquée (Stage 1)"),
             ("compte_social", "@atlas_motors_dz", "@atlas_motors_dz", "body:text", "step_by_step", "Compte vendeur (Stage 2)"),
@@ -290,8 +333,10 @@ def build_samples() -> list[tuple[str, str, str]]:
             ("publication_sociale", "annonce-8841", "Post #annonce-8841", "body:article#0", "step_by_step", "Annonce archivée (Stage 3)"),
             ("entreprise", "SARL Atlas Motors Fictive", "SARL Atlas Motors Fictive", "script:ld+json#0", "step_by_step", "Entreprise vendeuse (Stage 3)"),
             ("personne", "Yacine Benali", "Yacine Benali", "body:text", "step_by_step", "Gérant mentionné (Stage 3)"),
-            ("wilaya", "Oran", "Oran", "body:text", "step_by_step", "Wilaya (Stage 3)"),
-            ("commune", "Bir El Djir", "Bir El Djir", "body:text", "step_by_step", "Commune (Stage 3)"),
+        ],
+        relations=[
+            ("IMPLIQUE_TRANSACTION", "compte_bancaire", "00799999008877665544", "transaction_financiere", "450000 DZD", "step_by_step", "RIP -> montant acompte"),
+            ("DIRIGE_ENTREPRISE", "personne", "Yacine Benali", "entreprise", "SARL Atlas Motors Fictive", "step_by_step", "Gérant -> société"),
         ],
     )
     samples.append(("03_annonce_marketplace_scam.html", s3_html, s3_md))
@@ -309,7 +354,7 @@ def build_samples() -> list[tuple[str, str, str]]:
 <body>
   <header class="tg-channel-head">
     <h1>Canal Telegram @p2p_dz_fictif</h1>
-    <p>Admin : @walid_change_dz · Localisation : Boufarik, Blida</p>
+    <p>Suspect : Walid Cherif (@walid_change_dz) · Tél : +213 661 55 01 88 · Localisation : Boufarik, Blida</p>
   </header>
   <section class="tg-history">
     <div class="message" data-msg-id="msg-401" data-sender="@walid_change_dz">
@@ -335,6 +380,7 @@ def build_samples() -> list[tuple[str, str, str]]:
         scripts_count=0,
         json_ld_blocks=0,
         comments_count=0,
+        locations="Blida; Boufarik",
         entities=[
             ("canal_telegram", "@p2p_dz_fictif", "@p2p_dz_fictif", "head:meta", "quick", "Canal Telegram exporté"),
             ("site_web", "https://p2p-escrow-fictif.example.org/order/99", "https://p2p-escrow-fictif.example.org/order/99", "body:text", "quick", "Lien escrow frauduleux"),
@@ -342,12 +388,17 @@ def build_samples() -> list[tuple[str, str, str]]:
             ("crypto_wallet", "TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE", "TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE", "body:text", "quick", "Wallet TRON TRC-20"),
             ("crypto_wallet", "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh", "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh", "body:text", "quick", "Wallet Bitcoin Bech32"),
             ("telephone", "+2135550148", "+2135550148", "body:text", "quick", "Téléphone de contact"),
+            ("telephone", "+213661550188", "+213661550188", "body:text", "quick", "Téléphone admin (recoupement PDF 04)"),
             ("compte_social", "@walid_change_dz", "@walid_change_dz", "body:text", "step_by_step", "Administrateur canal (Stage 2)"),
+            ("personne", "Walid Cherif", "Walid Cherif", "body:text", "step_by_step", "Admin identifié (recoupement PDF 04)"),
             ("transaction_financiere", "320000 DZD", "320000 DZD", "body:text", "step_by_step", "Montant transaction P2P (Stage 2)"),
             ("message_chat", "msg-401", "Message #msg-401 (@walid_change_dz)", "body:message#0", "step_by_step", "Message Telegram 1 (Stage 3)"),
             ("message_chat", "msg-402", "Message #msg-402 (@walid_change_dz)", "body:message#1", "step_by_step", "Message Telegram 2 (Stage 3)"),
-            ("wilaya", "Blida", "Blida", "body:text", "step_by_step", "Wilaya (Stage 3)"),
-            ("commune", "Boufarik", "Boufarik", "body:text", "step_by_step", "Commune (Stage 3)"),
+        ],
+        relations=[
+            ("UTILISE_TELEPHONE", "personne", "Walid Cherif", "telephone", "+213661550188", "step_by_step", "Admin canal -> téléphone"),
+            ("HEBERGE_MESSAGES", "canal_telegram", "@p2p_dz_fictif", "message_chat", "msg-401", "step_by_step", "Canal -> message-401"),
+            ("HEBERGE_MESSAGES", "canal_telegram", "@p2p_dz_fictif", "message_chat", "msg-402", "step_by_step", "Canal -> message-402"),
         ],
     )
     samples.append(("04_export_canal_telegram_web.html", s4_html, s4_md))
@@ -394,6 +445,12 @@ def build_samples() -> list[tuple[str, str, str]]:
           <td>GAB-CST-04</td>
           <td>540 000 DZD</td>
         </tr>
+        <tr>
+          <td>2026-11-20</td>
+          <td>00799999009876543210</td>
+          <td>GAB-BLIDA-0904</td>
+          <td>185 000 DZD</td>
+        </tr>
       </tbody>
     </table>
   </section>
@@ -411,19 +468,25 @@ def build_samples() -> list[tuple[str, str, str]]:
         scripts_count=1,
         json_ld_blocks=0,
         comments_count=0,
+        locations="Constantine; El Khroub; Blida",
         entities=[
             ("site_web", "https://numidia-log-fictif.example.com/mentions-legales", "https://numidia-log-fictif.example.com/mentions-legales", "head:canonical", "quick", "URL canonique mentions légales"),
             ("identifiant_infrastructure", "G-FICTIF2026", "G-FICTIF2026", "script:tracker", "quick", "Tracker GA4 fictif"),
             ("adresse_email", "contact@numidia-log-fictif.example.com", "contact@numidia-log-fictif.example.com", "body:link", "quick", "Email société"),
             ("telephone", "+2135550162", "+2135550162", "body:text", "quick", "Téléphone société"),
             ("compte_bancaire", "00799999006655443322", "RIP 00799999006655443322", "body:table#0:r1", "quick", "RIP dans tableau HTML"),
+            ("compte_bancaire", "00799999009876543210", "RIP 00799999009876543210", "body:table#0:r2", "quick", "RIP croisé Facture 02 & Relevé 03"),
             ("image_preuve", "embedded_html_img_1", "Image intégrée HTML #1", "body:img#0", "step_by_step", "Logo base64 intégré (Stage 1)"),
             ("transaction_financiere", "540000 DZD", "540000 DZD", "body:table#0:r1", "step_by_step", "Montant tableau HTML (Stage 2)"),
+            ("transaction_financiere", "185000 DZD", "185000 DZD", "body:table#0:r2", "step_by_step", "Montant croisé PV 01 & Relevé 03 (Stage 2)"),
             ("entreprise", "EURL Numidia Logistique Fictive", "EURL Numidia Logistique Fictive", "body:text", "step_by_step", "Société mentions légales (Stage 3)"),
             ("personne", "Samira Khelifi", "Samira Khelifi", "body:text", "step_by_step", "Directrice mentionnée (Stage 3)"),
             ("guichet_gab", "GAB-CST-04", "GAB-CST-04", "body:table#0:r1", "step_by_step", "Guichet GAB dans tableau (Stage 3)"),
-            ("wilaya", "Constantine", "Constantine", "body:text", "step_by_step", "Wilaya (Stage 3)"),
-            ("commune", "El Khroub", "El Khroub", "body:text", "step_by_step", "Commune (Stage 3)"),
+            ("guichet_gab", "GAB-BLIDA-0904", "GAB-BLIDA-0904", "body:table#0:r2", "step_by_step", "Guichet GAB croisé Relevé 03 (Stage 3)"),
+        ],
+        relations=[
+            ("EMBARQUE_PIXEL_TRACKER", "site_web", "https://numidia-log-fictif.example.com/mentions-legales", "identifiant_infrastructure", "G-FICTIF2026", "quick", "Tracker GA4 sur site"),
+            ("DIRIGE_ENTREPRISE", "personne", "Samira Khelifi", "entreprise", "EURL Numidia Logistique Fictive", "step_by_step", "Directrice -> société"),
         ],
     )
     samples.append(("05_site_societe_ecran_mentions.html", s5_html, s5_md))

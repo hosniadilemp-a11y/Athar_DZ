@@ -15,18 +15,32 @@ import type {
 import type { LayerId } from '../types/registry';
 import type {
   ExtractedCandidate,
+  ExtractedRelation,
   ExtractionRun,
+  NodeCandidatesResponse,
+  RelationUpdateRequest,
   ValidateCandidatesRequest,
+  ValidateRelationsRequest,
 } from '../types/ingestion';
-import { computeGraphLayout, type GraphLayoutType } from '../utils/graphLayouts';
+import {
+  computeDefaultCandidatePosition,
+  computeGraphLayout,
+  type GraphLayoutType,
+} from '../utils/graphLayouts';
 import { computeActorSphere } from '../utils/actorSphere';
 import { getLocalFileEntry } from '../utils/localFileStore';
 import {
   advanceExtractionStage,
+  deleteNodeRelation,
+  fetchCaseIngestionSummary,
   fetchNodeCandidates,
   startNodeExtraction,
+  updateNodeCandidate,
+  updateNodeRelation,
   uploadNodePdf,
   validateNodeCandidates,
+  validateNodeRelations,
+  type CandidateUpdatePayload,
 } from '../services/ingestionApi';
 import { API_BASE } from '../config';
 
@@ -51,8 +65,8 @@ export type OntologyCategory =
   | 'preuve';
 
 export const ONTOLOGY_CATEGORY_COLORS: Record<OntologyCategory, string> = {
-  territoire: '#10b981', // Émeraude / SIG & BTS
-  acteurs: '#3b82f6',    // Bleu royal / Personnes & Réseau
+  territoire: '#14b8a6', // Sarcelle / SIG & Lieux
+  acteurs: '#22c55e',    // Vert / Personnes & Acteurs
   telecoms: '#6366f1',   // Indigo / Téléphonie
   finances: '#f59e0b',   // Ambre or / BaridiMob
   socmint: '#06b6d4',    // Cyan / Réseaux sociaux
@@ -244,12 +258,14 @@ export interface GraphStoreState {
   updateEdgeDetails: (
     edgeId: string,
     updates: {
+      type?: string;
       confidence?: number;
       layer?: LayerId;
       confidentiality_level?: string;
       notes?: string;
     }
-  ) => void;
+  ) => Promise<void>;
+  deleteEdge: (edgeId: string, reason?: string) => Promise<void>;
 
   // Feature 2: Node Rename & Details Update
   updateNodeLabel: (nodeId: string, label: string) => Promise<void>;
@@ -338,9 +354,10 @@ export interface GraphStoreState {
   openContextMenu: (x: number, y: number, nodeId: string) => void;
   closeContextMenu: () => void;
 
-  // Layer Change Modal actions
+  // Layer Change actions
   openLayerChangeModal: (nodeId: string, targetLayer: LayerId) => void;
   closeLayerChangeModal: () => void;
+  changeNodeLayer: (nodeId: string, nextLayer: LayerId, reason?: string) => Promise<void>;
 
   // Option B: Raw File Ingestion & Analysis Popover slice
   activeIngestionPopoverNodeId: string | null;
@@ -354,12 +371,16 @@ export interface GraphStoreState {
   ) => void;
   triggerNodeInvestigation: (nodeId: string, mode: AnalysisMode, stageLabel: string) => Promise<void>;
 
-  // Phase 2A: Static Manual PDF Extraction & Isolated Candidate Validation
+  // Phase 2A: Static Manual PDF/HTML Extraction & Isolated Candidate + Relation Validation
   extractionRunsByNodeId: Record<string, ExtractionRun | null>;
   candidatesByNodeId: Record<string, ExtractedCandidate[]>;
+  relationsByNodeId: Record<string, ExtractedRelation[]>;
+  candidatePositions: Record<string, { x: number; y: number }>;
   extractionLoadingNodeId: string | null;
   selectedCandidateId: string | null;
   selectCandidate: (candidateId: string | null) => void;
+  setCandidatePosition: (ghostId: string, x: number, y: number) => void;
+  updateCandidatePositions: (posMap: Map<string, { x: number; y: number }>) => void;
   uploadPdfForNode: (nodeId: string, file: File) => Promise<void>;
   runPdfExtraction: (
     nodeId: string,
@@ -367,8 +388,22 @@ export interface GraphStoreState {
     selectedTools: string[]
   ) => Promise<void>;
   advancePdfStage: (nodeId: string, runId: string) => Promise<void>;
+  completeAllPdfStages: (nodeId: string) => Promise<void>;
   loadNodeCandidates: (nodeId: string) => Promise<void>;
+  loadCaseIngestionSummary: (caseId: string) => Promise<void>;
   validateCandidates: (nodeId: string, payload: ValidateCandidatesRequest) => Promise<number>;
+  updateExtractedCandidate: (
+    sourceNodeId: string,
+    candidateId: string,
+    payload: CandidateUpdatePayload
+  ) => Promise<void>;
+  updateExtractedRelation: (
+    sourceNodeId: string,
+    relationId: string,
+    payload: RelationUpdateRequest
+  ) => Promise<void>;
+  deleteExtractedRelation: (sourceNodeId: string, relationId: string) => Promise<void>;
+  validateRelations: (nodeId: string, payload: ValidateRelationsRequest) => Promise<number>;
 
   // Mutation commands with Undo/Redo
   executeCommand: (command: Command) => void;
@@ -461,6 +496,48 @@ function buildTabsForCase(caseNodes: GraphNode[], caseEdges: GraphEdge[] = []): 
   return tabs;
 }
 
+function applyNodeExtractionPatch(
+  prev: GraphStoreState,
+  nodeId: string,
+  res: NodeCandidatesResponse,
+  activeMode?: 'quick' | 'step_by_step'
+): Partial<GraphStoreState> {
+  const pendingCount = res.counts.pending ?? 0;
+  const pendingRelCount = res.relation_counts?.pending ?? (res.relations ?? []).filter((r) => r.validation_status === 'PENDING').length;
+  const run = res.latest_run;
+  const nextStatus = run?.status === 'COMPLETED' ? 'saturated' : 'active_investigation';
+  const nextProgress =
+    run?.status === 'COMPLETED'
+      ? 100
+      : Math.round(((run?.current_stage ?? 1) / (run?.total_stages ?? 3)) * 100);
+  const nextStage =
+    run?.status === 'COMPLETED'
+      ? `Analyse complète terminée (${pendingCount} candidat(s) à valider)`
+      : `Étape ${run?.current_stage ?? 1}/${run?.total_stages ?? 3} terminée (${pendingCount} candidat(s))`;
+
+  return {
+    extractionRunsByNodeId: { ...prev.extractionRunsByNodeId, [nodeId]: run },
+    candidatesByNodeId: { ...prev.candidatesByNodeId, [nodeId]: res.candidates },
+    relationsByNodeId: { ...prev.relationsByNodeId, [nodeId]: res.relations ?? [] },
+    nodes: prev.nodes.map((n) =>
+      n.id === nodeId
+        ? {
+            ...n,
+            properties: {
+              ...n.properties,
+              investigation_status: nextStatus,
+              ...(activeMode ? { analysis_mode: activeMode } : {}),
+              analysis_progress: nextProgress,
+              analysis_stage: nextStage,
+              pending_candidates_count: pendingCount,
+              pending_relations_count: pendingRelCount,
+            },
+          }
+        : n
+    ),
+  };
+}
+
 export const useGraphStore = create<GraphStoreState>((set, get) => ({
   activeCase: null,
   nodes: [],
@@ -493,9 +570,28 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
 
   extractionRunsByNodeId: {},
   candidatesByNodeId: {},
+  relationsByNodeId: {},
+  candidatePositions: {},
   extractionLoadingNodeId: null,
   selectedCandidateId: null,
   selectCandidate: (candidateId) => set({ selectedCandidateId: candidateId }),
+  setCandidatePosition: (ghostId, x, y) =>
+    set((prev) => ({
+      candidatePositions: {
+        ...prev.candidatePositions,
+        [ghostId]: { x, y },
+      },
+    })),
+  updateCandidatePositions: (posMap) => {
+    if (posMap.size === 0) return;
+    set((prev) => {
+      const next = { ...prev.candidatePositions };
+      posMap.forEach((pos, key) => {
+        next[key] = { x: pos.x, y: pos.y };
+      });
+      return { candidatePositions: next };
+    });
+  },
 
   investigationMode: 'investigator',
   toggleInvestigationMode: () =>
@@ -717,7 +813,7 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     return discovered.size;
   },
 
-  updateEdgeDetails: (edgeId, updates) => {
+  updateEdgeDetails: async (edgeId, updates) => {
     const state = get();
     if (edgeId.startsWith('mediated__')) {
       const prevOverrides = { ...state.mediatedEdgeOverrides };
@@ -740,26 +836,58 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
       properties: { ...(targetEdge.properties || {}) },
     };
 
+    const updatedProps = {
+      ...(targetEdge.properties || {}),
+      ...(updates.confidentiality_level !== undefined
+        ? { confidentiality_level: updates.confidentiality_level }
+        : {}),
+      ...(updates.notes !== undefined ? { notes: updates.notes } : {}),
+    };
+
     const updatedEdge: GraphEdge = {
       ...targetEdge,
+      type: updates.type !== undefined ? updates.type : targetEdge.type,
       confidence: updates.confidence !== undefined ? updates.confidence : targetEdge.confidence,
       layer: updates.layer !== undefined ? updates.layer : targetEdge.layer,
-      properties: {
-        ...(targetEdge.properties || {}),
-        ...(updates.confidentiality_level !== undefined
-          ? { confidentiality_level: updates.confidentiality_level }
-          : {}),
-        ...(updates.notes !== undefined ? { notes: updates.notes } : {}),
-      },
+      properties: updatedProps,
     };
 
     set({
       edges: state.edges.map((e) => (e.id === edgeId ? updatedEdge : e)),
     });
 
+    const activeCase = get().activeCase;
+    if (activeCase && !edgeId.startsWith('temp-') && !edgeId.startsWith('edge-')) {
+      const res = await fetch(`${API_BASE}/api/v1/cases/${activeCase.id}/edges/${edgeId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Actor-Id': 'investigator_front',
+        },
+        body: JSON.stringify({
+          type: updatedEdge.type,
+          layer: updatedEdge.layer,
+          confidence: updatedEdge.confidence,
+          properties: updatedProps,
+          allow_custom_relation: true,
+          reason: updates.notes || `Mise à jour relation ${updatedEdge.type}`,
+        }),
+      });
+      if (!res.ok) {
+        set({
+          edges: get().edges.map((e) => (e.id === edgeId ? previousEdge : e)),
+        });
+        throw new Error(`Échec mise à jour relation (HTTP ${res.status})`);
+      }
+      const saved = (await res.json()) as GraphEdge;
+      set({
+        edges: get().edges.map((e) => (e.id === edgeId ? saved : e)),
+      });
+    }
+
     get().executeCommand({
       id: `update-edge-${edgeId}-${Date.now()}`,
-      description: `Mise à jour de la liaison ${targetEdge.type}`,
+      description: `Mise à jour de la liaison ${updatedEdge.type}`,
       undo: () => {
         set({
           edges: get().edges.map((e) => (e.id === edgeId ? previousEdge : e)),
@@ -771,6 +899,30 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
         });
       },
     });
+  },
+
+  deleteEdge: async (edgeId, reason = '') => {
+    const state = get();
+    const targetEdge = state.edges.find((e) => e.id === edgeId);
+    if (!targetEdge) return;
+
+    const activeCase = state.activeCase;
+    if (activeCase && !edgeId.startsWith('temp-') && !edgeId.startsWith('edge-')) {
+      const url = new URL(`${API_BASE}/api/v1/cases/${activeCase.id}/edges/${edgeId}`);
+      if (reason) url.searchParams.set('reason', reason);
+      const res = await fetch(url.toString(), {
+        method: 'DELETE',
+        headers: { 'X-Actor-Id': 'investigator_front' },
+      });
+      if (!res.ok) {
+        throw new Error(`Échec suppression relation (HTTP ${res.status})`);
+      }
+    }
+
+    set((prev) => ({
+      edges: prev.edges.filter((e) => e.id !== edgeId),
+      selectedEdgeId: prev.selectedEdgeId === edgeId ? null : prev.selectedEdgeId,
+    }));
   },
 
   contextMenu: {
@@ -988,6 +1140,8 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
       };
     });
 
+    const isCaseChange = get().loadedTabsCaseId !== res.case_id;
+
     set({
       nodes: positionedNodes,
       edges: res.edges,
@@ -996,10 +1150,20 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
       totalCaseEdges: res.total_case_edges,
       isLoading: false,
       error: null,
+      ...(isCaseChange
+        ? {
+            extractionRunsByNodeId: {},
+            candidatesByNodeId: {},
+            relationsByNodeId: {},
+            candidatePositions: {},
+            selectedCandidateId: null,
+          }
+        : {}),
     });
 
-    if (get().loadedTabsCaseId !== res.case_id) {
+    if (isCaseChange) {
       get().initTabsForCase(res.case_id, positionedNodes);
+      void get().loadCaseIngestionSummary(res.case_id).catch(() => {});
     }
   },
 
@@ -1053,7 +1217,7 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     const activeCase = get().activeCase;
     if (activeCase) {
       try {
-        await fetch(`/api/v1/cases/${activeCase.id}/nodes/${nodeId}`, {
+        await fetch(`${API_BASE}/api/v1/cases/${activeCase.id}/nodes/${nodeId}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -1078,7 +1242,7 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
           nodes: get().nodes.map((n) => (n.id === nodeId ? { ...n, label: oldLabel } : n)),
         });
         if (activeCase) {
-          fetch(`/api/v1/cases/${activeCase.id}/nodes/${nodeId}`, {
+          fetch(`${API_BASE}/api/v1/cases/${activeCase.id}/nodes/${nodeId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'X-Actor-Id': 'investigator_front' },
             body: JSON.stringify({ label: oldLabel, reason: 'Annulation modification libellé' }),
@@ -1090,7 +1254,7 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
           nodes: get().nodes.map((n) => (n.id === nodeId ? { ...n, label: newLabel.trim() } : n)),
         });
         if (activeCase) {
-          fetch(`/api/v1/cases/${activeCase.id}/nodes/${nodeId}`, {
+          fetch(`${API_BASE}/api/v1/cases/${activeCase.id}/nodes/${nodeId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'X-Actor-Id': 'investigator_front' },
             body: JSON.stringify({ label: newLabel.trim(), reason: 'Rétablissement modification libellé' }),
@@ -1130,7 +1294,7 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     const activeCase = get().activeCase;
     if (activeCase) {
       try {
-        await fetch(`/api/v1/cases/${activeCase.id}/nodes/${nodeId}`, {
+        await fetch(`${API_BASE}/api/v1/cases/${activeCase.id}/nodes/${nodeId}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -1189,6 +1353,27 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
         selectedNodeIds: [id],
         selectedEdgeId: null,
       });
+    }
+
+    const selected = get().nodes.find((n) => n.id === id);
+    const props = selected?.properties || {};
+    const isEvidence =
+      Boolean(props.is_raw_evidence) ||
+      selected?.type === 'scelle_numerique' ||
+      selected?.type === 'piece_a_conviction' ||
+      typeof props.client_sha256 === 'string' ||
+      typeof props.analysis_mode === 'string';
+    if (
+      isEvidence &&
+      !id.startsWith('temp-') &&
+      !id.startsWith('node-file-') &&
+      get().extractionRunsByNodeId[id] === undefined
+    ) {
+      void get()
+        .loadNodeCandidates(id)
+        .catch(() => {
+          // Non-fatal in offline/unit-test environments without a live backend
+        });
     }
   },
 
@@ -1318,18 +1503,21 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     const uuidRegex =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (activeCase && typeof fetch === 'function') {
-      deletedNodes.forEach((n) => {
-        if (uuidRegex.test(n.id)) {
-          fetch(`${API_BASE}/api/v1/cases/${activeCase.id}/nodes/${n.id}`, {
-            method: 'DELETE',
-            headers: {
-              'X-Actor-Id': 'investigator_front',
-            },
-          }).catch(() => {
+      const uuidNodes = deletedNodes.filter((n) => uuidRegex.test(n.id));
+      void (async () => {
+        for (const n of uuidNodes) {
+          try {
+            await fetch(`${API_BASE}/api/v1/cases/${activeCase.id}/nodes/${n.id}`, {
+              method: 'DELETE',
+              headers: {
+                'X-Actor-Id': 'investigator_front',
+              },
+            });
+          } catch {
             // Non-blocking in Phase 1
-          });
+          }
         }
-      });
+      })();
     }
   },
 
@@ -1509,8 +1697,8 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     }
 
     const finalType = relationType || 'CORRESPONDS_TO';
-    const finalLayer: LayerId = layer || 'HYPOTHESIS';
-    const finalConf = typeof confidence === 'number' ? confidence : 0.9;
+    const finalConf = typeof confidence === 'number' ? confidence : 1.0;
+    const finalLayer: LayerId = layer || (finalConf >= 1.0 ? 'VERIFIED' : 'HYPOTHESIS');
 
     const tempEdgeId = `edge-manual-${Date.now()}`;
     const newEdge: GraphEdge = {
@@ -1740,6 +1928,49 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     });
   },
 
+  changeNodeLayer: async (nodeId, nextLayer, reason) => {
+    const state = get();
+    const target = state.nodes.find((n) => n.id === nodeId);
+    if (!target || target.layer === nextLayer) return;
+
+    const prevLayer = target.layer;
+    set((prev) => {
+      const nextLayers = new Set(prev.activeLayers);
+      nextLayers.add(nextLayer);
+      return {
+        nodes: prev.nodes.map((n) => (n.id === nodeId ? { ...n, layer: nextLayer } : n)),
+        activeLayers: nextLayers,
+      };
+    });
+
+    const activeCase = state.activeCase;
+    if (!activeCase || nodeId.startsWith('node-opt-') || nodeId.startsWith('temp-')) return;
+
+    const effectiveReason =
+      reason?.trim() || `Changement direct de calque vers ${nextLayer} par l'enquêteur`;
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/cases/${activeCase.id}/nodes/${nodeId}/layer`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Actor-Id': 'investigator_front',
+        },
+        body: JSON.stringify({
+          new_layer: nextLayer,
+          reason: effectiveReason,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+    } catch (err) {
+      set((prev) => ({
+        nodes: prev.nodes.map((n) => (n.id === nodeId ? { ...n, layer: prevLayer } : n)),
+      }));
+      throw err;
+    }
+  },
+
   openIngestionPopover: (nodeId) => {
     set({ activeIngestionPopoverNodeId: nodeId });
   },
@@ -1779,7 +2010,17 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
         nextExpanded.add(savedNode.id);
       }
       return {
-        nodes: state.nodes.map((n) => (n.id === tempId ? { ...n, ...savedNode } : n)),
+        nodes: state.nodes.map((n) => {
+          if (n.id !== tempId) return n;
+          const preservedX = typeof n.x === 'number' ? n.x : savedNode.x;
+          const preservedY = typeof n.y === 'number' ? n.y : savedNode.y;
+          return {
+            ...n,
+            ...savedNode,
+            ...(typeof preservedX === 'number' ? { x: preservedX } : {}),
+            ...(typeof preservedY === 'number' ? { y: preservedY } : {}),
+          };
+        }),
         edges: state.edges.map((e) => ({
           ...e,
           source_id: e.source_id === tempId ? savedNode.id : e.source_id,
@@ -1853,7 +2094,7 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     const activeCase = get().activeCase;
     if (activeCase && !nodeId.startsWith('temp-') && !nodeId.startsWith('node-file-')) {
       try {
-        await fetch(`/api/v1/cases/${activeCase.id}/nodes/${nodeId}`, {
+        await fetch(`${API_BASE}/api/v1/cases/${activeCase.id}/nodes/${nodeId}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -1925,36 +2166,24 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
         }
       }
 
-      const res = await startNodeExtraction(activeCase.id, nodeId, mode, selectedTools);
-      const pendingCount = res.counts.pending ?? 0;
-      const run = res.latest_run;
-      const nextStatus = run?.status === 'COMPLETED' ? 'saturated' : 'active_investigation';
-      const nextProgress =
-        run?.status === 'COMPLETED' ? 100 : Math.round(((run?.current_stage ?? 1) / (run?.total_stages ?? 3)) * 100);
-      const nextStage =
-        run?.status === 'COMPLETED'
-          ? `Extraction terminée (${pendingCount} candidat(s) à valider)`
-          : `Étape ${run?.current_stage ?? 1}/${run?.total_stages ?? 3} terminée (${pendingCount} candidat(s))`;
+      const initialRes = await startNodeExtraction(activeCase.id, nodeId, mode, selectedTools);
+      set((prev) => applyNodeExtractionPatch(prev, nodeId, initialRes, mode));
+      let currentRun = initialRes.latest_run;
 
-      set((prev) => ({
-        extractionRunsByNodeId: { ...prev.extractionRunsByNodeId, [nodeId]: run },
-        candidatesByNodeId: { ...prev.candidatesByNodeId, [nodeId]: res.candidates },
-        nodes: prev.nodes.map((n) =>
-          n.id === nodeId
-            ? {
-                ...n,
-                properties: {
-                  ...n.properties,
-                  investigation_status: nextStatus,
-                  analysis_mode: mode,
-                  analysis_progress: nextProgress,
-                  analysis_stage: nextStage,
-                  pending_candidates_count: pendingCount,
-                },
-              }
-            : n
-        ),
-      }));
+      // Mode 2 ("Analyse Complète") runs all 3 progressive SPI stages smoothly (33% -> 66% -> 100%)
+      let stepGuard = 0;
+      while (
+        mode === 'step_by_step' &&
+        stepGuard < 3 &&
+        currentRun &&
+        currentRun.status === 'WAITING_HUMAN' &&
+        currentRun.current_stage < currentRun.total_stages
+      ) {
+        stepGuard += 1;
+        const nextRes = await advanceExtractionStage(activeCase.id, currentRun.id);
+        set((prev) => applyNodeExtractionPatch(prev, nodeId, nextRes, mode));
+        currentRun = nextRes.latest_run;
+      }
     } finally {
       set({ extractionLoadingNodeId: null });
     }
@@ -1966,29 +2195,247 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     set({ extractionLoadingNodeId: nodeId });
     try {
       const res = await advanceExtractionStage(activeCase.id, runId);
-      const pendingCount = res.counts.pending ?? 0;
-      const run = res.latest_run;
-      const nextStatus = run?.status === 'COMPLETED' ? 'saturated' : 'active_investigation';
-      const nextProgress =
-        run?.status === 'COMPLETED' ? 100 : Math.round(((run?.current_stage ?? 2) / (run?.total_stages ?? 3)) * 100);
-      const nextStage =
-        run?.status === 'COMPLETED'
-          ? `Analyse étape par étape terminée (${pendingCount} candidat(s) à valider)`
-          : `Étape ${run?.current_stage ?? 2}/${run?.total_stages ?? 3} terminée (${pendingCount} candidat(s))`;
+      set((prev) => applyNodeExtractionPatch(prev, nodeId, res));
+    } finally {
+      set({ extractionLoadingNodeId: null });
+    }
+  },
 
+  completeAllPdfStages: async (nodeId) => {
+    const state = get();
+    const activeCase = state.activeCase;
+    const target = state.nodes.find((n) => n.id === nodeId);
+    if (!activeCase || !target) return;
+
+    await get().loadNodeCandidates(nodeId);
+    let currentRun = get().extractionRunsByNodeId[nodeId] ?? null;
+
+    if (
+      currentRun &&
+      currentRun.mode === 'step_by_step' &&
+      currentRun.status === 'WAITING_HUMAN' &&
+      currentRun.current_stage < currentRun.total_stages
+    ) {
+      let stepGuard = 0;
+      while (
+        stepGuard < 3 &&
+        currentRun &&
+        currentRun.status === 'WAITING_HUMAN' &&
+        currentRun.current_stage < currentRun.total_stages
+      ) {
+        stepGuard += 1;
+        await get().advancePdfStage(nodeId, currentRun.id);
+        currentRun = get().extractionRunsByNodeId[nodeId] ?? null;
+      }
+      return;
+    }
+
+    const selectedTools = Array.isArray(target.properties?.selected_plugins)
+      ? (target.properties.selected_plugins as string[])
+      : [];
+    await get().runPdfExtraction(nodeId, 'step_by_step', selectedTools);
+  },
+
+  loadNodeCandidates: async (nodeId) => {
+    const activeCase = get().activeCase;
+    if (!activeCase || nodeId.startsWith('temp-') || nodeId.startsWith('node-file-')) return;
+    const res = await fetchNodeCandidates(activeCase.id, nodeId);
+    set((prev) => ({
+      extractionRunsByNodeId: { ...prev.extractionRunsByNodeId, [nodeId]: res.latest_run },
+      candidatesByNodeId: { ...prev.candidatesByNodeId, [nodeId]: res.candidates },
+      relationsByNodeId: { ...prev.relationsByNodeId, [nodeId]: res.relations ?? [] },
+    }));
+  },
+
+  loadCaseIngestionSummary: async (caseId) => {
+    const res = await fetchCaseIngestionSummary(caseId);
+    // Guard against stale response if user already switched case
+    if (get().activeCase?.id && get().activeCase?.id !== caseId) return;
+    set({
+      extractionRunsByNodeId: res.runs_by_node_id ?? {},
+      candidatesByNodeId: res.candidates_by_node_id ?? {},
+      relationsByNodeId: res.relations_by_node_id ?? {},
+    });
+  },
+
+  validateCandidates: async (nodeId, payload) => {
+    const activeCase = get().activeCase;
+    if (!activeCase) return 0;
+    set({ extractionLoadingNodeId: nodeId });
+    try {
+      const preState = get();
+      const prePending = (preState.candidatesByNodeId[nodeId] ?? []).filter(
+        (c) => c.validation_status === 'PENDING'
+      );
+      const activeTab = preState.tabs.find((t) => t.id === preState.activeTabId);
+      const focalTabPos =
+        activeTab?.kind === 'actor_sphere' ? activeTab.snapshot.nodePositions?.[nodeId] : undefined;
+      const focalNode = preState.nodes.find((n) => n.id === nodeId);
+      const focalX = focalTabPos?.x ?? focalNode?.x ?? 600;
+      const focalY = focalTabPos?.y ?? focalNode?.y ?? 420;
+      const prePosByCandId = new Map<string, { x: number; y: number }>();
+      prePending.forEach((c, idx) => {
+        const ghostId = `cand:${c.id}`;
+        const existingPos = preState.candidatePositions[ghostId];
+        prePosByCandId.set(
+          c.id,
+          existingPos ?? computeDefaultCandidatePosition(focalX, focalY, idx, prePending.length)
+        );
+      });
+
+      const res = await validateNodeCandidates(activeCase.id, nodeId, payload);
+      const rawNewNodes = res.created_nodes as unknown as GraphNode[];
+      const newEdges = res.created_edges as unknown as GraphEdge[];
+
+      const candIdByPromotedId = new Map<string, string>();
+      (res.updated_candidates ?? []).forEach((u) => {
+        if (u.promoted_node_id) candIdByPromotedId.set(u.promoted_node_id, u.id);
+      });
+
+      const promotedPosMap = new Map<string, { x: number; y: number }>();
+      const newNodes = rawNewNodes.map((n) => {
+        const matchedCandId =
+          candIdByPromotedId.get(n.id) ??
+          prePending.find((c) => c.entity_type === n.type && c.label === n.label)?.id;
+        const prePos = matchedCandId ? prePosByCandId.get(matchedCandId) : undefined;
+        if (!prePos) return n;
+        promotedPosMap.set(n.id, prePos);
+        return { ...n, x: prePos.x, y: prePos.y };
+      });
+
+      if (newNodes.length > 0 || newEdges.length > 0) {
+        get().mergeExpandedNodes(newNodes, newEdges);
+        const involvedNodeIds = new Set<string>();
+        newNodes.forEach((n) => involvedNodeIds.add(n.id));
+        newEdges.forEach((e) => {
+          involvedNodeIds.add(e.source_id);
+          involvedNodeIds.add(e.target_id);
+        });
+        involvedNodeIds.forEach((id) => get().registerTabAddedNode(id));
+        if (promotedPosMap.size > 0) {
+          get().updateActiveTabNodePositions(promotedPosMap);
+        }
+        set((prev) => {
+          const nextExpanded = new Set(prev.expandedHiddenNodeIds);
+          const nextLabels = new Set(prev.forcedVisibleNodeLabelIds);
+          const nextLayers = new Set(prev.activeLayers);
+          newNodes.forEach((n) => {
+            nextExpanded.add(n.id);
+            nextLabels.add(n.id);
+            nextLayers.add(n.layer);
+          });
+          newEdges.forEach((e) => {
+            nextExpanded.add(e.source_id);
+            nextExpanded.add(e.target_id);
+            nextLayers.add(e.layer);
+          });
+          return {
+            expandedHiddenNodeIds: nextExpanded,
+            forcedVisibleNodeLabelIds: nextLabels,
+            activeLayers: nextLayers,
+          };
+        });
+      }
+
+      const refreshed = await fetchNodeCandidates(activeCase.id, nodeId);
+      set((prev) => {
+        const nextCandPositions: Record<string, { x: number; y: number }> = { ...prev.candidatePositions };
+        const removeIds = new Set<string>();
+        prePending.forEach((c) => {
+          const stillPending = refreshed.candidates.some(
+            (rc) => rc.id === c.id && rc.validation_status === 'PENDING'
+          );
+          const ghostId = `cand:${c.id}`;
+          if (stillPending) {
+            const frozen = prePosByCandId.get(c.id);
+            if (frozen && !nextCandPositions[ghostId]) {
+              nextCandPositions[ghostId] = frozen;
+            }
+          } else {
+            removeIds.add(ghostId);
+          }
+        });
+        const cleanedCandPositions = removeIds.size
+          ? Object.fromEntries(Object.entries(nextCandPositions).filter(([k]) => !removeIds.has(k)))
+          : nextCandPositions;
+        return {
+          extractionRunsByNodeId: { ...prev.extractionRunsByNodeId, [nodeId]: refreshed.latest_run },
+          candidatesByNodeId: { ...prev.candidatesByNodeId, [nodeId]: refreshed.candidates },
+          relationsByNodeId: { ...prev.relationsByNodeId, [nodeId]: refreshed.relations ?? [] },
+          candidatePositions: cleanedCandPositions,
+          selectedCandidateId: null,
+          nodes: prev.nodes.map((n) =>
+            n.id === nodeId
+              ? {
+                  ...n,
+                  properties: {
+                    ...n.properties,
+                    pending_candidates_count: res.pending_remaining,
+                    pending_relations_count:
+                      refreshed.relation_counts?.pending ??
+                      (refreshed.relations ?? []).filter((r) => r.validation_status === 'PENDING').length,
+                  },
+                }
+              : n
+          ),
+        };
+      });
+
+      return res.processed_count;
+    } finally {
+      set({ extractionLoadingNodeId: null });
+    }
+  },
+
+  updateExtractedCandidate: async (sourceNodeId, candidateId, payload) => {
+    const activeCase = get().activeCase;
+    if (!activeCase) return;
+    set({ extractionLoadingNodeId: sourceNodeId });
+    try {
+      const updated = await updateNodeCandidate(activeCase.id, candidateId, payload);
       set((prev) => ({
-        extractionRunsByNodeId: { ...prev.extractionRunsByNodeId, [nodeId]: run },
-        candidatesByNodeId: { ...prev.candidatesByNodeId, [nodeId]: res.candidates },
+        extractionRunsByNodeId: { ...prev.extractionRunsByNodeId, [sourceNodeId]: updated.latest_run },
+        candidatesByNodeId: { ...prev.candidatesByNodeId, [sourceNodeId]: updated.candidates },
+        relationsByNodeId: { ...prev.relationsByNodeId, [sourceNodeId]: updated.relations ?? [] },
+      }));
+    } finally {
+      set({ extractionLoadingNodeId: null });
+    }
+  },
+
+  updateExtractedRelation: async (sourceNodeId, relationId, payload) => {
+    const activeCase = get().activeCase;
+    if (!activeCase) return;
+    set({ extractionLoadingNodeId: sourceNodeId });
+    try {
+      const updated = await updateNodeRelation(activeCase.id, relationId, payload);
+      set((prev) => ({
+        extractionRunsByNodeId: { ...prev.extractionRunsByNodeId, [sourceNodeId]: updated.latest_run },
+        candidatesByNodeId: { ...prev.candidatesByNodeId, [sourceNodeId]: updated.candidates },
+        relationsByNodeId: { ...prev.relationsByNodeId, [sourceNodeId]: updated.relations ?? [] },
+      }));
+    } finally {
+      set({ extractionLoadingNodeId: null });
+    }
+  },
+
+  deleteExtractedRelation: async (sourceNodeId, relationId) => {
+    const activeCase = get().activeCase;
+    if (!activeCase) return;
+    set({ extractionLoadingNodeId: sourceNodeId });
+    try {
+      const updated = await deleteNodeRelation(activeCase.id, relationId);
+      set((prev) => ({
+        extractionRunsByNodeId: { ...prev.extractionRunsByNodeId, [sourceNodeId]: updated.latest_run },
+        candidatesByNodeId: { ...prev.candidatesByNodeId, [sourceNodeId]: updated.candidates },
+        relationsByNodeId: { ...prev.relationsByNodeId, [sourceNodeId]: updated.relations ?? [] },
         nodes: prev.nodes.map((n) =>
-          n.id === nodeId
+          n.id === sourceNodeId
             ? {
                 ...n,
                 properties: {
                   ...n.properties,
-                  investigation_status: nextStatus,
-                  analysis_progress: nextProgress,
-                  analysis_stage: nextStage,
-                  pending_candidates_count: pendingCount,
+                  pending_relations_count: updated.relation_counts?.pending ?? 0,
                 },
               }
             : n
@@ -1999,59 +2446,125 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     }
   },
 
-  loadNodeCandidates: async (nodeId) => {
-    const activeCase = get().activeCase;
-    if (!activeCase || nodeId.startsWith('temp-') || nodeId.startsWith('node-file-')) return;
-    const res = await fetchNodeCandidates(activeCase.id, nodeId);
-    set((prev) => ({
-      extractionRunsByNodeId: { ...prev.extractionRunsByNodeId, [nodeId]: res.latest_run },
-      candidatesByNodeId: { ...prev.candidatesByNodeId, [nodeId]: res.candidates },
-    }));
-  },
-
-  validateCandidates: async (nodeId, payload) => {
+  validateRelations: async (nodeId, payload) => {
     const activeCase = get().activeCase;
     if (!activeCase) return 0;
     set({ extractionLoadingNodeId: nodeId });
     try {
-      const res = await validateNodeCandidates(activeCase.id, nodeId, payload);
-      const newNodes = res.created_nodes as unknown as GraphNode[];
+      const preState = get();
+      const prePending = (preState.candidatesByNodeId[nodeId] ?? []).filter(
+        (c) => c.validation_status === 'PENDING'
+      );
+      const activeTab = preState.tabs.find((t) => t.id === preState.activeTabId);
+      const focalTabPos =
+        activeTab?.kind === 'actor_sphere' ? activeTab.snapshot.nodePositions?.[nodeId] : undefined;
+      const focalNode = preState.nodes.find((n) => n.id === nodeId);
+      const focalX = focalTabPos?.x ?? focalNode?.x ?? 600;
+      const focalY = focalTabPos?.y ?? focalNode?.y ?? 420;
+      const prePosByCandId = new Map<string, { x: number; y: number }>();
+      prePending.forEach((c, idx) => {
+        const ghostId = `cand:${c.id}`;
+        const existingPos = preState.candidatePositions[ghostId];
+        prePosByCandId.set(
+          c.id,
+          existingPos ?? computeDefaultCandidatePosition(focalX, focalY, idx, prePending.length)
+        );
+      });
+
+      const res = await validateNodeRelations(activeCase.id, nodeId, payload);
+      const refreshed = await fetchNodeCandidates(activeCase.id, nodeId);
+
+      const candIdByPromotedId = new Map<string, string>();
+      refreshed.candidates.forEach((c) => {
+        if (c.promoted_node_id) candIdByPromotedId.set(c.promoted_node_id, c.id);
+      });
+
+      const rawNewNodes = res.created_nodes as unknown as GraphNode[];
       const newEdges = res.created_edges as unknown as GraphEdge[];
+      const promotedPosMap = new Map<string, { x: number; y: number }>();
+      const newNodes = rawNewNodes.map((n) => {
+        const matchedCandId =
+          candIdByPromotedId.get(n.id) ??
+          prePending.find((c) => c.entity_type === n.type && c.label === n.label)?.id;
+        const prePos = matchedCandId ? prePosByCandId.get(matchedCandId) : undefined;
+        if (!prePos) return n;
+        promotedPosMap.set(n.id, prePos);
+        return { ...n, x: prePos.x, y: prePos.y };
+      });
 
       if (newNodes.length > 0 || newEdges.length > 0) {
         get().mergeExpandedNodes(newNodes, newEdges);
-        newNodes.forEach((n) => get().registerTabAddedNode(n.id));
+        const involvedNodeIds = new Set<string>();
+        newNodes.forEach((n) => involvedNodeIds.add(n.id));
+        newEdges.forEach((e) => {
+          involvedNodeIds.add(e.source_id);
+          involvedNodeIds.add(e.target_id);
+        });
+        involvedNodeIds.forEach((id) => get().registerTabAddedNode(id));
+        if (promotedPosMap.size > 0) {
+          get().updateActiveTabNodePositions(promotedPosMap);
+        }
         set((prev) => {
           const nextExpanded = new Set(prev.expandedHiddenNodeIds);
           const nextLabels = new Set(prev.forcedVisibleNodeLabelIds);
+          const nextLayers = new Set(prev.activeLayers);
           newNodes.forEach((n) => {
             nextExpanded.add(n.id);
             nextLabels.add(n.id);
+            nextLayers.add(n.layer);
+          });
+          newEdges.forEach((e) => {
+            nextExpanded.add(e.source_id);
+            nextExpanded.add(e.target_id);
+            nextLayers.add(e.layer);
           });
           return {
             expandedHiddenNodeIds: nextExpanded,
             forcedVisibleNodeLabelIds: nextLabels,
+            activeLayers: nextLayers,
           };
         });
       }
 
-      const refreshed = await fetchNodeCandidates(activeCase.id, nodeId);
-      set((prev) => ({
-        extractionRunsByNodeId: { ...prev.extractionRunsByNodeId, [nodeId]: refreshed.latest_run },
-        candidatesByNodeId: { ...prev.candidatesByNodeId, [nodeId]: refreshed.candidates },
-        selectedCandidateId: null,
-        nodes: prev.nodes.map((n) =>
-          n.id === nodeId
-            ? {
-                ...n,
-                properties: {
-                  ...n.properties,
-                  pending_candidates_count: res.pending_remaining,
-                },
-              }
-            : n
-        ),
-      }));
+      set((prev) => {
+        const nextCandPositions: Record<string, { x: number; y: number }> = { ...prev.candidatePositions };
+        const removeIds = new Set<string>();
+        prePending.forEach((c) => {
+          const stillPending = refreshed.candidates.some(
+            (rc) => rc.id === c.id && rc.validation_status === 'PENDING'
+          );
+          const ghostId = `cand:${c.id}`;
+          if (stillPending) {
+            const frozen = prePosByCandId.get(c.id);
+            if (frozen && !nextCandPositions[ghostId]) {
+              nextCandPositions[ghostId] = frozen;
+            }
+          } else {
+            removeIds.add(ghostId);
+          }
+        });
+        const cleanedCandPositions = removeIds.size
+          ? Object.fromEntries(Object.entries(nextCandPositions).filter(([k]) => !removeIds.has(k)))
+          : nextCandPositions;
+        return {
+          extractionRunsByNodeId: { ...prev.extractionRunsByNodeId, [nodeId]: refreshed.latest_run },
+          candidatesByNodeId: { ...prev.candidatesByNodeId, [nodeId]: refreshed.candidates },
+          relationsByNodeId: { ...prev.relationsByNodeId, [nodeId]: refreshed.relations ?? [] },
+          candidatePositions: cleanedCandPositions,
+          nodes: prev.nodes.map((n) =>
+            n.id === nodeId
+              ? {
+                  ...n,
+                  properties: {
+                    ...n.properties,
+                    pending_candidates_count: refreshed.counts.pending ?? 0,
+                    pending_relations_count: res.pending_relations_remaining,
+                  },
+                }
+              : n
+          ),
+        };
+      });
 
       return res.processed_count;
     } finally {

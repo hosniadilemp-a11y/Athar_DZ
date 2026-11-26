@@ -19,6 +19,7 @@ export const WorkspaceTabsBar: React.FC<WorkspaceTabsBarProps> = ({
     activeTabId,
     switchTab,
     closeTab,
+    candidatesByNodeId,
   } = useGraphStore();
   const { tr, trLabel } = useI18n();
 
@@ -27,7 +28,7 @@ export const WorkspaceTabsBar: React.FC<WorkspaceTabsBarProps> = ({
   const [isOverflowOpen, setIsOverflowOpen] = useState(false);
   const [hasOverflow, setHasOverflow] = useState(false);
 
-  // Compute node counts for each tab deterministically
+  // Compute node counts for each tab deterministically (include pending extracted candidates on focal evidence nodes)
   const tabCounts = useMemo(() => {
     const counts = new Map<string, number>();
     tabs.forEach((tab) => {
@@ -35,11 +36,14 @@ export const WorkspaceTabsBar: React.FC<WorkspaceTabsBarProps> = ({
         counts.set(tab.id, totalCaseNodes || nodes.length);
       } else if (tab.focalNodeId) {
         const res = computeActorSphere(nodes, edges, tab.focalNodeId);
-        counts.set(tab.id, res.nodeIds.size);
+        const pendingCandidatesCount = (candidatesByNodeId[tab.focalNodeId] ?? []).filter(
+          (c) => c.validation_status === 'PENDING'
+        ).length;
+        counts.set(tab.id, res.nodeIds.size + pendingCandidatesCount);
       }
     });
     return counts;
-  }, [tabs, nodes, edges, totalCaseNodes]);
+  }, [tabs, nodes, edges, totalCaseNodes, candidatesByNodeId]);
 
   // Detect horizontal overflow when panel narrows or multiple tabs are open
   useEffect(() => {
@@ -100,6 +104,7 @@ export const WorkspaceTabsBar: React.FC<WorkspaceTabsBarProps> = ({
     <div className="workspace-tabs-bar">
       <div
         ref={tabListRef}
+        role="tablist"
         className="workspace-tabs-list"
         aria-label={tr("Onglets d'enquête et sous-graphes")}
         onKeyDown={handleTabListKeyDown}
@@ -109,6 +114,16 @@ export const WorkspaceTabsBar: React.FC<WorkspaceTabsBarProps> = ({
           const count = tabCounts.get(tab.id) ?? 0;
           const displayTitle =
             tab.kind === 'master' ? tr('Dossier Général') : trLabel(tab.title);
+          const focalNode = tab.focalNodeId
+            ? nodes.find((n) => n.id === tab.focalNodeId)
+            : undefined;
+          const isDocFocal = Boolean(
+            focalNode &&
+              (focalNode.type === 'document_judiciaire' ||
+                focalNode.type === 'scelle_numerique' ||
+                focalNode.type === 'piece_a_conviction' ||
+                focalNode.properties?.is_raw_evidence)
+          );
 
           return (
             <div
@@ -117,13 +132,12 @@ export const WorkspaceTabsBar: React.FC<WorkspaceTabsBarProps> = ({
                 tab.kind === 'actor_sphere' ? 'is-actor-tab' : ''
               }`}
             >
-              <div role="tablist" aria-label={displayTitle} style={{ display: 'inline-flex', alignItems: 'center' }}>
-                <button
-                  type="button"
-                  role="tab"
-                  id={`workspace-tab-${tab.id}`}
-                  aria-selected={isActive}
-                  className="workspace-tab-btn"
+              <button
+                type="button"
+                role="tab"
+                id={`workspace-tab-${tab.id}`}
+                aria-selected={isActive}
+                className="workspace-tab-btn"
                 onClick={() => switchTab(tab.id)}
                 title={
                   tab.kind === 'actor_sphere'
@@ -133,8 +147,7 @@ export const WorkspaceTabsBar: React.FC<WorkspaceTabsBarProps> = ({
               >
                 {tab.kind === 'master' ? (
                   <Globe size={13} className="workspace-tab-icon" />
-                ) : nodes.find((n) => n.id === tab.focalNodeId)?.type === 'document_judiciaire' ||
-                  nodes.find((n) => n.id === tab.focalNodeId)?.type === 'scelle_numerique' ? (
+                ) : isDocFocal ? (
                   <FileText size={13} className="workspace-tab-icon is-actor" />
                 ) : (
                   <User size={13} className="workspace-tab-icon is-actor" />
@@ -145,10 +158,9 @@ export const WorkspaceTabsBar: React.FC<WorkspaceTabsBarProps> = ({
                     tab.kind === 'actor_sphere' ? 'is-sphere' : 'chip-neutral'
                   }`}
                 >
-                  {tab.kind === 'actor_sphere' ? `${count}` : `${count}`}
+                  {count}
                 </span>
-                </button>
-              </div>
+              </button>
 
               {tab.closable && (
                 <button

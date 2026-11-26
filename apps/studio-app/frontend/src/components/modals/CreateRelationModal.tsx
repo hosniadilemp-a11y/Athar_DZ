@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useGraphStore } from '../../store/useGraphStore';
 import { useI18n } from '../../context/I18nContext';
 import { NodeIcon } from '../canvas/NodeIcon';
+import { ModalPortal } from '../common/ModalPortal';
 import registryDataRaw from '../../registry/registry.json';
 import type { RegistryData, LayerId } from '../../types/registry';
 import { getAvailableRelationsForNodes, getRelationLabel } from '../../i18n/phrases/relations';
@@ -54,7 +55,7 @@ export const CreateRelationModal: React.FC<CreateRelationModalProps> = ({
   const [selectedRelation, setSelectedRelation] = useState<string>(
     availableRelations[0]?.key || 'COMMUNIQUE_AVEC'
   );
-  const [selectedLayer, setSelectedLayer] = useState<LayerId>('HYPOTHESIS');
+  const [selectedLayer, setSelectedLayer] = useState<LayerId>('VERIFIED');
   const [confidence, setConfidence] = useState<number>(1.0);
   const [searchFilter, setSearchFilter] = useState('');
   const [notes, setNotes] = useState('');
@@ -62,6 +63,7 @@ export const CreateRelationModal: React.FC<CreateRelationModalProps> = ({
   React.useEffect(() => {
     if (isOpen) {
       setConfidence(1.0);
+      setSelectedLayer('VERIFIED');
       setIsSwapped(false);
       setSearchFilter('');
       setNotes('');
@@ -112,6 +114,7 @@ export const CreateRelationModal: React.FC<CreateRelationModalProps> = ({
   };
 
   return (
+    <ModalPortal>
     <div
       className="modal-backdrop"
       role="dialog"
@@ -434,8 +437,8 @@ export const CreateRelationModal: React.FC<CreateRelationModalProps> = ({
                   color: 'var(--color-text-primary)',
                 }}
               >
-                <option value="HYPOTHESIS">HYPOTHESIS (Liaison présumée / piste)</option>
                 <option value="VERIFIED">VERIFIED (Scellé probatoire certain)</option>
+                <option value="HYPOTHESIS">HYPOTHESIS (Liaison présumée / piste)</option>
                 <option value="FLOWS">FLOWS (Flux financier ou télécom)</option>
                 <option value="INFRA">INFRA (Infrastructure technique)</option>
                 <option value="OSINT_RAW">OSINT_RAW (Donnée ouverte brute)</option>
@@ -453,7 +456,15 @@ export const CreateRelationModal: React.FC<CreateRelationModalProps> = ({
                 max={1.0}
                 step={0.05}
                 value={confidence}
-                onChange={(e) => setConfidence(parseFloat(e.target.value))}
+                onChange={(e) => {
+                  const nextConf = parseFloat(e.target.value);
+                  setConfidence(nextConf);
+                  if (nextConf >= 1.0) {
+                    setSelectedLayer('VERIFIED');
+                  } else if (selectedLayer === 'VERIFIED') {
+                    setSelectedLayer('HYPOTHESIS');
+                  }
+                }}
                 style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--color-accent-primary)', marginTop: '4px' }}
               />
             </div>
@@ -494,5 +505,6 @@ export const CreateRelationModal: React.FC<CreateRelationModalProps> = ({
         </form>
       </div>
     </div>
+    </ModalPortal>
   );
 };

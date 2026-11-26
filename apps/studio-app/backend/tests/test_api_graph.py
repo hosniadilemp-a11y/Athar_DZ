@@ -153,6 +153,19 @@ async def test_node_and_edge_crud() -> None:
         n2 = res_n2.json()
         node2_id = n2["id"]
 
+        # 2b. Create a node with explicit VERIFIED layer override
+        res_n3 = await client.post(
+            f"/api/v1/cases/{case_id}/nodes",
+            json={
+                "type": "document_judiciaire",
+                "label": "PV Scellé Direct 100%",
+                "layer": "VERIFIED",
+                "confidence": 1.0,
+            },
+        )
+        assert res_n3.status_code == 201
+        assert res_n3.json()["layer"] == "VERIFIED"
+
         # 3. Create valid relation: personne -> UTILISE_TELEPHONE -> telephone
         res_edge = await client.post(
             f"/api/v1/cases/{case_id}/edges",
@@ -165,6 +178,28 @@ async def test_node_and_edge_crud() -> None:
         assert res_edge.status_code == 201
         edge = res_edge.json()
         assert edge["type"] == "UTILISE_TELEPHONE"
+        assert edge["layer"] == "VERIFIED"
+        assert edge["confidence"] == pytest.approx(1.0)
+        edge_id = edge["id"]
+
+        # 3b. Update edge (layer, confidence, custom relation, props) & verify
+        res_patch_edge = await client.patch(
+            f"/api/v1/cases/{case_id}/edges/{edge_id}",
+            json={
+                "type": "CONTACTE_PAR",
+                "layer": "FLOWS",
+                "confidence": 0.77,
+                "allow_custom_relation": True,
+                "properties": {"source_note": "Recoupement CDR Fictif"},
+                "reason": "Mise à jour relation analytique",
+            },
+        )
+        assert res_patch_edge.status_code == 200
+        patched_edge = res_patch_edge.json()
+        assert patched_edge["type"] == "CONTACTE_PAR"
+        assert patched_edge["layer"] == "FLOWS"
+        assert patched_edge["confidence"] == pytest.approx(0.77)
+        assert patched_edge["properties"]["source_note"] == "Recoupement CDR Fictif"
 
         # 4. Try invalid relation: telephone -> DIRIGE_ENTREPRISE -> personne (Must fail 400)
         res_invalid_edge = await client.post(
@@ -180,6 +215,23 @@ async def test_node_and_edge_crud() -> None:
         assert "error" in err
         assert err["error"]["code"] == "INVALID_RELATION_FOR_NODES"
 
+        # 4b. Delete edge -> removed from active graph & subsequent DELETE returns 404
+        res_del_edge = await client.delete(
+            f"/api/v1/cases/{case_id}/edges/{edge_id}?reason=Suppression+doublon"
+        )
+        assert res_del_edge.status_code == 200
+        assert res_del_edge.json()["status"] == "deleted"
+        assert res_del_edge.json()["edge_id"] == edge_id
+
+        res_graph_after_del = await client.get(
+            f"/api/v1/cases/{case_id}/graph?impact_only=false"
+        )
+        assert res_graph_after_del.status_code == 200
+        assert all(e["id"] != edge_id for e in res_graph_after_del.json()["edges"])
+
+        res_del_again = await client.delete(f"/api/v1/cases/{case_id}/edges/{edge_id}")
+        assert res_del_again.status_code == 404
+
         # 5. Layer change with justification
         res_layer = await client.put(
             f"/api/v1/cases/{case_id}/nodes/{node1_id}/layer",
@@ -192,15 +244,16 @@ async def test_node_and_edge_crud() -> None:
         updated_n1 = res_layer.json()
         assert updated_n1["layer"] == "VERIFIED"
 
-        # 6. Layer change without justification (Must fail 400 or 422)
-        res_bad_layer = await client.put(
+        # 6. Direct layer change without manual justification succeeds immediately (Decision D19)
+        res_direct_layer = await client.put(
             f"/api/v1/cases/{case_id}/nodes/{node1_id}/layer",
             json={
                 "new_layer": "OSINT_RAW",
-                "reason": "bad",  # < 5 chars
+                "reason": "",
             },
         )
-        assert res_bad_layer.status_code in {400, 422}
+        assert res_direct_layer.status_code == 200
+        assert res_direct_layer.json()["layer"] == "OSINT_RAW"
 
         # 7. Tool proposals for node
         res_tools = await client.get(f"/api/v1/cases/{case_id}/nodes/{node2_id}/tools")
@@ -229,7 +282,7 @@ async def test_audit_verification_endpoint() -> None:
 
 @pytest.mark.asyncio
 async def test_get_registry_endpoint() -> None:
-    """Test that the /api/v1/registry endpoint returns 37 types, 48 relations, and 5 layers."""
+    """Test that /api/v1/registry returns 37 node types, 50 relations, and 5 layers."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         res = await client.get("/api/v1/registry")
@@ -237,5 +290,5 @@ async def test_get_registry_endpoint() -> None:
         reg = res.json()
         assert len(reg["layers"]) == 5
         assert len(reg["node_types"]) == 37
-        assert len(reg["relation_types"]) == 48
+        assert len(reg["relation_types"]) == 50
         assert reg["metadata"]["gps_enabled_count"] == 8

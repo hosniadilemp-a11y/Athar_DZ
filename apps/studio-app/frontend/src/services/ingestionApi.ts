@@ -4,10 +4,14 @@
 
 import { API_BASE } from '../config';
 import type {
+  CaseIngestionSummaryResponse,
   EvidenceUploadResponse,
   NodeCandidatesResponse,
+  RelationUpdateRequest,
   ValidateCandidatesRequest,
   ValidateCandidatesResponse,
+  ValidateRelationsRequest,
+  ValidateRelationsResponse,
 } from '../types/ingestion';
 
 const DEFAULT_HEADERS = {
@@ -103,4 +107,80 @@ export async function validateNodeCandidates(
     body: JSON.stringify(payload),
   });
   return parseJsonOrThrow<ValidateCandidatesResponse>(res);
+}
+
+export interface CandidateUpdatePayload {
+  label?: string;
+  entity_type?: string;
+  suggested_layer?: string;
+  confidence?: number;
+  normalized_value?: string;
+  attributes?: Record<string, unknown>;
+}
+
+export async function updateNodeCandidate(
+  caseId: string,
+  candidateId: string,
+  payload: CandidateUpdatePayload
+): Promise<NodeCandidatesResponse> {
+  const res = await fetch(`${API_BASE}/api/v1/cases/${caseId}/ingestion/candidates/${candidateId}`, {
+    method: 'PATCH',
+    headers: {
+      ...DEFAULT_HEADERS,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+  return parseJsonOrThrow<NodeCandidatesResponse>(res);
+}
+
+export async function updateNodeRelation(
+  caseId: string,
+  relationId: string,
+  payload: RelationUpdateRequest
+): Promise<NodeCandidatesResponse> {
+  const res = await fetch(`${API_BASE}/api/v1/cases/${caseId}/ingestion/relations/${relationId}`, {
+    method: 'PATCH',
+    headers: {
+      ...DEFAULT_HEADERS,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+  return parseJsonOrThrow<NodeCandidatesResponse>(res);
+}
+
+export async function deleteNodeRelation(
+  caseId: string,
+  relationId: string
+): Promise<NodeCandidatesResponse> {
+  const res = await fetch(`${API_BASE}/api/v1/cases/${caseId}/ingestion/relations/${relationId}`, {
+    method: 'DELETE',
+    headers: DEFAULT_HEADERS,
+  });
+  return parseJsonOrThrow<NodeCandidatesResponse>(res);
+}
+
+export async function validateNodeRelations(
+  caseId: string,
+  nodeId: string,
+  payload: ValidateRelationsRequest
+): Promise<ValidateRelationsResponse> {
+  const res = await fetch(`${API_BASE}/api/v1/cases/${caseId}/ingestion/nodes/${nodeId}/relations/validate`, {
+    method: 'POST',
+    headers: {
+      ...DEFAULT_HEADERS,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+  return parseJsonOrThrow<ValidateRelationsResponse>(res);
+}
+
+export async function fetchCaseIngestionSummary(caseId: string): Promise<CaseIngestionSummaryResponse> {
+  const res = await fetch(`${API_BASE}/api/v1/cases/${caseId}/ingestion/summary`, {
+    method: 'GET',
+    headers: DEFAULT_HEADERS,
+  });
+  return parseJsonOrThrow<CaseIngestionSummaryResponse>(res);
 }

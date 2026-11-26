@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   useGraphStore,
   ONTOLOGY_CATEGORY_COLORS,
   NODE_TYPE_TO_CATEGORY,
 } from '../../store/useGraphStore';
 import { computePersonGraphProjection } from '../../utils/graphLayouts';
-import { API_BASE } from '../../config';
 import { NodeIcon } from '../canvas/NodeIcon';
 import registryDataRaw from '../../registry/registry.json';
 import type { RegistryData, LayerId } from '../../types/registry';
@@ -34,6 +33,7 @@ import {
   Camera,
   ChevronDown,
   Search,
+  Eye,
 } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
 import { useToast } from '../../context/ToastContext';
@@ -41,6 +41,8 @@ import { getRelationLabel } from '../../i18n/phrases/relations';
 import { IngestionInspectorSection } from './IngestionInspectorSection';
 import { CandidateValidationPanel } from './CandidateValidationPanel';
 import { isIngestionModeLive } from '../../utils/fileIngestion';
+import { computeCaseOverviewMetrics } from '../../utils/caseMetrics';
+import { getDisplayedEntityConfidence } from '../../utils/entityConfidence';
 import type { LocalFileEntry } from '../../utils/localFileStore';
 
 const registry = registryDataRaw as unknown as RegistryData;
@@ -51,12 +53,39 @@ const TYPE_EDITABLE_FIELDS: Record<string, Array<{ key: string; label: string; p
     { key: 'nom', label: 'Nom de famille', placeholder: 'ex: Zerrouki, Hadj...' },
     { key: 'pseudonyme', label: 'Alias / Surnom', placeholder: 'ex: El-Hadj, Lieutenant Pneus...' },
     { key: 'role', label: 'Rôle opérationnel', placeholder: 'ex: Cerveau, Recruteur, Mule...' },
+    { key: 'wilaya', label: 'Wilaya', placeholder: 'ex: Alger...' },
+    { key: 'daira', label: 'Daïra', placeholder: "ex: Sidi M'Hamed..." },
+    { key: 'commune', label: 'Commune', placeholder: 'ex: Alger Centre...' },
+  ],
+  entreprise: [
+    { key: 'raison_sociale', label: 'Raison sociale', placeholder: 'ex: SARL Atlas Import...' },
+    { key: 'registre_commerce', label: 'Registre Commerce', placeholder: 'ex: RC 16/00-0912345B24...' },
+    { key: 'wilaya', label: 'Wilaya', placeholder: 'ex: Oran...' },
+    { key: 'daira', label: 'Daïra', placeholder: 'ex: Bir El Djir...' },
+    { key: 'commune', label: 'Commune', placeholder: 'ex: Bir El Djir...' },
+  ],
+  guichet_gab: [
+    { key: 'code_gab', label: 'Code Guichet GAB', placeholder: 'ex: GAB-BLIDA-0904...' },
+    { key: 'nom_agence', label: 'Agence / Banque', placeholder: 'ex: Algérie Poste Blida...' },
+    { key: 'wilaya', label: 'Wilaya', placeholder: 'ex: Blida...' },
+    { key: 'daira', label: 'Daïra', placeholder: 'ex: Blida...' },
+    { key: 'commune', label: 'Commune', placeholder: 'ex: Blida...' },
+  ],
+  antenne_bts: [
+    { key: 'cell_id', label: 'Identifiant Cellule (Cell ID)', placeholder: 'ex: BTS-ALG-1604...' },
+    { key: 'operateur', label: 'Opérateur', placeholder: 'ex: Mobilis, Djezzy, Ooredoo...' },
+    { key: 'wilaya', label: 'Wilaya', placeholder: 'ex: Alger...' },
+    { key: 'daira', label: 'Daïra', placeholder: 'ex: Hussein Dey...' },
+    { key: 'commune', label: 'Commune', placeholder: 'ex: Kouba...' },
   ],
   vehicule: [
     { key: 'plaque', label: 'Immatriculation', placeholder: 'ex: 01234-116-16...' },
     { key: 'marque', label: 'Marque', placeholder: 'ex: Renault, Dacia, Toyota...' },
     { key: 'modele', label: 'Modèle', placeholder: 'ex: Clio 4, Hilux, Logan...' },
     { key: 'couleur', label: 'Couleur', placeholder: 'ex: Gris métallisé, Blanc, Noir...' },
+    { key: 'wilaya', label: 'Wilaya', placeholder: 'ex: Alger...' },
+    { key: 'daira', label: 'Daïra', placeholder: "ex: Sidi M'Hamed..." },
+    { key: 'commune', label: 'Commune', placeholder: 'ex: Alger Centre...' },
   ],
   compte_bancaire: [
     { key: 'rip', label: 'Numéro RIP / CCP', placeholder: 'ex: 00799999002345678912...' },
@@ -111,16 +140,6 @@ interface InspectorPanelProps {
   style?: React.CSSProperties;
 }
 
-interface InboxClue {
-  id: string;
-  title: string;
-  type: string;
-  value: string;
-  provenance: string;
-  layer: 'OSINT_RAW' | 'INFRA' | 'HYPOTHESIS';
-  confidence: number;
-}
-
 export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   onExpand,
   onClose,
@@ -138,8 +157,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
     selectedNodeId,
     selectedNodeIds,
     selectedEdgeId,
-    openLayerChangeModal,
-    mergeExpandedNodes,
+    changeNodeLayer,
     requestDeleteNodes,
     selectNode,
     updateNodeDetails,
@@ -149,12 +167,20 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
     toggleExpandNodeConnections,
     expandMediatedEdgeNodes,
     updateEdgeDetails,
+    deleteEdge,
     openIngestionPopover,
     triggerNodeInvestigation,
     runPdfExtraction,
+    completeAllPdfStages,
     openActorTab,
     tabs,
     activeTabId,
+    candidatesByNodeId,
+    relationsByNodeId,
+    extractionRunsByNodeId,
+    extractionLoadingNodeId,
+    validateCandidates,
+    selectCandidate,
   } = useGraphStore();
 
   const activeTab = tabs.find((t) => t.id === activeTabId) ?? null;
@@ -168,7 +194,8 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   const [copiedDarija, setCopiedDarija] = useState(false);
   const [copiedFrench, setCopiedFrench] = useState(false);
   const [editLabel, setEditLabel] = useState('');
-  const [editConfidence, setEditConfidence] = useState(0.85);
+  const [editConfidence, setEditConfidence] = useState(1.0);
+  const [confidenceTouched, setConfidenceTouched] = useState(false);
   const [editStatus, setEditStatus] = useState('');
   const [editNotes, setEditNotes] = useState('');
   const [editProps, setEditProps] = useState<Record<string, string>>({});
@@ -195,42 +222,27 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
     setLinkTypeFilter('ALL');
   }, [selectedNodeId]);
 
-  // Edge editing state (Confidence + Judicial Confidentiality + Layer + Notes)
-  const [editEdgeConfidence, setEditEdgeConfidence] = useState<number>(0.85);
+  // Edge editing state (Type + Confidence + Judicial Confidentiality + Layer + Notes + Delete confirm)
+  const [editEdgeType, setEditEdgeType] = useState<string>('');
+  const [editEdgeConfidence, setEditEdgeConfidence] = useState<number>(1.0);
   const [editEdgeConfidentiality, setEditEdgeConfidentiality] = useState<string>('RESTREINT_ENQUETE');
   const [editEdgeLayer, setEditEdgeLayer] = useState<LayerId>('FLOWS');
   const [editEdgeNotes, setEditEdgeNotes] = useState<string>('');
+  const [confirmDeleteEdge, setConfirmDeleteEdge] = useState<boolean>(false);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
-  const [inboxClues, setInboxClues] = useState<InboxClue[]>([
-    {
-      id: 'clue-1',
-      title: 'Compte BaridiMob Détecté',
-      type: 'compte_bancaire',
-      value: 'RIP 00799999002345678912',
-      provenance: 'Détection de Mules BaridiMob',
-      layer: 'INFRA',
-      confidence: 0.92,
-    },
-    {
-      id: 'clue-2',
-      title: 'Profil Facebook Suspect',
-      type: 'compte_social',
-      value: 'Amine Import Michelin DZ',
-      provenance: 'OSINT Social Media',
-      layer: 'OSINT_RAW',
-      confidence: 0.88,
-    },
-    {
-      id: 'clue-3',
-      title: 'Serveur C2 Localisé',
-      type: 'serveur_c2',
-      value: '185.220.101.5 (Port 8443)',
-      provenance: 'Shodan / Pivots IP',
-      layer: 'INFRA',
-      confidence: 0.95,
-    },
-  ]);
+  const caseMetrics = useMemo(
+    () =>
+      computeCaseOverviewMetrics({
+        activeCase,
+        nodes,
+        edges,
+        candidatesByNodeId,
+        relationsByNodeId,
+        extractionRunsByNodeId,
+      }),
+    [activeCase, nodes, edges, candidatesByNodeId, relationsByNodeId, extractionRunsByNodeId]
+  );
 
   const projection = React.useMemo(() => {
     const layerNodes = activeLayers ? nodes.filter((n) => activeLayers.has(n.layer)) : nodes;
@@ -251,14 +263,16 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   // Sync editing fields with selected edge
   useEffect(() => {
     if (selectedEdge) {
+      setEditEdgeType(selectedEdge.type);
       setEditEdgeConfidence(
-        typeof selectedEdge.confidence === 'number' ? selectedEdge.confidence : 0.85
+        typeof selectedEdge.confidence === 'number' ? selectedEdge.confidence : 1.0
       );
       setEditEdgeConfidentiality(
         (selectedEdge.properties?.confidentiality_level as string) || 'RESTREINT_ENQUETE'
       );
       setEditEdgeLayer(selectedEdge.layer);
       setEditEdgeNotes((selectedEdge.properties?.notes as string) || '');
+      setConfirmDeleteEdge(false);
     }
   }, [selectedEdgeId, selectedEdge]);
 
@@ -272,7 +286,8 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
     }
     if (selectedNode) {
       setEditLabel(selectedNode.label || '');
-      setEditConfidence(selectedNode.confidence ?? 0.85);
+      setEditConfidence(getDisplayedEntityConfidence(selectedNode));
+      setConfidenceTouched(false);
       const initialStatus =
         (selectedNode.properties?.status_judiciaire as string) ||
         (selectedNode.properties?.role_judiciaire as string) ||
@@ -361,6 +376,9 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           status_judiciaire: editStatus,
           role_judiciaire: editStatus,
           notes: editNotes,
+          ...(confidenceTouched || Boolean(selectedNode.properties?.confidence_user_modified)
+            ? { confidence_user_modified: true }
+            : {}),
         },
       });
       toast.success(tr('Fiche de l\'entité mise à jour dans le dossier judiciaire'), tr('Enregistrement OPJ'));
@@ -371,28 +389,33 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
     }
   };
 
-  const handleAddClueToGraph = (clue: InboxClue) => {
-    const newNode = {
-      id: `inbox-promoted-${Date.now()}`,
-      case_id: 'active',
-      type: clue.type,
-      layer: clue.layer,
-      label: clue.value,
-      confidence: clue.confidence,
-      provenance: clue.provenance,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      properties: { source_title: clue.title },
-      latitude: null,
-      longitude: null,
-    };
-    mergeExpandedNodes([newNode], []);
-    selectNode(newNode.id, false);
-    setInboxClues((prev) => prev.filter((c) => c.id !== clue.id));
+  const handleValidatePendingCandidate = async (sourceNodeId: string, candidateId: string) => {
+    try {
+      await validateCandidates(sourceNodeId, {
+        action: 'validate',
+        candidate_ids: [candidateId],
+      });
+      toast.success(tr('Indice versé au dossier judiciaire'), tr('Validation'));
+    } catch {
+      toast.error(tr('Échec de la validation'), tr('Erreur'));
+    }
   };
 
-  const handleDismissClue = (clueId: string) => {
-    setInboxClues((prev) => prev.filter((c) => c.id !== clueId));
+  const handleRejectPendingCandidate = async (sourceNodeId: string, candidateId: string) => {
+    try {
+      await validateCandidates(sourceNodeId, {
+        action: 'reject',
+        candidate_ids: [candidateId],
+      });
+      toast.info(tr('Indice écarté'), tr('Rejet'));
+    } catch {
+      toast.error(tr('Échec du rejet'), tr('Erreur'));
+    }
+  };
+
+  const handleInspectPendingCandidate = (sourceNodeId: string, candidateId: string) => {
+    selectNode(sourceNodeId, false);
+    selectCandidate(candidateId);
   };
 
   // 1. Dual Mode: When nothing is selected, render Case Overview KPIs & Clues Inbox
@@ -437,29 +460,66 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           </div>
         )}
 
-        {/* 4 KPIs Grid matching doc/maquette.html */}
+        {/* Dynamic Investigation KPIs Grid */}
         <div className="overview-kpis-grid">
           <div className="kpi-card">
             <span className="kpi-label">{t.kpiLoss}</span>
-            <span className="kpi-value font-mono">{t.kpiLossVal}</span>
+            <span className="kpi-value font-mono">{caseMetrics.formattedLossDzd}</span>
+            <span className="kpi-sub">
+              {caseMetrics.estimatedLossDzd === 0
+                ? tr('Aucun flux financier saisi')
+                : tr('Transactions financières')}
+            </span>
           </div>
           <div className="kpi-card">
             <span className="kpi-label">{t.kpiVictims}</span>
-            <span className="kpi-value font-mono">{t.kpiVictimsVal}</span>
+            <span className="kpi-value font-mono">{caseMetrics.victimsCount}</span>
+            <span className="kpi-sub">
+              {tr('{n} plaignant(s)', { n: caseMetrics.complainantsCount })}
+            </span>
+          </div>
+          <div className="kpi-card">
+            <span className="kpi-label">{tr('Suspects & Mis en Cause')}</span>
+            <span className="kpi-value font-mono">{caseMetrics.suspectsCount}</span>
+            <span className="kpi-sub">{tr('Acteurs mis en cause')}</span>
           </div>
           <div className="kpi-card">
             <span className="kpi-label">{t.kpiLocations}</span>
-            <span className="kpi-value font-mono" style={{ fontSize: 'var(--text-xs)' }}>
-              {t.kpiLocationsVal}
+            <span className="kpi-value font-mono kpi-value-compact">
+              {caseMetrics.wilayas.length > 0 ? caseMetrics.wilayas.join(', ') : '—'}
+            </span>
+            <span className="kpi-sub">
+              {caseMetrics.wilayas.length === 0
+                ? tr('Aucune wilaya identifiée')
+                : tr('{n} wilaya(s)', { n: caseMetrics.wilayas.length })}
             </span>
           </div>
           <div className="kpi-card">
             <span className="kpi-label">{t.kpiEvidence}</span>
-            <span className="kpi-value font-mono text-success">{t.kpiEvidenceVal}</span>
+            <span className="kpi-value font-mono text-success">
+              {caseMetrics.analyzedObjectsCount} / {caseMetrics.totalEvidenceObjects}
+            </span>
+            <span className="kpi-sub">
+              {caseMetrics.totalEvidenceObjects === 0
+                ? tr('Aucun objet analysé')
+                : tr('{pct}% SHA-256 vérifiés', { pct: caseMetrics.sha256Ratio })}
+            </span>
+          </div>
+          <div className="kpi-card">
+            <span className="kpi-label">{tr('À Investiguer & À Valider')}</span>
+            <span className="kpi-value font-mono">
+              {caseMetrics.needsInvestigationCount} / {caseMetrics.totalPendingValidations}
+            </span>
+            <span className="kpi-sub">
+              {tr('{inv} à analyser • {val} à valider', {
+                inv: caseMetrics.needsInvestigationCount,
+                val: caseMetrics.totalPendingValidations,
+              })}
+            </span>
           </div>
         </div>
 
-        {/* Boite d'Arbitrage des Indices (Inbox) */}
+        {/* Boite d'Arbitrage des Indices (Live SPI Inbox) */}
         <div className="inbox-section">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
@@ -469,7 +529,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               </span>
             </div>
             <span className="chip chip-neutral font-mono" style={{ fontSize: 'var(--text-xs)', padding: '1px 5px' }}>
-              {tr('{n} en attente', { n: inboxClues.length })}
+              {tr('{n} en attente', { n: caseMetrics.totalPendingValidations })}
             </span>
           </div>
 
@@ -477,59 +537,69 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             {tr('Indices détectés par les outils de collecte nécessitant une décision humaine avant versement au dossier (Review-Run).')}
           </p>
 
+          {caseMetrics.pendingRelationsCount > 0 && (
+            <div className="inbox-relations-banner">
+              {tr('{n} relation(s) en attente de validation', { n: caseMetrics.pendingRelationsCount })}
+            </div>
+          )}
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-            {inboxClues.length === 0 ? (
-              <div
-                style={{
-                  padding: 'var(--space-4)',
-                  textAlign: 'center',
-                  backgroundColor: 'var(--color-bg-elevated)',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: 'var(--text-xs)',
-                  color: 'var(--color-text-muted)',
-                }}
-              >
-                {tr('Tous les indices ont été arbitrés.')}
+            {caseMetrics.pendingItems.length === 0 ? (
+              <div className="inbox-empty">
+                {tr('Aucun indice en attente de validation pour ce dossier.')}
               </div>
             ) : (
-              inboxClues.map((clue) => (
-                <div key={clue.id} className="inbox-item">
-                  <div className="inbox-item-meta">
-                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-accent-text)', fontWeight: 600 }}>
-                      {trLabel(clue.title)}
-                    </span>
-                    <span style={{ fontSize: 'var(--text-xs)', fontWeight: 500, color: 'var(--color-text-primary)' }}>
-                      {trLabel(clue.value)}
-                    </span>
-                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>
-                      {tr('Source : {src} • Confiance : {pct}%', {
-                        src: tr(clue.provenance),
-                        pct: Math.round(clue.confidence * 100),
-                      })}
-                    </span>
-                  </div>
+              caseMetrics.pendingItems.map(({ candidate, sourceNodeId, sourceNodeLabel }) => {
+                const isBusy = extractionLoadingNodeId === sourceNodeId;
+                return (
+                  <div key={candidate.id} className="inbox-item">
+                    <div className="inbox-item-meta">
+                      <span className="inbox-item-type">{trLabel(candidate.entity_type)}</span>
+                      <span className="inbox-item-label">
+                        {candidate.normalized_value || candidate.label}
+                      </span>
+                      <span className="inbox-item-source">
+                        {tr('Source : {src} • Confiance : {pct}%', {
+                          src: sourceNodeLabel,
+                          pct: Math.round(candidate.confidence * 100),
+                        })}
+                      </span>
+                    </div>
 
-                  <div className="inbox-actions">
-                    <button
-                      type="button"
-                      className="btn btn-primary btn-xs"
-                      onClick={() => handleAddClueToGraph(clue)}
-                      style={{ flex: 1 }}
-                    >
-                      <Plus size={11} />
-                      <span>{t.inboxAddToGraph}</span>
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-ghost btn-xs"
-                      onClick={() => handleDismissClue(clue.id)}
-                    >
-                      <Trash2 size={11} />
-                      <span>{t.inboxDismiss}</span>
-                    </button>
+                    <div className="inbox-actions">
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-xs inbox-btn-primary"
+                        disabled={isBusy}
+                        onClick={() => void handleValidatePendingCandidate(sourceNodeId, candidate.id)}
+                      >
+                        <Plus size={12} />
+                        <span>{t.inboxAddToGraph}</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-xs"
+                        disabled={isBusy}
+                        onClick={() => handleInspectPendingCandidate(sourceNodeId, candidate.id)}
+                        title={tr('Inspecter')}
+                      >
+                        <Eye size={12} />
+                        <span>{tr('Inspecter')}</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-xs"
+                        disabled={isBusy}
+                        onClick={() => void handleRejectPendingCandidate(sourceNodeId, candidate.id)}
+                        title={t.inboxDismiss}
+                      >
+                        <Trash2 size={12} />
+                        <span>{t.inboxDismiss}</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
@@ -871,6 +941,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           {/* Option B: Raw File Ingestion & Analysis Mode Controls */}
           <IngestionInspectorSection
             node={selectedNode}
+            isLoading={extractionLoadingNodeId === selectedNode.id}
             onLaunchMode={(nodeId, mode, stageLabel, selectedPlugins) => {
               const fileName = String(selectedNode.properties?.file_name || selectedNode.label || '');
               const mimeType = String(selectedNode.properties?.mime_type || '');
@@ -882,14 +953,21 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               }
               void triggerNodeInvestigation(nodeId, mode, stageLabel);
             }}
+            onCompleteAnalysis={(nodeId) => {
+              void completeAllPdfStages(nodeId).catch((err) => {
+                toast.error(err instanceof Error ? err.message : tr('Erreur extraction'), tr('Extraction'));
+              });
+            }}
             onIsolateNode={(nodeId) => openActorTab(nodeId)}
             onOpenPopover={openIngestionPopover}
             onPreviewFile={onPreviewFile}
             onTriggerPhaseNotice={onTriggerPhaseNotice}
           />
 
-          {/* Phase 2A: Isolated PDF Extracted Candidates Validation */}
-          {isolatedFocalNodeId && <CandidateValidationPanel sourceNodeId={isolatedFocalNodeId} />}
+          {/* Phase 2A/2B: Extracted Candidates Validation (Isolated Actor Tabs only, never Dossier Général) */}
+          {isolatedFocalNodeId ? (
+            <CandidateValidationPanel sourceNodeId={isolatedFocalNodeId} />
+          ) : null}
 
           {/* Section 1: Informations & Attributs Modifiables (Priorité Enquêteur) */}
           <div
@@ -1063,52 +1141,9 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     onChange={async (e) => {
                       const nextLayer = e.target.value as LayerId;
                       if (nextLayer === selectedNode.layer) return;
-
-                      // Rule 3 (ISO 27037): Promoting evidence to VERIFIED requires human justification
-                      if (nextLayer === 'VERIFIED') {
-                        openLayerChangeModal(selectedNode.id, 'VERIFIED');
-                        return;
-                      }
-
-                      const prevLayer = selectedNode.layer;
-                      // Immediate local update across Graph, Timeline, Map, Minimap, Table, and LeftAccordion
-                      useGraphStore.setState((state) => {
-                        const nextLayers = new Set(state.activeLayers);
-                        nextLayers.add(nextLayer);
-                        return {
-                          nodes: state.nodes.map((n) =>
-                            n.id === selectedNode.id ? { ...n, layer: nextLayer } : n
-                          ),
-                          activeLayers: nextLayers,
-                        };
-                      });
-
-                      if (!activeCase) return;
                       try {
-                        const res = await fetch(
-                          `${API_BASE}/api/v1/cases/${activeCase.id}/nodes/${selectedNode.id}/layer`,
-                          {
-                            method: 'PUT',
-                            headers: {
-                              'Content-Type': 'application/json',
-                              'X-Actor-Id': 'investigator_front',
-                            },
-                            body: JSON.stringify({
-                              new_layer: nextLayer,
-                              reason: `Reclassification directe vers ${nextLayer} par l'enquêteur`,
-                            }),
-                          }
-                        );
-                        if (!res.ok) {
-                          throw new Error(`HTTP ${res.status}`);
-                        }
+                        await changeNodeLayer(selectedNode.id, nextLayer);
                       } catch {
-                        // Revert on server failure
-                        useGraphStore.setState((state) => ({
-                          nodes: state.nodes.map((n) =>
-                            n.id === selectedNode.id ? { ...n, layer: prevLayer } : n
-                          ),
-                        }));
                         toast.error(tr('Échec de la mise à jour du calque sur le serveur.'));
                       }
                     }}
@@ -1138,7 +1173,20 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     max={1.0}
                     step={0.05}
                     value={editConfidence}
-                    onChange={(e) => setEditConfidence(Number(e.target.value))}
+                    onChange={(e) => {
+                      const nextConf = Number(e.target.value);
+                      setEditConfidence(nextConf);
+                      setConfidenceTouched(true);
+                      if (nextConf >= 1.0 && selectedNode.layer !== 'VERIFIED') {
+                        void changeNodeLayer(
+                          selectedNode.id,
+                          'VERIFIED',
+                          "Certitude probatoire portée à 100% par l'enquêteur"
+                        ).catch(() => {
+                          toast.error(tr('Échec de la mise à jour du calque sur le serveur.'));
+                        });
+                      }
+                    }}
                     style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--color-accent-primary)' }}
                   />
                 </div>
@@ -1170,6 +1218,65 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     />
                   </div>
                 ))}
+
+                {/* Dynamic / Extracted Additional Properties (so every extracted/custom field is editable) */}
+                {(() => {
+                  const definedKeys = new Set(
+                    (TYPE_EDITABLE_FIELDS[selectedNode.type] || []).map((f) => f.key)
+                  );
+                  const hiddenSystemKeys = new Set([
+                    'status_judiciaire',
+                    'role_judiciaire',
+                    'notes',
+                    'description',
+                    'is_raw_evidence',
+                    'custom_icon',
+                    'client_sha256',
+                    'server_sha256',
+                    'sha256_verified',
+                    'sha256_scope',
+                    'analysis_mode',
+                    'analysis_progress',
+                    'analysis_stage',
+                    'investigation_status',
+                    'investigation_started_at',
+                    'pending_candidates_count',
+                    'evidence_file_id',
+                    'blackboard_sync_status',
+                    'file_name',
+                    'mime_type',
+                    'file_size_bytes',
+                  ]);
+                  const extraEntries = Object.entries(editProps).filter(
+                    ([k]) => !k.startsWith('_') && !definedKeys.has(k) && !hiddenSystemKeys.has(k)
+                  );
+                  if (extraEntries.length === 0) return null;
+                  return extraEntries.map(([key, val]) => (
+                    <div key={key}>
+                      <label style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px', fontWeight: 600 }}>
+                        {key.replace(/_/g, ' ')} :
+                      </label>
+                      <input
+                        type="text"
+                        value={val}
+                        onChange={(e) => {
+                          const nextVal = e.target.value;
+                          setEditProps((prev) => ({ ...prev, [key]: nextVal }));
+                        }}
+                        style={{
+                          width: '100%',
+                          fontSize: '11.5px',
+                          padding: '5px 8px',
+                          backgroundColor: 'var(--color-bg-canvas)',
+                          border: '1px solid var(--color-border-default)',
+                          borderRadius: 'var(--radius-sm)',
+                          color: 'var(--color-text-primary)',
+                          boxSizing: 'border-box',
+                        }}
+                      />
+                    </div>
+                  ));
+                })()}
 
                 {/* Notes d'enquête & Observations */}
                 <div>
@@ -1985,19 +2092,54 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
     const sourceNode = nodes.find((n) => n.id === selectedEdge.source_id);
     const targetNode = nodes.find((n) => n.id === selectedEdge.target_id);
 
-    const handleSaveEdgeUpdates = () => {
-      updateEdgeDetails(selectedEdge.id, {
-        confidence: editEdgeConfidence,
-        confidentiality_level: editEdgeConfidentiality,
-        layer: editEdgeLayer,
-        notes: editEdgeNotes,
-      });
-      toast.success(
-        tr('Confiance ({pct}%) et confidentialité de la liaison enregistrées', {
-          pct: Math.round(editEdgeConfidence * 100),
-        }),
-        tr('Qualification de Liaison')
-      );
+    const availableEdgeTypes = Object.entries(registry.relation_types || {}).filter(
+      ([relKey, def]) => {
+        if (relKey === selectedEdge.type || relKey === editEdgeType) return true;
+        if (!sourceNode || !targetNode) return true;
+        return (
+          ((def.source_types || []).includes(sourceNode.type) &&
+            (def.target_types || []).includes(targetNode.type)) ||
+          (!def.directed &&
+            (def.source_types || []).includes(targetNode.type) &&
+            (def.target_types || []).includes(sourceNode.type))
+        );
+      }
+    );
+
+    const handleSaveEdgeUpdates = async () => {
+      try {
+        await updateEdgeDetails(selectedEdge.id, {
+          type: editEdgeType || selectedEdge.type,
+          confidence: editEdgeConfidence,
+          confidentiality_level: editEdgeConfidentiality,
+          layer: editEdgeLayer,
+          notes: editEdgeNotes,
+        });
+        toast.success(
+          tr('Relation mise à jour ({pct}%)', {
+            pct: Math.round(editEdgeConfidence * 100),
+          }),
+          tr('Qualification de Liaison')
+        );
+      } catch (err) {
+        toast.error(
+          err instanceof Error ? err.message : tr('Échec de la mise à jour'),
+          tr('Qualification de Liaison')
+        );
+      }
+    };
+
+    const handleDeleteSelectedEdge = async () => {
+      try {
+        await deleteEdge(selectedEdge.id, editEdgeNotes || 'Suppression manuelle par l’enquêteur');
+        setConfirmDeleteEdge(false);
+        toast.success(tr('Relation supprimée du dossier'), tr('Suppression de Liaison'));
+      } catch (err) {
+        toast.error(
+          err instanceof Error ? err.message : tr('Échec de la suppression'),
+          tr('Suppression de Liaison')
+        );
+      }
     };
 
     return (
@@ -2163,7 +2305,13 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               max={100}
               step={1}
               value={Math.round(editEdgeConfidence * 100)}
-              onChange={(e) => setEditEdgeConfidence(Number(e.target.value) / 100)}
+              onChange={(e) => {
+                const nextConf = Number(e.target.value) / 100;
+                setEditEdgeConfidence(nextConf);
+                if (nextConf >= 1.0) {
+                  setEditEdgeLayer('VERIFIED');
+                }
+              }}
               aria-label={tr('Modifier le score de confiance du lien')}
             />
             <div style={{ display: 'flex', gap: 'var(--space-1)', justifyContent: 'space-between' }}>
@@ -2174,7 +2322,12 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   className={`btn btn-xs ${
                     Math.abs(editEdgeConfidence - preset) < 0.02 ? 'btn-primary' : 'btn-secondary'
                   }`}
-                  onClick={() => setEditEdgeConfidence(preset)}
+                  onClick={() => {
+                    setEditEdgeConfidence(preset);
+                    if (preset >= 1.0) {
+                      setEditEdgeLayer('VERIFIED');
+                    }
+                  }}
                   style={{ flex: 1 }}
                 >
                   {Math.round(preset * 100)}%
@@ -2195,6 +2348,31 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               gap: 'var(--space-2)',
             }}
           >
+            {!isMediated && (
+              <label
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                  fontSize: 'var(--text-xs)',
+                  fontWeight: 600,
+                }}
+              >
+                <span>{tr('Type de Relation')}</span>
+                <select
+                  className="select select-xs"
+                  value={editEdgeType || selectedEdge.type}
+                  onChange={(e) => setEditEdgeType(e.target.value)}
+                >
+                  {availableEdgeTypes.map(([relKey, def]) => (
+                    <option key={relKey} value={relKey}>
+                      {getRelationLabel(relKey, locale) || label(def, relKey)} ({relKey})
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+
             <label
               style={{
                 display: 'flex',
@@ -2262,12 +2440,62 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             <button
               type="button"
               className="btn btn-primary btn-sm"
-              onClick={handleSaveEdgeUpdates}
+              onClick={() => void handleSaveEdgeUpdates()}
               style={{ width: '100%', marginTop: 'var(--space-1)' }}
             >
               <Save size={13} />
-              <span>{tr('Enregistrer Confiance & Confidentialité')}</span>
+              <span>{tr('Enregistrer la Relation')}</span>
             </button>
+
+            {!isMediated && (
+              <div style={{ marginTop: 'var(--space-2)' }}>
+                {!confirmDeleteEdge ? (
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => setConfirmDeleteEdge(true)}
+                    style={{ width: '100%', color: 'var(--color-danger, #f43f5e)' }}
+                  >
+                    <Trash2 size={13} />
+                    <span>{tr('Supprimer la relation')}</span>
+                  </button>
+                ) : (
+                  <div
+                    role="alert"
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '6px',
+                      padding: '8px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--color-danger, #f43f5e)',
+                    }}
+                  >
+                    <span style={{ fontSize: 'var(--text-xs)' }}>
+                      {tr('Confirmer la suppression définitive de cette relation ?')}
+                    </span>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button
+                        type="button"
+                        className="btn btn-danger btn-xs"
+                        onClick={() => void handleDeleteSelectedEdge()}
+                        style={{ flex: 1 }}
+                      >
+                        {tr('Confirmer')}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-xs"
+                        onClick={() => setConfirmDeleteEdge(false)}
+                        style={{ flex: 1 }}
+                      >
+                        {tr('Annuler')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </aside>

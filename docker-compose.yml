@@ -99,6 +99,13 @@ services:
       HF_MODELS_DIR: "/app/models/hf"
       HF_HUB_OFFLINE: "1"
       TRANSFORMERS_OFFLINE: "1"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     env_file:
       - .env
     depends_on:

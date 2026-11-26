@@ -59,7 +59,7 @@ Write a plan of at most 10 lines: files to create or change, tests to add, comma
 - Exit: `docker compose up --build` reaches all-green health, frontend loads, `tsc`, `eslint`, `pytest` (health test) pass.
 
 ### 1B Data
-- Node type registry (37) and relation registry (47) as the single source of truth, with the layer mapping, icons, and labels in FR/EN/AR.
+- Node type registry (37) and relation registry (50) as the single source of truth, with the layer mapping, icons, and labels in FR/EN/AR.
 - Export the registry to the frontend by generation.
 - Neo4j constraints and indexes, Postgres migrations (Alembic), PostGIS extension.
 - Seed script: idempotent, fictional, loads the case from the JSON in Neo4j and Postgres, writes an audit entry.
@@ -119,7 +119,7 @@ Run the commands from the rules, section 10, that apply to the slice. Capture th
 
 Verify by code or search, not by eye:
 
-- Counts (37 types, 47 relations, 16 algorithms, 5 layers) match the registry.
+- Counts (37 types, 50 relations, 16 algorithms, 5 layers) match the registry.
 - No hard-coded counts in UI or backend.
 - No old misspelled property names outside the single serializer.
 - No hex colors outside `tokens.css`; no inline styles; no emojis; all strings in dictionaries.

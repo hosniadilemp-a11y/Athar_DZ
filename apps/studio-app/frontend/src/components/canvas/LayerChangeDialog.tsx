@@ -3,6 +3,7 @@ import { useGraphStore } from '../../store/useGraphStore';
 import { API_BASE } from '../../config';
 import type { LayerId } from '../../types/registry';
 import { ShieldCheck, AlertCircle } from 'lucide-react';
+import { ModalPortal } from '../common/ModalPortal';
 
 const LAYER_OPTIONS: Array<{ id: LayerId; label: string }> = [
   { id: 'VERIFIED', label: '1. Preuve Vérifiée (VERIFIED)' },
@@ -51,10 +52,8 @@ export const LayerChangeDialog: React.FC<LayerChangeDialogProps> = ({ caseId }) 
       setErrorMsg('Veuillez choisir un calque différent du calque actuel du nœud.');
       return;
     }
-    if (reason.trim().length < 5) {
-      setErrorMsg('Une justification explicite (au moins 5 caractères) est obligatoire pour cette action forensique.');
-      return;
-    }
+
+    const effectiveReason = reason.trim() || `Changement direct de calque vers ${targetLayer} par l'enquêteur`;
 
     setIsSubmitting(true);
     setErrorMsg(null);
@@ -68,7 +67,7 @@ export const LayerChangeDialog: React.FC<LayerChangeDialogProps> = ({ caseId }) 
         },
         body: JSON.stringify({
           new_layer: targetLayer,
-          reason: reason.trim(),
+          reason: effectiveReason,
         }),
       });
 
@@ -142,6 +141,7 @@ export const LayerChangeDialog: React.FC<LayerChangeDialogProps> = ({ caseId }) 
   };
 
   return (
+    <ModalPortal>
     <div
       role="dialog"
       aria-modal="true"
@@ -246,7 +246,7 @@ export const LayerChangeDialog: React.FC<LayerChangeDialogProps> = ({ caseId }) 
             marginBottom: 'var(--space-2)',
           }}
         >
-          Motivation judiciaire / Justification forensique *
+          Motivation judiciaire / Justification forensique (Optionnel)
         </label>
         <textarea
           id="layer-reason-input"
@@ -288,17 +288,17 @@ export const LayerChangeDialog: React.FC<LayerChangeDialogProps> = ({ caseId }) 
           <button
             type="button"
             onClick={handleConfirm}
-            disabled={isSubmitting || isSameLayer || reason.trim().length < 5}
+            disabled={isSubmitting || isSameLayer}
             style={{
               padding: 'var(--space-2) var(--space-4)',
               backgroundColor:
-                !isSameLayer && reason.trim().length >= 5
+                !isSameLayer
                   ? 'var(--color-accent-primary)'
                   : 'var(--color-bg-subtle)',
               border: 'none',
               borderRadius: 'var(--radius-sm)',
               color: 'var(--color-text-on-accent)',
-              cursor: !isSameLayer && reason.trim().length >= 5 ? 'pointer' : 'not-allowed',
+              cursor: !isSameLayer ? 'pointer' : 'not-allowed',
               fontWeight: 600,
               fontSize: 'var(--text-sm)',
             }}
@@ -308,5 +308,6 @@ export const LayerChangeDialog: React.FC<LayerChangeDialogProps> = ({ caseId }) 
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 };

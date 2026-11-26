@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { AlertTriangle, Trash2, Network, X } from 'lucide-react';
 import { useGraphStore } from '../../store/useGraphStore';
 import { analyzeBulkNodeDeletion } from '../../utils/graphLayouts';
 import { useI18n } from '../../context/I18nContext';
 import { useToast } from '../../context/ToastContext';
+import { ModalPortal } from '../common/ModalPortal';
 
 export const DeleteNodesModal: React.FC = () => {
   const { tr, trLabel } = useI18n();
@@ -19,17 +20,6 @@ export const DeleteNodesModal: React.FC = () => {
     setPersonOnlyGraph,
   } = useGraphStore();
 
-  useEffect(() => {
-    if (!pendingDeleteNodeIds || pendingDeleteNodeIds.length === 0) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        cancelDeleteNodes();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [pendingDeleteNodeIds, cancelDeleteNodes]);
-
   const analysis = useMemo(() => {
     if (!pendingDeleteNodeIds || pendingDeleteNodeIds.length === 0) return null;
     return analyzeBulkNodeDeletion(
@@ -41,11 +31,10 @@ export const DeleteNodesModal: React.FC = () => {
     );
   }, [pendingDeleteNodeIds, nodes, edges, isPersonOnlyGraph, expandedHiddenNodeIds]);
 
-  if (!analysis || analysis.primaryNodes.length === 0) return null;
+  const isBlocked = analysis?.status === 'blocked_third_party';
 
-  const isBlocked = analysis.status === 'blocked_third_party';
-
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = useCallback(() => {
+    if (!analysis || analysis.primaryNodes.length === 0) return;
     const count = analysis.allNodeIdsToDelete.length;
     deleteNodes(analysis.allNodeIdsToDelete);
     cancelDeleteNodes();
@@ -53,9 +42,10 @@ export const DeleteNodesModal: React.FC = () => {
       tr('{n} entité(s) supprimée(s) du graphe (Ctrl+Z pour annuler).', { n: count }),
       tr('Suppression effectuée')
     );
-  };
+  }, [analysis, deleteNodes, cancelDeleteNodes, toast, tr]);
 
-  const handleSwitchToFullAndSelect = () => {
+  const handleSwitchToFullAndSelect = useCallback(() => {
+    if (!analysis || analysis.primaryNodes.length === 0) return;
     setPersonOnlyGraph(false);
     const idsToSelect = analysis.allNodeIdsToDelete;
     useGraphStore.setState({
@@ -64,18 +54,46 @@ export const DeleteNodesModal: React.FC = () => {
       selectedEdgeId: null,
     });
     cancelDeleteNodes();
-  };
+  }, [analysis, setPersonOnlyGraph, cancelDeleteNodes]);
+
+  useEffect(() => {
+    if (!analysis || analysis.primaryNodes.length === 0) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        cancelDeleteNodes();
+      } else if (e.key === 'Enter') {
+        const activeEl = document.activeElement as HTMLElement | null;
+        if (activeEl?.tagName === 'BUTTON' && activeEl.dataset.modalCancel === 'true') {
+          return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        if (isBlocked) {
+          handleSwitchToFullAndSelect();
+        } else {
+          handleConfirmDelete();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [analysis, isBlocked, cancelDeleteNodes, handleConfirmDelete, handleSwitchToFullAndSelect]);
+
+  if (!analysis || analysis.primaryNodes.length === 0) return null;
 
   return (
-    <div
-      className="delete-nodes-backdrop"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="delete-nodes-modal-title"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) cancelDeleteNodes();
-      }}
-    >
+    <ModalPortal>
+      <div
+        className="delete-nodes-backdrop"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-nodes-modal-title"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) cancelDeleteNodes();
+        }}
+      >
       <div className="delete-nodes-dialog">
         <div className="delete-nodes-header">
           <div className="delete-nodes-title-row">
@@ -94,6 +112,7 @@ export const DeleteNodesModal: React.FC = () => {
           </div>
           <button
             type="button"
+            data-modal-cancel="true"
             className="graph-display-close-btn"
             onClick={cancelDeleteNodes}
             aria-label={tr('Fermer')}
@@ -179,12 +198,18 @@ export const DeleteNodesModal: React.FC = () => {
         </div>
 
         <div className="delete-nodes-footer">
-          <button type="button" className="btn btn-secondary btn-sm" onClick={cancelDeleteNodes}>
+          <button
+            type="button"
+            data-modal-cancel="true"
+            className="btn btn-secondary btn-sm"
+            onClick={cancelDeleteNodes}
+          >
             {tr('Annuler')}
           </button>
           {isBlocked ? (
             <button
               type="button"
+              data-autofocus="true"
               className="btn btn-primary btn-sm"
               onClick={handleSwitchToFullAndSelect}
             >
@@ -192,7 +217,12 @@ export const DeleteNodesModal: React.FC = () => {
               <span>{tr('Afficher tout le graphe et sélectionner les nœuds')}</span>
             </button>
           ) : (
-            <button type="button" className="btn btn-danger btn-sm" onClick={handleConfirmDelete}>
+            <button
+              type="button"
+              data-autofocus="true"
+              className="btn btn-danger btn-sm"
+              onClick={handleConfirmDelete}
+            >
               <Trash2 size={14} />
               <span>
                 {tr('Supprimer ({n})', { n: analysis.allNodeIdsToDelete.length })}
@@ -202,5 +232,6 @@ export const DeleteNodesModal: React.FC = () => {
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 };

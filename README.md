@@ -62,17 +62,32 @@ Afin d'éviter tout vocabulaire technique rébarbatif aux enquêteurs de terrain
 
 ```text
 Athar_DZ/
-├── .gitignore                      # Ignore les dossiers volumineux et starters
-├── README.md                       # Présentation du projet et guide d'accès
-└── doc/                            # Suite documentaire & maquettes interactives
+├── AGENTS.md                       # Gouvernance unifiée des agents IA
+├── DECISIONS.md                    # Journal des décisions architecturales (D1 à D20 approuvées)
+├── README.md                       # Présentation du projet, architecture et guide d'accès
+├── docker-compose.yml              # Orchestration multi-tiers (Backend, Frontend, Neo4j, PG16/PostGIS, Redis)
+├── .agent/                         # Règles d'ingénierie, sécurité ISO 27037, UI/UX et validation (D19/D20)
+│   ├── README.md                   # Hub d'orchestration des règles agents
+│   ├── investigation-validation-rules.md # Règles d'extraction, validation isolée & liaisons (D19/D20)
+│   ├── ui-ux-rules.md              # Design tokens, WCAG 2.2 AA, KPIs réels (§16) & isolation modale (§17)
+│   ├── security-rules.md           # Conformité ISO 27037, WORM & requêtes paramétrées
+│   └── ...                         # Spécifications Phase 1, globale & anti-hallucination
+├── apps/studio-app/                # Application opérationnelle (FastAPI + React 19 / TypeScript)
+│   ├── backend/                    # API REST `/api/v1`, registre (37 nœuds / 50 relations), 16 SNA, extraction PDF/HTML/NER GPU
+│   └── frontend/                   # Canevas circulaire, onglets Actor Sphere, inspecteur dual-mode, ModalPortal `inert`
+├── shared/generated/registry.json  # Export canonique unique (SSOT) partagé backend → frontend
+└── doc/                            # Suite documentaire, spécifications & maquettes interactives
     ├── index.html                  # Synthèse exécutive & tableau de bord
     ├── maquette.html               # Maquette applicative forensique complète
     ├── architecture.html           # Architecture système visuelle en 6 couches
+    ├── interfaces-roles.html       # Postes de travail, RBAC & spécification ergonomie Studio
     ├── bricks-and-automation.html  # Catalogue interactif des 76 outils
-    ├── data-model.html             # Ontologie du graphe de connaissances
-    ├── roadmap-phases.html         # 6 phases de développement incrémentales
+    ├── data-model.html             # Ontologie du graphe de connaissances (37 nœuds, 50 relations)
+    ├── roadmap-phases.html         # 6 phases de développement incrémentales (Phase 1 + 2A livrées)
     ├── github-repos-audit.html     # Audit de 48 dépôts open source
+    ├── tools-cache-inventory.html  # Répertoire des outils & modèles hors-ligne (.athar-tools/)
     ├── SPECIFICATION.md            # Spécification technique et fonctionnelle détaillée
+    ├── EXTRACTION_LOGIC.md         # Logique détaillée d'extraction PDF/HTML, CAMeL & WikiNEuRal NER GPU
     ├── GITHUB_AUDIT.md             # Benchmark textuel des dépôts open source
     └── assets/                     # Contrôleurs JS, styles CSS et moteurs visuels
         ├── app.js                  # Contrôleur interactif du portail
@@ -122,15 +137,15 @@ L'application est accessible sur :
 ### 🧪 Suites de Tests & Assurance Qualité
 
 ```bash
-# Tests Backend (57 tests unitaires, API, SNA, extraction PDF/HTML/NER, audit SHA-256)
+# Tests Backend (60 tests unitaires : API, registre, SNA, extraction PDF/HTML, NER GPU CAMeL/WikiNEuRal, audit SHA-256)
 docker exec athar-backend pytest -v
 
 # Linter & Analyse Statique Backend
 docker exec -u root athar-backend ruff check app tests
 docker exec -u root athar-backend mypy app
 
-# Tests Frontend (87 tests unitaires, store, layouts, onglets, ingestion, traductions, export)
-docker exec athar-frontend npm test
+# Tests Frontend (99 tests unitaires sur 14 suites : store, layouts, onglets, métriques dynamiques, ingestion, traductions, validation, export)
+docker exec athar-frontend npm test -- --run
 
 # Typecheck & Linter Frontend
 docker exec athar-frontend npm run typecheck
@@ -148,12 +163,27 @@ docker exec athar-frontend npm run build
 | :--- | :--- | :---: | :--- |
 | **1A** | Foundation (Docker, Health, Shells, `tokens.css`) | **LIVRÉ** | 2/2 tests health passing, multi-tier compose opérationnel |
 | **Opt A**| Migration PostgreSQL vers TimescaleDB HA PG16 | **LIVRÉ** | `timescale/timescaledb-ha:pg16` actif et persistant |
-| **1B** | Data (Ontologie 37 types, 47 relations, Seed 100 nœuds) | **LIVRÉ** | 10/10 tests registre/schéma passing, cas *Candy Wheels* idempotent |
+| **1B** | Data (Ontologie 37 types, 50 relations, Seed 100 nœuds) | **LIVRÉ** | 10/10 tests registre/schéma passing, cas *Candy Wheels* idempotent |
 | **1C** | Graph API (CRUD, Expand 1/2 hops, Filtre Impact, Audit) | **LIVRÉ** | 7/7 tests API graph passing, registre Merkle SHA-256 vérifié |
 | **1D** | Canvas (GraphCanvasAdapter, Nœuds circulaires, 5 calques, Inspecteur) | **LIVRÉ** | Interface adaptateur stricte, store réversible Undo/Redo |
 | **1E** | SNA (16 algorithmes de graphe, Allowlist, Panneau SNA) | **LIVRÉ** | 13/13 tests SNA passing, exécution pure Python rapide (`< 100 ms`) |
 | **1F** | Views (Carte SIG 8 types GPS, Chronologie, Registre, Export PDF/JSON) | **LIVRÉ** | Multi-vues interactives, export conforme ISO 27037 |
-| **1G** | Hardening (Audit sécurité, couverture tests, accessibilité WCAG AA) | **LIVRÉ** | 144/144 tests cumulés passing (`57` backend + `87` frontend), 0 erreurs `ruff`/`mypy`/`tsc`/`eslint`, 0 violations `axe-core` |
+| **1G** | Hardening (Audit sécurité, isolation modale `inert`, KPI dynamiques, ergonomie D19) | **LIVRÉ** | 159/159 tests cumulés passing (`60` backend + `99` frontend), 0 erreurs `ruff`/`mypy`/`tsc`/`eslint` |
+| **2A** | Extraction PDF/HTML & Validation Isolée (PyMuPDF + CAMeL + WikiNEuRal + BS4) | **LIVRÉ** | Staging PostgreSQL, `CandidateValidationPanel` filtré par catégorie, 3 relations (`EXTRAIT_DE`, `UTILISE_EMAIL`, `IMPLIQUE_TRANSACTION`), CRUD arêtes `PATCH`/`DELETE`, D16–D20 |
+
+### 🔍 Synthèse des Évolutions Récentes (Phase 1 Clôturée & Phase 2A — Décisions D16–D20)
+
+- **Extraction PDF/HTML Hors-Ligne & NER Bilingue GPU ([`doc/EXTRACTION_LOGIC.md`](doc/EXTRACTION_LOGIC.md))** :
+  - Extraction statique PDF (Modes 1 & 2 en 3 étapes via `PyMuPDF` + `pdfplumber`) et HTML 100 % hors-ligne (`BeautifulSoup4` + `lxml`, zéro requête réseau, aperçu `<iframe sandbox="">`).
+  - Double moteur NER GPU local (`CAMeL-Lab` arabe + `Babelscape/wikineural-multilingual-ner` français/anglais/latin), enrichissement territorial `wilaya`/`commune` en attributs sans nœuds isolés (D18) et unification RIP BaridiMob / CCP.
+- **Validation Isolée, Confiance & Liens Forensiques (Décisions D19 & D20)** :
+  - Les candidats en attente et leurs prévisualisations ne s'affichent **que dans les onglets isolés (`actor_sphere`)** de la pièce déposée (jamais dans `Dossier Général`), avec filtrage par catégorie d'entité (`Acteurs`, `Télécoms`, `Finances`, etc.) et gestion CRUD des relations sémantiques.
+  - Tout nouveau nœud ou entité validée conserve ses coordonnées exactes avant/après validation et réagit directement à la simulation physique; la confiance affichée par défaut est **100 %** tant que l'enquêteur ne l'a pas modifiée (`entityConfidence.ts`).
+  - Seules les entités extraites et les relations sémantiques inter-entités exigent une validation humaine : `EXTRAIT_DE` vers la pièce source glissée et les liaisons créées manuellement sont directement créées à **100 % (`VERIFIED`)**; tout passage à `100 %` sélectionne `VERIFIED` automatiquement et les changements de calque sont directs sans modale bloquante tout en écrivant dans le journal d'audit ISO 27037.
+- **KPI Réels du Dossier, Cascade Géographique & Isolation Modale (`.agent/ui-ux-rules.md` §§16–17)** :
+  - Suppression de toute métrique fictive figée : la **Synthèse de l'Affaire** et la **Boîte d'Arbitrage des Indices** calculent en direct (`computeCaseOverviewMetrics`) le préjudice estimé (DZD), victimes/plaintes, suspects, wilayas, objets analysés / à investiguer / à valider.
+  - Sélecteur administratif responsive `Wilaya → Daïra → Commune` (`.geo-cascade-grid`).
+  - Isolation modale complète via `ModalPortal` + attribut `inert` sur `.studio-shell`, verrouillage de focus (`Tab`), garde `hasOpenModal()` sur les raccourcis clavier/molette du canevas, et confirmation par touche `Entrée` sur la modale de suppression (`DeleteNodesModal`).
 
 ---
 

@@ -19,6 +19,7 @@
 - [Chapitre 10 : Sources de Collecte (OSN, RSS, Streaming) & Fusion d'Entités Multi-Sources](#chapitre-10--sources-de-collecte-osn-rss-streaming--fusion-dentités-multi-sources)
 - [Chapitre 11 : Système Multi-Onglets d'Enquête & Extraction de Sous-Graphes Ciblés ("Actor Sphere")](#chapitre-11--système-multi-onglets-denquête--extraction-de-sous-graphes-ciblés-actor-sphere)
 - [Chapitre 12 : Ingestion Universelle Drag-and-Drop & Station de Dépouillement Forensique Multi-Formats](#chapitre-12--ingestion-universelle-drag-and-drop--station-de-dépouillement-forensique-multi-formats)
+- [Chapitre 13 : Implémentation Phase 2A (PDF/HTML/NER GPU), Règles de Validation D16–D20 & Ergonomie UI](#chapitre-13--implémentation-phase-2a-pdfhtmlner-gpu-règles-de-validation-d16d20--ergonomie-ui) — voir aussi [`EXTRACTION_LOGIC.md`](EXTRACTION_LOGIC.md)
 
 ---
 
@@ -606,3 +607,36 @@ Lorsqu'un connecteur OSINT (ex. `brick.socmint.facebook_dumper` ou scraper Insta
    - Ils sont déposés dans le **Bassin d'Indices en Attente rattaché à l'onglet d'Amine B.** :
      - *« 2 personnes inconnues identifiées sur la photo #IMG-01 avec Amine B. ; l'outil Maigret a détecté 1 profil Instagram correspondant (@karim_dz23). Voulez-vous investiguer ou ajouter cette liaison ? »*
    - L'officier de police judiciaire peut d'un clic dans son onglet : **[➕ Inclure au sous-graphe]** ou **[✕ Écarter / Fausse piste]**.
+
+---
+
+## Chapitre 13 : Implémentation Phase 2A (PDF/HTML/NER GPU), Règles de Validation D16–D20 & Ergonomie UI
+
+> **Référence technique détaillée :** [`doc/EXTRACTION_LOGIC.md`](EXTRACTION_LOGIC.md) et [`.agent/investigation-validation-rules.md`](../.agent/investigation-validation-rules.md).
+
+### 13.1 Extension Ontologique à 50 Relations Directionnelles (D16–D18)
+À l'ontologie socle de 37 types de nœuds et 47 relations s'ajoutent 3 relations canoniques livrées avec Phase 2A :
+- **#48 `EXTRAIT_DE`** : Relie toute entité extraite (`personne`, `telephone`, `compte_bancaire`, `publication_sociale`, `message_chat`, `serveur_c2`, `fichier_apk`, etc.) à la pièce probatoire source (`scelle_numerique` / `document_judiciaire`).
+- **#49 `UTILISE_EMAIL`** : Relie `personne`, `entreprise`, `compte_social` ou `site_web` à `adresse_email`.
+- **#50 `IMPLIQUE_TRANSACTION`** : Relie `personne`, `entreprise` ou `compte_bancaire` à `transaction_financiere`.
+
+Par ailleurs (Décision **D18**), les mentions géographiques algériennes (`wilaya`, `commune`) détectées dans les pièces PDF/HTML sont injectées en **attributs de contexte** (`wilaya`, `wilayas_mentionnees`, `commune`, `communes_donnees`) sur les entités co-occurrentes et métadonnées de pièce, sans créer de nœuds géographiques orphelins à valider.
+
+### 13.2 Pipeline d'Extraction Statique PDF & HTML Hors-Ligne + NER Bilingue GPU
+- **PDF (`pdf_extractor.py`)** : PyMuPDF + pdfplumber en Mode 1 (`Rapide`, 1 passe) et Mode 2 (`Complète`, 3 paliers validés par l'OPJ), avec normalisation Unicode NFKC des ligatures arabes et unification RIP BaridiMob (`00799999...`) + CCP 10 chiffres.
+- **HTML (`html_extractor.py`)** : Parsing DOM 100 % hors-ligne via `BeautifulSoup4` + `lxml`, zéro requête réseau (anti-SSRF), nettoyage XSS et aperçu isolé par `<iframe sandbox="">` (`FilePreviewModal`).
+- **NER Hors-Ligne sur GPU** : Double exécution `CAMeL-Lab/bert-base-arabic-camelbert-mix-ner` (arabe) et `Babelscape/wikineural-multilingual-ner` (`wikineural_ner.py`, français/anglais/latin en `float16`), couplée au filtrage par coréférence de rôle (`Plaignant`, `Suspect`, `Gérant`, `Titulaire`).
+- **Tables de Staging PostgreSQL** : Stockage non-intrusif dans `extraction_runs`, `extracted_candidates` et `extracted_relation_candidates`, avec gestion CRUD complète (`PATCH`/`DELETE` audités) sur toutes les arêtes du graphe.
+
+### 13.3 Gouvernance de Validation, Confiance 100 % & Isolement Strict (D19–D20)
+1. **Isolement des Candidats (`Dossier Général` vs Onglet Isolé)** : Les entités candidates en attente et leurs prévisualisations fantômes ne s'affichent **jamais** dans le `Dossier Général` (`master`) ; elles sont exclusivement présentées dans l'onglet d'isolement de la pièce source (`actor_sphere`) et dans `CandidateValidationPanel`, doté de filtres par catégorie d'entité (`Acteurs`, `Télécoms`, `Finances`, `SOCMINT`, `Cyber`, etc.) et de groupes de relations sémantiques pliables.
+2. **Périmètre Strict de Validation (D20)** : Seules les entités extraites et les relations sémantiques **entre entités extraites** exigent une validation humaine explicite (`PENDING`). En revanche :
+   - La validation d'une entité extraite promeut automatiquement son lien `EXTRAIT_DE` vers la pièce glissée en `VERIFIED` (`100 %`).
+   - Toute liaison créée manuellement par l'enquêteur est créée par défaut en `VERIFIED` (`100 %`), sauf modification ultérieure.
+3. **Confiance 100 % & Changement de Calque Direct (D19)** : Toute entité affiche une confiance par défaut de `100 %` (`getDisplayedEntityConfidence`) tant que l'enquêteur ne la modifie pas manuellement. Un score à `100 %` sélectionne automatiquement `VERIFIED`, et le changement de calque s'opère directement sans modale bloquante tout en générant une entrée chaînée ISO 27037 avec motif automatique.
+4. **Continuité Spatiale & Physique Live** : Tout nouveau nœud réagit directement à la simulation physique de forces, et toute entité candidate validée conserve exactement sa position `(X, Y)` avant et après validation (`candidatePositions` + `reconcileOptimisticNodeId`).
+
+### 13.4 KPI Réels, Cascade Territoriale & Isolation Modale (`.agent/ui-ux-rules.md` §§16–17)
+- **KPI Réels du Dossier (`caseMetrics.ts`)** : La `Synthèse de l'Affaire` et la `Boîte d'Arbitrage des Indices` sont calculées en temps réel à partir des données de l'enquête active (Préjudice DZD, Victimes/Plaintes, Suspects, Wilayas, Objets Analysés, À Investiguer / À Valider), sans aucune valeur de démonstration figée.
+- **Cascade Administrative Responsive** : Sélecteur `Wilaya → Daïra → Commune` sur grille CSS fluide `.geo-cascade-grid` (`auto-fit, minmax(175px, 1fr)`).
+- **Isolation Modale Complète (`ModalPortal`)** : Portail vers `document.body`, attribut HTML `inert` sur `.studio-shell`, piégeage de tabulation `Tab`/`Shift+Tab`, garde `hasOpenModal()` sur les événements clavier/molette du canevas, et confirmation par touche `Entrée` sur la modale de suppression (`DeleteNodesModal`).

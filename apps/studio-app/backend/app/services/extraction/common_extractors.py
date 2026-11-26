@@ -1,8 +1,11 @@
-"""Shared deterministic extractors, Algerian gazetteers, and fusion helpers (Phase 2A).
+"""Shared deterministic extractors, Algerian location attributes, and relations (Phase 2A+).
 
-Used by both `pdf_extractor.py` (D16) and `html_extractor.py` (D17) to avoid
-duplicating regex patterns, normalization, non-VERIFIED layer guards, or candidate
-deduplication logic. All processing is 100% offline and deterministic.
+Used by both `pdf_extractor.py` (D16) and `html_extractor.py` (D17) per Decision D18:
+- Wilayas & communes are NEVER emitted as standalone graph entity candidates;
+  they are extracted into geographic attributes (`wilaya`, `commune`) on entities
+  and `extracted_locations` in evidence metadata.
+- Extracts deterministic semantic relations (`ExtractedRelationItem`) validated
+  against `registry.py` (`validate_relation`).
 """
 
 from __future__ import annotations
@@ -12,11 +15,17 @@ import unicodedata
 from dataclasses import dataclass
 from typing import Any
 
-from app.domain.registry import NODE_TYPES, LayerId
-from app.services.extraction.camel_ner import extract_camel_ner_entities
+import phonenumbers
+
+from app.domain.registry import NODE_TYPES, LayerId, validate_relation
+from app.services.extraction.camel_ner import (
+    extract_camel_ner_entities,
+    extract_camel_ner_locations,
+)
+from app.services.extraction.wikineural_ner import extract_wikineural_ner_entities
 
 # ---------------------------------------------------------------------------
-# Gazetteers (58 Algerian Wilayas + key communes)
+# Gazetteers (58 Algerian Wilayas + key communes — attribute-only per D18)
 # ---------------------------------------------------------------------------
 
 ALGERIAN_WILAYAS: tuple[str, ...] = (
@@ -51,11 +60,11 @@ RIP_RE = re.compile(r"(?<!\d)(00799999\d{12})(?!\d)")
 CCP_RE = re.compile(r"\bCCP\s*[:#N°]?\s*(\d{7,12})\b", re.IGNORECASE)
 EMAIL_RE = re.compile(r"\b([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})\b")
 URL_RE = re.compile(r"(https?://[^\s<>\"'\)\]]+)")
+TELEGRAM_RE = re.compile(r"(?<![A-Za-z0-9._%+\-])@([a-zA-Z][a-zA-Z0-9_]{4,31})\b")
 TME_BARE_RE = re.compile(
-    r"(?<![A-Za-z0-9./])(?:t\.me|telegram\.me)/([a-zA-Z][a-zA-Z0-9_]{4,31})\b",
+    r"\b(?:https?://)?(?:t\.me|telegram\.me)/([a-zA-Z][a-zA-Z0-9_]{3,31})\b",
     re.IGNORECASE,
 )
-TELEGRAM_RE = re.compile(r"(?<![A-Za-z0-9._%+\-])@([a-zA-Z][a-zA-Z0-9_]{4,31})\b")
 IPV4_RE = re.compile(
     r"(?<!\d)(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}"
     r"(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?!\d)"
@@ -74,7 +83,8 @@ GAB_RE = re.compile(r"\b(GAB-[A-Z0-9\-]{3,32})\b")
 
 PERSON_ROLE_RE = re.compile(
     r"\b(?:Plaignant|Victime|Suspect|Mis en cause|G[eé]rant|Gerant|Directeur|Directrice|"
-    r"Titulaire|B[eé]n[eé]ficiaire|Beneficiaire|T[eé]moin|Temoin|Nomm[eé]e?|M\.|Mme)[ \t]*:[ \t]*"
+    r"Titulaire|B[eé]n[eé]ficiaire|Beneficiaire|T[eé]moin|Temoin|Nomm[eé]e?|M\.|Mme|"
+    r"Complainant|Victim|Director|Manager|Account Holder|Beneficiary|Witness)[ \t]*:[ \t]*"
     r"([A-ZÀ-Ÿ][a-zà-ÿ\-]+(?:[ \t]+[A-ZÀ-Ÿ][a-zà-ÿ\-]+){1,2})"
 )
 COMPANY_RE = re.compile(
@@ -93,6 +103,25 @@ class ExtractedCandidateItem:
     suggested_layer: str
     label: str
     normalized_value: str
+    attributes: dict[str, Any]
+    confidence: float
+    extractor_tool: str
+    stage_number: int
+    source_page: int
+    quote_snippet: str
+    source_locator: str = ""
+
+
+@dataclass(frozen=True)
+class ExtractedRelationItem:
+    """Single semantic relation between extracted entities staged for human review."""
+
+    relation_type: str
+    source_entity_type: str
+    source_normalized_value: str
+    target_entity_type: str
+    target_normalized_value: str
+    suggested_layer: str
     attributes: dict[str, Any]
     confidence: float
     extractor_tool: str
@@ -145,6 +174,77 @@ def normalize_dz_phone(raw: str) -> str:
     return f"+213{digits}"
 
 
+def normalize_phone(raw: str, default_region: str = "DZ") -> str:
+    """Normalize Algerian or international phone strings to E.164 without dropping synthetic DZ."""
+    stripped = (raw or "").strip()
+    digits = re.sub(r"\D", "", stripped)
+    if (
+        stripped.startswith(("+213", "00213"))
+        or (not stripped.startswith("+") and digits.startswith(("213", "00213", "05", "06", "07")))
+    ):
+        return normalize_dz_phone(stripped)
+    try:
+        parsed = phonenumbers.parse(stripped, default_region)
+        if phonenumbers.is_possible_number(parsed):
+            return phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
+    except Exception:  # noqa: BLE001
+        pass
+    return normalize_dz_phone(stripped) if digits else ""
+
+
+def _unify_algerie_poste_rip_and_ccp(
+    items: list[ExtractedCandidateItem],
+) -> list[ExtractedCandidateItem]:
+    """Merge standalone CCP candidates into their parent 20-digit BaridiMob RIP (D18+)."""
+    rips: list[tuple[int, str, str]] = []
+    for idx, item in enumerate(items):
+        if item.entity_type != "compte_bancaire":
+            continue
+        digits = re.sub(r"\D", "", item.normalized_value)
+        if digits.startswith("00799999") and len(digits) == 20:
+            embedded_ccp = digits[8:18]
+            rips.append((idx, embedded_ccp, embedded_ccp.lstrip("0")))
+
+    if not rips:
+        return items
+
+    ccp_to_drop: set[int] = set()
+    updated = list(items)
+    for idx, item in enumerate(items):
+        if item.entity_type != "compte_bancaire":
+            continue
+        digits = re.sub(r"\D", "", item.normalized_value)
+        if digits.startswith("00799999") and len(digits) == 20:
+            continue
+        for rip_idx, emb_10, emb_trim in rips:
+            if digits in {emb_10, emb_trim}:
+                rip_cand = updated[rip_idx]
+                attrs = dict(rip_cand.attributes)
+                attrs.setdefault("ccp", item.normalized_value)
+                attrs.setdefault("banque", "Algérie Poste / BaridiMob")
+                tools = list(attrs.get("also_detected_by", []))
+                if item.extractor_tool not in tools:
+                    tools.append(item.extractor_tool)
+                attrs["also_detected_by"] = tools
+                updated[rip_idx] = ExtractedCandidateItem(
+                    entity_type=rip_cand.entity_type,
+                    suggested_layer=rip_cand.suggested_layer,
+                    label=rip_cand.label,
+                    normalized_value=rip_cand.normalized_value,
+                    attributes=attrs,
+                    confidence=max(rip_cand.confidence, item.confidence),
+                    extractor_tool=rip_cand.extractor_tool,
+                    stage_number=rip_cand.stage_number,
+                    source_page=rip_cand.source_page,
+                    quote_snippet=rip_cand.quote_snippet,
+                    source_locator=rip_cand.source_locator,
+                )
+                ccp_to_drop.add(idx)
+                break
+
+    return [item for i, item in enumerate(updated) if i not in ccp_to_drop]
+
+
 def fuse_candidates(candidates: list[ExtractedCandidateItem]) -> list[ExtractedCandidateItem]:
     """Deduplicate and merge candidates from complementary extractors."""
     merged: dict[tuple[str, str], ExtractedCandidateItem] = {}
@@ -186,7 +286,133 @@ def fuse_candidates(candidates: list[ExtractedCandidateItem]) -> list[ExtractedC
             source_locator=winner.source_locator or loser.source_locator,
         )
 
+    return _unify_algerie_poste_rip_and_ccp([merged[k] for k in order])
+
+
+def fuse_relations(relations: list[ExtractedRelationItem]) -> list[ExtractedRelationItem]:
+    """Deduplicate ontologically valid semantic relation candidates."""
+    merged: dict[tuple[str, str, str, str, str], ExtractedRelationItem] = {}
+    order: list[tuple[str, str, str, str, str]] = []
+
+    for rel in relations:
+        is_ok, _ = validate_relation(
+            rel.source_entity_type, rel.relation_type, rel.target_entity_type
+        )
+        if not is_ok:
+            continue
+        if (
+            rel.source_entity_type == rel.target_entity_type
+            and rel.source_normalized_value.lower() == rel.target_normalized_value.lower()
+        ):
+            continue
+        key = (
+            rel.relation_type,
+            rel.source_entity_type,
+            rel.source_normalized_value.lower(),
+            rel.target_entity_type,
+            rel.target_normalized_value.lower(),
+        )
+        if key not in merged:
+            merged[key] = rel
+            order.append(key)
+            continue
+        existing = merged[key]
+        winner, loser = (rel, existing) if rel.confidence > existing.confidence else (existing, rel)
+        merged_attrs = {**loser.attributes, **winner.attributes}
+        merged[key] = ExtractedRelationItem(
+            relation_type=winner.relation_type,
+            source_entity_type=winner.source_entity_type,
+            source_normalized_value=winner.source_normalized_value,
+            target_entity_type=winner.target_entity_type,
+            target_normalized_value=winner.target_normalized_value,
+            suggested_layer=winner.suggested_layer,
+            attributes=merged_attrs,
+            confidence=winner.confidence,
+            extractor_tool=winner.extractor_tool,
+            stage_number=winner.stage_number,
+            source_page=winner.source_page,
+            quote_snippet=winner.quote_snippet or loser.quote_snippet,
+            source_locator=winner.source_locator or loser.source_locator,
+        )
+
     return [merged[k] for k in order]
+
+
+def extract_location_attributes(
+    segments: list[tuple[int, str, str]],
+) -> tuple[dict[str, list[str]], dict[int, dict[str, Any]]]:
+    """Extract Algerian wilaya & commune mentions as geographic attributes (never nodes)."""
+    all_wilayas: list[str] = []
+    all_communes: list[str] = []
+    per_page: dict[int, dict[str, Any]] = {}
+
+    for page_num, _locator, text in segments:
+        folded = fold_accents(text)
+        page_entry = per_page.setdefault(page_num, {"wilayas": [], "communes": []})
+
+        for wilaya in ALGERIAN_WILAYAS:
+            if re.search(rf"\b{re.escape(wilaya)}\b", folded, re.IGNORECASE):
+                if wilaya not in page_entry["wilayas"]:
+                    page_entry["wilayas"].append(wilaya)
+                if wilaya not in all_wilayas:
+                    all_wilayas.append(wilaya)
+
+        for commune in ALGERIAN_COMMUNES:
+            if re.search(rf"\b{re.escape(commune)}\b", folded, re.IGNORECASE):
+                if commune not in page_entry["communes"]:
+                    page_entry["communes"].append(commune)
+                if commune not in all_communes:
+                    all_communes.append(commune)
+
+        camel_locs = extract_camel_ner_locations(text)
+        for w in camel_locs.get("wilayas", []):
+            if w not in page_entry["wilayas"]:
+                page_entry["wilayas"].append(w)
+            if w not in all_wilayas:
+                all_wilayas.append(w)
+        for c in camel_locs.get("communes", []):
+            if c not in page_entry["communes"]:
+                page_entry["communes"].append(c)
+            if c not in all_communes:
+                all_communes.append(c)
+
+    return {"wilayas": all_wilayas, "communes": all_communes}, per_page
+
+
+def enrich_candidates_with_locations(
+    candidates: list[ExtractedCandidateItem],
+    per_page_locations: dict[int, dict[str, Any]],
+) -> list[ExtractedCandidateItem]:
+    """Attach detected wilaya/commune attributes onto co-occurring entity candidates."""
+    enriched: list[ExtractedCandidateItem] = []
+    for cand in candidates:
+        loc = per_page_locations.get(cand.source_page)
+        if not loc or (not loc.get("wilayas") and not loc.get("communes")):
+            enriched.append(cand)
+            continue
+        attrs = dict(cand.attributes)
+        if loc.get("wilayas"):
+            attrs.setdefault("wilaya", loc["wilayas"][0])
+            attrs.setdefault("wilayas_mentionnees", loc["wilayas"])
+        if loc.get("communes"):
+            attrs.setdefault("commune", loc["communes"][0])
+            attrs.setdefault("communes_donnees", loc["communes"])
+        enriched.append(
+            ExtractedCandidateItem(
+                entity_type=cand.entity_type,
+                suggested_layer=cand.suggested_layer,
+                label=cand.label,
+                normalized_value=cand.normalized_value,
+                attributes=attrs,
+                confidence=cand.confidence,
+                extractor_tool=cand.extractor_tool,
+                stage_number=cand.stage_number,
+                source_page=cand.source_page,
+                quote_snippet=cand.quote_snippet,
+                source_locator=cand.source_locator,
+            )
+        )
+    return enriched
 
 
 def extract_deterministic_identifiers(
@@ -241,6 +467,16 @@ def extract_deterministic_identifiers(
                 "regex-e164-dz", 0.94, {"numero_e164": norm, "raw": m.group(0).strip()},
             )
 
+        for pm in phonenumbers.PhoneNumberMatcher(text, "DZ"):
+            if not pm.raw_string.lstrip().startswith(("+", "00")):
+                continue
+            norm = phonenumbers.format_number(pm.number, phonenumbers.PhoneNumberFormat.E164)
+            add_item(
+                "telephone", norm, norm, page_num, locator, text, (pm.start, pm.end),
+                "phonenumbers-e164", 0.93,
+                {"numero_e164": norm, "raw": pm.raw_string.strip(), "region": phonenumbers.region_code_for_number(pm.number) or ""},
+            )
+
         for m in RIP_RE.finditer(text):
             rip = m.group(1)
             add_item(
@@ -281,7 +517,7 @@ def extract_deterministic_identifiers(
             handle = f"@{m.group(1)}"
             add_item(
                 "canal_telegram", handle, handle, page_num, locator, text, m.span(),
-                "regex-telegram-url", 0.92, {"handle": handle, "url": f"https://{m.group(0)}"},
+                "regex-telegram-url", 0.93, {"handle": handle, "url": m.group(0)},
             )
 
         if extract_bare_at_as_telegram:
@@ -377,7 +613,7 @@ def extract_contextual_entities(
     segments: list[tuple[int, str, str]],
     stage_number: int,
 ) -> list[ExtractedCandidateItem]:
-    """Stage 3 static extractors: persons, companies, IMEI, GAB, DZ wilayas/communes, CAMeL NER."""
+    """Stage 3 extractors: persons, companies, IMEI, GAB, CAMeL NER (no location nodes)."""
     items: list[ExtractedCandidateItem] = []
     seen: set[tuple[str, str]] = set()
 
@@ -451,25 +687,6 @@ def extract_contextual_entities(
                 "regex-gab-id", 0.92, {"code_gab": gab},
             )
 
-        folded_text = fold_accents(text)
-        for wilaya in ALGERIAN_WILAYAS:
-            pattern = re.compile(rf"\b{re.escape(wilaya)}\b", re.IGNORECASE)
-            wm = pattern.search(folded_text)
-            if wm:
-                add_item(
-                    "wilaya", wilaya, wilaya, page_num, locator, text, wm.span(),
-                    "gazetteer-wilayas-58", 0.88, {"nom_fr": wilaya},
-                )
-
-        for commune in ALGERIAN_COMMUNES:
-            pattern = re.compile(rf"\b{re.escape(commune)}\b", re.IGNORECASE)
-            cm = pattern.search(folded_text)
-            if cm:
-                add_item(
-                    "commune", commune, commune, page_num, locator, text, cm.span(),
-                    "gazetteer-communes-dz", 0.85, {"nom_fr": commune},
-                )
-
         for camel_ent in extract_camel_ner_entities(text):
             key = (camel_ent.entity_type, camel_ent.normalized_value.lower())
             if key in seen:
@@ -491,7 +708,531 @@ def extract_contextual_entities(
                 )
             )
 
+        for wiki_ent in extract_wikineural_ner_entities(text):
+            w_low = wiki_ent.normalized_value.lower()
+            key = (wiki_ent.entity_type, w_low)
+            if key in seen:
+                continue
+            if wiki_ent.entity_type == "entreprise":
+                w_core = re.sub(r"^(?:sarl|eurl|spa|snc|sas)\s+", "", w_low).strip()
+                if any(
+                    st == "entreprise"
+                    and (
+                        w_core in re.sub(r"^(?:sarl|eurl|spa|snc|sas)\s+", "", sv).strip()
+                        or re.sub(r"^(?:sarl|eurl|spa|snc|sas)\s+", "", sv).strip() in w_core
+                    )
+                    for st, sv in seen
+                ):
+                    continue
+            seen.add(key)
+            items.append(
+                ExtractedCandidateItem(
+                    entity_type=wiki_ent.entity_type,
+                    suggested_layer=default_non_verified_layer(wiki_ent.entity_type),
+                    label=wiki_ent.label[:255],
+                    normalized_value=wiki_ent.normalized_value[:512],
+                    attributes={"wikineural_tag": wiki_ent.tag},
+                    confidence=wiki_ent.confidence,
+                    extractor_tool="wikineural-multilingual-ner",
+                    stage_number=stage_number,
+                    source_page=page_num,
+                    quote_snippet=sanitize_snippet(wiki_ent.quote_snippet),
+                    source_locator=locator,
+                )
+            )
+
     return items
+
+
+ARABIC_DIACRITICS_RE = re.compile(r"[\u064B-\u065F\u0670]")
+ROLE_WINDOW_RE = re.compile(
+    r"G[eé]rant|Directeur|Directrice|\bDirector\b|\bManager\b|\bCEO\b|"
+    r"مسير|المسير|مدير|المدير|رئيس|صاحب",
+    re.IGNORECASE,
+)
+TRANSFER_CUE_RE = re.compile(
+    r"virement|\bvers\b|re[cç]u\s+de|envoy[eé]|transfert|\btransfer\b|\bwire\b|"
+    r"sent\s+to|received\s+from|تحويل|إرسال|استلام",
+    re.IGNORECASE,
+)
+INCOMING_TRANSFER_RE = re.compile(
+    r"re[cç]u\s+de|received\s+from|incoming\s+from|مستلم\s+من|وارد\s+من",
+    re.IGNORECASE,
+)
+
+ROLE_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    (
+        "plaignant",
+        re.compile(
+            r"\bPlaignant\b|\bVictime\b|\bComplainant\b|\bVictim\b|المشتكي|الضحية",
+            re.IGNORECASE,
+        ),
+    ),
+    ("suspect", re.compile(r"\bSuspect\b|mis\s+en\s+cause|المشتبه", re.IGNORECASE)),
+    (
+        "titulaire",
+        re.compile(
+            r"\bTitulaire\b|Account\s+Holder|صاحب\s+الحساب",
+            re.IGNORECASE,
+        ),
+    ),
+    (
+        "beneficiaire",
+        re.compile(
+            r"\bB[eé]n[eé]ficiaire\b|\bBeneficiary\b|\bRecipient\b|المستفيد",
+            re.IGNORECASE,
+        ),
+    ),
+    ("gerant", ROLE_WINDOW_RE),
+)
+PHONE_CUE_RE = re.compile(
+    r"(?:^(?:T[eé]l[eé]phone|T[eé]l\b|Phone|Mobile|Contact|Num[eé]ro\s+OTP)|"
+    r"(?:T[eé]l[eé]phone|Phone|Mobile|الهاتف|رقم\s+الهاتف)\s*:)",
+    re.IGNORECASE,
+)
+EMAIL_CUE_RE = re.compile(
+    r"(?:^(?:Courriel|E-?mail|Mail)|(?:Courriel|E-?mail|Email|البريد(?:\s+الإلكتروني)?)\s*:)",
+    re.IGNORECASE,
+)
+PRIMARY_BANK_CUE_RE = re.compile(
+    r"rip\s+principal|compte\s+principal|primary\s+(?:rip|account)|"
+    r"الحساب\s+الرئيسي|الرقم\s+البريدي\s+الرئيسي",
+    re.IGNORECASE,
+)
+DEST_BANK_CUE_RE = re.compile(
+    r"compte\s+destinataire|b[eé]n[eé]ficiaire|destinataire|"
+    r"target\s+account|recipient\s+account|destination\s+account|"
+    r"الحساب\s+المستفيد|الحساب\s+المستلم|حساب\s+المشتبه",
+    re.IGNORECASE,
+)
+
+_BOUNDARY_SENSITIVE_TYPES: frozenset[str] = frozenset(
+    {"compte_bancaire", "appareil_mobile", "identifiant_infrastructure", "serveur_c2", "vehicule"}
+)
+
+
+def _normalize_match_text(text: str) -> str:
+    """Normalize text for multilingual (FR/EN/AR) co-occurrence matching."""
+    return ARABIC_DIACRITICS_RE.sub("", unicodedata.normalize("NFKC", text)).lower()
+
+
+def _extract_line_tx_attrs(line: str) -> dict[str, Any]:
+    """Extract optional amount/date/canal metadata for financial transfer edges."""
+    attrs: dict[str, Any] = {}
+    amt = AMOUNT_RE.search(line)
+    if amt:
+        digits = int(re.sub(r"[\s\u00a0]", "", amt.group(1)))
+        curr = amt.group(2).upper()
+        attrs["devise"] = curr
+        if curr in {"DZD", "DA"}:
+            attrs["montant_dzd"] = digits
+        else:
+            attrs["montant"] = digits
+    dt = DATE_ISO_RE.search(line)
+    if dt:
+        attrs["date_operation"] = dt.group(1)
+    norm_l = _normalize_match_text(line)
+    if "baridimob" in norm_l or "بريدي موب" in norm_l:
+        attrs["canal"] = "BaridiMob"
+    return attrs
+
+
+def extract_cooccurrence_relations(
+    segments: list[tuple[int, str, str]],
+    candidates: list[ExtractedCandidateItem],
+    stage_number: int,
+) -> list[ExtractedRelationItem]:
+    """Infer deterministic semantic relations from line/block & role co-occurrence."""
+    by_type: dict[str, list[ExtractedCandidateItem]] = {}
+    for c in candidates:
+        by_type.setdefault(c.entity_type, []).append(c)
+
+    relations: list[ExtractedRelationItem] = []
+
+    def emit(
+        rel_type: str,
+        src: ExtractedCandidateItem,
+        tgt: ExtractedCandidateItem,
+        *,
+        page_num: int,
+        locator: str,
+        snippet: str,
+        tool: str,
+        confidence: float,
+        layer: str | None = None,
+        attrs: dict[str, Any] | None = None,
+    ) -> None:
+        relations.append(
+            ExtractedRelationItem(
+                relation_type=rel_type,
+                source_entity_type=src.entity_type,
+                source_normalized_value=src.normalized_value,
+                target_entity_type=tgt.entity_type,
+                target_normalized_value=tgt.normalized_value,
+                suggested_layer=layer or tgt.suggested_layer or "HYPOTHESIS",
+                attributes=attrs or {},
+                confidence=confidence,
+                extractor_tool=tool,
+                stage_number=stage_number,
+                source_page=page_num,
+                quote_snippet=sanitize_snippet(snippet),
+                source_locator=locator,
+            )
+        )
+
+    def _matches_in_text(entity: ExtractedCandidateItem, haystack: str) -> bool:
+        h_low = _normalize_match_text(haystack)
+        norm = _normalize_match_text(entity.normalized_value)
+        if entity.entity_type == "telephone":
+            digits = re.sub(r"\D", "", entity.normalized_value)[-8:]
+            return bool(digits and digits in re.sub(r"\D", "", haystack))
+        if entity.entity_type in _BOUNDARY_SENSITIVE_TYPES:
+            return re.search(rf"(?<!\d){re.escape(norm)}(?!\d)", h_low) is not None
+        if entity.entity_type == "transaction_financiere":
+            compact_h = re.sub(r"(?<=\d)\s+(?=\d)", "", h_low)
+            num_part = re.sub(r"\D", "", norm)
+            return bool(num_part and re.search(rf"(?<!\d){re.escape(num_part)}(?!\d)", compact_h))
+        return norm in h_low
+
+    def _detect_roles(line_text: str) -> list[str]:
+        return [rkey for rkey, rpat in ROLE_PATTERNS if rpat.search(line_text)]
+
+    # Cross-page state for paginated PDF documents ("page:N")
+    active_roles: dict[str, ExtractedCandidateItem] = {}
+    last_person: ExtractedCandidateItem | None = None
+    last_person_line_abs = -10
+    last_role_key: str | None = None
+    active_subject: ExtractedCandidateItem | None = None
+    primary_account: ExtractedCandidateItem | None = None
+    last_bank: ExtractedCandidateItem | None = None
+    last_bank_line_abs = -10
+    abs_line_idx = 0
+
+    for page_num, locator, text in segments:
+        if not locator.startswith("page:"):
+            active_roles = {}
+            last_person = None
+            last_person_line_abs = -10
+            last_role_key = None
+            active_subject = None
+            primary_account = None
+            last_bank = None
+            last_bank_line_abs = -10
+
+        lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+        emails_owned_by_person: set[str] = set()
+        for ln in lines:
+            if any(_matches_in_text(p, ln) for p in by_type.get("personne", [])):
+                for em in by_type.get("adresse_email", []):
+                    if _matches_in_text(em, ln):
+                        emails_owned_by_person.add(em.normalized_value)
+
+        for idx, line in enumerate(lines):
+            abs_line_idx += 1
+            window = line if idx + 1 >= len(lines) else f"{line} {lines[idx + 1]}"
+            line_roles = _detect_roles(line)
+
+            # Line-strict pairs (same line)
+            line_persons = [
+                p for p in by_type.get("personne", []) if _matches_in_text(p, line)
+            ]
+            line_phones = [
+                t for t in by_type.get("telephone", []) if _matches_in_text(t, line)
+            ]
+            line_emails = [
+                e for e in by_type.get("adresse_email", []) if _matches_in_text(e, line)
+            ]
+            line_banks = [
+                b for b in by_type.get("compte_bancaire", []) if _matches_in_text(b, line)
+            ]
+            line_txs = [
+                tx for tx in by_type.get("transaction_financiere", [])
+                if _matches_in_text(tx, line)
+            ]
+            line_gabs = [
+                g for g in by_type.get("guichet_gab", []) if _matches_in_text(g, line)
+            ]
+            line_cars = [
+                v for v in by_type.get("vehicule", []) if _matches_in_text(v, line)
+            ]
+            line_companies = [
+                c for c in by_type.get("entreprise", []) if _matches_in_text(c, line)
+            ]
+            line_crypto = [
+                cw for cw in by_type.get("crypto_wallet", []) if _matches_in_text(cw, line)
+            ]
+
+            if line_persons:
+                last_person = line_persons[-1]
+                last_person_line_abs = abs_line_idx
+                for rk in line_roles:
+                    active_roles[rk] = line_persons[0]
+                    last_role_key = rk
+                # Transfer line followed immediately by "Beneficiaire : <Person>"
+                if (
+                    "beneficiaire" in line_roles
+                    and last_bank is not None
+                    and abs_line_idx - last_bank_line_abs == 1
+                ):
+                    emit(
+                        "DETIENT_COMPTE_BANCAIRE",
+                        line_persons[0],
+                        last_bank,
+                        page_num=page_num,
+                        locator=locator,
+                        snippet=line,
+                        tool="rel-beneficiary-account",
+                        confidence=0.87,
+                        layer="FLOWS",
+                    )
+            else:
+                # Narrative coreference e.g. "le suspect a exige..."
+                for rk in line_roles:
+                    if rk in active_roles:
+                        active_subject = active_roles[rk]
+                        last_role_key = rk
+
+            # Role-anchored phone linking across adjacent lines
+            if line_phones and not line_persons and not line_companies:
+                target_person: ExtractedCandidateItem | None = None
+                for rk in line_roles:
+                    if rk in active_roles:
+                        target_person = active_roles[rk]
+                        break
+                if (
+                    target_person is None
+                    and PHONE_CUE_RE.search(line)
+                    and last_person is not None
+                    and abs_line_idx - last_person_line_abs == 1
+                ):
+                    target_person = last_person
+                if target_person is not None:
+                    for t in line_phones:
+                        emit(
+                            "UTILISE_TELEPHONE",
+                            target_person,
+                            t,
+                            page_num=page_num,
+                            locator=locator,
+                            snippet=line,
+                            tool="rel-role-phone",
+                            confidence=0.89,
+                        )
+
+            # Role-anchored email linking across adjacent lines
+            if (
+                line_emails
+                and not line_persons
+                and not line_companies
+                and EMAIL_CUE_RE.search(line)
+            ):
+                email_owner: ExtractedCandidateItem | None = None
+                for rk in line_roles:
+                    if rk in active_roles:
+                        email_owner = active_roles[rk]
+                        break
+                if (
+                    email_owner is None
+                    and last_role_key is not None
+                    and abs_line_idx - last_person_line_abs <= 2
+                ):
+                    email_owner = active_roles.get(last_role_key)
+                if email_owner is not None:
+                    for em in line_emails:
+                        emit(
+                            "UTILISE_EMAIL",
+                            email_owner,
+                            em,
+                            page_num=page_num,
+                            locator=locator,
+                            snippet=line,
+                            tool="rel-role-email",
+                            confidence=0.85,
+                        )
+
+            for p in line_persons:
+                for t in line_phones:
+                    emit(
+                        "UTILISE_TELEPHONE", p, t, page_num=page_num, locator=locator,
+                        snippet=line, tool="rel-line-cooccurrence", confidence=0.88,
+                    )
+                for e in line_emails:
+                    emit(
+                        "UTILISE_EMAIL", p, e, page_num=page_num, locator=locator,
+                        snippet=line, tool="rel-line-cooccurrence", confidence=0.87,
+                    )
+                for b in line_banks:
+                    emit(
+                        "DETIENT_COMPTE_BANCAIRE", p, b, page_num=page_num, locator=locator,
+                        snippet=line, tool="rel-line-cooccurrence", confidence=0.89,
+                    )
+                for v in line_cars:
+                    emit(
+                        "PROPRIETAIRE_VEHICULE", p, v, page_num=page_num, locator=locator,
+                        snippet=line, tool="rel-line-cooccurrence", confidence=0.84,
+                    )
+                for c in line_companies:
+                    emit(
+                        "DIRIGE_ENTREPRISE", p, c, page_num=page_num, locator=locator,
+                        snippet=line, tool="rel-line-cooccurrence", confidence=0.90,
+                    )
+
+            for c in line_companies:
+                for e in line_emails:
+                    emit(
+                        "UTILISE_EMAIL", c, e, page_num=page_num, locator=locator,
+                        snippet=line, tool="rel-line-cooccurrence", confidence=0.88,
+                    )
+                for tx_item in line_txs:
+                    emit(
+                        "IMPLIQUE_TRANSACTION", c, tx_item, page_num=page_num, locator=locator,
+                        snippet=line, tool="rel-line-cooccurrence", confidence=0.85, layer="FLOWS",
+                    )
+
+            for b in line_banks:
+                for g in line_gabs:
+                    emit(
+                        "RETRAIT_ESPECES_GAB", b, g, page_num=page_num, locator=locator,
+                        snippet=line, tool="rel-table-cooccurrence", confidence=0.92, layer="FLOWS",
+                    )
+                for tx in line_txs:
+                    emit(
+                        "IMPLIQUE_TRANSACTION", b, tx, page_num=page_num, locator=locator,
+                        snippet=line, tool="rel-line-cooccurrence", confidence=0.90, layer="FLOWS",
+                    )
+                for cw in line_crypto:
+                    emit(
+                        "CONVERTIT_EN_CRYPTO", b, cw, page_num=page_num, locator=locator,
+                        snippet=line, tool="rel-line-cooccurrence", confidence=0.88, layer="FLOWS",
+                    )
+
+            # Bank ownership & primary account tracking
+            if line_banks:
+                last_bank = line_banks[-1]
+                last_bank_line_abs = abs_line_idx
+                if PRIMARY_BANK_CUE_RE.search(line):
+                    primary_account = line_banks[0]
+                    titulaire = active_roles.get("titulaire")
+                    if titulaire is not None:
+                        emit(
+                            "DETIENT_COMPTE_BANCAIRE",
+                            titulaire,
+                            primary_account,
+                            page_num=page_num,
+                            locator=locator,
+                            snippet=line,
+                            tool="rel-titulaire-account",
+                            confidence=0.92,
+                            layer="FLOWS",
+                        )
+                elif DEST_BANK_CUE_RE.search(line) and active_subject is not None:
+                    emit(
+                        "DETIENT_COMPTE_BANCAIRE",
+                        active_subject,
+                        line_banks[0],
+                        page_num=page_num,
+                        locator=locator,
+                        snippet=line,
+                        tool="rel-role-coref-account",
+                        confidence=0.88,
+                        layer="FLOWS",
+                    )
+
+            # Account-to-account transfers (requires distinct accounts + transfer cue)
+            tx_attrs = _extract_line_tx_attrs(line)
+            if (
+                len(line_banks) >= 2
+                and line_banks[0].normalized_value != line_banks[1].normalized_value
+                and TRANSFER_CUE_RE.search(line)
+            ):
+                emit(
+                    "EFFECTUE_VIREMENT_VERS",
+                    line_banks[0],
+                    line_banks[1],
+                    page_num=page_num,
+                    locator=locator,
+                    snippet=line,
+                    tool="rel-transfer-line",
+                    confidence=0.91,
+                    layer="FLOWS",
+                    attrs=tx_attrs,
+                )
+            elif (
+                len(line_banks) == 1
+                and primary_account is not None
+                and line_banks[0].normalized_value != primary_account.normalized_value
+                and TRANSFER_CUE_RE.search(line)
+            ):
+                if INCOMING_TRANSFER_RE.search(line):
+                    src_acc, tgt_acc = line_banks[0], primary_account
+                else:
+                    src_acc, tgt_acc = primary_account, line_banks[0]
+                emit(
+                    "EFFECTUE_VIREMENT_VERS",
+                    src_acc,
+                    tgt_acc,
+                    page_num=page_num,
+                    locator=locator,
+                    snippet=line,
+                    tool="rel-statement-transfer",
+                    confidence=0.92,
+                    layer="FLOWS",
+                    attrs=tx_attrs,
+                )
+
+            line_norm = _normalize_match_text(line)
+            if (
+                "otp" in line_norm
+                or "baridimob" in line_norm
+                or "بريدي موب" in line_norm
+                or "رمز التحقق" in line_norm
+            ):
+                for t in line_phones:
+                    for b in line_banks:
+                        emit(
+                            "RECOIT_OTP_BARIDIMOB", t, b, page_num=page_num, locator=locator,
+                            snippet=line, tool="rel-otp-context", confidence=0.88, layer="FLOWS",
+                        )
+
+            # 2-line adjacent window for role/company & person/company & company/email
+            win_persons = [p for p in by_type.get("personne", []) if _matches_in_text(p, window)]
+            win_companies = [
+                c for c in by_type.get("entreprise", []) if _matches_in_text(c, window)
+            ]
+            win_emails = [
+                e for e in by_type.get("adresse_email", []) if _matches_in_text(e, window)
+            ]
+            win_banks = [
+                b for b in by_type.get("compte_bancaire", []) if _matches_in_text(b, window)
+            ]
+            win_crypto = [
+                cw for cw in by_type.get("crypto_wallet", []) if _matches_in_text(cw, window)
+            ]
+
+            if ROLE_WINDOW_RE.search(window):
+                for p in win_persons:
+                    for c in win_companies:
+                        emit(
+                            "DIRIGE_ENTREPRISE", p, c, page_num=page_num, locator=locator,
+                            snippet=window, tool="rel-role-window", confidence=0.91,
+                        )
+            for c in win_companies:
+                for e in win_emails:
+                    if e.normalized_value in emails_owned_by_person:
+                        continue
+                    emit(
+                        "UTILISE_EMAIL", c, e, page_num=page_num, locator=locator,
+                        snippet=window, tool="rel-window-cooccurrence", confidence=0.86,
+                    )
+            for b in win_banks:
+                for cw in win_crypto:
+                    emit(
+                        "CONVERTIT_EN_CRYPTO", b, cw, page_num=page_num, locator=locator,
+                        snippet=window, tool="rel-window-cooccurrence",
+                        confidence=0.86, layer="FLOWS",
+                    )
+
+    return fuse_relations(relations)
 
 
 def build_extraction_summary(
@@ -499,14 +1240,21 @@ def build_extraction_summary(
     mode: str,
     stage: int | None,
     candidates: list[ExtractedCandidateItem],
+    relations: list[ExtractedRelationItem] | None = None,
+    locations: dict[str, list[str]] | None = None,
     extra: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build consistent run summary dictionary for Mode 1 and Mode 2."""
+    cand_tools = {c.extractor_tool for c in candidates}
+    rel_tools = {r.extractor_tool for r in (relations or [])}
     summary: dict[str, Any] = {
         "mode": mode,
         "candidates_found": len(candidates),
-        "tools_used": sorted({c.extractor_tool for c in candidates}),
+        "relations_found": len(relations or []),
+        "tools_used": sorted(cand_tools | rel_tools),
     }
+    if locations:
+        summary["extracted_locations"] = locations
     if stage is not None:
         summary["stage"] = stage
     if extra:
@@ -520,13 +1268,18 @@ __all__ = [
     "AMOUNT_RE",
     "DATE_ISO_RE",
     "ExtractedCandidateItem",
+    "ExtractedRelationItem",
     "TELEGRAM_RE",
     "build_extraction_summary",
     "default_non_verified_layer",
+    "enrich_candidates_with_locations",
     "extract_contextual_entities",
+    "extract_cooccurrence_relations",
     "extract_deterministic_identifiers",
+    "extract_location_attributes",
     "fold_accents",
     "fuse_candidates",
+    "fuse_relations",
     "normalize_dz_phone",
     "sanitize_snippet",
     "snippet_around",

@@ -5,11 +5,11 @@ Toutes les entités (noms, téléphones `+213 555 01xx`, domaines `example.*`, I
 
 | Page HTML | Vérité Terrain (`.md`) | SHA-256 (préfixe) |
 |---|---|---|
-| `01_profil_osint_social.html` | `01_profil_osint_social.md` | `6d83ea4074dd0e14...` |
-| `02_page_phishing_baridimob.html` | `02_page_phishing_baridimob.md` | `86ce7e224d3c6017...` |
-| `03_annonce_marketplace_scam.html` | `03_annonce_marketplace_scam.md` | `d4498df341d2a9ea...` |
-| `04_export_canal_telegram_web.html` | `04_export_canal_telegram_web.md` | `dab38a14fc676294...` |
-| `05_site_societe_ecran_mentions.html` | `05_site_societe_ecran_mentions.md` | `6766d298380d5296...` |
+| `01_profil_osint_social.html` | `01_profil_osint_social.md` | `e01d0d2177243e08...` |
+| `02_page_phishing_baridimob.html` | `02_page_phishing_baridimob.md` | `0b88d14b2f32841a...` |
+| `03_annonce_marketplace_scam.html` | `03_annonce_marketplace_scam.md` | `4a7b6145fd8bab5f...` |
+| `04_export_canal_telegram_web.html` | `04_export_canal_telegram_web.md` | `4956b7b061b485c5...` |
+| `05_site_societe_ecran_mentions.html` | `05_site_societe_ecran_mentions.md` | `d2b20ac7043ff0a2...` |
 
 ## Vérification locale
 ```bash

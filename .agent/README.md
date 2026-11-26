@@ -17,7 +17,7 @@ When instructions or rulebooks conflict, agents MUST resolve them according to t
                                │
 ┌──────────────────────────────▼──────────────────────────────┐
 │ 2. Architectural & Implementation Decisions (DECISIONS.md)  │
-│    (Approved resolutions D1..D10 override lower specs)      │
+│    (Approved resolutions D1..D20 override lower specs)      │
 └──────────────────────────────┬──────────────────────────────┘
                                │
 ┌──────────────────────────────▼──────────────────────────────┐
@@ -34,6 +34,7 @@ When instructions or rulebooks conflict, agents MUST resolve them according to t
 │ 5. Core Operational Rulebooks (Stricter rule always wins)   │
 │    • .agent/llm-no-mistakes-rules.md (Reliability)          │
 │    • .agent/security-rules.md (Forensic integrity & safety) │
+│    • .agent/investigation-validation-rules.md (D19/D20)     │
 │    • .agent/repo-structure-rules.md (File placement)        │
 │    • .agent/ui-ux-rules.md (Visual, WCAG AA, Tokens)        │
 └──────────────────────────────┬──────────────────────────────┘
@@ -50,13 +51,14 @@ When instructions or rulebooks conflict, agents MUST resolve them according to t
 
 ## 2. Core Rulebooks & Interconnections
 
-All five `.agent` rule files form an integrated, non-overlapping operating model:
+All six `.agent` governance rulebooks form an integrated, non-overlapping operating model:
 
 | Rulebook | Primary Scope | Enforced Standards | Companion Rules |
 | :--- | :--- | :--- | :--- |
 | **[`llm-no-mistakes-rules.md`](file:///c:/Users/adel/Documents/IC/Athar_DZ/.agent/llm-no-mistakes-rules.md)** | Agent reliability, anti-hallucination, verification | Zero invented paths/numbers, quoted verification outputs, strict rollback protocols. | `security-rules.md`<br>`phase1-implementation-rules.md`<br>`repo-structure-rules.md`<br>`ui-ux-rules.md` |
 | **[`phase1-implementation-rules.md`](file:///c:/Users/adel/Documents/IC/Athar_DZ/.agent/phase1-implementation-rules.md)** | Phase 1 (v0.1) execution, SNA algorithms, milestone gating | 1A–1G gated milestones, 16 deterministic SNA algorithms, single registry source of truth, **Phase Gating (Decision D10)**. | `ui-ux-rules.md`<br>`llm-no-mistakes-rules.md`<br>`security-rules.md`<br>`repo-structure-rules.md` |
 | **[`security-rules.md`](file:///c:/Users/adel/Documents/IC/Athar_DZ/.agent/security-rules.md)** | Forensic integrity, evidentiary safety, zero-trust | ISO 27037 audit hash-chain, WORM immutability, case isolation, parameterized Cypher/SQL, Algerian legal safety. | `phase1-implementation-rules.md`<br>`llm-no-mistakes-rules.md`<br>`repo-structure-rules.md` |
+| **[`investigation-validation-rules.md`](file:///c:/Users/adel/Documents/IC/Athar_DZ/.agent/investigation-validation-rules.md)** | Extraction validation scope & manual link defaults (D19/D20) | Extracted entities & inter-entity relations require validation; `EXTRAIT_DE` & manual links default to `VERIFIED` (`100%`); direct layer changes audited. | `security-rules.md`<br>`DECISIONS.md` |
 | **[`ui-ux-rules.md`](file:///c:/Users/adel/Documents/IC/Athar_DZ/.agent/ui-ux-rules.md)** | Desktop forensic UI, accessibility, design tokens | WCAG 2.2 AA, 8-pt grid, 0 inline styles, 0 emojis, CSS variables from `tokens.css`, FR/AR (RTL)/EN i18n, **Desktop Menubar & Mockup Parity**. | `phase1-implementation-rules.md`<br>`llm-no-mistakes-rules.md`<br>`repo-structure-rules.md` |
 | **[`repo-structure-rules.md`](file:///c:/Users/adel/Documents/IC/Athar_DZ/.agent/repo-structure-rules.md)** | File organization, architecture boundaries | 2-tier app (App tier / Data tier), unidirectional dependencies, file line limits (<600 lines), generated artifacts fresh. | `phase1-implementation-rules.md`<br>`llm-no-mistakes-rules.md`<br>`security-rules.md` |
 
@@ -79,9 +81,10 @@ The target visual layout and forensic user experience are defined by the master 
    - Footer: Registre d'Audit Forensique button.
 4. **Canvas Sub-Header**: Analytical view switcher (`Graphe`, `Chronologie`, `Carte SIG`, `Table`, `Audit`) + Recommended Playbook Review-Run button + Impact View toggle.
 5. **Right Inspector Panel (340px)**:
-   - *No element selected*: Case Overview KPIs (loss, victims, locations, evidence) + Clues Inbox (Review-Run pending validation queue).
-   - *Node selected*: Full Inspector (label, type, layer, confidence, evidence hash chip with copy, provenance, GPS, properties, suggested tools).
-6. **Status Bar (24px)**: Case ID, node count, relation count, data service health, ISO 27037 sealing status.
+   - *No element selected (Overview)*: Dynamic Case Overview KPIs computed from active investigation data (`computeCaseOverviewMetrics`: Préjudice Estimé, Victimes/Plaintes, Suspects, Wilayas, Objets Analysés, À Investiguer/À Valider) + live Boîte d'Arbitrage des Indices (`Review-Run` pending validation queue). In isolated `actor_sphere` evidence tabs, also hosts `CandidateValidationPanel` with entity category filters and semantic relation validation (pending candidates are hidden from `Dossier Général`).
+   - *Node/Edge selected*: Full Inspector (label, type, direct layer transition without blocking modal per D19, 100% default displayed confidence until modified, evidence hash chip, provenance, GPS, properties, suggested tools, full edge CRUD).
+6. **Modal Containment**: All blocking dialogs (`aria-modal="true"`) render via `ModalPortal` (applying `inert` on `.studio-shell`, trapping `Tab`, gating background keyboard/wheel handlers with `hasOpenModal()`, and confirming delete alerts on `Enter`).
+7. **Status Bar (24px)**: Case ID, node count, relation count, data service health, ISO 27037 sealing status.
 
 ### Phase Gating Standard (Graying Out Non-Phase 1 Features)
 - Any button, menu item, or tool that is scheduled for a future phase (Phases 2 through 6) **MUST** be rendered in the UI with:
@@ -97,10 +100,13 @@ The target visual layout and forensic user experience are defined by the master 
 
 Before finishing any task, the agent MUST execute and quote command results:
 1. **Frontend**:
-   - `npm test -- --run` (all vitest unit & component tests must pass)
-   - `npx tsc --noEmit` (TypeScript strict mode, 0 errors, 0 warnings)
+   - `npm test -- --run` (all 14 test files / 99 vitest unit & component tests must pass)
+   - `npm run typecheck` (`tsc --noEmit`, 0 errors, 0 warnings)
+   - `npm run lint` (`eslint .`, 0 errors)
+   - `npm run build` (`vite build` production bundle succeeds)
 2. **Backend**:
-   - `pytest` (API, domain registry, SNA deterministic suite, audit ledger chain)
+   - `pytest -v` (all 60 tests: API, domain registry, SNA deterministic suite, PDF/HTML extraction & GPU NER, audit ledger chain)
+   - `ruff check app tests` and `mypy app` (0 lint or type issues)
 3. **UI/UX Audit**:
    - Zero inline styles (`style="..."` forbidden outside dynamic node coords).
    - Zero hardcoded colors outside `tokens.css`.

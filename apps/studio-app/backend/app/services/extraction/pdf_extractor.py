@@ -11,21 +11,31 @@ from __future__ import annotations
 import io
 import logging
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from typing import Any
 
 import fitz  # PyMuPDF
 
-from app.services.extraction.camel_ner import resolve_camel_model_dir
+from app.services.extraction.camel_ner import get_camel_ner_device, resolve_camel_model_dir
 from app.services.extraction.common_extractors import (
     AMOUNT_RE,
     DATE_ISO_RE,
     ExtractedCandidateItem,
+    ExtractedRelationItem,
     build_extraction_summary,
     default_non_verified_layer,
+    enrich_candidates_with_locations,
     extract_contextual_entities,
+    extract_cooccurrence_relations,
     extract_deterministic_identifiers,
+    extract_location_attributes,
     fuse_candidates,
+    fuse_relations,
+)
+from app.services.extraction.wikineural_ner import (
+    get_wikineural_ner_device,
+    resolve_wikineural_model_dir,
 )
 
 logger = logging.getLogger(__name__)
@@ -72,6 +82,7 @@ class PdfExtractionStageOutput:
     stage_number: int
     candidates: list[ExtractedCandidateItem]
     summary: dict[str, Any]
+    relations: list[ExtractedRelationItem] = field(default_factory=list)
 
 
 def _read_pages(pdf_bytes: bytes) -> tuple[PdfMetadataResult, list[tuple[int, str, int]]]:
@@ -85,7 +96,7 @@ def _read_pages(pdf_bytes: bytes) -> tuple[PdfMetadataResult, list[tuple[int, st
         total_chars = 0
 
         for idx, page in enumerate(doc, start=1):
-            page_text = page.get_text("text") or ""
+            page_text = unicodedata.normalize("NFKC", page.get_text("text") or "")
             img_count = len(page.get_images(full=False))
             images_per_page[idx] = img_count
             total_images += img_count
@@ -133,12 +144,16 @@ def _extract_pdfplumber_data(
 
     with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
         for page_num, page in enumerate(pdf.pages, start=1):
-            page_texts[page_num] = page.extract_text() or ""
+            page_texts[page_num] = unicodedata.normalize("NFKC", page.extract_text() or "")
             tables = page.extract_tables() or []
             for table in tables:
                 tables_count += 1
                 for row_idx, row in enumerate(table, start=1):
-                    cells = [" ".join((c or "").split()) for c in row if c and str(c).strip()]
+                    cells = [
+                        unicodedata.normalize("NFKC", " ".join((c or "").split()))
+                        for c in row
+                        if c and str(c).strip()
+                    ]
                     if not cells:
                         continue
                     row_line = " | ".join(cells)
@@ -194,26 +209,127 @@ def _merge_pymupdf_and_plumber_pages(
     return combined
 
 
+def _extract_pdf_structural_relations(
+    candidates: list[ExtractedCandidateItem],
+    segments: list[tuple[int, str, str]],
+    stage_number: int,
+) -> list[ExtractedRelationItem]:
+    """Infer page-level cyber & financial structural relations on PDF documents."""
+    rels = extract_cooccurrence_relations(segments, candidates, stage_number)
+    by_page_type: dict[tuple[int, str], list[ExtractedCandidateItem]] = {}
+    for c in candidates:
+        by_page_type.setdefault((c.source_page, c.entity_type), []).append(c)
+
+    for page_num, _loc, text in segments:
+        sites = by_page_type.get((page_num, "site_web"), [])
+        emails = by_page_type.get((page_num, "adresse_email"), [])
+        banks = by_page_type.get((page_num, "compte_bancaire"), [])
+        txs = by_page_type.get((page_num, "transaction_financiere"), [])
+        phones = by_page_type.get((page_num, "telephone"), [])
+
+        for s in sites:
+            for e in emails:
+                rels.append(
+                    ExtractedRelationItem(
+                        relation_type="UTILISE_EMAIL",
+                        source_entity_type=s.entity_type,
+                        source_normalized_value=s.normalized_value,
+                        target_entity_type=e.entity_type,
+                        target_normalized_value=e.normalized_value,
+                        suggested_layer="OSINT_RAW",
+                        attributes={},
+                        confidence=0.82,
+                        extractor_tool="pdf-page-cooccurrence",
+                        stage_number=stage_number,
+                        source_page=page_num,
+                        quote_snippet=f"{s.label} <-> {e.label}"[:180],
+                        source_locator=f"page:{page_num}",
+                    )
+                )
+        low_text = unicodedata.normalize("NFKC", text).lower()
+        has_stmt_cue = any(
+            k in low_text
+            for k in ("releve", "relevé", "solde", "كشف حساب", "رصيد", "statement", "balance")
+        )
+        has_single_bank_cue = len(banks) == 1 and any(
+            k in low_text
+            for k in (
+                "virement", "prejudice", "préjudice", "acompte",
+                "تحويل", "مبلغ", "transfer", "wire", "fraud", "damages", "deposit",
+            )
+        )
+        if len(banks) >= 1 and txs and (has_stmt_cue or has_single_bank_cue):
+            primary_bank = banks[0]
+            for tx in txs:
+                rels.append(
+                    ExtractedRelationItem(
+                        relation_type="IMPLIQUE_TRANSACTION",
+                        source_entity_type=primary_bank.entity_type,
+                        source_normalized_value=primary_bank.normalized_value,
+                        target_entity_type=tx.entity_type,
+                        target_normalized_value=tx.normalized_value,
+                        suggested_layer="FLOWS",
+                        attributes={},
+                        confidence=0.88,
+                        extractor_tool="pdf-statement-table",
+                        stage_number=stage_number,
+                        source_page=page_num,
+                        quote_snippet=tx.quote_snippet,
+                        source_locator=tx.source_locator or f"page:{page_num}",
+                    )
+                )
+        if "otp" in text.lower() and phones and banks:
+            for ph in phones:
+                if "otp" in ph.quote_snippet.lower():
+                    rels.append(
+                        ExtractedRelationItem(
+                            relation_type="RECOIT_OTP_BARIDIMOB",
+                            source_entity_type=ph.entity_type,
+                            source_normalized_value=ph.normalized_value,
+                            target_entity_type=banks[0].entity_type,
+                            target_normalized_value=banks[0].normalized_value,
+                            suggested_layer="FLOWS",
+                            attributes={},
+                            confidence=0.88,
+                            extractor_tool="pdf-otp-context",
+                            stage_number=stage_number,
+                            source_page=page_num,
+                            quote_snippet=ph.quote_snippet,
+                            source_locator=f"page:{page_num}",
+                        )
+                    )
+
+    return fuse_relations(rels)
+
+
 def extract_mode1_quick(pdf_bytes: bytes) -> PdfExtractionStageOutput:
     """Mode 1 (Analyse Rapide): PyMuPDF metadata + fast deterministic identifier regexes."""
     meta, pages = _read_pages(pdf_bytes)
+    segments = _pages_to_segments(pages)
+    locations, per_page_locs = extract_location_attributes(segments)
     raw_candidates = extract_deterministic_identifiers(
-        segments=_pages_to_segments(pages),
+        segments=segments,
         stage_number=1,
         include_transactions=False,
     )
-    candidates = fuse_candidates(raw_candidates)
+    candidates = enrich_candidates_with_locations(fuse_candidates(raw_candidates), per_page_locs)
+    relations = _extract_pdf_structural_relations(candidates, segments, stage_number=1)
     return PdfExtractionStageOutput(
         metadata=meta,
         stage_number=1,
         candidates=candidates,
+        relations=relations,
         summary=build_extraction_summary(
             mode="quick",
             stage=None,
             candidates=candidates,
+            relations=relations,
+            locations=locations,
             extra={
                 "pages": meta.page_count,
                 "embedded_images": meta.embedded_images_count,
+                "camel_ner_device": get_camel_ner_device(),
+                "wikineural_ner_device": get_wikineural_ner_device(),
             },
         ),
     )
@@ -226,7 +342,9 @@ def extract_mode2_stage(pdf_bytes: bytes, stage: int) -> PdfExtractionStageOutpu
 
     meta, pages = _read_pages(pdf_bytes)
     candidates: list[ExtractedCandidateItem] = []
+    relations: list[ExtractedRelationItem] = []
     tables_count = 0
+    locations: dict[str, list[str]] = {"wilayas": [], "communes": []}
 
     if stage == 1:
         for page_num, _, img_count in pages:
@@ -252,32 +370,56 @@ def extract_mode2_stage(pdf_bytes: bytes, stage: int) -> PdfExtractionStageOutpu
             pdf_bytes, stage_number=2
         )
         unified_pages = _merge_pymupdf_and_plumber_pages(pages, plumber_texts)
+        segments = _pages_to_segments(unified_pages)
+        locations, per_page_locs = extract_location_attributes(segments)
         id_cands = extract_deterministic_identifiers(
-            segments=_pages_to_segments(unified_pages),
+            segments=segments,
             stage_number=2,
             include_transactions=True,
         )
-        candidates = fuse_candidates([*table_cands, *id_cands])
+        candidates = enrich_candidates_with_locations(
+            fuse_candidates([*table_cands, *id_cands]), per_page_locs
+        )
+        relations = _extract_pdf_structural_relations(candidates, segments, stage_number=2)
     else:
         plumber_texts, _, tables_count = _extract_pdfplumber_data(pdf_bytes, stage_number=3)
         unified_pages = _merge_pymupdf_and_plumber_pages(pages, plumber_texts)
-        candidates = fuse_candidates(
-            extract_contextual_entities(segments=_pages_to_segments(unified_pages), stage_number=3)
+        segments = _pages_to_segments(unified_pages)
+        locations, per_page_locs = extract_location_attributes(segments)
+        stage3_entities = enrich_candidates_with_locations(
+            fuse_candidates(extract_contextual_entities(segments=segments, stage_number=3)),
+            per_page_locs,
         )
+        candidates = stage3_entities
+        prior_entities = fuse_candidates(
+            extract_deterministic_identifiers(
+                segments=segments,
+                stage_number=2,
+                include_transactions=True,
+            )
+        )
+        all_entities = fuse_candidates([*prior_entities, *stage3_entities])
+        relations = _extract_pdf_structural_relations(all_entities, segments, stage_number=3)
 
     return PdfExtractionStageOutput(
         metadata=meta,
         stage_number=stage,
         candidates=candidates,
+        relations=relations,
         summary=build_extraction_summary(
             mode="step_by_step",
             stage=stage,
             candidates=candidates,
+            relations=relations,
+            locations=locations,
             extra={
                 "pages": meta.page_count,
                 "embedded_images": meta.embedded_images_count,
                 "pdfplumber_tables": tables_count,
                 "camel_ner_available": resolve_camel_model_dir() is not None,
+                "camel_ner_device": get_camel_ner_device(),
+                "wikineural_ner_available": resolve_wikineural_model_dir() is not None,
+                "wikineural_ner_device": get_wikineural_ner_device(),
             },
         ),
     )

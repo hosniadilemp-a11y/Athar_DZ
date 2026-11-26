@@ -45,15 +45,10 @@ export interface TranslationDictionary {
   // Right Inspector & Context
   caseOverviewTitle: string;
   kpiLoss: string;
-  kpiLossVal: string;
   kpiVictims: string;
-  kpiVictimsVal: string;
   kpiLocations: string;
-  kpiLocationsVal: string;
   kpiEvidence: string;
-  kpiEvidenceVal: string;
   inboxTitle: string;
-  inboxBadge: string;
   inboxAddToGraph: string;
   inboxDismiss: string;
 
@@ -115,15 +110,10 @@ export const TRANSLATIONS: Record<Locale, TranslationDictionary> = {
 
     caseOverviewTitle: 'Synthèse de l’Affaire',
     kpiLoss: 'Préjudice Estimé',
-    kpiLossVal: '1 450 000 DZD',
-    kpiVictims: 'Plaintes Rattachées',
-    kpiVictimsVal: '6 Victimes',
+    kpiVictims: 'Victimes & Plaintes',
     kpiLocations: 'Wilayas Impliquées',
-    kpiLocationsVal: 'Alger, Oran, Blida',
-    kpiEvidence: 'Preuves Scellées',
-    kpiEvidenceVal: '100% SHA-256',
+    kpiEvidence: 'Objets & Scellés SHA-256',
     inboxTitle: 'Boîte d’Arbitrage des Indices',
-    inboxBadge: '3 en attente',
     inboxAddToGraph: 'Verser au Dossier',
     inboxDismiss: 'Écarter',
 
@@ -181,15 +171,10 @@ export const TRANSLATIONS: Record<Locale, TranslationDictionary> = {
 
     caseOverviewTitle: 'ملخص القضية',
     kpiLoss: 'الضرر المالي التقديري',
-    kpiLossVal: '1 450 000 دج',
-    kpiVictims: 'الشكاوى المقترنة',
-    kpiVictimsVal: '6 ضحايا',
+    kpiVictims: 'الضحايا والشكاوى',
     kpiLocations: 'الولايات المعنية',
-    kpiLocationsVal: 'الجزائر، وهران، البليدة',
-    kpiEvidence: 'الأدلة المختومة',
-    kpiEvidenceVal: '100% SHA-256',
+    kpiEvidence: 'العناصر المختومة SHA-256',
     inboxTitle: 'صندوق فحص الأدلة الجديدة',
-    inboxBadge: '3 قيد المراجعة',
     inboxAddToGraph: 'إيداع بالملف',
     inboxDismiss: 'استبعاد',
 
@@ -247,15 +232,10 @@ export const TRANSLATIONS: Record<Locale, TranslationDictionary> = {
 
     caseOverviewTitle: 'Case Summary',
     kpiLoss: 'Estimated Loss',
-    kpiLossVal: '1,450,000 DZD',
-    kpiVictims: 'Linked Complaints',
-    kpiVictimsVal: '6 Victims',
+    kpiVictims: 'Victims & Complaints',
     kpiLocations: 'Involved Wilayas',
-    kpiLocationsVal: 'Algiers, Oran, Blida',
-    kpiEvidence: 'Sealed Evidence',
-    kpiEvidenceVal: '100% SHA-256',
+    kpiEvidence: 'Analyzed Objects & SHA-256',
     inboxTitle: 'Clue Arbitration Inbox',
-    inboxBadge: '3 pending',
     inboxAddToGraph: 'Add to Case',
     inboxDismiss: 'Dismiss',
 

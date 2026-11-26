@@ -2,6 +2,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CandidateValidationPanel } from '../components/inspector/CandidateValidationPanel';
+import { InspectorPanel } from '../components/inspector/InspectorPanel';
 import { FilePreviewModal } from '../components/modals/FilePreviewModal';
 import { I18nProvider } from '../context/I18nContext';
 import { ToastProvider } from '../context/ToastContext';
@@ -54,7 +55,10 @@ describe('Phase 2A-HTML static HTML extraction & isolated validation', () => {
       edges: [],
       extractionRunsByNodeId: {},
       candidatesByNodeId: {},
+      relationsByNodeId: {},
       selectedCandidateId: null,
+      selectedNodeId: null,
+      selectedEdgeId: null,
     });
     useGraphStore.getState().initTabsForCase(CASE_ID, [htmlNode]);
   });
@@ -120,6 +124,24 @@ describe('Phase 2A-HTML static HTML extraction & isolated validation', () => {
     expect(masterScoped.scopedNodes).toHaveLength(1);
     expect(masterScoped.scopedNodes[0]?.id).toBe(HTML_NODE_ID);
 
+    const collapsedHtml = renderToStaticMarkup(
+      React.createElement(
+        I18nProvider,
+        null,
+        React.createElement(
+          ToastProvider,
+          null,
+          React.createElement(CandidateValidationPanel, { sourceNodeId: HTML_NODE_ID })
+        )
+      )
+    );
+    expect(collapsedHtml).toContain('candidate-type-filter-bar');
+    expect(collapsedHtml).toContain('candidate-group-toggle');
+    expect(collapsedHtml).toContain('aria-expanded="false"');
+    expect(collapsedHtml).not.toContain('script:ld+json#0');
+
+    // Selecting the candidate auto-expands its entity group and card details
+    useGraphStore.setState({ selectedCandidateId: 'cand-html-1' });
     const html = renderToStaticMarkup(
       React.createElement(
         I18nProvider,
@@ -133,7 +155,89 @@ describe('Phase 2A-HTML static HTML extraction & isolated validation', () => {
     );
     expect(html).toContain('@karim_auto_fictif');
     expect(html).toContain('script:ld+json#0');
-    expect(html).toContain('html-jsonld-parser');
+    expect(html).toContain('identifiant unique:');
+    expect(html).not.toContain('html-jsonld-parser');
+    expect(html).toContain('cand-cat-color');
+  });
+
+  it('highlights extracted candidates that already exist in the case database', () => {
+    useGraphStore.setState({
+      nodes: [
+        {
+          id: HTML_NODE_ID,
+          case_id: CASE_ID,
+          type: 'compte_social',
+          layer: 'OSINT_RAW',
+          label: '01_profil_osint_social.html',
+          confidence: 0.9,
+          provenance: 'html-upload',
+          properties: { __is_evidence_file: true, filename: '01_profil_osint_social.html' },
+          latitude: null,
+          longitude: null,
+        },
+        {
+          id: 'existing-phone-node',
+          case_id: CASE_ID,
+          type: 'telephone',
+          layer: 'VERIFIED',
+          label: '+213 661 55 01 02',
+          confidence: 1.0,
+          provenance: 'manual',
+          properties: { msisdn: '+213661550102' },
+          latitude: null,
+          longitude: null,
+        },
+      ],
+      edges: [],
+      candidatesByNodeId: {
+        [HTML_NODE_ID]: [
+          {
+            id: 'cand-dup-phone',
+            case_id: CASE_ID,
+            run_id: 'run-dup-1',
+            source_node_id: HTML_NODE_ID,
+            entity_type: 'telephone',
+            suggested_layer: 'OSINT_RAW',
+            label: '0661 55 01 02',
+            normalized_value: '+213661550102',
+            attributes: { numero: '+213661550102' },
+            confidence: 0.95,
+            extractor_tool: 'regex-e164-dz',
+            stage_number: 1,
+            source_page: 1,
+            source_locator: 'body:text',
+            quote_snippet: 'Contact 0661 55 01 02',
+            matched_existing_node_id: null,
+            validation_status: 'PENDING',
+            promoted_node_id: null,
+            validated_by: null,
+            validated_at: null,
+            blackboard_sync_status: 'NOT_PUBLISHED',
+          },
+        ],
+      },
+      extractionRunsByNodeId: {},
+      selectedCandidateId: 'cand-dup-phone',
+    });
+
+    const html = renderToStaticMarkup(
+      React.createElement(
+        I18nProvider,
+        null,
+        React.createElement(
+          ToastProvider,
+          null,
+          React.createElement(CandidateValidationPanel, { sourceNodeId: HTML_NODE_ID })
+        )
+      )
+    );
+    expect(html).toContain('is-db-match');
+    expect(html).toContain('is-selected');
+    expect(html).toContain('candidate-edit-form');
+    expect(html).toContain('Modifier les informations');
+    expect(html).toContain('Enregistrer');
+    expect(html).toContain('+213 661 55 01 02');
+    expect(html).not.toContain('regex-e164-dz');
   });
 
   it('renders HTML preview inside a strictly sandboxed iframe (sandbox="")', () => {
@@ -160,5 +264,126 @@ describe('Phase 2A-HTML static HTML extraction & isolated validation', () => {
     );
     expect(html).toContain('sandbox=""');
     expect(html).toContain('01_profil_osint_social.html');
+  });
+
+  it('renders staged semantic relations with validate, modify, and delete controls in CandidateValidationPanel', () => {
+    useGraphStore.setState({
+      relationsByNodeId: {
+        [HTML_NODE_ID]: [
+          {
+            id: 'rel-cand-1',
+            case_id: CASE_ID,
+            run_id: 'run-html-1',
+            source_node_id: HTML_NODE_ID,
+            relation_type: 'POSSEDE_PROFIL_SOCIAL',
+            source_entity_type: 'personne',
+            source_normalized_value: 'Karim Mansouri',
+            target_entity_type: 'compte_social',
+            target_normalized_value: '@karim_auto_fictif',
+            source_candidate_id: 'cand-p1',
+            target_candidate_id: 'cand-s1',
+            source_label: 'Karim Mansouri',
+            target_label: '@karim_auto_fictif',
+            suggested_layer: 'OSINT_RAW',
+            attributes: {},
+            confidence: 0.94,
+            extractor_tool: 'html-jsonld-rel',
+            stage_number: 2,
+            source_page: 1,
+            source_locator: 'script:ld+json#0',
+            quote_snippet: 'JSON-LD Person alternateName',
+            validation_status: 'PENDING',
+            promoted_edge_id: null,
+            validated_by: null,
+            validated_at: null,
+            blackboard_sync_status: 'NOT_PUBLISHED',
+          },
+        ],
+      },
+    });
+
+    const html = renderToStaticMarkup(
+      React.createElement(
+        I18nProvider,
+        null,
+        React.createElement(
+          ToastProvider,
+          null,
+          React.createElement(CandidateValidationPanel, { sourceNodeId: HTML_NODE_ID })
+        )
+      )
+    );
+    expect(html).toContain('Relations sémantiques détectées');
+    expect(html).toContain('Possède le Profil Social');
+    expect(html).toContain('Catégories');
+    expect(html).toContain('Relations Générales');
+    expect(html).toContain('Tout déplier');
+    expect(html).toContain('aria-expanded="false"');
+    // Groups and cards are minimized by default, matching Indices extraits à valider
+    expect(html).not.toContain('Karim Mansouri');
+  });
+
+  it('renders relation type editor and delete button in InspectorPanel Edge Mode', () => {
+    const personNode: GraphNode = {
+      id: 'node-p1',
+      case_id: CASE_ID,
+      type: 'personne',
+      layer: 'HYPOTHESIS',
+      label: 'Karim Mansouri',
+      confidence: 0.9,
+      provenance: 'manual',
+      properties: {},
+      latitude: null,
+      longitude: null,
+    };
+    const phoneNode: GraphNode = {
+      id: 'node-t1',
+      case_id: CASE_ID,
+      type: 'telephone',
+      layer: 'OSINT_RAW',
+      label: '+2135550112',
+      confidence: 0.95,
+      provenance: 'manual',
+      properties: {},
+      latitude: null,
+      longitude: null,
+    };
+    useGraphStore.setState({
+      nodes: [personNode, phoneNode],
+      edges: [
+        {
+          id: 'edge-1',
+          case_id: CASE_ID,
+          type: 'UTILISE_TELEPHONE',
+          source_id: personNode.id,
+          target_id: phoneNode.id,
+          layer: 'OSINT_RAW',
+          confidence: 0.88,
+          provenance: 'EXTRACTION_VALIDATED',
+          properties: {},
+        },
+      ],
+      selectedNodeId: null,
+      selectedEdgeId: 'edge-1',
+    });
+
+    const html = renderToStaticMarkup(
+      React.createElement(
+        I18nProvider,
+        null,
+        React.createElement(
+          ToastProvider,
+          null,
+          React.createElement(InspectorPanel, {
+            onExpand: () => {},
+            onClose: () => {},
+          })
+        )
+      )
+    );
+    expect(html).toContain('UTILISE_TELEPHONE');
+    expect(html).toContain('Karim Mansouri');
+    expect(html).toContain('+2135550112');
+    expect(html).toContain('Supprimer la relation');
   });
 });

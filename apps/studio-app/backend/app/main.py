@@ -98,11 +98,19 @@ async def validation_exception_handler(
 
 
 @app.exception_handler(Exception)
-async def unhandled_exception_handler(_request: Request, exc: Exception) -> JSONResponse:
-    """Catch-all 500 handler without leaking stack traces or credentials."""
+async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Catch-all 500 handler preserving CORS headers without leaking stack traces."""
     logger.error("Unhandled server exception: %s", exc, exc_info=True)
+    headers: dict[str, str] = {}
+    origin = request.headers.get("origin")
+    if origin and (
+        origin in settings.cors_origins_list or "*" in settings.cors_origins_list
+    ):
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
     return JSONResponse(
         status_code=500,
+        headers=headers,
         content={
             "error": {
                 "code": "INTERNAL_SERVER_ERROR",

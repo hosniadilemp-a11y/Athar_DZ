@@ -42,7 +42,8 @@ Athar DZ / AegisInvestigate is a visual criminal investigation and digital foren
   6. *Cyber, Malwares & Forensique (5):* `fichier_apk`, `serveur_c2`, `certificat_tls`, `artefact_dfir`, `session_recherche`
   7. *Biométrie & Médias Numériques (3):* `enregistrement_vocal`, `empreinte_faciale`, `image_preuve`
   8. *Chaîne de Preuve & Scellés WORM (3):* `document_judiciaire`, `scelle_numerique`, `preuve_merkle`
-- **47 Directional Relationship Types** with strict allowed source/target types, timestamp, weight, and provenance.
+- **50 Directional Relationship Types** (47 base ontology relations + 3 Phase 2A relations: `EXTRAIT_DE`, `UTILISE_EMAIL`, `IMPLIQUE_TRANSACTION` per Decisions D16–D18) with strict allowed source/target types, timestamp, weight, and provenance.
+- **Note on Geographic Extraction (D18):** `wilaya` and `commune` remain canonical graph node types for territorial modeling, but PDF/HTML automated extractors attach them exclusively as entity/document metadata attributes (`wilaya`, `wilayas_mentionnees`, `commune`, `communes_donnees`) rather than emitting detached territory nodes.
 - **8 Geoplottable GPS Node Types:** `antenne_bts`, `telecom_cdr`, `guichet_gab`, `vehicule`, `image_preuve`, `unite`, `commune`, `personne` (WGS84 `gps_lat`/`gps_lon` synced with PostGIS).
 
 ---
@@ -63,7 +64,9 @@ Le développement est organisé selon un **modèle d'ingénierie parallèle à d
 
 ### Découpage Révisé des 6 Phases :
 - **Phase 1 (`v0.1 — Livrée / COMPLETED`):** Studio d'Enquête Visuel, Accordéon 37 nœuds, Nœuds Circulaires SVG, 5 Calques, 16 outils SNA, Socle FastAPI + Neo4j + PostgreSQL/PostGIS + Redis, Scénario 100 nœuds Candy Wheels, Surface UI d'ingestion non-intrusive avec Popover 3 Modes (Option B) et commutation multi-onglets (Option A).
-- **Phase 2 (`v0.2`):** Blackboard WORM (MinIO S3 Compliance ISO 27037 + RFC 3161), Elasticsearch 8.14 (Plein-texte Arabe/FR + Bassin d'Indices Non-Inclus `PENDING_NON_INCLUDED`), Contrat backend ForensicPluginSPI & ProcessRegistry (Forensic SPI Core) et exécution réelle des Modes 1 & 2 sur Docs/Images (*Lot A : ExifTool, PyMuPDF OCR, Qwen 2.5 NER, BaridiMob*).
+- **Phase 2 (`v0.2` — Incrément 2A/2A+ Livré ; Infrastructure WORM/ES Planifiée) :**
+  - *Livré (Phase 2A PDF/HTML + NER GPU, Décisions D16–D20) :* Extraction statique hors-ligne PDF (`PyMuPDF` + `pdfplumber` Modes 1 & 2) et HTML (`BeautifulSoup4` + `lxml`, anti-SSRF/XSS, `<iframe sandbox="">`), double NER GPU local (`CAMeL-Lab` arabe + `WikiNEuRal` multilingue), tables de staging PostgreSQL (`extraction_runs`, `extracted_candidates`, `extracted_relation_candidates`), `CandidateValidationPanel` dans les onglets isolés (`actor_sphere`) avec filtres par catégorie et CRUD relations (`PATCH`/`DELETE`), règles D19/D20 (`EXTRAIT_DE` auto-vérifié, liaisons manuelles `VERIFIED` 100 % par défaut, changement de calque direct audité).
+  - *Planifié (Phase 2 Core) :* Blackboard WORM (MinIO S3 Compliance ISO 27037 + RFC 3161), Elasticsearch 8.14 (Plein-texte Arabe/FR + Bassin d'Indices Non-Inclus `PENDING_NON_INCLUDED`), Contrat backend ForensicPluginSPI & ProcessRegistry complet et ingestion Images/EXIF (*Lot A : ExifTool, OCR, Barcode/QR*).
 - **Phase 3 (`v0.3`):** Bus Événementiel (EDA - Redis Streams + WebSockets), Workflows Temporal.io v1.24 (fan-out et boucles récursives), **Process Discovery Tree interactif** en direct, **Algorithme Actor Sphere complet** (traversée asymétrique orientée), intégration SPI des 76 briques OSINT (*Lot B : PhoneInfoga, Maigret, bbot, scrapers sociaux*).
 - **Phase 4 (`v0.4`):** Dynamic Dataflow Multimodal, Base vectorielle Qdrant intégrée au Blackboard (ArcFace 512-d), Binders sémantiques spatiaux (Plaque ALPR $\in$ Voiture YOLO), plugins Vision lourds GPU CUDA (*Lot C : InsightFace Buffalo_L, YOLOv8x, PaddleOCR ALPR Algérie, Sherloq*).
 - **Phase 5 (`v0.5`):** Télécoms Massifs (Relevés CDR millions de lignes via Polars + TimescaleDB), Triangulation cellulaire Voronoi, détection de co-déplacements et contradictions d'alibi, Cartographie SIG synchronisée (MapLibre GL JS + Deck.gl), Criminalistique vocale souveraine (*Lot D : Faster-Whisper Darija Algérien, PyAnnote Audio 3.1*).

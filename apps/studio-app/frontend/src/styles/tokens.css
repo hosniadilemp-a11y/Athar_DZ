@@ -70,8 +70,8 @@
   --color-layer-5-flows: #f59e0b;
 
   /* Eight Forensic Domain Colors */
-  --color-domain-territoire: #10b981;
-  --color-domain-acteurs: #3b82f6;
+  --color-domain-territoire: #14b8a6;
+  --color-domain-acteurs: #22c55e;
   --color-domain-telecoms: #6366f1;
   --color-domain-finances: #f59e0b;
   --color-domain-socmint: #06b6d4;
@@ -152,8 +152,8 @@
   --z-topbar: 25;
   --z-header: 35;
   --z-popover: 45;
-  --z-modal: 60;
-  --z-toast: 80;
+  --z-modal: 120;
+  --z-toast: 150;
 
   /* Elevation Shadows */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);

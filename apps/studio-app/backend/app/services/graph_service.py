@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import uuid
@@ -10,6 +11,7 @@ from typing import Any, Sequence
 
 from fastapi import HTTPException
 from neo4j import AsyncDriver
+from neo4j.exceptions import TransientError
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
@@ -18,8 +20,8 @@ from app.domain.registry import (
     LayerId,
     validate_relation,
 )
-from app.schemas.case import CaseCreate, CaseResponse
-from app.schemas.edge import EdgeCreate, EdgeResponse
+from app.schemas.case import CaseCreate, CaseResponse, CaseUpdate
+from app.schemas.edge import EdgeCreate, EdgeResponse, EdgeUpdate
 from app.schemas.graph import GraphResponse
 from app.schemas.node import NodeCreate, NodeResponse, ToolProposal
 from app.services.audit_service import log_audit_event
@@ -39,6 +41,8 @@ async def list_cases(engine: AsyncEngine) -> list[CaseResponse]:
             text(
                 """
                 SELECT c.id, c.code, c.title, c.description, c.status,
+                       COALESCE(c.unit_name, ''), COALESCE(c.magistrate_name, ''),
+                       COALESCE(c.jurisdiction, ''), COALESCE(c.wilaya, ''),
                        c.created_at, c.updated_at,
                        COALESCE(n.cnt, 0) AS nodes_count,
                        COALESCE(e.cnt, 0) AS edges_count
@@ -64,10 +68,14 @@ async def list_cases(engine: AsyncEngine) -> list[CaseResponse]:
             title=r[2],
             description=r[3],
             status=r[4],
-            created_at=r[5],
-            updated_at=r[6],
-            nodes_count=r[7],
-            edges_count=r[8],
+            unit_name=r[5],
+            magistrate_name=r[6],
+            jurisdiction=r[7],
+            wilaya=r[8],
+            created_at=r[9],
+            updated_at=r[10],
+            nodes_count=r[11],
+            edges_count=r[12],
         )
         for r in rows
     ]
@@ -80,6 +88,8 @@ async def get_case(engine: AsyncEngine, case_id: uuid.UUID) -> CaseResponse:
             text(
                 """
                 SELECT c.id, c.code, c.title, c.description, c.status,
+                       COALESCE(c.unit_name, ''), COALESCE(c.magistrate_name, ''),
+                       COALESCE(c.jurisdiction, ''), COALESCE(c.wilaya, ''),
                        c.created_at, c.updated_at,
                        COALESCE(n.cnt, 0) AS nodes_count,
                        COALESCE(e.cnt, 0) AS edges_count
@@ -111,10 +121,14 @@ async def get_case(engine: AsyncEngine, case_id: uuid.UUID) -> CaseResponse:
         title=row[2],
         description=row[3],
         status=row[4],
-        created_at=row[5],
-        updated_at=row[6],
-        nodes_count=row[7],
-        edges_count=row[8],
+        unit_name=row[5],
+        magistrate_name=row[6],
+        jurisdiction=row[7],
+        wilaya=row[8],
+        created_at=row[9],
+        updated_at=row[10],
+        nodes_count=row[11],
+        edges_count=row[12],
     )
 
 
@@ -144,8 +158,14 @@ async def create_case(
         await conn.execute(
             text(
                 """
-                INSERT INTO cases (id, code, title, description, status)
-                VALUES (:id, :code, :title, :description, 'OPEN');
+                INSERT INTO cases (
+                    id, code, title, description, status,
+                    unit_name, magistrate_name, jurisdiction, wilaya
+                )
+                VALUES (
+                    :id, :code, :title, :description, 'OPEN',
+                    :unit_name, :magistrate_name, :jurisdiction, :wilaya
+                );
                 """
             ),
             {
@@ -153,14 +173,26 @@ async def create_case(
                 "code": payload.code,
                 "title": payload.title,
                 "description": payload.description,
+                "unit_name": payload.unit_name,
+                "magistrate_name": payload.magistrate_name,
+                "jurisdiction": payload.jurisdiction,
+                "wilaya": payload.wilaya,
             },
         )
 
     # Neo4j Case Node
     async with neo4j_driver.session() as session:
         await session.run(
-            "MERGE (c:Case {id: $id}) SET c.code = $code, c.title = $title, c.status = 'OPEN'",
-            {"id": str(case_id), "code": payload.code, "title": payload.title},
+            "MERGE (c:Case {id: $id}) "
+            "SET c.code = $code, c.title = $title, c.status = 'OPEN', "
+            "c.unit_name = $unit_name, c.magistrate_name = $magistrate_name",
+            {
+                "id": str(case_id),
+                "code": payload.code,
+                "title": payload.title,
+                "unit_name": payload.unit_name,
+                "magistrate_name": payload.magistrate_name,
+            },
         )
 
     # Log audit
@@ -171,8 +203,103 @@ async def create_case(
         action="CREATE_CASE",
         entity_type="case",
         entity_id=case_id,
-        after_state={"code": payload.code, "title": payload.title},
+        after_state={
+            "code": payload.code,
+            "title": payload.title,
+            "unit_name": payload.unit_name,
+            "magistrate_name": payload.magistrate_name,
+            "jurisdiction": payload.jurisdiction,
+            "wilaya": payload.wilaya,
+        },
         reason="Case creation",
+    )
+
+    return await get_case(engine, case_id)
+
+
+async def update_case(
+    engine: AsyncEngine,
+    neo4j_driver: AsyncDriver,
+    case_id: uuid.UUID,
+    payload: CaseUpdate,
+    actor_id: str,
+) -> CaseResponse:
+    """Update judicial investigation metadata on an existing case."""
+    current = await get_case(engine, case_id)
+    next_title = payload.title if payload.title is not None else current.title
+    next_desc = payload.description if payload.description is not None else current.description
+    next_status = payload.status if payload.status is not None else current.status
+    next_unit = payload.unit_name if payload.unit_name is not None else current.unit_name
+    next_mag = (
+        payload.magistrate_name if payload.magistrate_name is not None else current.magistrate_name
+    )
+    next_jur = payload.jurisdiction if payload.jurisdiction is not None else current.jurisdiction
+    next_wilaya = payload.wilaya if payload.wilaya is not None else current.wilaya
+
+    async with engine.begin() as conn:
+        await conn.execute(
+            text(
+                """
+                UPDATE cases
+                SET title = :title,
+                    description = :description,
+                    status = :status,
+                    unit_name = :unit_name,
+                    magistrate_name = :magistrate_name,
+                    jurisdiction = :jurisdiction,
+                    wilaya = :wilaya,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = :id;
+                """
+            ),
+            {
+                "id": case_id,
+                "title": next_title,
+                "description": next_desc,
+                "status": next_status,
+                "unit_name": next_unit,
+                "magistrate_name": next_mag,
+                "jurisdiction": next_jur,
+                "wilaya": next_wilaya,
+            },
+        )
+
+    async with neo4j_driver.session() as session:
+        await session.run(
+            "MATCH (c:Case {id: $id}) "
+            "SET c.title = $title, c.status = $status, "
+            "c.unit_name = $unit_name, c.magistrate_name = $magistrate_name",
+            {
+                "id": str(case_id),
+                "title": next_title,
+                "status": next_status,
+                "unit_name": next_unit,
+                "magistrate_name": next_mag,
+            },
+        )
+
+    await log_audit_event(
+        engine=engine,
+        case_id=case_id,
+        actor_id=actor_id,
+        action="UPDATE_CASE",
+        entity_type="case",
+        entity_id=case_id,
+        before_state={
+            "title": current.title,
+            "unit_name": current.unit_name,
+            "magistrate_name": current.magistrate_name,
+            "jurisdiction": current.jurisdiction,
+            "wilaya": current.wilaya,
+        },
+        after_state={
+            "title": next_title,
+            "unit_name": next_unit,
+            "magistrate_name": next_mag,
+            "jurisdiction": next_jur,
+            "wilaya": next_wilaya,
+        },
+        reason="Update of investigation judicial metadata",
     )
 
     return await get_case(engine, case_id)
@@ -479,7 +606,7 @@ async def create_node(
         )
 
     node_def = NODE_TYPES[payload.type]
-    target_layer = (layer_override or node_def.layer).value
+    target_layer = (layer_override or payload.layer or node_def.layer).value
     node_id = uuid.uuid4()
 
     # 1. PostgreSQL insert
@@ -625,7 +752,7 @@ async def create_edge(
             )
 
     valid_layers = {"VERIFIED", "OSINT_RAW", "INFRA", "HYPOTHESIS", "FLOWS"}
-    edge_layer = payload.layer if payload.layer in valid_layers else "HYPOTHESIS"
+    edge_layer = payload.layer if payload.layer in valid_layers else "VERIFIED"
 
     edge_id = uuid.uuid4()
     # 1. PostgreSQL insert
@@ -711,6 +838,224 @@ async def create_edge(
     )
 
 
+async def update_edge(
+    engine: AsyncEngine,
+    neo4j_driver: AsyncDriver,
+    case_id: uuid.UUID,
+    edge_id: uuid.UUID,
+    payload: EdgeUpdate,
+    actor_id: str,
+) -> EdgeResponse:
+    """Update an existing edge's type, confidence, layer, or properties with audit logging."""
+    await get_case(engine, case_id)
+
+    async with engine.connect() as conn:
+        res = await conn.execute(
+            text(
+                "SELECT id, type, source_id, target_id, layer, confidence, "
+                "provenance, properties, created_at, updated_at "
+                "FROM edges WHERE id = :eid AND case_id = :cid AND deleted_at IS NULL;"
+            ),
+            {"eid": edge_id, "cid": case_id},
+        )
+        row = res.fetchone()
+
+    if not row:
+        raise HTTPException(
+            status_code=404,
+            detail={"code": "EDGE_NOT_FOUND", "message": f"Edge '{edge_id}' not found in case."},
+        )
+
+    old_type = str(row[1])
+    source_id: uuid.UUID = row[2]
+    target_id: uuid.UUID = row[3]
+    old_layer = str(row[4])
+    old_conf = float(row[5])
+    provenance = str(row[6])
+    raw_props = row[7]
+    old_props: dict[str, Any] = (
+        dict(raw_props)
+        if isinstance(raw_props, dict)
+        else (json.loads(str(raw_props)) if raw_props else {})
+    )
+    created_at = row[8]
+
+    next_type = payload.type.strip() if payload.type else old_type
+    valid_layers = {"VERIFIED", "OSINT_RAW", "INFRA", "HYPOTHESIS", "FLOWS"}
+    next_layer = payload.layer if payload.layer in valid_layers else old_layer
+    next_conf = payload.confidence if payload.confidence is not None else old_conf
+    next_props = {**old_props, **(payload.properties or {})}
+
+    if next_type != old_type and not payload.allow_custom_relation:
+        async with engine.connect() as conn:
+            n_res = await conn.execute(
+                text("SELECT id, type FROM nodes WHERE id IN (:s, :t) AND case_id = :cid;"),
+                {"s": source_id, "t": target_id, "cid": case_id},
+            )
+            node_types = {r[0]: str(r[1]) for r in n_res.fetchall()}
+        src_type = node_types.get(source_id, "")
+        tgt_type = node_types.get(target_id, "")
+        is_valid, reason_msg = validate_relation(src_type, next_type, tgt_type)
+        if not is_valid:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "code": "INVALID_RELATION_FOR_NODES",
+                    "message": reason_msg,
+                },
+            )
+
+    async with engine.begin() as conn:
+        upd_res = await conn.execute(
+            text(
+                "UPDATE edges SET type = :type, layer = :layer, confidence = :conf, "
+                "properties = CAST(:props AS JSONB), updated_at = CURRENT_TIMESTAMP "
+                "WHERE id = :eid AND case_id = :cid RETURNING updated_at;"
+            ),
+            {
+                "type": next_type,
+                "layer": next_layer,
+                "conf": next_conf,
+                "props": json.dumps(next_props),
+                "eid": edge_id,
+                "cid": case_id,
+            },
+        )
+        upd_row = upd_res.fetchone()
+        updated_at = upd_row[0] if upd_row else row[9]
+
+    safe_rel_type = "".join(c for c in next_type if c.isalnum() or c == "_") or "RELIE_A"
+    async with neo4j_driver.session() as session:
+        if next_type != old_type:
+            await session.run(
+                "MATCH ()-[r {id: $eid, case_id: $cid}]->() DELETE r",
+                {"eid": str(edge_id), "cid": str(case_id)},
+            )
+            await session.run(
+                f"MATCH (s:Node {{id: $s}}), (t:Node {{id: $t}}) "
+                f"MERGE (s)-[r:{safe_rel_type} {{id: $eid}}]->(t) "
+                f"SET r.case_id = $cid, r.confidence = $conf, r.layer = $layer",
+                {
+                    "s": str(source_id),
+                    "t": str(target_id),
+                    "eid": str(edge_id),
+                    "cid": str(case_id),
+                    "conf": next_conf,
+                    "layer": next_layer,
+                },
+            )
+        else:
+            await session.run(
+                "MATCH ()-[r {id: $eid, case_id: $cid}]->() "
+                "SET r.confidence = $conf, r.layer = $layer",
+                {
+                    "eid": str(edge_id),
+                    "cid": str(case_id),
+                    "conf": next_conf,
+                    "layer": next_layer,
+                },
+            )
+
+    await log_audit_event(
+        engine=engine,
+        case_id=case_id,
+        actor_id=actor_id,
+        action="UPDATE_EDGE",
+        entity_type="edge",
+        entity_id=edge_id,
+        before_state={
+            "type": old_type,
+            "layer": old_layer,
+            "confidence": old_conf,
+            "properties": old_props,
+        },
+        after_state={
+            "type": next_type,
+            "layer": next_layer,
+            "confidence": next_conf,
+            "properties": next_props,
+        },
+        reason=(
+            payload.reason.strip()
+            or f"Mise à jour directe du calque de relation vers {next_layer}"
+        ),
+    )
+
+    return EdgeResponse(
+        id=edge_id,
+        case_id=case_id,
+        type=next_type,
+        source_id=source_id,
+        target_id=target_id,
+        layer=next_layer,
+        confidence=next_conf,
+        provenance=provenance,
+        properties=next_props,
+        created_at=created_at,
+        updated_at=updated_at,
+    )
+
+
+async def delete_edge(
+    engine: AsyncEngine,
+    neo4j_driver: AsyncDriver,
+    case_id: uuid.UUID,
+    edge_id: uuid.UUID,
+    actor_id: str,
+    reason: str = "",
+) -> dict[str, str]:
+    """Soft-delete an edge in PostgreSQL, remove it from Neo4j, and log ISO 27037 audit."""
+    await get_case(engine, case_id)
+
+    async with engine.begin() as conn:
+        res = await conn.execute(
+            text(
+                "SELECT type, source_id, target_id, layer, confidence "
+                "FROM edges WHERE id = :eid AND case_id = :cid AND deleted_at IS NULL;"
+            ),
+            {"eid": edge_id, "cid": case_id},
+        )
+        row = res.fetchone()
+        if not row:
+            raise HTTPException(
+                status_code=404,
+                detail={"code": "EDGE_NOT_FOUND", "message": f"Edge '{edge_id}' not found."},
+            )
+        await conn.execute(
+            text(
+                "UPDATE edges SET deleted_at = CURRENT_TIMESTAMP, "
+                "updated_at = CURRENT_TIMESTAMP WHERE id = :eid AND case_id = :cid;"
+            ),
+            {"eid": edge_id, "cid": case_id},
+        )
+
+    async with neo4j_driver.session() as session:
+        await session.run(
+            "MATCH ()-[r {id: $eid, case_id: $cid}]->() DELETE r",
+            {"eid": str(edge_id), "cid": str(case_id)},
+        )
+
+    await log_audit_event(
+        engine=engine,
+        case_id=case_id,
+        actor_id=actor_id,
+        action="DELETE_EDGE",
+        entity_type="edge",
+        entity_id=edge_id,
+        before_state={
+            "type": str(row[0]),
+            "source_id": str(row[1]),
+            "target_id": str(row[2]),
+            "layer": str(row[3]),
+            "confidence": float(row[4]),
+        },
+        after_state={"deleted": True},
+        reason=reason or f"Manual deletion of relationship '{row[0]}'",
+    )
+
+    return {"status": "deleted", "edge_id": str(edge_id)}
+
+
 async def change_node_layer(
     engine: AsyncEngine,
     neo4j_driver: AsyncDriver,
@@ -720,20 +1065,14 @@ async def change_node_layer(
     reason: str,
     actor_id: str,
 ) -> NodeResponse:
-    """Migrate node to a new layer with mandatory judicial audit justification."""
+    """Migrate node to a new layer and log the transition in the ISO 27037 audit ledger."""
     await get_case(engine, case_id)
 
-    if not reason or len(reason.strip()) < 5:
-        raise HTTPException(
-            status_code=400,
-            detail={
-                "code": "MISSING_JUSTIFICATION_REASON",
-                "message": (
-                    "A non-empty justification reason (>= 5 chars) is "
-                    "legally required for layer migration."
-                ),
-            },
-        )
+    effective_reason = (
+        reason.strip()
+        if reason and reason.strip()
+        else f"Changement direct de calque vers {new_layer.value} par l'enquêteur"
+    )
 
     async with engine.connect() as conn:
         res = await conn.execute(
@@ -770,8 +1109,8 @@ async def change_node_layer(
             latitude=row[7],
             longitude=row[8],
             icon=NODE_TYPES[row[1]].icon if row[1] in NODE_TYPES else "circle",
-            created_at=row[4],
-            updated_at=row[4],
+            created_at=row[9],
+            updated_at=row[10],
         )
 
     # Update in Postgres
@@ -798,7 +1137,7 @@ async def change_node_layer(
         entity_id=node_id,
         before_state={"layer": old_layer},
         after_state={"layer": new_layer.value},
-        reason=reason,
+        reason=effective_reason,
     )
 
     async with engine.connect() as conn:
@@ -874,12 +1213,19 @@ async def delete_node(
             {"id": node_id},
         )
 
-    # 2. Detach delete in Neo4j
-    async with neo4j_driver.session() as session:
-        await session.run(
-            "MATCH (n:Node {id: $id}) DETACH DELETE n",
-            {"id": str(node_id)},
-        )
+    # 2. Detach delete in Neo4j (retry on transient deadlock when bulk deleting connected nodes)
+    for attempt in range(4):
+        try:
+            async with neo4j_driver.session() as session:
+                await session.run(
+                    "MATCH (n:Node {id: $id}) DETACH DELETE n",
+                    {"id": str(node_id)},
+                )
+            break
+        except TransientError:
+            if attempt == 3:
+                raise
+            await asyncio.sleep(0.05 * (attempt + 1))
 
     # 3. Log to Audit
     await log_audit_event(

@@ -30,12 +30,13 @@
       <li><a href="maquette.html" class="maquette-cta"><span>🖥️ 08. Interactive Application Mock</span><span class="nav-badge">Live Studio</span></a></li>
       <li><a href="tools-cache-inventory.html"><span>📦 09. Outils Téléchargés &amp; Justification</span><span class="nav-badge" style="background:#10b981;color:#fff;">100% Hors-Ligne</span></a></li>
       <li><a href="SPECIFICATION.md#chapitre-11--système-multi-onglets-denquête--extraction-de-sous-graphes-ciblés-actor-sphere"><span>📑 11. Multi-Onglets &amp; Actor Sphere</span><span class="nav-badge" style="background:#8b5cf6;color:#fff;">Sub-Graph</span></a></li>
-      <li><a href="SPECIFICATION.md#chapitre-12--ingestion-universelle-drag-and-drop--architecture-quadruple-blackboard-dataflow-eda-plugins"><span>📥 12. Ingestion Quadruple (Blackboard/DAG)</span><span class="nav-badge" style="background:#ec4899;color:#fff;">Pipeline</span></a></li>
+      <li><a href="SPECIFICATION.md#chapitre-12--ingestion-universelle-drag-and-drop--station-de-dépouillement-forensique-multi-formats"><span>📥 12. Ingestion Quadruple (Blackboard/DAG)</span><span class="nav-badge" style="background:#ec4899;color:#fff;">Pipeline</span></a></li>
     </ul>
 
     <div class="nav-section">Markdown Reference</div>
     <ul class="nav-links">
       <li><a href="SPECIFICATION.md"><span>📄 Full Technical Spec (.md)</span></a></li>
+      <li><a href="EXTRACTION_LOGIC.md"><span>📄 PDF/HTML Extraction &amp; D16–D20 (.md)</span></a></li>
       <li><a href="GITHUB_AUDIT.md"><span>📄 GitHub Starter Audit (.md)</span></a></li>
     </ul>
 
@@ -84,19 +85,22 @@
       </div>
     </div>
 
-    <!-- Latest Updates Banner: Studio Audio Wiretaps, Live Layouts & SNA 16 Tools -->
-    <div style="background:linear-gradient(135deg, rgba(168,85,247,0.12), rgba(234,179,8,0.1));border:1px solid #a855f7;border-radius:10px;padding:1.25rem;margin:1.5rem 0;">
+    <!-- Latest Updates Banner: Studio Phase 1 Complete + Phase 2A Extraction & Forensic Validation UX -->
+    <div style="background:linear-gradient(135deg, rgba(168,85,247,0.12), rgba(16,185,129,0.1));border:1px solid #a855f7;border-radius:10px;padding:1.25rem;margin:1.5rem 0;">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;">
         <div>
-          <span class="badge" style="background:#a855f7;color:#fff;font-weight:800;font-size:0.72rem;padding:3px 8px;border-radius:4px;">NOUVEAUTÉS STUDIO v2.2</span>
-          <h3 style="color:#f8fafc;font-size:1.15rem;margin:0.5rem 0 0.25rem;">📻 Scellés Audio Darija, Simulation en Direct &amp; 16 Outils SNA Judiciarisés</h3>
+          <span class="badge" style="background:#a855f7;color:#fff;font-weight:800;font-size:0.72rem;padding:3px 8px;border-radius:4px;">NOUVEAUTÉS STUDIO v2.3 • PHASE 1 + 2A LIVRÉES</span>
+          <h3 style="color:#f8fafc;font-size:1.15rem;margin:0.5rem 0 0.25rem;">📄 Extraction PDF/HTML &amp; NER GPU, Règles D19/D20, KPI Réels &amp; Isolation Modale</h3>
           <p style="color:#cbd5e1;font-size:0.83rem;margin:0;max-width:820px;">
-            Lecteur d'interceptions vocales en Darija algéroise (HTML5 local air-gapped) avec barre de défilement interactive et double transcription OPJ, sous-barre contextuelle de simulation en direct (Play/Pause), palette flottante de personnalisation graphique, et qualification procédurale SNA sans jargon informatique.
+            Ontologie portée à <strong>37 nœuds &amp; 50 relations</strong> (<code>EXTRAIT_DE</code>, <code>UTILISE_EMAIL</code>, <code>IMPLIQUE_TRANSACTION</code>) ; extraction statique hors-ligne PDF (PyMuPDF + pdfplumber + CAMeL NER) &amp; HTML (BeautifulSoup4 anti-SSRF/XSS) + NER GPU WikiNEuRal ; validation isolée par catégorie dans les onglets <em>Actor Sphere</em> avec préservation de position et physique directe ; confiance 100% par défaut et changement de calque audité sans blocage (D19/D20) ; KPI dynamiques réels, cascade <em>Wilaya → Daïra → Commune</em> responsive et portail modal <code>inert</code> (60 tests pytest + 99 tests vitest).
           </p>
         </div>
-        <div>
-          <a href="interfaces-roles.html" class="btn" style="border-color:#a855f7;color:#c084fc;font-weight:700;text-decoration:none;padding:0.65rem 1.25rem;border-radius:6px;display:inline-block;">
-            Voir les Spécifications Studio &rarr;
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+          <a href="EXTRACTION_LOGIC.md" class="btn" style="border-color:#10b981;color:#34d399;font-weight:700;text-decoration:none;padding:0.65rem 1rem;border-radius:6px;display:inline-block;">
+            Logique Extraction &rarr;
+          </a>
+          <a href="roadmap-phases.html" class="btn" style="border-color:#a855f7;color:#c084fc;font-weight:700;text-decoration:none;padding:0.65rem 1rem;border-radius:6px;display:inline-block;">
+            Roadmap Phase 1+2A &rarr;
           </a>
         </div>
       </div>
@@ -369,6 +373,11 @@
         <a href="SPECIFICATION.md#chapitre-12--ingestion-universelle-drag-and-drop--station-de-dépouillement-forensique-multi-formats" class="card" style="text-decoration:none;border-color:#ec4899;">
           <div class="card-title"><span class="badge" style="background:#ec4899;color:#fff;">Chapter 12</span> 📥 Ingestion Drag &amp; Drop &amp; Architecture Quadruple</div>
           <p>Architecture hybride (Blackboard, Dynamic Dataflow Engine, EDA, Plugins SPI) avec popover à 3 modes, groupement anti-saturation et bassin d'indices non-inclus indexé.</p>
+        </a>
+
+        <a href="EXTRACTION_LOGIC.md" class="card" style="text-decoration:none;border-color:#10b981;">
+          <div class="card-title"><span class="badge badge-emerald">Phase 2A Live</span> 📄 Extraction PDF/HTML, NER GPU &amp; Règles D16–D20</div>
+          <p>Pipeline réel d'extraction hors-ligne PDF/HTML, double NER GPU (CAMeL arabe + WikiNEuRal multilingue), unification RIP/CCP, modélisation financière, filtrage par catégorie et validation isolée (D16–D20).</p>
         </a>
       </div>
     </section>

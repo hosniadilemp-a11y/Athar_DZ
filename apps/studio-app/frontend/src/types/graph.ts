@@ -72,6 +72,10 @@ export interface CaseItem {
   title: string;
   description: string;
   status: 'OPEN' | 'ARCHIVED' | 'CLOSED';
+  unit_name?: string;
+  magistrate_name?: string;
+  jurisdiction?: string;
+  wilaya?: string;
   created_at: string;
   updated_at: string;
   nodes_count: number;

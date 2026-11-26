@@ -16,6 +16,7 @@ class NodeCreate(BaseModel):
 
     type: str = Field(..., description="Ontology node type key from registry")
     label: str = Field(..., min_length=1, max_length=255, description="Node display label")
+    layer: LayerId | None = Field(default=None, description="Optional target layer override")
     confidence: float = Field(default=1.0, ge=0.0, le=1.0, description="Confidence score")
     properties: dict[str, Any] = Field(default_factory=dict, description="Metadata attributes")
     latitude: float | None = Field(default=None, ge=-90.0, le=90.0)
@@ -30,7 +31,7 @@ class NodeUpdate(BaseModel):
     properties: dict[str, Any] | None = None
     latitude: float | None = Field(default=None, ge=-90.0, le=90.0)
     longitude: float | None = Field(default=None, ge=-180.0, le=180.0)
-    reason: str = Field(default="", description="Reason for update (required if node is VERIFIED)")
+    reason: str = Field(default="", description="Audit note for update")
 
 
 class NodeLayerChange(BaseModel):
@@ -38,10 +39,9 @@ class NodeLayerChange(BaseModel):
 
     new_layer: LayerId = Field(..., description="Target layer")
     reason: str = Field(
-        ...,
-        min_length=5,
+        default="Changement direct de calque par l'enquêteur",
         max_length=1000,
-        description="Mandatory judicial justification for layer migration",
+        description="Audit justification for layer migration",
     )
 
 

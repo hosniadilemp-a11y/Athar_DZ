@@ -3,6 +3,7 @@ import { useGraphStore } from '../../store/useGraphStore';
 import { computeTabScopedGraph } from '../../utils/tabScope';
 import { useI18n } from '../../context/I18nContext';
 import { getRelationLabel } from '../../i18n/phrases/relations';
+import { getDisplayedEntityConfidence } from '../../utils/entityConfidence';
 import { NodeIcon } from './NodeIcon';
 import registryDataRaw from '../../registry/registry.json';
 import type { RegistryData } from '../../types/registry';
@@ -112,7 +113,7 @@ export const AccessibleListView: React.FC = () => {
                         </span>
                       </td>
                       <td className="font-mono">
-                        {node.confidence !== null ? `${Math.round(node.confidence * 100)}%` : '—'}
+                        {`${Math.round(getDisplayedEntityConfidence(node) * 100)}%`}
                       </td>
                       <td>
                         <button

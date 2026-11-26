@@ -4,6 +4,7 @@ import { useToast } from '../../context/ToastContext';
 import { API_BASE } from '../../config';
 import type { CaseItem } from '../../types/graph';
 import { FolderPlus, X, Check, FileText } from 'lucide-react';
+import { ModalPortal } from '../common/ModalPortal';
 
 interface NewCaseModalProps {
   isOpen: boolean;
@@ -22,6 +23,10 @@ export const NewCaseModal: React.FC<NewCaseModalProps> = ({
   const [code, setCode] = useState(`DOS-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [unitName, setUnitName] = useState('');
+  const [magistrateName, setMagistrateName] = useState('');
+  const [jurisdiction, setJurisdiction] = useState('');
+  const [wilaya, setWilaya] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
@@ -45,6 +50,10 @@ export const NewCaseModal: React.FC<NewCaseModalProps> = ({
           code: code.trim(),
           title: title.trim(),
           description: description.trim() || undefined,
+          unit_name: unitName.trim(),
+          magistrate_name: magistrateName.trim(),
+          jurisdiction: jurisdiction.trim(),
+          wilaya: wilaya.trim(),
         }),
       });
 
@@ -68,6 +77,7 @@ export const NewCaseModal: React.FC<NewCaseModalProps> = ({
   };
 
   return (
+    <ModalPortal>
     <div
       className="modal-backdrop"
       role="dialog"
@@ -196,6 +206,92 @@ export const NewCaseModal: React.FC<NewCaseModalProps> = ({
             />
           </div>
 
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>
+                {tr('Unité Enquêteuse :')}
+              </label>
+              <input
+                type="text"
+                value={unitName}
+                onChange={(e) => setUnitName(e.target.value)}
+                placeholder="Ex: Brigade Cybercriminalité Alger"
+                style={{
+                  width: '100%',
+                  padding: '6px 10px',
+                  fontSize: '12px',
+                  backgroundColor: 'var(--color-bg-elevated)',
+                  border: '1px solid var(--color-border-default)',
+                  borderRadius: 'var(--radius-sm)',
+                  color: 'var(--color-text-primary)',
+                }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>
+                {tr('Magistrat Instructeur :')}
+              </label>
+              <input
+                type="text"
+                value={magistrateName}
+                onChange={(e) => setMagistrateName(e.target.value)}
+                placeholder="Ex: Juge d’Instruction (Cabinet 3)"
+                style={{
+                  width: '100%',
+                  padding: '6px 10px',
+                  fontSize: '12px',
+                  backgroundColor: 'var(--color-bg-elevated)',
+                  border: '1px solid var(--color-border-default)',
+                  borderRadius: 'var(--radius-sm)',
+                  color: 'var(--color-text-primary)',
+                }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 'var(--space-2)' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>
+                {tr('Juridiction Compétente :')}
+              </label>
+              <input
+                type="text"
+                value={jurisdiction}
+                onChange={(e) => setJurisdiction(e.target.value)}
+                placeholder="Ex: Tribunal d'Alger • Pôle Pénal"
+                style={{
+                  width: '100%',
+                  padding: '6px 10px',
+                  fontSize: '12px',
+                  backgroundColor: 'var(--color-bg-elevated)',
+                  border: '1px solid var(--color-border-default)',
+                  borderRadius: 'var(--radius-sm)',
+                  color: 'var(--color-text-primary)',
+                }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>
+                {tr('Wilaya :')}
+              </label>
+              <input
+                type="text"
+                value={wilaya}
+                onChange={(e) => setWilaya(e.target.value)}
+                placeholder="Ex: 16 - Alger"
+                style={{
+                  width: '100%',
+                  padding: '6px 10px',
+                  fontSize: '12px',
+                  backgroundColor: 'var(--color-bg-elevated)',
+                  border: '1px solid var(--color-border-default)',
+                  borderRadius: 'var(--radius-sm)',
+                  color: 'var(--color-text-primary)',
+                }}
+              />
+            </div>
+          </div>
+
           <div>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '4px' }}>
               {tr('Synthèse Infractionnelle ou Faits Initiaux :')}
@@ -250,5 +346,6 @@ export const NewCaseModal: React.FC<NewCaseModalProps> = ({
         </form>
       </div>
     </div>
+    </ModalPortal>
   );
 };

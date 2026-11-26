@@ -153,14 +153,14 @@
       <div class="page-eyebrow">Chapitre 04 &bull; Modèle de Données Universel (GFPG) &amp; Ontologie Judiciaire</div>
       <h1>Graphe des Métadonnées, Ontologie Complète des Nœuds &amp; Persistance Polyglotte</h1>
       <p>
-        Spécification formelle exhaustive des <strong>37 types de nœuds d'investigation</strong>, des <strong>47 types de relations directionnelles</strong>, de la hiérarchie territoriale algérienne, du <strong>moteur de Data Fusion des attributs</strong> et de la matrice d'attribution physique aux <strong>6 moteurs de bases de données</strong> de la plateforme (Neo4j, PostgreSQL/TimescaleDB, Qdrant, MinIO WORM, Elasticsearch 8.14, Redis).
+        Spécification formelle exhaustive des <strong>37 types de nœuds d'investigation</strong>, des <strong>50 types de relations directionnelles</strong> (47 socle + 3 Phase 2A), de la hiérarchie territoriale algérienne (attributs géo D18 inclus), du <strong>moteur de Data Fusion des attributs</strong> et de la matrice d'attribution physique aux <strong>6 moteurs de bases de données</strong> de la plateforme (Neo4j, PostgreSQL/TimescaleDB, Qdrant, MinIO WORM, Elasticsearch 8.14, Redis).
       </p>
     </header>
     <!-- ====================================================================
          SECTION 1: GRAPHE VISUEL MAÎTRE DE L'ONTOLOGIE & MÉTADONNÉES
          ==================================================================== -->
     <section>
-      <h2 class="section-title">1. Graphe Visuel Maître de l'Ontologie Judiciaire &amp; Métadonnées (37 Nœuds &amp; 47 Relations)</h2>
+      <h2 class="section-title">1. Graphe Visuel Maître de l'Ontologie Judiciaire &amp; Métadonnées (37 Nœuds &amp; 50 Relations)</h2>
       <p class="section-subtitle">
         Explorez visuellement l'ensemble des 37 types d'entités, leurs liaisons sémantiques et leur moteur de persistance dédié. Cliquez sur un nœud pour afficher son profil canonique complet, son exemple dans l'affaire Candy Wheels, ses attributs et ses règles de stockage.
       </p>
@@ -305,7 +305,7 @@
     <text x="627" y="640" fill="#e11d48" font-size="9" font-weight="bold" letter-spacing="0.5">8. ⚖️ CHAÎNE DE PREUVE & SCELLÉS NUMÉRIQUES WORM</text>
   </g>
 
-  <!-- ==================== 47+ DIRECTIONAL RELATIONSHIP EDGES ==================== -->
+  <!-- ==================== 50 DIRECTIONAL RELATIONSHIP EDGES ==================== -->
   <g class="onto-edge-g" data-src="commune" data-tgt="daira" data-edge="APPARTIENT_A_DAIRA">
     <path class="onto-edge-path" d="M 297.5 115.0 Q 297.5 107.0 297.5 99.0" stroke="#10b981" stroke-width="1.3" fill="none" opacity="0.45" marker-end="url(#m-arrow-emerald)"/>
   </g>
@@ -1172,10 +1172,10 @@
       </table>
     </section>
     <!-- ====================================================================
-         SECTION 4: DICTIONNAIRE EXHAUSTIF DES 47+ RELATIONS DIRECTIONNELLES
+         SECTION 4: DICTIONNAIRE EXHAUSTIF DES 50 RELATIONS DIRECTIONNELLES
          ==================================================================== -->
     <section>
-      <h2 class="section-title">4. Dictionnaire Exhaustif des 47+ Relations Directionnelles (Arêtes Graphe)</h2>
+      <h2 class="section-title">4. Dictionnaire Exhaustif des 50 Relations Directionnelles (Arêtes Graphe)</h2>
       <p class="section-subtitle">
         Typologie formelle des arêtes orientées et pondérées reliant les entités, propriétés temporelles portées et sémantique criminalistique.
       </p>
@@ -1525,6 +1525,27 @@
           <td><span class="badge badge-purple" style="font-size:0.7rem;">1:1</span></td>
           <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">merkle_root_sha256, rfc3161_timestamp</span></td>
           <td>Racine cryptographique garantissant l'intégrité de tous les scellés</td>
+        </tr>        <tr>
+          <td><strong>🧩 Entité Extraite (24 types)</strong></td>
+          <td><code style="color:#10b981;font-weight:700;font-size:0.77rem;">[:EXTRAIT_DE]</code></td>
+          <td><strong>🔏 Scelle_Numerique / Document_Judiciaire</strong></td>
+          <td><span class="badge badge-emerald" style="font-size:0.7rem;">N:M</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">extractor_tool, source_locator, sha256</span></td>
+          <td>Traçabilité probatoire vers la pièce source ; promu <code>VERIFIED</code> (100%) à la validation de l'entité (D16, D17, D20)</td>
+        </tr>        <tr>
+          <td><strong>👤 / 🏢 Acteur, Profil OSN ou Site Web</strong></td>
+          <td><code style="color:#38bdf8;font-weight:700;font-size:0.77rem;">[:UTILISE_EMAIL]</code></td>
+          <td><strong>📧 Adresse_Email</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:M</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">source_locator, extraction_rule</span></td>
+          <td>Utilisation, enregistrement WHOIS ou affichage d'une adresse e-mail par un acteur, société ou site web (D18)</td>
+        </tr>        <tr>
+          <td><strong>👤 / 🏢 / 💳 Acteur ou Compte</strong></td>
+          <td><code style="color:#f59e0b;font-weight:700;font-size:0.77rem;">[:IMPLIQUE_TRANSACTION]</code></td>
+          <td><strong>💸 Transaction_Financiere</strong></td>
+          <td><span class="badge badge-purple" style="font-size:0.7rem;">N:M</span></td>
+          <td><span style="font-family:monospace;font-size:0.74rem;color:#cbd5e1;">montant_dzd, devise, date_operation</span></td>
+          <td>Rattachement d'un flux ou préjudice financier DZD à un compte bancaire, personne ou société (D18)</td>
         </tr>
         </tbody>
       </table>
@@ -1699,7 +1720,7 @@
         </div>
         <ul style="padding-left:1.2rem;margin:0;">
           <li><strong>V</strong> : Ensemble des 37 types de sommets d'investigation (Personnes, Téléphones, RIPs, etc.).</li>
-          <li><strong>E</strong> : Ensemble des 47+ types d'arêtes relationnelles orientées.</li>
+          <li><strong>E</strong> : Ensemble des 50 types d'arêtes relationnelles orientées (dont <code>EXTRAIT_DE</code>, <code>UTILISE_EMAIL</code>, <code>IMPLIQUE_TRANSACTION</code>).</li>
           <li><strong>&lambda;<sub>V</sub> : V &rarr; Labels</strong> : Fonction d'étiquetage typologique des sommets.</li>
           <li><strong>&lambda;<sub>E</sub> : E &rarr; Types</strong> : Fonction d'étiquetage des relations.</li>
           <li><strong>&mu;<sub>V</sub>, &mu;<sub>E</sub></strong> : Fonctions d'attribution des propriétés clés/valeurs.</li>
