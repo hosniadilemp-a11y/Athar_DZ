@@ -471,10 +471,11 @@ def extract_deterministic_identifiers(
             if not pm.raw_string.lstrip().startswith(("+", "00")):
                 continue
             norm = phonenumbers.format_number(pm.number, phonenumbers.PhoneNumberFormat.E164)
+            region = phonenumbers.region_code_for_number(pm.number) or ""
             add_item(
                 "telephone", norm, norm, page_num, locator, text, (pm.start, pm.end),
                 "phonenumbers-e164", 0.93,
-                {"numero_e164": norm, "raw": pm.raw_string.strip(), "region": phonenumbers.region_code_for_number(pm.number) or ""},
+                {"numero_e164": norm, "raw": pm.raw_string.strip(), "region": region},
             )
 
         for m in RIP_RE.finditer(text):
@@ -1281,6 +1282,7 @@ __all__ = [
     "fuse_candidates",
     "fuse_relations",
     "normalize_dz_phone",
+    "normalize_phone",
     "sanitize_snippet",
     "snippet_around",
 ]
