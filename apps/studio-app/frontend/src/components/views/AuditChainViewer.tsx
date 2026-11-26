@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useGraphStore } from '../../store/useGraphStore';
+import { computeTabScopedGraph } from '../../utils/tabScope';
 import { API_BASE } from '../../config';
 import { ShieldCheck, AlertTriangle, RefreshCw, Hash } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
@@ -12,10 +13,20 @@ interface AuditVerificationData {
 }
 
 export const AuditChainViewer: React.FC = () => {
-  const { activeCase } = useGraphStore();
-  const { tr } = useI18n();
+  const { activeCase, nodes, edges, activeLayers, tabs, activeTabId, isImpactView } = useGraphStore();
+  const { tr, trLabel } = useI18n();
   const [verification, setVerification] = useState<AuditVerificationData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const currentWorkspaceTab = useMemo(
+    () => tabs.find((t) => t.id === activeTabId) ?? null,
+    [tabs, activeTabId]
+  );
+
+  const { scopedNodes } = useMemo(
+    () => computeTabScopedGraph(nodes, edges, currentWorkspaceTab, activeLayers, isImpactView),
+    [nodes, edges, currentWorkspaceTab, activeLayers, isImpactView]
+  );
 
   const fetchAuditStatus = useCallback(() => {
     if (!activeCase) return;
@@ -129,6 +140,14 @@ export const AuditChainViewer: React.FC = () => {
                 <span style={{ color: 'var(--color-text-muted)' }}>{tr('Conformité judiciaire :')}</span>
                 <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--color-layer-1-verified)', marginTop: '2px' }}>ISO/IEC 27037:2012</div>
               </div>
+              {currentWorkspaceTab?.kind === 'actor_sphere' && (
+                <div style={{ padding: 'var(--space-2)', backgroundColor: 'var(--color-bg-canvas)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-subtle)' }}>
+                  <span style={{ color: 'var(--color-text-muted)' }}>{tr('Onglet actif :')}</span>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--color-layer-4-hypothesis)', marginTop: '2px' }}>
+                    {trLabel(currentWorkspaceTab.title)} ({tr('{n} nœuds', { n: scopedNodes.length })})
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

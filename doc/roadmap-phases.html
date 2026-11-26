@@ -168,7 +168,7 @@
         <div>
           <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;">
             <span class="badge badge-blue">PHASE ACTUELLE : PHASE 1 (v0.1)</span>
-            <span class="badge badge-emerald">Jalons 1A à 1F Validés (90%)</span>
+            <span class="badge badge-emerald">Jalons 1A à 1G Validés (100%)</span>
           </div>
           <strong style="color:#60a5fa;font-size:1.05rem;">Studio d'Enquête Visuel, Calques &amp; 16 Algorithmes SNA</strong>
           <p style="font-size:0.84rem;color:var(--text-secondary);margin:0.2rem 0 0;">
@@ -222,14 +222,14 @@
               <td><span class="badge badge-blue">PHASE 1</span><br/><strong>App v0.1</strong><br/><em>(Socle Studio)</em></td>
               <td><strong>Studio d'Enquête Visuel &amp; 16 Algorithmes SNA</strong><br/>Canevas 37 entités, 5 calques, seed 100 nœuds, pinning, audit Merkle SHA-256, surface UI multi-onglets (Option A) et ingestion non-intrusive 3 modes (Option B).</td>
               <td>Créer/ouvrir des dossiers, manipuler les nœuds circulaires, commuter les 5 calques, lancer les 16 SNA, tester l'export de rapport et déposer un fichier ouvrant le popover 3 modes.</td>
-              <td><strong>Lot Initial :</strong> Formalisation de l'interface SPI et structure du registre de processus (<code>ProcessRegistry</code>).</td>
-              <td><span class="badge badge-emerald">En Cours (90%)</span></td>
+              <td><strong>Reporté Phase 2 :</strong> Taxonomie UI côté frontend uniquement (<code>fileIngestion.ts</code>).</td>
+              <td><span class="badge badge-emerald">Livrée (100%)</span></td>
             </tr>
             <tr>
               <td><span class="badge badge-cyan">PHASE 2</span><br/><strong>App v0.2</strong><br/><em>(WORM &amp; Text)</em></td>
               <td><strong>Blackboard WORM, Elasticsearch &amp; Ingestion Texte/EXIF</strong><br/>MinIO S3 WORM Compliance (ISO 27037) + RFC 3161, Elasticsearch 8.14 (BM25 Arabe/FR + Bassin d'Indices Non-Inclus), exécution opérationnelle des Modes 1 &amp; 2.</td>
               <td>Déposer un PV de plainte (PDF) ou une photo : extraction réelle du SHA-256, des métadonnées EXIF, des entités nommées (noms, téléphones, RIB BaridiMob) avec prévisualisation et versement contrôlé.</td>
-              <td><strong>Lot A (Prêt) :</strong> <code>plugin-exiftool</code>, <code>plugin-pymupdf-ocr</code>, <code>plugin-ner-qwen</code>, <code>plugin-baridimob-validator</code>.</td>
+              <td><strong>Socle SPI + Lot A (Prêt) :</strong> Formalisation backend <code>ForensicPluginSPI</code> &amp; <code>ProcessRegistry</code>, puis <code>plugin-exiftool</code>, <code>plugin-pymupdf-ocr</code>, <code>plugin-ner-qwen</code>, <code>plugin-baridimob-validator</code>.</td>
               <td><span class="badge badge-blue">Planifiée</span></td>
             </tr>
             <tr>
@@ -483,7 +483,7 @@
         </div>
         <div class="step-item">
           <strong>Étape 2.3 : Forensic SPI Core &amp; Usine de Processus (Lot A Qualifié)</strong>
-          Définition du contrat standard `ForensicPluginSPI`. Intégration et qualification des 4 premiers plugins locaux :
+          Définition du contrat backend standard <code>ForensicPluginSPI</code> et de la structure du registre public <code>ProcessRegistry</code>. Intégration et qualification des 4 premiers plugins locaux :
           <br/>• <code>plugin-exiftool</code> : extraction des métadonnées photo (GPS WGS84, appareil, date).
           <br/>• <code>plugin-pymupdf-ocr</code> : extraction de texte PDF et documents scannés.
           <br/>• <code>plugin-ner-qwen</code> : modèle NER local identifiant suspects, matricules et comptes.

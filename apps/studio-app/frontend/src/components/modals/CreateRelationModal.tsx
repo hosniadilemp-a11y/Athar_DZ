@@ -5,7 +5,7 @@ import { NodeIcon } from '../canvas/NodeIcon';
 import registryDataRaw from '../../registry/registry.json';
 import type { RegistryData, LayerId } from '../../types/registry';
 import { getAvailableRelationsForNodes, getRelationLabel } from '../../i18n/phrases/relations';
-import { ArrowRight, Link2, X, Check } from 'lucide-react';
+import { ArrowRight, ArrowLeftRight, Link2, X, Check } from 'lucide-react';
 
 const registry = registryDataRaw as unknown as RegistryData;
 
@@ -14,7 +14,14 @@ interface CreateRelationModalProps {
   sourceId: string;
   targetId: string;
   onClose: () => void;
-  onConfirm: (relationType: string, layer: LayerId, confidence: number, notes?: string) => void;
+  onConfirm: (
+    relationType: string,
+    layer: LayerId,
+    confidence: number,
+    notes?: string,
+    effectiveSourceId?: string,
+    effectiveTargetId?: string
+  ) => void;
 }
 
 export const CreateRelationModal: React.FC<CreateRelationModalProps> = ({
@@ -27,20 +34,51 @@ export const CreateRelationModal: React.FC<CreateRelationModalProps> = ({
   const { nodes } = useGraphStore();
   const { tr, locale } = useI18n();
 
-  const sourceNode = useMemo(() => nodes.find((n) => n.id === sourceId), [nodes, sourceId]);
-  const targetNode = useMemo(() => nodes.find((n) => n.id === targetId), [nodes, targetId]);
+  const [isSwapped, setIsSwapped] = useState(false);
+  const effectiveSourceId = isSwapped ? targetId : sourceId;
+  const effectiveTargetId = isSwapped ? sourceId : targetId;
+
+  const sourceNode = useMemo(
+    () => nodes.find((n) => n.id === effectiveSourceId),
+    [nodes, effectiveSourceId]
+  );
+  const targetNode = useMemo(
+    () => nodes.find((n) => n.id === effectiveTargetId),
+    [nodes, effectiveTargetId]
+  );
 
   const availableRelations = useMemo(() => {
-    return getAvailableRelationsForNodes(sourceNode?.type, targetNode?.type);
-  }, [sourceNode?.type, targetNode?.type]);
+    return getAvailableRelationsForNodes(sourceNode?.type, targetNode?.type, locale);
+  }, [sourceNode?.type, targetNode?.type, locale]);
 
   const [selectedRelation, setSelectedRelation] = useState<string>(
     availableRelations[0]?.key || 'COMMUNIQUE_AVEC'
   );
   const [selectedLayer, setSelectedLayer] = useState<LayerId>('HYPOTHESIS');
-  const [confidence, setConfidence] = useState<number>(0.9);
+  const [confidence, setConfidence] = useState<number>(1.0);
   const [searchFilter, setSearchFilter] = useState('');
   const [notes, setNotes] = useState('');
+
+  React.useEffect(() => {
+    if (isOpen) {
+      setConfidence(1.0);
+      setIsSwapped(false);
+      setSearchFilter('');
+      setNotes('');
+    }
+  }, [isOpen, sourceId, targetId]);
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [isOpen, onClose]);
 
   React.useEffect(() => {
     if (availableRelations.length > 0 && availableRelations[0]) {
@@ -53,15 +91,23 @@ export const CreateRelationModal: React.FC<CreateRelationModalProps> = ({
   const srcTypeDef = registry.node_types[sourceNode.type];
   const tgtTypeDef = registry.node_types[targetNode.type];
 
+  const normalizedQuery = searchFilter.toLowerCase().trim();
   const filteredRelations = availableRelations.filter(
     (r) =>
-      r.label.toLowerCase().includes(searchFilter.toLowerCase()) ||
-      r.key.toLowerCase().includes(searchFilter.toLowerCase())
+      r.label.toLowerCase().includes(normalizedQuery) ||
+      r.key.toLowerCase().includes(normalizedQuery)
   );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onConfirm(selectedRelation, selectedLayer, confidence, notes.trim() || undefined);
+    onConfirm(
+      selectedRelation,
+      selectedLayer,
+      confidence,
+      notes.trim() || undefined,
+      effectiveSourceId,
+      effectiveTargetId
+    );
     onClose();
   };
 
@@ -187,7 +233,24 @@ export const CreateRelationModal: React.FC<CreateRelationModalProps> = ({
             </div>
           </div>
 
-          <ArrowRight size={16} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+          <button
+            type="button"
+            className="btn btn-ghost btn-xs"
+            onClick={() => setIsSwapped((prev) => !prev)}
+            title={tr('Inverser Source ↔ Cible')}
+            aria-label={tr('Inverser Source ↔ Cible')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '4px 7px',
+              flexShrink: 0,
+              border: '1px solid var(--color-border-subtle)',
+            }}
+          >
+            <ArrowRight size={14} style={{ color: 'var(--color-text-muted)' }} />
+            <ArrowLeftRight size={12} style={{ color: 'var(--color-accent-text)' }} />
+          </button>
 
           {/* Target Node Chip */}
           <div
@@ -280,7 +343,7 @@ export const CreateRelationModal: React.FC<CreateRelationModalProps> = ({
                     }}
                   >
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                         <span style={{ fontWeight: isSelected ? 600 : 500 }}>{localized}</span>
                         {rel.isRecommended && (
                           <span
@@ -298,6 +361,21 @@ export const CreateRelationModal: React.FC<CreateRelationModalProps> = ({
                             {tr('Recommandé')}
                           </span>
                         )}
+                        {rel.isReverseDirection && (
+                          <span
+                            style={{
+                              fontSize: '9.5px',
+                              fontWeight: 600,
+                              padding: '1px 5px',
+                              borderRadius: 'var(--radius-sm)',
+                              backgroundColor: 'rgba(245, 158, 11, 0.14)',
+                              color: 'var(--color-status-warning)',
+                              border: '1px solid rgba(245, 158, 11, 0.3)',
+                            }}
+                          >
+                            {tr('Sens inverse')}
+                          </span>
+                        )}
                       </div>
                       {rel.description && (
                         <div style={{ fontSize: '10.5px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
@@ -309,6 +387,31 @@ export const CreateRelationModal: React.FC<CreateRelationModalProps> = ({
                   </button>
                 );
               })}
+              {normalizedQuery.length > 0 && filteredRelations.length === 0 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedRelation(
+                      normalizedQuery
+                        .toUpperCase()
+                        .replace(/[^A-Z0-9]+/g, '_')
+                        .replace(/^_+|_+$/g, '') || 'RELIE_A'
+                    )
+                  }
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px dashed var(--color-accent-primary)',
+                    backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                    color: 'var(--color-accent-text)',
+                    fontSize: '12px',
+                    textAlign: 'start',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {tr('Utiliser la relation personnalisée : {name}', { name: searchFilter.trim() })}
+                </button>
+              )}
             </div>
           </div>
 

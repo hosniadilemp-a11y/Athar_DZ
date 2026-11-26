@@ -50,7 +50,7 @@ export const EdgeLine: React.FC<EdgeLineProps> = React.memo(({
   if (dist === 0) return null;
 
   // Match actual rendered node diameter from CircularNode.tsx
-  const baseNodeSize = graphCustomization?.nodeSize || 64;
+  const baseNodeSize = graphCustomization?.nodeSize || 56;
   let adaptiveMultiplier = 1.0;
   if (zoom !== undefined) {
     if (zoom < 0.5) adaptiveMultiplier = 0.85;

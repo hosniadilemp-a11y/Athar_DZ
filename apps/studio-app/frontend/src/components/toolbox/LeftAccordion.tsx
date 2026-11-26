@@ -17,6 +17,8 @@ import {
   CircleDollarSign,
   Phone,
   Radio,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
 import { useI18n } from '../../context/I18nContext';
 
@@ -28,6 +30,8 @@ interface LeftAccordionProps {
   onFilterCategory?: (category: string) => void;
   onRunQuery?: (queryName: string) => void;
   style?: React.CSSProperties;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 const LAYER_KEYS: LayerId[] = ['VERIFIED', 'OSINT_RAW', 'INFRA', 'HYPOTHESIS', 'FLOWS'];
@@ -35,7 +39,7 @@ const LAYER_KEYS: LayerId[] = ['VERIFIED', 'OSINT_RAW', 'INFRA', 'HYPOTHESIS', '
 type DomainType = 'all' | 'territory' | 'actors' | 'telecom' | 'finance' | 'socmint' | 'cyber' | 'biometrics' | 'legal';
 
 const DOMAIN_COLORS: Record<DomainType, string> = {
-  all: '#94a3b8',
+  all: 'var(--color-text-secondary)',
   territory: 'var(--color-domain-territoire, #10b981)',
   actors: 'var(--color-domain-acteurs, #3b82f6)',
   telecom: 'var(--color-domain-telecoms, #6366f1)',
@@ -113,6 +117,8 @@ export const LeftAccordion: React.FC<LeftAccordionProps> = ({
   onFilterCategory,
   onRunQuery,
   style,
+  isCollapsed = false,
+  onToggleCollapse,
 }) => {
   const { t, tr, label: labelHelper } = useI18n();
   const {
@@ -136,6 +142,11 @@ export const LeftAccordion: React.FC<LeftAccordionProps> = ({
 
   const toggleSection = (section: keyof typeof openSections) => {
     setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const handleExpandToSection = (section: keyof typeof openSections) => {
+    setOpenSections((prev) => ({ ...prev, [section]: true }));
+    onToggleCollapse?.();
   };
 
   // Compute node count per layer in active graph
@@ -188,6 +199,75 @@ export const LeftAccordion: React.FC<LeftAccordionProps> = ({
     ['person', tr('Sujets (1)')],
   ];
 
+  if (isCollapsed) {
+    return (
+      <aside
+        className="panel-left is-collapsed"
+        role="region"
+        aria-label={tr('Panneau accordéon des calques, outils et filtres')}
+      >
+        {onToggleCollapse && (
+          <button
+            type="button"
+            className="btn btn-ghost btn-xs panel-left-collapse-btn"
+            onClick={onToggleCollapse}
+            title={tr('Ouvrir le panneau gauche')}
+            aria-label={tr('Ouvrir le panneau gauche')}
+          >
+            <PanelLeftOpen size={14} />
+          </button>
+        )}
+        <button
+          type="button"
+          className="btn btn-ghost btn-xs panel-left-collapse-btn"
+          onClick={() => handleExpandToSection('layers')}
+          title={t.layersTitle}
+          aria-label={t.layersTitle}
+        >
+          <Layers size={14} className="text-accent" />
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost btn-xs panel-left-collapse-btn"
+          onClick={() => handleExpandToSection('toolbox')}
+          title={t.creationTitle}
+          aria-label={t.creationTitle}
+        >
+          <Wrench size={14} className="text-accent" />
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost btn-xs panel-left-collapse-btn"
+          onClick={() => handleExpandToSection('filters')}
+          title={t.filtersTitle}
+          aria-label={t.filtersTitle}
+        >
+          <Filter size={14} className="text-accent" />
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost btn-xs panel-left-collapse-btn"
+          onClick={() => handleExpandToSection('queries')}
+          title={t.queriesTitle}
+          aria-label={t.queriesTitle}
+        >
+          <HelpCircle size={14} className="text-accent" />
+        </button>
+        <div className="panel-left-collapsed-footer">
+          <button
+            type="button"
+            className="btn btn-ghost btn-xs panel-left-collapse-btn"
+            onClick={onOpenAuditViewer}
+            title={t.auditLedgerBtn}
+            aria-label={t.auditLedgerBtn}
+          >
+            <FileText size={14} className="text-accent" />
+          </button>
+        </div>
+      </aside>
+    );
+  }
+
   return (
     <aside
       className="panel-left"
@@ -195,6 +275,20 @@ export const LeftAccordion: React.FC<LeftAccordionProps> = ({
       role="region"
       aria-label={tr('Panneau accordéon des calques, outils et filtres')}
     >
+      {onToggleCollapse && (
+        <div className="panel-left-header-bar">
+          <span className="panel-left-header-title">{tr('Boîte à Outils & Calques')}</span>
+          <button
+            type="button"
+            className="btn btn-ghost btn-xs panel-left-collapse-btn"
+            onClick={onToggleCollapse}
+            title={tr('Réduire le panneau gauche')}
+            aria-label={tr('Réduire le panneau gauche')}
+          >
+            <PanelLeftClose size={14} />
+          </button>
+        </div>
+      )}
       {/* 1. Calques d'Enquête Accordion */}
       <div className="accordion-group">
         <button
@@ -342,6 +436,8 @@ export const LeftAccordion: React.FC<LeftAccordionProps> = ({
                   <button
                     key={domKey}
                     type="button"
+                    role="tab"
+                    aria-selected={isActive}
                     className={`toolbox-domain-chip ${isActive ? 'active' : ''}`}
                     onClick={() => setSelectedDomain(domKey)}
                     style={{

@@ -413,6 +413,101 @@ export const KNOWN_RELATIONS_DICT: Record<string, RelationTranslation> = {
     ar: 'تقارب استدلالي',
     en: 'Probative match',
   },
+  EXTRAIT_DE: {
+    fr: 'Extrait de la pièce',
+    ar: 'مستخرج من الدليل',
+    en: 'Extracted from Evidence',
+  },
+  TITULAIRE_LIGNE_SIM: {
+    fr: 'Titulaire officiel de la ligne / SIM',
+    ar: 'صاحب الخط أو الشريحة المسجّل',
+    en: 'Registered line / SIM owner',
+  },
+  CONTACT_TELEPHONIQUE: {
+    fr: 'Contact ou correspondant téléphonique',
+    ar: 'جهة اتصال أو مراسلة هاتفية',
+    en: 'Telephone contact / correspondent',
+  },
+  RECOIT_SMS_APPELS: {
+    fr: 'Reçoit les appels / SMS ou OTP sur la ligne',
+    ar: 'يستقبل المكالمات أو رموز التحقق عبر الخط',
+    en: 'Receives calls / SMS / OTP on line',
+  },
+  DOMICILIE_A: {
+    fr: 'Domicilié / résident à',
+    ar: 'مقيم في',
+    en: 'Resides at',
+  },
+  LOCALISE_A: {
+    fr: 'Localisé / géolocalisé à',
+    ar: 'محدد الموقع الجغرافي في',
+    en: 'Located at',
+  },
+  NE_A: {
+    fr: 'Né(e) à',
+    ar: 'مولود في',
+    en: 'Born in',
+  },
+  INTERPELLE_A: {
+    fr: 'Interpellé / arrêté à',
+    ar: 'أُلقي القبض عليه في',
+    en: 'Apprehended at',
+  },
+  FREQUENTE_LIEU: {
+    fr: 'Fréquente le lieu / zone',
+    ar: 'يتردد على المكان أو المنطقة',
+    en: 'Frequents location',
+  },
+  UTILISE_ADRESSE_EMAIL: {
+    fr: 'Utilise ou détient l’adresse e-mail',
+    ar: 'يستخدم أو يملك البريد الإلكتروني',
+    en: 'Uses / owns email address',
+  },
+  EMPLOYE_OU_ASSOCIE: {
+    fr: 'Employé, associé ou mandataire de',
+    ar: 'موظف أو شريك أو وكيل لدى',
+    en: 'Employee, partner or agent of',
+  },
+  CONDUCTEUR_HABITUEL: {
+    fr: 'Conducteur habituel du véhicule',
+    ar: 'السائق المعتاد للمركبة',
+    en: 'Habitual driver of vehicle',
+  },
+  PASSAGER_IDENTIFIE: {
+    fr: 'Passager identifié dans le véhicule',
+    ar: 'راكب تم التعرف عليه في المركبة',
+    en: 'Identified passenger in vehicle',
+  },
+  LIEN_FAMILIAL_CONJOINT: {
+    fr: 'Lien familial ou conjoint',
+    ar: 'صلة قرابة أو زواج',
+    en: 'Family / spouse tie',
+  },
+  VICTIME_DE_ESCROQUERIE: {
+    fr: 'Victime présumée des faits impliquant',
+    ar: 'ضحية مفترضة في وقائع تشمل',
+    en: 'Alleged victim in facts involving',
+  },
+  MENTIONNE_DANS_DOCUMENT: {
+    fr: 'Mentionné(e) dans le procès-verbal / document',
+    ar: 'مذكور في المحضر أو الوثيقة',
+    en: 'Mentioned in report / document',
+  },
+  CORROBORATION_PREUVE: {
+    fr: 'Corrobore l’élément de preuve',
+    ar: 'يعزز ويدعم عنصر الإثبات',
+    en: 'Corroborates evidence item',
+  },
+  TRANSFERT_APPEL_VERS: {
+    fr: 'Appelle ou transfère vers la ligne',
+    ar: 'يتصل أو يحوّل المكالمات إلى الخط',
+    en: 'Calls or forwards to line',
+  },
+  CONVOQUE_PAR_UNITE: {
+    fr: 'Convoqué / entendu par l’unité',
+    ar: 'مُستدعى أو مسموع لدى الوحدة',
+    en: 'Summoned / heard by unit',
+  },
 };
 
 export interface AvailableRelation {
@@ -420,6 +515,7 @@ export interface AvailableRelation {
   label: string;
   description?: string;
   isRecommended?: boolean;
+  isReverseDirection?: boolean;
 }
 
 /**
@@ -454,146 +550,311 @@ export function getRelationLabel(relationType: string, locale: Locale = 'fr'): s
 
 /**
  * Returns suggested relation types for connecting two nodes,
- * prioritized with contextual recommendations based on entity types.
+ * prioritized with contextual recommendations, bidirectional registry matches, and general forensic relations.
  */
 export function getAvailableRelationsForNodes(
   sourceType?: string,
-  targetType?: string
+  targetType?: string,
+  locale: Locale = 'fr'
 ): Array<AvailableRelation> {
   const recommendations: AvailableRelation[] = [];
   const s = (sourceType || '').toLowerCase();
   const t = (targetType || '').toLowerCase();
 
   const isPhoto = (type: string) =>
-    type.includes('photo') || type.includes('facial') || type.includes('image') || type.includes('media') || type.includes('cliche') || type.includes('piece_jointe');
+    type.includes('photo') ||
+    type.includes('facial') ||
+    type.includes('image') ||
+    type.includes('media') ||
+    type.includes('cliche') ||
+    type.includes('piece_jointe');
+  const isAudio = (type: string) =>
+    type.includes('vocal') || type.includes('audio');
   const isSocial = (type: string) =>
-    type.includes('social') || type.includes('facebook') || type.includes('telegram') || type.includes('instagram') || type.includes('compte');
+    type.includes('social') ||
+    type.includes('facebook') ||
+    type.includes('telegram') ||
+    type.includes('instagram') ||
+    type.includes('compte_social') ||
+    type.includes('compte_reseau') ||
+    type.includes('message_chat');
+  const isEmail = (type: string) =>
+    type.includes('email') || type.includes('courriel');
   const isPerson = (type: string) =>
-    type.includes('person') || type.includes('individu') || type.includes('suspect') || type.includes('victime');
+    type.includes('person') ||
+    type.includes('individu') ||
+    type.includes('suspect') ||
+    type.includes('victime') ||
+    type.includes('magistrat');
+  const isCompany = (type: string) =>
+    type.includes('entreprise') || type.includes('unite');
   const isVehicle = (type: string) =>
     type.includes('vehicule') || type.includes('vehicle') || type.includes('voiture');
   const isPostOrAd = (type: string) =>
     type.includes('annonce') || type.includes('post') || type.includes('publication') || type.includes('listing');
   const isPhone = (type: string) =>
-    type.includes('phone') || type.includes('telephone') || type.includes('mobile') || type.includes('cdr');
+    type === 'telephone' ||
+    type.includes('phone') ||
+    type.includes('sim') ||
+    type.includes('appareil_mobile') ||
+    type.includes('cdr');
   const isBank = (type: string) =>
-    type.includes('bank') || type.includes('bancaire') || type.includes('postal') || type.includes('ccp') || type.includes('baridimob') || type.includes('rib');
+    type.includes('bank') ||
+    type.includes('bancaire') ||
+    type.includes('transaction_financiere') ||
+    type.includes('guichet_gab') ||
+    type.includes('postal') ||
+    type.includes('ccp') ||
+    type.includes('baridimob') ||
+    type.includes('rib') ||
+    type.includes('crypto');
+  const isTerritory = (type: string) =>
+    type === 'wilaya' ||
+    type === 'daira' ||
+    type === 'commune' ||
+    type === 'adresse' ||
+    type === 'lieu';
+  const isBts = (type: string) => type.includes('antenne') || type.includes('bts');
+  const isSealOrDoc = (type: string) =>
+    type.includes('scelle') ||
+    type.includes('document') ||
+    type.includes('affaire') ||
+    type.includes('artefact') ||
+    type.includes('merkle');
   const isIP = (type: string) =>
-    type.includes('ip') || type.includes('serveur') || type.includes('server') || type.includes('host') || type.includes('dns') || type.includes('domaine');
+    type.includes('ip') ||
+    type.includes('serveur') ||
+    type.includes('server') ||
+    type.includes('host') ||
+    type.includes('dns') ||
+    type.includes('domaine') ||
+    type.includes('site_web') ||
+    type.includes('apk') ||
+    type.includes('certificat') ||
+    type.includes('infrastructure');
 
-  // 1. Contextual Recommendations: Photo ↔ Social Account
-  if ((isPhoto(s) && isSocial(t)) || (isSocial(s) && isPhoto(t))) {
-    recommendations.push(
-      { key: 'PHOTO_DE_PROFIL_DE', label: 'Photo de profil du compte', description: 'Cliché identifié comme avatar ou photo de profil du compte.', isRecommended: true },
-      { key: 'PUBLIEE_PAR_COMPTE', label: 'Publiée par le compte', description: 'Image téléversée ou partagée dans une publication du compte.', isRecommended: true },
-      { key: 'EXTRAITE_DU_PROFIL', label: 'Extraite du profil numérique', description: 'Pièce visuelle extraite lors de l’analyse technique du profil.', isRecommended: true },
-      { key: 'IDENTIFIE_SUR_CLICHE', label: 'Identifié sur le cliché numérique', description: 'Compte ou utilisateur tagué ou reconnu sur l’image.', isRecommended: true }
-    );
+  const addRec = (key: string, description?: string) => {
+    recommendations.push({
+      key,
+      label: getRelationLabel(key, locale),
+      description,
+      isRecommended: true,
+    });
+  };
+
+  // 1. Person ↔ Person
+  if (isPerson(s) && isPerson(t)) {
+    addRec('COMMUNIQUE_AVEC', 'Échanges téléphoniques, messages ou rencontres entre les deux individus.');
+    addRec('COMPLICE_DE', 'Participation conjointe ou co-action dans l’infraction.');
+    addRec('VICTIME_DE_ESCROQUERIE', 'Lien entre personne lésée / plaignante et auteur présumé.');
+    addRec('LIEN_FAMILIAL_CONJOINT', 'Parenté, alliance ou proximité familiale vérifiée.');
+    addRec('REPORTS_TO_BOSS', 'Lien hiérarchique ou subordination au sein d’un réseau.');
   }
 
-  // 2. Photo ↔ Person
-  if ((isPhoto(s) && isPerson(t)) || (isPerson(s) && isPhoto(t))) {
-    recommendations.push(
-      { key: 'REPRESENTE_PERSONNE', label: 'Représente la personne physique', description: 'Cliché figurant l’individu physique.', isRecommended: true },
-      { key: 'DETIENT_CLICHE', label: 'Détient le cliché / support', description: 'Photographie retrouvée en possession de l’individu.', isRecommended: true },
-      { key: 'CORRESPONDANCE_FACIALE', label: 'Correspondance biométrique faciale', description: 'Concordance biométrique faciale algorithmique positive.', isRecommended: true },
-      { key: 'IDENTIFIE_SUR_CLICHE', label: 'Identifié sur le cliché numérique', description: 'Reconnaissance formelle lors d’une audition ou tapissage.', isRecommended: true }
-    );
+  // 2. Person ↔ Phone / SIM / Mobile
+  if ((isPerson(s) && isPhone(t)) || (isPhone(s) && isPerson(t))) {
+    addRec('UTILISE_TELEPHONE', 'Emploi effectif ou détention physique du numéro / terminal.');
+    addRec('TITULAIRE_LIGNE_SIM', 'Identité déclarée auprès de l’opérateur télécom.');
+    addRec('CONTACT_TELEPHONIQUE', 'Ligne appelée ou contactée régulièrement par l’individu.');
+    addRec('RECOIT_SMS_APPELS', 'Réception de codes OTP BaridiMob ou appels d’intérêt.');
   }
 
-  // 3. Photo ↔ Vehicle
-  if ((isPhoto(s) && isVehicle(t)) || (isVehicle(s) && isPhoto(t))) {
-    recommendations.push(
-      { key: 'MONTRE_PLAQUE_IMMATRICULATION', label: 'Montre la plaque d’immatriculation', description: 'Lisibilité directe de la plaque minéralogique.', isRecommended: true },
-      { key: 'PHOTOGRAPHIE_VEHICULE_LIEU', label: 'Véhicule photographié sur les lieux', description: 'Prise de vue du véhicule sur le lieu des faits.', isRecommended: true }
-    );
-  }
-
-  // 4. Photo ↔ Listing / Ad
-  if ((isPhoto(s) && isPostOrAd(t)) || (isPostOrAd(s) && isPhoto(t))) {
-    recommendations.push(
-      { key: 'ILLUSTRE_ANNONCE', label: 'Illustre l’annonce publiée', description: 'Cliché utilisé pour agrémenter la publication ou l’offre.', isRecommended: true }
-    );
-  }
-
-  // 5. Social Account ↔ Phone
-  if ((isSocial(s) && isPhone(t)) || (isPhone(s) && isSocial(t))) {
-    recommendations.push(
-      { key: 'ASSOCIE_AU_NUMERO', label: 'Associé au numéro de téléphone', description: 'Ligne mobile liée à l’inscription ou la double authentification.', isRecommended: true },
-      { key: 'CONTACT_WHATSAPP_TELEGRAM', label: 'Canal de contact WhatsApp / Telegram', description: 'Messagerie instantanée directe liée au profil.', isRecommended: true }
-    );
-  }
-
-  // 6. Social Account ↔ Bank Account
-  if ((isSocial(s) && isBank(t)) || (isBank(s) && isSocial(t))) {
-    recommendations.push(
-      { key: 'MENTIONNE_COORDONNEES_RIB', label: 'Mentionne les coordonnées RIB / RIP', description: 'Transmission des identifiants bancaires par message direct.', isRecommended: true }
-    );
-  }
-
-  // 7. Social Account ↔ IP / Server
-  if ((isSocial(s) && isIP(t)) || (isIP(s) && isSocial(t))) {
-    recommendations.push(
-      { key: 'CONNEXION_DEPUIS_IP', label: 'Connexion établie depuis l’adresse IP', description: 'Adresse IP de connexion consignée dans les logs du réseau social.', isRecommended: true }
-    );
-  }
-
-  // 8. Person ↔ Bank Account
+  // 3. Person ↔ Bank / Crypto / GAB
   if ((isPerson(s) && isBank(t)) || (isBank(s) && isPerson(t))) {
-    recommendations.push(
-      { key: 'ACCOUNT_HOLDER', label: 'Titulaire du compte postal / bancaire', description: 'Identité certifiée par réquisition bancaire officielle.', isRecommended: true },
-      { key: 'COMPTE_BENEFICIAIRE', label: 'Compte bancaire / postal bénéficiaire', description: 'Compte destinataire désigné pour recevoir les fonds.', isRecommended: true }
-    );
+    addRec('ACCOUNT_HOLDER', 'Identité certifiée par réquisition bancaire / postale.');
+    addRec('COMPTE_BENEFICIAIRE', 'Compte destinataire ou bénéficiaire des fonds.');
+    addRec('RENTS_CARD_FOR_15K', 'Mise à disposition ou location de carte de paiement (mule).');
+    addRec('CONTROLS_PRIVATE_KEY', 'Contrôle ou signature des actifs du portefeuille.');
   }
 
-  // 9. Person ↔ Listing / Website
+  // 4. Person ↔ Social Account / Email / Post
+  if ((isPerson(s) && isSocial(t)) || (isSocial(s) && isPerson(t))) {
+    addRec('POSSEDE_PROFIL_SOCIAL', 'Compte ou canal administré / utilisé par la personne.');
+    addRec('CONTACTED_PAGE', 'Interaction directe ou prise de contact avec la page.');
+  }
+  if ((isPerson(s) && isEmail(t)) || (isEmail(s) && isPerson(t))) {
+    addRec('UTILISE_ADRESSE_EMAIL', 'Boîte mail attribuée ou exploitée par l’individu.');
+  }
+
+  // 5. Person ↔ Vehicle
+  if ((isPerson(s) && isVehicle(t)) || (isVehicle(s) && isPerson(t))) {
+    addRec('PROPRIETAIRE_VEHICULE', 'Titulaire de la carte grise / certificat d’immatriculation.');
+    addRec('CONDUCTEUR_HABITUEL', 'Conducteur observé ou identifié au volant du véhicule.');
+    addRec('PASSAGER_IDENTIFIE', 'Personne transportée ou signalée à bord du véhicule.');
+  }
+
+  // 6. Person ↔ Company / Unit
+  if ((isPerson(s) && isCompany(t)) || (isCompany(s) && isPerson(t))) {
+    addRec('DIRIGE_ENTREPRISE', 'Gérant, dirigeant de droit ou de fait de la structure.');
+    addRec('EMPLOYE_OU_ASSOCIE', 'Associé, employé ou mandataire agissant pour l’entité.');
+    addRec('CONVOQUE_PAR_UNITE', 'Individu entendu ou interpellé par l’unité enquêteuse.');
+  }
+
+  // 7. Person / Company / Vehicle / Phone / Bank ↔ Territory
+  if (
+    ((isPerson(s) || isCompany(s) || isPhone(s) || isVehicle(s) || isBank(s) || isBts(s)) &&
+      isTerritory(t)) ||
+    (isTerritory(s) &&
+      (isPerson(t) || isCompany(t) || isPhone(t) || isVehicle(t) || isBank(t) || isBts(t)))
+  ) {
+    addRec('DOMICILIE_A', 'Adresse de résidence ou siège administratif déclaré.');
+    addRec('LOCALISE_A', 'Localisation géographique établie (GPS, perquisition, bornage).');
+    addRec('FREQUENTE_LIEU', 'Zone d’activité, point de rendez-vous ou retrait constaté.');
+    addRec('INTERPELLE_A', 'Lieu d’interpellation, de constatation ou de saisie.');
+    addRec('NE_A', 'Lieu de naissance mentionné à l’état civil.');
+  }
+
+  // 8. Territory ↔ Territory
+  if (isTerritory(s) && isTerritory(t)) {
+    addRec('APPARTIENT_A_DAIRA', 'Rattachement administratif de la commune à la daïra.');
+    addRec('APPARTIENT_A_WILAYA', 'Rattachement administratif de la daïra / zone à la wilaya.');
+  }
+
+  // 9. Photo ↔ Social Account / Person / Vehicle / Listing
+  if ((isPhoto(s) && isSocial(t)) || (isSocial(s) && isPhoto(t))) {
+    addRec('PHOTO_DE_PROFIL_DE', 'Cliché identifié comme avatar ou photo de profil du compte.');
+    addRec('PUBLIEE_PAR_COMPTE', 'Image téléversée ou partagée dans une publication du compte.');
+    addRec('EXTRAITE_DU_PROFIL', 'Pièce visuelle extraite lors de l’analyse technique du profil.');
+    addRec('IDENTIFIE_SUR_CLICHE', 'Compte ou utilisateur tagué ou reconnu sur l’image.');
+  }
+  if ((isPhoto(s) && isPerson(t)) || (isPerson(s) && isPhoto(t))) {
+    addRec('REPRESENTE_PERSONNE', 'Cliché figurant l’individu physique.');
+    addRec('DETIENT_CLICHE', 'Photographie retrouvée en possession de l’individu.');
+    addRec('CORRESPONDANCE_FACIALE', 'Concordance biométrique faciale positive.');
+    addRec('IDENTIFIE_SUR_CLICHE', 'Reconnaissance formelle lors d’une audition ou tapissage.');
+  }
+  if ((isPhoto(s) && isVehicle(t)) || (isVehicle(s) && isPhoto(t))) {
+    addRec('MONTRE_PLAQUE_IMMATRICULATION', 'Lisibilité directe de la plaque minéralogique.');
+    addRec('PHOTOGRAPHIE_VEHICULE_LIEU', 'Prise de vue du véhicule sur le lieu des faits.');
+  }
+  if ((isPhoto(s) && isPostOrAd(t)) || (isPostOrAd(s) && isPhoto(t))) {
+    addRec('ILLUSTRE_ANNONCE', 'Cliché utilisé pour illustrer la publication ou l’offre.');
+  }
+
+  // 10. Phone ↔ Phone / BTS / Social / Bank / Email
+  if (isPhone(s) && isPhone(t)) {
+    addRec('TRANSFERT_APPEL_VERS', 'Communication vocale, SMS ou renvoi d’appel entre lignes.');
+    addRec('INSERE_DANS_SIM', 'Association technique MSISDN / carte SIM / terminal IMEI.');
+  }
+  if ((isPhone(s) && isBts(t)) || (isBts(s) && isPhone(t))) {
+    addRec('BORNE_SUR_ANTENNE', 'Déclenchement / bornage sur la cellule relais BTS.');
+  }
+  if ((isSocial(s) && isPhone(t)) || (isPhone(s) && isSocial(t))) {
+    addRec('ASSOCIE_AU_NUMERO', 'Ligne mobile liée à l’inscription ou à la double authentification.');
+    addRec('CONTACT_WHATSAPP_TELEGRAM', 'Messagerie instantanée directe liée au profil.');
+  }
+  if ((isBank(s) && isPhone(t)) || (isPhone(s) && isBank(t))) {
+    addRec('RECOIT_OTP_BARIDIMOB', 'Ligne associée aux notifications SMS / OTP BaridiMob.');
+    addRec('ASSOCIE_AU_NUMERO', 'Numéro de téléphone rattaché au compte bancaire ou postal.');
+  }
+  if ((isEmail(s) && (isSocial(t) || isBank(t) || isIP(t))) || ((isSocial(s) || isBank(s) || isIP(s)) && isEmail(t))) {
+    addRec('UTILISE_ADRESSE_EMAIL', 'Adresse e-mail de récupération, contact ou administration.');
+  }
+
+  // 11. Audio ↔ Person / Social
+  if ((isAudio(s) && isPerson(t)) || (isPerson(s) && isAudio(t))) {
+    addRec('ATTRIBUE_A_LOCUTEUR', 'Identification vocale ou transcription attribuée au locuteur.');
+    addRec('RECORDED_SPEECH', 'Enregistrement sonore rattaché à l’individu.');
+  }
+
+  // 12. Social ↔ Bank / IP
+  if ((isSocial(s) && isBank(t)) || (isBank(s) && isSocial(t))) {
+    addRec('MENTIONNE_COORDONNEES_RIB', 'Transmission des identifiants bancaires par message direct.');
+  }
+  if ((isSocial(s) && isIP(t)) || (isIP(s) && isSocial(t))) {
+    addRec('CONNEXION_DEPUIS_IP', 'Adresse IP ou domaine consigné dans les journaux de connexion.');
+  }
+
+  // 13. Person ↔ Listing / Website
   if ((isPerson(s) && (isPostOrAd(t) || isIP(t))) || ((isPostOrAd(s) || isIP(s)) && isPerson(t))) {
-    recommendations.push(
-      { key: 'PUBLIE_ANNONCE', label: 'Publie l’annonce commerciale', description: 'Auteur ou commanditaire de la publication.', isRecommended: true },
-      { key: 'SITE_WEB_LITIGIEUX', label: 'Site web litigieux', description: 'Infrastructure exploitée dans le cadre de l’infraction.', isRecommended: true },
-      { key: 'EMETTEUR_COMMANDE', label: 'Émetteur de la commande', description: 'Personne ayant passé la commande en ligne.', isRecommended: true }
-    );
+    addRec('PUBLIE_ANNONCE', 'Auteur ou commanditaire de la publication.');
+    addRec('SITE_WEB_LITIGIEUX', 'Infrastructure exploitée dans le cadre de l’infraction.');
+    addRec('EMETTEUR_COMMANDE', 'Personne ayant passé la commande en ligne.');
   }
 
-  // Second, match from ontology registry
-  const registrySuggestions: AvailableRelation[] = [];
-  const allRegKeys = Object.keys(registry.relation_types || {});
+  // 14. Seals / Documents / Evidence Files ↔ Any Entity
+  if (isSealOrDoc(s) || isSealOrDoc(t) || isPhoto(s) || isPhoto(t) || isAudio(s) || isAudio(t)) {
+    addRec('EXTRAIT_DE', 'Entité ou indice techniquement extrait de la pièce scellée.');
+    addRec('MENTIONNE_DANS_DOCUMENT', 'Élément cité ou identifié dans un procès-verbal ou document.');
+    addRec('CORROBORATION_PREUVE', 'Rapprochement probatoire entre deux pièces numériques ou matérielles.');
+    addRec('PROTEGE_PAR_SCELLE', 'Acte ou fichier couvert par le scellé numérique WORM.');
+  }
 
-  allRegKeys.forEach((key) => {
-    const def = (registry.relation_types as Record<string, any>)[key];
+  // Second: Match from official ontology registry in BOTH directions (source->target and target->source)
+  interface RawRegistryRelation {
+    label_fr?: string;
+    description_fr?: string;
+    allowed_sources?: string[];
+    allowed_targets?: string[];
+  }
+  const rawRelations = registry.relation_types as unknown as Record<string, RawRegistryRelation>;
+  const forwardMatches: AvailableRelation[] = [];
+  const reverseMatches: AvailableRelation[] = [];
+  const allRegistryFallback: AvailableRelation[] = [];
+
+  const sType = sourceType || '';
+  const tType = targetType || '';
+
+  Object.keys(rawRelations || {}).forEach((key) => {
+    const def = rawRelations[key];
     if (!def) return;
 
-    const sourceOk = !sourceType || !def.allowed_sources || def.allowed_sources.includes(sourceType);
-    const targetOk = !targetType || !def.allowed_targets || def.allowed_targets.includes(targetType);
+    const localized = getRelationLabel(key, locale);
+    const forwardOk =
+      Boolean(sType && tType) &&
+      (!def.allowed_sources || def.allowed_sources.includes(sType)) &&
+      (!def.allowed_targets || def.allowed_targets.includes(tType));
 
-    if (sourceOk && targetOk) {
-      registrySuggestions.push({
+    const reverseOk =
+      !forwardOk &&
+      Boolean(sType && tType) &&
+      sType !== tType &&
+      (!def.allowed_sources || def.allowed_sources.includes(tType)) &&
+      (!def.allowed_targets || def.allowed_targets.includes(sType));
+
+    if (forwardOk) {
+      forwardMatches.push({
         key,
-        label: def.label_fr || key,
+        label: localized,
+        description: def.description_fr,
+        isRecommended: true,
+      });
+    } else if (reverseOk) {
+      reverseMatches.push({
+        key,
+        label: localized,
+        description: def.description_fr,
+        isRecommended: true,
+        isReverseDirection: true,
+      });
+    } else {
+      allRegistryFallback.push({
+        key,
+        label: localized,
         description: def.description_fr,
       });
     }
   });
 
-  // Third, common generic investigative relations
+  // Third: Common generic investigative relations
   const genericRelations: AvailableRelation[] = [
-    { key: 'COMMUNIQUE_AVEC', label: 'Communique avec (Appel, Message)', description: 'Échange de communications entre deux entités.' },
-    { key: 'COMPLICE_DE', label: 'Complice de / Co-auteur', description: 'Implication conjointe dans la commission des faits.' },
+    { key: 'RAPPROCHEMENT_PROBATOIRE', label: getRelationLabel('RAPPROCHEMENT_PROBATOIRE', locale), description: 'Rapprochement motivé par éléments d’enquête concordants.' },
+    { key: 'RELIE_A', label: getRelationLabel('RELIE_A', locale), description: 'Lien direct établi entre les deux entités.' },
+    { key: 'COMMUNIQUE_AVEC', label: getRelationLabel('COMMUNIQUE_AVEC', locale), description: 'Échange de communications entre deux entités.' },
+    { key: 'COMPLICE_DE', label: getRelationLabel('COMPLICE_DE', locale), description: 'Implication conjointe dans la commission des faits.' },
     { key: 'TRANSACTION_VERS', label: 'Virement ou Flux Financier vers', description: 'Mouvement de fonds ou remise d’argent.' },
     { key: 'UTILISE_LIGNE', label: 'Utilise le terminal ou la ligne', description: 'Emploi matériel d’un équipement télécom.' },
     { key: 'HEBERGE_SUR_SERVEUR', label: 'Hébergé ou relié techniquement à', description: 'Pivot d’infrastructure ou d’hébergement web.' },
     { key: 'DETECTE_DANS_IMAGE', label: 'Identifié sur un cliché / vidéo', description: 'Présence constatée sur une pièce visuelle.' },
     { key: 'BORNE_SUR_ANTENNE', label: 'Bornage sur relais géographique', description: 'Localisation cellulaire d’un terminal.' },
-    { key: 'RAPPROCHEMENT_PROBATOIRE', label: 'Rapprochement probatoire', description: 'Rapprochement motivé par éléments d’enquête concordants.' },
-    { key: 'RELIE_A', label: 'Relié à (Rapprochement général)', description: 'Lien direct établi entre les deux entités.' },
-    { key: 'CORRESPONDS_TO', label: 'Liaison directe (Hypothèse)', description: 'Rapprochement direct établi par l’enquêteur.' },
+    { key: 'CORRESPONDS_TO', label: getRelationLabel('CORRESPONDS_TO', locale), description: 'Rapprochement direct établi par l’enquêteur.' },
   ];
 
-  // Merge deduplicating by key, preserving recommendations first
+  // Merge deduplicating by key: contextual recommendations + bidirectional registry matches + generic + remaining registry
   const seenKeys = new Set<string>();
   const result: AvailableRelation[] = [];
 
-  [...recommendations, ...registrySuggestions, ...genericRelations].forEach((item) => {
+  [...recommendations, ...forwardMatches, ...reverseMatches, ...genericRelations, ...allRegistryFallback].forEach((item) => {
     if (!seenKeys.has(item.key)) {
       seenKeys.add(item.key);
       result.push(item);

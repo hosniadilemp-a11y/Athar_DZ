@@ -5,6 +5,7 @@ import {
   NODE_TYPE_TO_CATEGORY,
 } from '../../store/useGraphStore';
 import { computePersonGraphProjection } from '../../utils/graphLayouts';
+import { API_BASE } from '../../config';
 import { NodeIcon } from '../canvas/NodeIcon';
 import registryDataRaw from '../../registry/registry.json';
 import type { RegistryData, LayerId } from '../../types/registry';
@@ -37,6 +38,10 @@ import {
 import { useI18n } from '../../context/I18nContext';
 import { useToast } from '../../context/ToastContext';
 import { getRelationLabel } from '../../i18n/phrases/relations';
+import { IngestionInspectorSection } from './IngestionInspectorSection';
+import { CandidateValidationPanel } from './CandidateValidationPanel';
+import { isIngestionModeLive } from '../../utils/fileIngestion';
+import type { LocalFileEntry } from '../../utils/localFileStore';
 
 const registry = registryDataRaw as unknown as RegistryData;
 
@@ -81,6 +86,20 @@ const TYPE_EDITABLE_FIELDS: Record<string, Array<{ key: string; label: string; p
     { key: 'port', label: 'Port de communication', placeholder: 'ex: 443, 8443...' },
     { key: 'hebergement', label: 'Hébergeur / ASN', placeholder: 'ex: OVH, DigitalOcean...' },
   ],
+  wilaya: [
+    { key: 'code_wilaya', label: 'Code Wilaya', placeholder: 'ex: 16...' },
+    { key: 'nom_fr', label: 'Nom (FR)', placeholder: 'ex: Alger...' },
+    { key: 'nom_ar', label: 'Nom (AR)', placeholder: 'ex: الجزائر...' },
+  ],
+  daira: [
+    { key: 'wilaya', label: 'Wilaya de rattachement', placeholder: 'ex: Alger...' },
+    { key: 'nom_fr', label: 'Nom Daïra', placeholder: "ex: Sidi M'Hamed..." },
+  ],
+  commune: [
+    { key: 'wilaya', label: 'Wilaya', placeholder: 'ex: Alger...' },
+    { key: 'daira', label: 'Daïra', placeholder: "ex: Sidi M'Hamed..." },
+    { key: 'nom_fr', label: 'Commune', placeholder: 'ex: Alger Centre...' },
+  ],
 };
 
 interface InspectorPanelProps {
@@ -88,6 +107,7 @@ interface InspectorPanelProps {
   onClose: () => void;
   onTriggerTool?: (toolId: string) => void;
   onTriggerPhaseNotice?: (name: string, phase: string) => void;
+  onPreviewFile?: (entry: LocalFileEntry) => void;
   style?: React.CSSProperties;
 }
 
@@ -106,18 +126,21 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   onClose,
   onTriggerTool,
   onTriggerPhaseNotice,
+  onPreviewFile,
   style,
 }) => {
   const { t, tr, trLabel, label, locale } = useI18n();
   const {
+    activeCase,
     nodes,
     edges,
     activeLayers,
     selectedNodeId,
+    selectedNodeIds,
     selectedEdgeId,
     openLayerChangeModal,
     mergeExpandedNodes,
-    deleteNode,
+    requestDeleteNodes,
     selectNode,
     updateNodeDetails,
     isPersonOnlyGraph,
@@ -126,7 +149,17 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
     toggleExpandNodeConnections,
     expandMediatedEdgeNodes,
     updateEdgeDetails,
+    openIngestionPopover,
+    triggerNodeInvestigation,
+    runPdfExtraction,
+    openActorTab,
+    tabs,
+    activeTabId,
   } = useGraphStore();
+
+  const activeTab = tabs.find((t) => t.id === activeTabId) ?? null;
+  const isolatedFocalNodeId =
+    activeTab?.kind === 'actor_sphere' && activeTab.focalNodeId ? activeTab.focalNodeId : null;
 
   const toast = useToast();
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -396,6 +429,13 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             <X size={15} />
           </button>
         </div>
+
+        {/* Phase 2A: Isolated PDF Extracted Candidates Validation (visible even with no node clicked) */}
+        {isolatedFocalNodeId && (
+          <div style={{ padding: 'var(--space-3)' }}>
+            <CandidateValidationPanel sourceNodeId={isolatedFocalNodeId} />
+          </div>
+        )}
 
         {/* 4 KPIs Grid matching doc/maquette.html */}
         <div className="overview-kpis-grid">
@@ -828,6 +868,29 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           {/* Demarcation Divider */}
           <div style={{ height: '1px', backgroundColor: 'var(--color-border-subtle)', margin: '2px 0' }} />
 
+          {/* Option B: Raw File Ingestion & Analysis Mode Controls */}
+          <IngestionInspectorSection
+            node={selectedNode}
+            onLaunchMode={(nodeId, mode, stageLabel, selectedPlugins) => {
+              const fileName = String(selectedNode.properties?.file_name || selectedNode.label || '');
+              const mimeType = String(selectedNode.properties?.mime_type || '');
+              if (isIngestionModeLive(mode, fileName, mimeType) && (mode === 'quick' || mode === 'step_by_step')) {
+                void runPdfExtraction(nodeId, mode, selectedPlugins).catch((err) => {
+                  toast.error(err instanceof Error ? err.message : tr('Erreur extraction'), tr('Extraction'));
+                });
+                return;
+              }
+              void triggerNodeInvestigation(nodeId, mode, stageLabel);
+            }}
+            onIsolateNode={(nodeId) => openActorTab(nodeId)}
+            onOpenPopover={openIngestionPopover}
+            onPreviewFile={onPreviewFile}
+            onTriggerPhaseNotice={onTriggerPhaseNotice}
+          />
+
+          {/* Phase 2A: Isolated PDF Extracted Candidates Validation */}
+          {isolatedFocalNodeId && <CandidateValidationPanel sourceNodeId={isolatedFocalNodeId} />}
+
           {/* Section 1: Informations & Attributs Modifiables (Priorité Enquêteur) */}
           <div
             className="accordion-group"
@@ -906,6 +969,38 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   <label style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px', fontWeight: 600 }}>
                     {tr('Statut Procédural / Rôle Judiciaire :')}
                   </label>
+                  {selectedNode.type === 'personne' && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '5px' }}>
+                      {['Suspect', 'Victime', 'Témoin', 'Complice', 'Prête-nom / Mule', 'Plaignant'].map((preset) => {
+                        const active = editStatus.toLowerCase() === preset.toLowerCase();
+                        return (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => setEditStatus(preset)}
+                            style={{
+                              fontSize: '10px',
+                              padding: '2px 7px',
+                              borderRadius: '10px',
+                              border: active
+                                ? '1px solid var(--color-accent-primary)'
+                                : '1px solid var(--color-border-subtle)',
+                              backgroundColor: active
+                                ? 'var(--color-accent-subtle)'
+                                : 'var(--color-bg-canvas)',
+                              color: active
+                                ? 'var(--color-accent-text)'
+                                : 'var(--color-text-muted)',
+                              cursor: 'pointer',
+                              fontWeight: active ? 700 : 500,
+                            }}
+                          >
+                            {preset}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                   <input
                     type="text"
                     value={editStatus}
@@ -924,47 +1019,111 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   />
                 </div>
 
-                {/* Calque Actuel & Bouton de Reclassification */}
+                {/* Calque Probatoire — Sélecteur unique (ISO 27037 : ouvre la justification vers le calque choisi) */}
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                    <span style={{ fontSize: '10.5px', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-                      {tr('Calque Probatoire :')}
-                    </span>
-                    <button
-                      type="button"
-                      className="btn btn-ghost btn-xs"
-                      onClick={() => openLayerChangeModal(selectedNode.id, selectedNode.layer)}
-                      style={{ fontSize: '10px', padding: '1px 5px', color: 'var(--color-accent-text)' }}
-                    >
-                      <ShieldCheck size={11} />
-                      <span>{tr('Changer de calque')}</span>
-                    </button>
-                  </div>
-                  <div
+                  <label
+                    htmlFor="inspector-node-layer-select"
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '6px',
-                      padding: '4px 8px',
-                      backgroundColor: 'var(--color-bg-canvas)',
-                      border: `1px solid ${layerDef?.color || 'var(--color-border-subtle)'}`,
-                      borderRadius: 'var(--radius-sm)',
-                      fontSize: '11px',
+                      justifyContent: 'space-between',
+                      fontSize: 'var(--text-xs)',
+                      color: 'var(--color-text-secondary)',
+                      marginBottom: '4px',
+                      fontWeight: 600,
                     }}
                   >
+                    <span>{tr('Calque Probatoire :')}</span>
                     <span
                       style={{
-                        width: '8px',
-                        height: '8px',
-                        borderRadius: '50%',
-                        backgroundColor: layerDef?.color || 'var(--color-text-muted)',
-                        display: 'inline-block',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        color: 'var(--color-text-muted)',
+                        fontWeight: 500,
                       }}
-                    />
-                    <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>
-                      {label(layerDef, selectedNode.layer)}
+                    >
+                      <span
+                        style={{
+                          width: '8px',
+                          height: '8px',
+                          borderRadius: '50%',
+                          backgroundColor: layerDef?.color || 'var(--color-text-muted)',
+                          border: selectedNode.layer === 'HYPOTHESIS' ? '1px dashed var(--color-layer-4-hypothesis)' : 'none',
+                          display: 'inline-block',
+                        }}
+                      />
+                      <span className="font-mono">{selectedNode.layer}</span>
                     </span>
-                  </div>
+                  </label>
+                  <select
+                    id="inspector-node-layer-select"
+                    className="select select-xs"
+                    value={selectedNode.layer}
+                    onChange={async (e) => {
+                      const nextLayer = e.target.value as LayerId;
+                      if (nextLayer === selectedNode.layer) return;
+
+                      // Rule 3 (ISO 27037): Promoting evidence to VERIFIED requires human justification
+                      if (nextLayer === 'VERIFIED') {
+                        openLayerChangeModal(selectedNode.id, 'VERIFIED');
+                        return;
+                      }
+
+                      const prevLayer = selectedNode.layer;
+                      // Immediate local update across Graph, Timeline, Map, Minimap, Table, and LeftAccordion
+                      useGraphStore.setState((state) => {
+                        const nextLayers = new Set(state.activeLayers);
+                        nextLayers.add(nextLayer);
+                        return {
+                          nodes: state.nodes.map((n) =>
+                            n.id === selectedNode.id ? { ...n, layer: nextLayer } : n
+                          ),
+                          activeLayers: nextLayers,
+                        };
+                      });
+
+                      if (!activeCase) return;
+                      try {
+                        const res = await fetch(
+                          `${API_BASE}/api/v1/cases/${activeCase.id}/nodes/${selectedNode.id}/layer`,
+                          {
+                            method: 'PUT',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'X-Actor-Id': 'investigator_front',
+                            },
+                            body: JSON.stringify({
+                              new_layer: nextLayer,
+                              reason: `Reclassification directe vers ${nextLayer} par l'enquêteur`,
+                            }),
+                          }
+                        );
+                        if (!res.ok) {
+                          throw new Error(`HTTP ${res.status}`);
+                        }
+                      } catch {
+                        // Revert on server failure
+                        useGraphStore.setState((state) => ({
+                          nodes: state.nodes.map((n) =>
+                            n.id === selectedNode.id ? { ...n, layer: prevLayer } : n
+                          ),
+                        }));
+                        toast.error(tr('Échec de la mise à jour du calque sur le serveur.'));
+                      }
+                    }}
+                    style={{
+                      width: '100%',
+                      borderColor: layerDef?.color || 'var(--color-border-default)',
+                      borderStyle: selectedNode.layer === 'HYPOTHESIS' ? 'dashed' : 'solid',
+                    }}
+                  >
+                    <option value="VERIFIED">{tr('1. Preuve Vérifiée (VERIFIED)')}</option>
+                    <option value="OSINT_RAW">{tr('2. Renseignement OSINT (OSINT_RAW)')}</option>
+                    <option value="INFRA">{tr('3. Infrastructures & Forensique (INFRA)')}</option>
+                    <option value="HYPOTHESIS">{tr('4. Hypothèse Analytique (HYPOTHESIS)')}</option>
+                    <option value="FLOWS">{tr('5. Flux Financiers & Télécoms (FLOWS)')}</option>
+                  </select>
                 </div>
 
                 {/* Certitude Probatoire Slider */}
@@ -1089,7 +1248,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           )}
 
           {/* Photographic Evidence Exhibit Card */}
-          {Boolean(evidencePhoto) && (
+          {evidencePhoto && (
             <div
               style={{
                 display: 'flex',
@@ -1112,15 +1271,15 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               </div>
               <div style={{ width: '100%', maxHeight: '160px', overflow: 'hidden', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-subtle)' }}>
                 <img
-                  src={evidencePhoto!}
+                  src={evidencePhoto}
                   alt={trLabel(selectedNode.label)}
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                 />
               </div>
               <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontFamily: 'var(--font-mono)' }}>{evidencePhoto!.split('/').pop()}</span>
+                <span style={{ fontFamily: 'var(--font-mono)' }}>{evidencePhoto.split('/').pop()}</span>
                 <a
-                  href={evidencePhoto!}
+                  href={evidencePhoto}
                   target="_blank"
                   rel="noreferrer"
                   style={{ color: 'var(--color-accent-text)', textDecoration: 'underline' }}
@@ -1703,16 +1862,6 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
           {/* 9. Core Procedural Action Buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              onClick={() => openLayerChangeModal(selectedNode.id, selectedNode.layer)}
-              style={{ width: '100%' }}
-            >
-              <ShieldCheck size={14} style={{ color: 'var(--color-layer-1-verified)' }} />
-              <span>{tr('Changer de Calque (Justification Obligatoire)')}</span>
-            </button>
-
             {/* Granular Hidden Entities Expansion Button for this Node */}
             {isPersonOnlyGraph &&
               ((projection.hiddenNeighborCountByNode.get(selectedNode.id) || 0) > 0 ||
@@ -1760,11 +1909,21 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             <button
               type="button"
               className="btn btn-danger btn-sm"
-              onClick={() => deleteNode(selectedNode.id)}
+              onClick={() => {
+                const targetIds =
+                  selectedNodeIds.includes(selectedNode.id) && selectedNodeIds.length > 1
+                    ? selectedNodeIds
+                    : [selectedNode.id];
+                requestDeleteNodes(targetIds);
+              }}
               style={{ width: '100%' }}
             >
               <Trash2 size={13} />
-              <span>{tr('Supprimer ce nœud du graphe')}</span>
+              <span>
+                {selectedNodeIds.includes(selectedNode.id) && selectedNodeIds.length > 1
+                  ? tr('Supprimer la sélection ({n})', { n: selectedNodeIds.length })
+                  : tr('Supprimer ce nœud du graphe')}
+              </span>
             </button>
           </div>
 

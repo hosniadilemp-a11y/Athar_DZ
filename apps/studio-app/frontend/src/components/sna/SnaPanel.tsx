@@ -298,7 +298,7 @@ export function getOntologicalSnaRole(
   return `Rôle SNA (${algoKey})`;
 }
 
-export const SnaPanel: React.FC<SnaPanelProps> = ({ onClose: _onClose, initialAlgoKey }) => {
+export const SnaPanel: React.FC<SnaPanelProps> = ({ initialAlgoKey }) => {
   const { activeCase, selectedNodeId, selectNode, nodes } = useGraphStore();
   const { locale, tr } = useI18n();
   const { success: toastSuccess, error: toastError } = useToast();
@@ -846,6 +846,7 @@ export const SnaPanel: React.FC<SnaPanelProps> = ({ onClose: _onClose, initialAl
                           ) : (
                             <input
                               type="text"
+                              aria-label={p.description_fr || p.name}
                               value={String(paramValues[p.name] ?? '')}
                               onChange={(e) => setParamValues((prev) => ({ ...prev, [p.name]: e.target.value }))}
                               style={{

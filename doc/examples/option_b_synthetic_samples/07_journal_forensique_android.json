@@ -1,0 +1,2309 @@
+{
+  "extraction_tool": "ALEAPP-Synthetic-Fixture",
+  "case_reference": "EXEMPLE-FICTIF-2026",
+  "disclaimer": "Donnees 100% fictives pour test Option B Athar",
+  "device_info": {
+    "manufacturer": "FictionalMobile",
+    "model": "FM-Test-01",
+    "android_version": "14",
+    "imei_synthetic": "350000000009999",
+    "owner_msisdn": "+2135550101"
+  },
+  "summary_counts": {
+    "installed_packages": 30,
+    "wifi_networks": 50,
+    "gps_fixes": 120,
+    "call_logs": 100,
+    "browser_history": 60
+  },
+  "installed_packages": [
+    {
+      "package": "com.example.fictif.app01",
+      "version": "2.1.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app02",
+      "version": "3.2.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app03",
+      "version": "4.3.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app04",
+      "version": "1.4.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app05",
+      "version": "2.5.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app06",
+      "version": "3.6.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app07",
+      "version": "4.7.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app08",
+      "version": "1.8.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app09",
+      "version": "2.9.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app10",
+      "version": "3.0.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app11",
+      "version": "4.1.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app12",
+      "version": "1.2.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app13",
+      "version": "2.3.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app14",
+      "version": "3.4.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app15",
+      "version": "4.5.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app16",
+      "version": "1.6.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app17",
+      "version": "2.7.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app18",
+      "version": "3.8.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app19",
+      "version": "4.9.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app20",
+      "version": "1.0.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app21",
+      "version": "2.1.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app22",
+      "version": "3.2.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app23",
+      "version": "4.3.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app24",
+      "version": "1.4.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app25",
+      "version": "2.5.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app26",
+      "version": "3.6.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app27",
+      "version": "4.7.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app28",
+      "version": "1.8.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app29",
+      "version": "2.9.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    {
+      "package": "com.example.fictif.app30",
+      "version": "3.0.0",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION"
+      ]
+    }
+  ],
+  "wifi_networks": [
+    {
+      "ssid": "FICTIONAL_CAFE_ALGER_1",
+      "bssid": "02:00:00:00:00:01",
+      "rssi_dbm": -63,
+      "last_seen_utc": "2026-11-01T15:00:00Z"
+    },
+    {
+      "ssid": "BUREAU_ATLAS_NET_2",
+      "bssid": "02:00:00:00:00:02",
+      "rssi_dbm": -78,
+      "last_seen_utc": "2026-11-01T22:00:00Z"
+    },
+    {
+      "ssid": "BUREAU_ATLAS_NET_3",
+      "bssid": "02:00:00:00:00:03",
+      "rssi_dbm": -46,
+      "last_seen_utc": "2026-11-02T05:00:00Z"
+    },
+    {
+      "ssid": "FICTIONAL_CAFE_ALGER_4",
+      "bssid": "02:00:00:00:00:04",
+      "rssi_dbm": -40,
+      "last_seen_utc": "2026-11-02T12:00:00Z"
+    },
+    {
+      "ssid": "BUREAU_ATLAS_NET_5",
+      "bssid": "02:00:00:00:00:05",
+      "rssi_dbm": -43,
+      "last_seen_utc": "2026-11-02T19:00:00Z"
+    },
+    {
+      "ssid": "BUREAU_ATLAS_NET_6",
+      "bssid": "02:00:00:00:00:06",
+      "rssi_dbm": -64,
+      "last_seen_utc": "2026-11-03T02:00:00Z"
+    },
+    {
+      "ssid": "FICTIONAL_CAFE_ALGER_7",
+      "bssid": "02:00:00:00:00:07",
+      "rssi_dbm": -48,
+      "last_seen_utc": "2026-11-03T09:00:00Z"
+    },
+    {
+      "ssid": "ORAN_HOTEL_FICTIF_8",
+      "bssid": "02:00:00:00:00:08",
+      "rssi_dbm": -68,
+      "last_seen_utc": "2026-11-03T16:00:00Z"
+    },
+    {
+      "ssid": "ORAN_HOTEL_FICTIF_9",
+      "bssid": "02:00:00:00:00:09",
+      "rssi_dbm": -57,
+      "last_seen_utc": "2026-11-03T23:00:00Z"
+    },
+    {
+      "ssid": "PORT_GUEST_TEST_10",
+      "bssid": "02:00:00:00:00:0a",
+      "rssi_dbm": -67,
+      "last_seen_utc": "2026-11-04T06:00:00Z"
+    },
+    {
+      "ssid": "ORAN_HOTEL_FICTIF_11",
+      "bssid": "02:00:00:00:00:0b",
+      "rssi_dbm": -74,
+      "last_seen_utc": "2026-11-04T13:00:00Z"
+    },
+    {
+      "ssid": "BUREAU_ATLAS_NET_12",
+      "bssid": "02:00:00:00:00:0c",
+      "rssi_dbm": -68,
+      "last_seen_utc": "2026-11-04T20:00:00Z"
+    },
+    {
+      "ssid": "PORT_GUEST_TEST_13",
+      "bssid": "02:00:00:00:00:0d",
+      "rssi_dbm": -57,
+      "last_seen_utc": "2026-11-05T03:00:00Z"
+    },
+    {
+      "ssid": "ORAN_HOTEL_FICTIF_14",
+      "bssid": "02:00:00:00:00:0e",
+      "rssi_dbm": -49,
+      "last_seen_utc": "2026-11-05T10:00:00Z"
+    },
+    {
+      "ssid": "BUREAU_ATLAS_NET_15",
+      "bssid": "02:00:00:00:00:0f",
+      "rssi_dbm": -71,
+      "last_seen_utc": "2026-11-05T17:00:00Z"
+    },
+    {
+      "ssid": "BUREAU_ATLAS_NET_16",
+      "bssid": "02:00:00:00:00:10",
+      "rssi_dbm": -51,
+      "last_seen_utc": "2026-11-06T00:00:00Z"
+    },
+    {
+      "ssid": "FICTIONAL_CAFE_ALGER_17",
+      "bssid": "02:00:00:00:00:11",
+      "rssi_dbm": -57,
+      "last_seen_utc": "2026-11-06T07:00:00Z"
+    },
+    {
+      "ssid": "FICTIONAL_CAFE_ALGER_18",
+      "bssid": "02:00:00:00:00:12",
+      "rssi_dbm": -38,
+      "last_seen_utc": "2026-11-06T14:00:00Z"
+    },
+    {
+      "ssid": "PORT_GUEST_TEST_19",
+      "bssid": "02:00:00:00:00:13",
+      "rssi_dbm": -42,
+      "last_seen_utc": "2026-11-06T21:00:00Z"
+    },
+    {
+      "ssid": "FICTIONAL_CAFE_ALGER_20",
+      "bssid": "02:00:00:00:00:14",
+      "rssi_dbm": -51,
+      "last_seen_utc": "2026-11-07T04:00:00Z"
+    },
+    {
+      "ssid": "BUREAU_ATLAS_NET_21",
+      "bssid": "02:00:00:00:00:15",
+      "rssi_dbm": -80,
+      "last_seen_utc": "2026-11-07T11:00:00Z"
+    },
+    {
+      "ssid": "ORAN_HOTEL_FICTIF_22",
+      "bssid": "02:00:00:00:00:16",
+      "rssi_dbm": -47,
+      "last_seen_utc": "2026-11-07T18:00:00Z"
+    },
+    {
+      "ssid": "BUREAU_ATLAS_NET_23",
+      "bssid": "02:00:00:00:00:17",
+      "rssi_dbm": -75,
+      "last_seen_utc": "2026-11-08T01:00:00Z"
+    },
+    {
+      "ssid": "PORT_GUEST_TEST_24",
+      "bssid": "02:00:00:00:00:18",
+      "rssi_dbm": -59,
+      "last_seen_utc": "2026-11-08T08:00:00Z"
+    },
+    {
+      "ssid": "BUREAU_ATLAS_NET_25",
+      "bssid": "02:00:00:00:00:19",
+      "rssi_dbm": -64,
+      "last_seen_utc": "2026-11-08T15:00:00Z"
+    },
+    {
+      "ssid": "BUREAU_ATLAS_NET_26",
+      "bssid": "02:00:00:00:00:1a",
+      "rssi_dbm": -82,
+      "last_seen_utc": "2026-11-08T22:00:00Z"
+    },
+    {
+      "ssid": "BUREAU_ATLAS_NET_27",
+      "bssid": "02:00:00:00:00:1b",
+      "rssi_dbm": -55,
+      "last_seen_utc": "2026-11-09T05:00:00Z"
+    },
+    {
+      "ssid": "FICTIONAL_CAFE_ALGER_28",
+      "bssid": "02:00:00:00:00:1c",
+      "rssi_dbm": -63,
+      "last_seen_utc": "2026-11-09T12:00:00Z"
+    },
+    {
+      "ssid": "ORAN_HOTEL_FICTIF_29",
+      "bssid": "02:00:00:00:00:1d",
+      "rssi_dbm": -45,
+      "last_seen_utc": "2026-11-09T19:00:00Z"
+    },
+    {
+      "ssid": "ORAN_HOTEL_FICTIF_30",
+      "bssid": "02:00:00:00:00:1e",
+      "rssi_dbm": -75,
+      "last_seen_utc": "2026-11-10T02:00:00Z"
+    },
+    {
+      "ssid": "PORT_GUEST_TEST_31",
+      "bssid": "02:00:00:00:00:1f",
+      "rssi_dbm": -51,
+      "last_seen_utc": "2026-11-10T09:00:00Z"
+    },
+    {
+      "ssid": "FICTIONAL_CAFE_ALGER_32",
+      "bssid": "02:00:00:00:00:20",
+      "rssi_dbm": -81,
+      "last_seen_utc": "2026-11-10T16:00:00Z"
+    },
+    {
+      "ssid": "FICTIONAL_CAFE_ALGER_33",
+      "bssid": "02:00:00:00:00:21",
+      "rssi_dbm": -74,
+      "last_seen_utc": "2026-11-10T23:00:00Z"
+    },
+    {
+      "ssid": "BUREAU_ATLAS_NET_34",
+      "bssid": "02:00:00:00:00:22",
+      "rssi_dbm": -62,
+      "last_seen_utc": "2026-11-11T06:00:00Z"
+    },
+    {
+      "ssid": "ORAN_HOTEL_FICTIF_35",
+      "bssid": "02:00:00:00:00:23",
+      "rssi_dbm": -68,
+      "last_seen_utc": "2026-11-11T13:00:00Z"
+    },
+    {
+      "ssid": "BUREAU_ATLAS_NET_36",
+      "bssid": "02:00:00:00:00:24",
+      "rssi_dbm": -39,
+      "last_seen_utc": "2026-11-11T20:00:00Z"
+    },
+    {
+      "ssid": "PORT_GUEST_TEST_37",
+      "bssid": "02:00:00:00:00:25",
+      "rssi_dbm": -66,
+      "last_seen_utc": "2026-11-12T03:00:00Z"
+    },
+    {
+      "ssid": "FICTIONAL_CAFE_ALGER_38",
+      "bssid": "02:00:00:00:00:26",
+      "rssi_dbm": -56,
+      "last_seen_utc": "2026-11-12T10:00:00Z"
+    },
+    {
+      "ssid": "ORAN_HOTEL_FICTIF_39",
+      "bssid": "02:00:00:00:00:27",
+      "rssi_dbm": -50,
+      "last_seen_utc": "2026-11-12T17:00:00Z"
+    },
+    {
+      "ssid": "ORAN_HOTEL_FICTIF_40",
+      "bssid": "02:00:00:00:00:28",
+      "rssi_dbm": -71,
+      "last_seen_utc": "2026-11-13T00:00:00Z"
+    },
+    {
+      "ssid": "PORT_GUEST_TEST_41",
+      "bssid": "02:00:00:00:00:29",
+      "rssi_dbm": -52,
+      "last_seen_utc": "2026-11-13T07:00:00Z"
+    },
+    {
+      "ssid": "PORT_GUEST_TEST_42",
+      "bssid": "02:00:00:00:00:2a",
+      "rssi_dbm": -74,
+      "last_seen_utc": "2026-11-13T14:00:00Z"
+    },
+    {
+      "ssid": "PORT_GUEST_TEST_43",
+      "bssid": "02:00:00:00:00:2b",
+      "rssi_dbm": -72,
+      "last_seen_utc": "2026-11-13T21:00:00Z"
+    },
+    {
+      "ssid": "PORT_GUEST_TEST_44",
+      "bssid": "02:00:00:00:00:2c",
+      "rssi_dbm": -82,
+      "last_seen_utc": "2026-11-14T04:00:00Z"
+    },
+    {
+      "ssid": "BUREAU_ATLAS_NET_45",
+      "bssid": "02:00:00:00:00:2d",
+      "rssi_dbm": -52,
+      "last_seen_utc": "2026-11-14T11:00:00Z"
+    },
+    {
+      "ssid": "PORT_GUEST_TEST_46",
+      "bssid": "02:00:00:00:00:2e",
+      "rssi_dbm": -59,
+      "last_seen_utc": "2026-11-14T18:00:00Z"
+    },
+    {
+      "ssid": "PORT_GUEST_TEST_47",
+      "bssid": "02:00:00:00:00:2f",
+      "rssi_dbm": -73,
+      "last_seen_utc": "2026-11-15T01:00:00Z"
+    },
+    {
+      "ssid": "FICTIONAL_CAFE_ALGER_48",
+      "bssid": "02:00:00:00:00:30",
+      "rssi_dbm": -74,
+      "last_seen_utc": "2026-11-15T08:00:00Z"
+    },
+    {
+      "ssid": "FICTIONAL_CAFE_ALGER_49",
+      "bssid": "02:00:00:00:00:31",
+      "rssi_dbm": -75,
+      "last_seen_utc": "2026-11-15T15:00:00Z"
+    },
+    {
+      "ssid": "PORT_GUEST_TEST_50",
+      "bssid": "02:00:00:00:00:32",
+      "rssi_dbm": -40,
+      "last_seen_utc": "2026-11-15T22:00:00Z"
+    }
+  ],
+  "gps_locations": [
+    {
+      "timestamp_utc": "2026-11-01T11:00:00Z",
+      "latitude": 36.738233,
+      "longitude": 3.085035,
+      "accuracy_m": 15,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-01T14:00:00Z",
+      "latitude": 36.725271,
+      "longitude": 3.045474,
+      "accuracy_m": 17,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-01T17:00:00Z",
+      "latitude": 36.778683,
+      "longitude": 3.069883,
+      "accuracy_m": 12,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-01T20:00:00Z",
+      "latitude": 36.767961,
+      "longitude": 3.040652,
+      "accuracy_m": 18,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-01T23:00:00Z",
+      "latitude": 36.769797,
+      "longitude": 3.026855,
+      "accuracy_m": 23,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-02T02:00:00Z",
+      "latitude": 36.741474,
+      "longitude": 3.010099,
+      "accuracy_m": 24,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-02T05:00:00Z",
+      "latitude": 36.734088,
+      "longitude": 3.05182,
+      "accuracy_m": 17,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-02T08:00:00Z",
+      "latitude": 36.738184,
+      "longitude": 3.041803,
+      "accuracy_m": 14,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-02T11:00:00Z",
+      "latitude": 36.701849,
+      "longitude": 3.036323,
+      "accuracy_m": 31,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-02T14:00:00Z",
+      "latitude": 36.720801,
+      "longitude": 3.062977,
+      "accuracy_m": 10,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-02T17:00:00Z",
+      "latitude": 36.775224,
+      "longitude": 3.06947,
+      "accuracy_m": 18,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-02T20:00:00Z",
+      "latitude": 36.774551,
+      "longitude": 3.067271,
+      "accuracy_m": 14,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-02T23:00:00Z",
+      "latitude": 36.75616,
+      "longitude": 3.06321,
+      "accuracy_m": 18,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-03T02:00:00Z",
+      "latitude": 36.771352,
+      "longitude": 3.040475,
+      "accuracy_m": 19,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-03T05:00:00Z",
+      "latitude": 36.706979,
+      "longitude": 3.037321,
+      "accuracy_m": 14,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-03T08:00:00Z",
+      "latitude": 36.775323,
+      "longitude": 3.053616,
+      "accuracy_m": 19,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-03T11:00:00Z",
+      "latitude": 36.760598,
+      "longitude": 3.024292,
+      "accuracy_m": 29,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-03T14:00:00Z",
+      "latitude": 36.705865,
+      "longitude": 3.069404,
+      "accuracy_m": 32,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-03T17:00:00Z",
+      "latitude": 36.756825,
+      "longitude": 3.089137,
+      "accuracy_m": 8,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-03T20:00:00Z",
+      "latitude": 36.716529,
+      "longitude": 3.039882,
+      "accuracy_m": 8,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-03T23:00:00Z",
+      "latitude": 36.758685,
+      "longitude": 3.001976,
+      "accuracy_m": 29,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-04T02:00:00Z",
+      "latitude": 36.769011,
+      "longitude": 3.02024,
+      "accuracy_m": 19,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-04T05:00:00Z",
+      "latitude": 36.749819,
+      "longitude": 3.051238,
+      "accuracy_m": 11,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-04T08:00:00Z",
+      "latitude": 36.751708,
+      "longitude": 3.018814,
+      "accuracy_m": 31,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-04T11:00:00Z",
+      "latitude": 36.770347,
+      "longitude": 3.018651,
+      "accuracy_m": 28,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-04T14:00:00Z",
+      "latitude": 36.751267,
+      "longitude": 3.022881,
+      "accuracy_m": 5,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-04T17:00:00Z",
+      "latitude": 36.761608,
+      "longitude": 3.087996,
+      "accuracy_m": 18,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-04T20:00:00Z",
+      "latitude": 36.724893,
+      "longitude": 3.021188,
+      "accuracy_m": 12,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-04T23:00:00Z",
+      "latitude": 36.73013,
+      "longitude": 3.064184,
+      "accuracy_m": 29,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-05T02:00:00Z",
+      "latitude": 36.759433,
+      "longitude": 3.088128,
+      "accuracy_m": 22,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-05T05:00:00Z",
+      "latitude": 36.734546,
+      "longitude": 3.031578,
+      "accuracy_m": 8,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-05T08:00:00Z",
+      "latitude": 36.772012,
+      "longitude": 3.034902,
+      "accuracy_m": 31,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-05T11:00:00Z",
+      "latitude": 36.724412,
+      "longitude": 3.07193,
+      "accuracy_m": 22,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-05T14:00:00Z",
+      "latitude": 36.728391,
+      "longitude": 3.004097,
+      "accuracy_m": 28,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-05T17:00:00Z",
+      "latitude": 36.706932,
+      "longitude": 3.088829,
+      "accuracy_m": 25,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-05T20:00:00Z",
+      "latitude": 36.748867,
+      "longitude": 3.098465,
+      "accuracy_m": 8,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-05T23:00:00Z",
+      "latitude": 36.775869,
+      "longitude": 3.047661,
+      "accuracy_m": 23,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-06T02:00:00Z",
+      "latitude": 36.769189,
+      "longitude": 3.035112,
+      "accuracy_m": 32,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-06T05:00:00Z",
+      "latitude": 36.75909,
+      "longitude": 3.020904,
+      "accuracy_m": 34,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-06T08:00:00Z",
+      "latitude": 36.715543,
+      "longitude": 3.070383,
+      "accuracy_m": 23,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-06T11:00:00Z",
+      "latitude": 36.761175,
+      "longitude": 3.070951,
+      "accuracy_m": 27,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-06T14:00:00Z",
+      "latitude": 36.721188,
+      "longitude": 3.021146,
+      "accuracy_m": 13,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-06T17:00:00Z",
+      "latitude": 36.769798,
+      "longitude": 3.054274,
+      "accuracy_m": 21,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-06T20:00:00Z",
+      "latitude": 36.774726,
+      "longitude": 3.058249,
+      "accuracy_m": 19,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-06T23:00:00Z",
+      "latitude": 36.704593,
+      "longitude": 3.063985,
+      "accuracy_m": 11,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-07T02:00:00Z",
+      "latitude": 36.725525,
+      "longitude": 3.050933,
+      "accuracy_m": 27,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-07T05:00:00Z",
+      "latitude": 36.734042,
+      "longitude": 3.034517,
+      "accuracy_m": 12,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-07T08:00:00Z",
+      "latitude": 36.778462,
+      "longitude": 3.095684,
+      "accuracy_m": 23,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-07T11:00:00Z",
+      "latitude": 36.736199,
+      "longitude": 3.060684,
+      "accuracy_m": 25,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-07T14:00:00Z",
+      "latitude": 36.772754,
+      "longitude": 3.020129,
+      "accuracy_m": 32,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-07T17:00:00Z",
+      "latitude": 36.727466,
+      "longitude": 3.059702,
+      "accuracy_m": 20,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-07T20:00:00Z",
+      "latitude": 36.755188,
+      "longitude": 3.070754,
+      "accuracy_m": 16,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-07T23:00:00Z",
+      "latitude": 36.712442,
+      "longitude": 3.081121,
+      "accuracy_m": 19,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-08T02:00:00Z",
+      "latitude": 36.778417,
+      "longitude": 3.075212,
+      "accuracy_m": 29,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-08T05:00:00Z",
+      "latitude": 36.70932,
+      "longitude": 3.097746,
+      "accuracy_m": 18,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-08T08:00:00Z",
+      "latitude": 36.706777,
+      "longitude": 3.062915,
+      "accuracy_m": 6,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-08T11:00:00Z",
+      "latitude": 36.778708,
+      "longitude": 3.053544,
+      "accuracy_m": 33,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-08T14:00:00Z",
+      "latitude": 36.742256,
+      "longitude": 3.044243,
+      "accuracy_m": 12,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-08T17:00:00Z",
+      "latitude": 36.758718,
+      "longitude": 3.037135,
+      "accuracy_m": 13,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-08T20:00:00Z",
+      "latitude": 36.745204,
+      "longitude": 3.011517,
+      "accuracy_m": 19,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-08T23:00:00Z",
+      "latitude": 36.717957,
+      "longitude": 3.072067,
+      "accuracy_m": 14,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-09T02:00:00Z",
+      "latitude": 36.73154,
+      "longitude": 3.040071,
+      "accuracy_m": 30,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-09T05:00:00Z",
+      "latitude": 36.744716,
+      "longitude": 3.07508,
+      "accuracy_m": 29,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-09T08:00:00Z",
+      "latitude": 36.75379,
+      "longitude": 3.027639,
+      "accuracy_m": 29,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-09T11:00:00Z",
+      "latitude": 36.778488,
+      "longitude": 3.075264,
+      "accuracy_m": 32,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-09T14:00:00Z",
+      "latitude": 36.760836,
+      "longitude": 3.029085,
+      "accuracy_m": 7,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-09T17:00:00Z",
+      "latitude": 36.763107,
+      "longitude": 3.026407,
+      "accuracy_m": 27,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-09T20:00:00Z",
+      "latitude": 36.756721,
+      "longitude": 3.020582,
+      "accuracy_m": 15,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-09T23:00:00Z",
+      "latitude": 36.768157,
+      "longitude": 3.060409,
+      "accuracy_m": 33,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-10T02:00:00Z",
+      "latitude": 36.774573,
+      "longitude": 3.092752,
+      "accuracy_m": 7,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-10T05:00:00Z",
+      "latitude": 36.70155,
+      "longitude": 3.019872,
+      "accuracy_m": 31,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-10T08:00:00Z",
+      "latitude": 36.752314,
+      "longitude": 3.093425,
+      "accuracy_m": 28,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-10T11:00:00Z",
+      "latitude": 36.75575,
+      "longitude": 3.020112,
+      "accuracy_m": 15,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-10T14:00:00Z",
+      "latitude": 36.714701,
+      "longitude": 3.017538,
+      "accuracy_m": 35,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-10T17:00:00Z",
+      "latitude": 36.773925,
+      "longitude": 3.09853,
+      "accuracy_m": 16,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-10T20:00:00Z",
+      "latitude": 36.72665,
+      "longitude": 3.099059,
+      "accuracy_m": 20,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-10T23:00:00Z",
+      "latitude": 36.747399,
+      "longitude": 3.060046,
+      "accuracy_m": 19,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-11T02:00:00Z",
+      "latitude": 36.735544,
+      "longitude": 3.073752,
+      "accuracy_m": 29,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-11T05:00:00Z",
+      "latitude": 36.74834,
+      "longitude": 3.081383,
+      "accuracy_m": 6,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-11T08:00:00Z",
+      "latitude": 36.711807,
+      "longitude": 3.070257,
+      "accuracy_m": 35,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-11T11:00:00Z",
+      "latitude": 36.754433,
+      "longitude": 3.030439,
+      "accuracy_m": 20,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-11T14:00:00Z",
+      "latitude": 36.748819,
+      "longitude": 3.0998,
+      "accuracy_m": 34,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-11T17:00:00Z",
+      "latitude": 36.721819,
+      "longitude": 3.073016,
+      "accuracy_m": 16,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-11T20:00:00Z",
+      "latitude": 36.731983,
+      "longitude": 3.035981,
+      "accuracy_m": 13,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-11T23:00:00Z",
+      "latitude": 36.724694,
+      "longitude": 3.082931,
+      "accuracy_m": 33,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-12T02:00:00Z",
+      "latitude": 36.720705,
+      "longitude": 3.027383,
+      "accuracy_m": 8,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-12T05:00:00Z",
+      "latitude": 36.773408,
+      "longitude": 3.049187,
+      "accuracy_m": 14,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-12T08:00:00Z",
+      "latitude": 36.701372,
+      "longitude": 3.012744,
+      "accuracy_m": 28,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-12T11:00:00Z",
+      "latitude": 36.725122,
+      "longitude": 3.099355,
+      "accuracy_m": 22,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-12T14:00:00Z",
+      "latitude": 36.772495,
+      "longitude": 3.049336,
+      "accuracy_m": 16,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-12T17:00:00Z",
+      "latitude": 36.750482,
+      "longitude": 3.033807,
+      "accuracy_m": 35,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-12T20:00:00Z",
+      "latitude": 36.727115,
+      "longitude": 3.080542,
+      "accuracy_m": 13,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-12T23:00:00Z",
+      "latitude": 36.712668,
+      "longitude": 3.090652,
+      "accuracy_m": 10,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-13T02:00:00Z",
+      "latitude": 36.725156,
+      "longitude": 3.05696,
+      "accuracy_m": 23,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-13T05:00:00Z",
+      "latitude": 36.767655,
+      "longitude": 3.033733,
+      "accuracy_m": 7,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-13T08:00:00Z",
+      "latitude": 36.766342,
+      "longitude": 3.023061,
+      "accuracy_m": 12,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-13T11:00:00Z",
+      "latitude": 36.741799,
+      "longitude": 3.047247,
+      "accuracy_m": 29,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-13T14:00:00Z",
+      "latitude": 36.71232,
+      "longitude": 3.074271,
+      "accuracy_m": 22,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-13T17:00:00Z",
+      "latitude": 36.738684,
+      "longitude": 3.06509,
+      "accuracy_m": 7,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-13T20:00:00Z",
+      "latitude": 36.745553,
+      "longitude": 3.001381,
+      "accuracy_m": 26,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-13T23:00:00Z",
+      "latitude": 36.70276,
+      "longitude": 3.077139,
+      "accuracy_m": 32,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-14T02:00:00Z",
+      "latitude": 36.726552,
+      "longitude": 3.095007,
+      "accuracy_m": 24,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-14T05:00:00Z",
+      "latitude": 36.771795,
+      "longitude": 3.096855,
+      "accuracy_m": 12,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-14T08:00:00Z",
+      "latitude": 36.712735,
+      "longitude": 3.029523,
+      "accuracy_m": 25,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-14T11:00:00Z",
+      "latitude": 36.756006,
+      "longitude": 3.028643,
+      "accuracy_m": 19,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-14T14:00:00Z",
+      "latitude": 36.731935,
+      "longitude": 3.03529,
+      "accuracy_m": 9,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-14T17:00:00Z",
+      "latitude": 36.72754,
+      "longitude": 3.012201,
+      "accuracy_m": 35,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-14T20:00:00Z",
+      "latitude": 36.765032,
+      "longitude": 3.08935,
+      "accuracy_m": 5,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-14T23:00:00Z",
+      "latitude": 36.740907,
+      "longitude": 3.027623,
+      "accuracy_m": 26,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-15T02:00:00Z",
+      "latitude": 36.779693,
+      "longitude": 3.089029,
+      "accuracy_m": 24,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-15T05:00:00Z",
+      "latitude": 36.743903,
+      "longitude": 3.044656,
+      "accuracy_m": 32,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-15T08:00:00Z",
+      "latitude": 36.74239,
+      "longitude": 3.011671,
+      "accuracy_m": 27,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-15T11:00:00Z",
+      "latitude": 36.740394,
+      "longitude": 3.079384,
+      "accuracy_m": 28,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-15T14:00:00Z",
+      "latitude": 36.755702,
+      "longitude": 3.057457,
+      "accuracy_m": 29,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-15T17:00:00Z",
+      "latitude": 36.713245,
+      "longitude": 3.061022,
+      "accuracy_m": 33,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-15T20:00:00Z",
+      "latitude": 36.761436,
+      "longitude": 3.089302,
+      "accuracy_m": 23,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-15T23:00:00Z",
+      "latitude": 36.733413,
+      "longitude": 3.033072,
+      "accuracy_m": 33,
+      "provider": "gps"
+    },
+    {
+      "timestamp_utc": "2026-11-16T02:00:00Z",
+      "latitude": 36.747762,
+      "longitude": 3.014222,
+      "accuracy_m": 24,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-16T05:00:00Z",
+      "latitude": 36.7386,
+      "longitude": 3.027332,
+      "accuracy_m": 20,
+      "provider": "fused"
+    },
+    {
+      "timestamp_utc": "2026-11-16T08:00:00Z",
+      "latitude": 36.74398,
+      "longitude": 3.058242,
+      "accuracy_m": 14,
+      "provider": "gps"
+    }
+  ],
+  "call_logs": [
+    {
+      "timestamp_utc": "2026-11-01T12:00:00Z",
+      "peer_msisdn": "+2135550110",
+      "direction": "INCOMING",
+      "duration_sec": 70
+    },
+    {
+      "timestamp_utc": "2026-11-01T16:00:00Z",
+      "peer_msisdn": "+2135550111",
+      "direction": "MISSED",
+      "duration_sec": 59
+    },
+    {
+      "timestamp_utc": "2026-11-01T20:00:00Z",
+      "peer_msisdn": "+2135550104",
+      "direction": "INCOMING",
+      "duration_sec": 8
+    },
+    {
+      "timestamp_utc": "2026-11-02T00:00:00Z",
+      "peer_msisdn": "+2135550105",
+      "direction": "MISSED",
+      "duration_sec": 102
+    },
+    {
+      "timestamp_utc": "2026-11-02T04:00:00Z",
+      "peer_msisdn": "+2135550102",
+      "direction": "INCOMING",
+      "duration_sec": 37
+    },
+    {
+      "timestamp_utc": "2026-11-02T08:00:00Z",
+      "peer_msisdn": "+2135550106",
+      "direction": "MISSED",
+      "duration_sec": 212
+    },
+    {
+      "timestamp_utc": "2026-11-02T12:00:00Z",
+      "peer_msisdn": "+2135550101",
+      "direction": "MISSED",
+      "duration_sec": 256
+    },
+    {
+      "timestamp_utc": "2026-11-02T16:00:00Z",
+      "peer_msisdn": "+2135550106",
+      "direction": "MISSED",
+      "duration_sec": 58
+    },
+    {
+      "timestamp_utc": "2026-11-02T20:00:00Z",
+      "peer_msisdn": "+2135550110",
+      "direction": "INCOMING",
+      "duration_sec": 231
+    },
+    {
+      "timestamp_utc": "2026-11-03T00:00:00Z",
+      "peer_msisdn": "+2135550101",
+      "direction": "OUTGOING",
+      "duration_sec": 1
+    },
+    {
+      "timestamp_utc": "2026-11-03T04:00:00Z",
+      "peer_msisdn": "+2135550106",
+      "direction": "INCOMING",
+      "duration_sec": 379
+    },
+    {
+      "timestamp_utc": "2026-11-03T08:00:00Z",
+      "peer_msisdn": "+2135550111",
+      "direction": "OUTGOING",
+      "duration_sec": 74
+    },
+    {
+      "timestamp_utc": "2026-11-03T12:00:00Z",
+      "peer_msisdn": "+2135550110",
+      "direction": "INCOMING",
+      "duration_sec": 208
+    },
+    {
+      "timestamp_utc": "2026-11-03T16:00:00Z",
+      "peer_msisdn": "+2135550104",
+      "direction": "OUTGOING",
+      "duration_sec": 80
+    },
+    {
+      "timestamp_utc": "2026-11-03T20:00:00Z",
+      "peer_msisdn": "+2135550103",
+      "direction": "MISSED",
+      "duration_sec": 363
+    },
+    {
+      "timestamp_utc": "2026-11-04T00:00:00Z",
+      "peer_msisdn": "+2135550110",
+      "direction": "OUTGOING",
+      "duration_sec": 337
+    },
+    {
+      "timestamp_utc": "2026-11-04T04:00:00Z",
+      "peer_msisdn": "+2135550102",
+      "direction": "OUTGOING",
+      "duration_sec": 29
+    },
+    {
+      "timestamp_utc": "2026-11-04T08:00:00Z",
+      "peer_msisdn": "+2135550103",
+      "direction": "INCOMING",
+      "duration_sec": 27
+    },
+    {
+      "timestamp_utc": "2026-11-04T12:00:00Z",
+      "peer_msisdn": "+2135550109",
+      "direction": "OUTGOING",
+      "duration_sec": 334
+    },
+    {
+      "timestamp_utc": "2026-11-04T16:00:00Z",
+      "peer_msisdn": "+2135550101",
+      "direction": "MISSED",
+      "duration_sec": 161
+    },
+    {
+      "timestamp_utc": "2026-11-04T20:00:00Z",
+      "peer_msisdn": "+2135550108",
+      "direction": "OUTGOING",
+      "duration_sec": 159
+    },
+    {
+      "timestamp_utc": "2026-11-05T00:00:00Z",
+      "peer_msisdn": "+2135550103",
+      "direction": "MISSED",
+      "duration_sec": 46
+    },
+    {
+      "timestamp_utc": "2026-11-05T04:00:00Z",
+      "peer_msisdn": "+2135550102",
+      "direction": "MISSED",
+      "duration_sec": 75
+    },
+    {
+      "timestamp_utc": "2026-11-05T08:00:00Z",
+      "peer_msisdn": "+2135550110",
+      "direction": "OUTGOING",
+      "duration_sec": 405
+    },
+    {
+      "timestamp_utc": "2026-11-05T12:00:00Z",
+      "peer_msisdn": "+2135550102",
+      "direction": "MISSED",
+      "duration_sec": 14
+    },
+    {
+      "timestamp_utc": "2026-11-05T16:00:00Z",
+      "peer_msisdn": "+2135550101",
+      "direction": "INCOMING",
+      "duration_sec": 79
+    },
+    {
+      "timestamp_utc": "2026-11-05T20:00:00Z",
+      "peer_msisdn": "+2135550105",
+      "direction": "MISSED",
+      "duration_sec": 374
+    },
+    {
+      "timestamp_utc": "2026-11-06T00:00:00Z",
+      "peer_msisdn": "+2135550104",
+      "direction": "OUTGOING",
+      "duration_sec": 2
+    },
+    {
+      "timestamp_utc": "2026-11-06T04:00:00Z",
+      "peer_msisdn": "+2135550102",
+      "direction": "MISSED",
+      "duration_sec": 230
+    },
+    {
+      "timestamp_utc": "2026-11-06T08:00:00Z",
+      "peer_msisdn": "+2135550111",
+      "direction": "OUTGOING",
+      "duration_sec": 411
+    },
+    {
+      "timestamp_utc": "2026-11-06T12:00:00Z",
+      "peer_msisdn": "+2135550110",
+      "direction": "INCOMING",
+      "duration_sec": 111
+    },
+    {
+      "timestamp_utc": "2026-11-06T16:00:00Z",
+      "peer_msisdn": "+2135550110",
+      "direction": "MISSED",
+      "duration_sec": 141
+    },
+    {
+      "timestamp_utc": "2026-11-06T20:00:00Z",
+      "peer_msisdn": "+2135550111",
+      "direction": "OUTGOING",
+      "duration_sec": 152
+    },
+    {
+      "timestamp_utc": "2026-11-07T00:00:00Z",
+      "peer_msisdn": "+2135550106",
+      "direction": "INCOMING",
+      "duration_sec": 143
+    },
+    {
+      "timestamp_utc": "2026-11-07T04:00:00Z",
+      "peer_msisdn": "+2135550107",
+      "direction": "INCOMING",
+      "duration_sec": 88
+    },
+    {
+      "timestamp_utc": "2026-11-07T08:00:00Z",
+      "peer_msisdn": "+2135550105",
+      "direction": "MISSED",
+      "duration_sec": 269
+    },
+    {
+      "timestamp_utc": "2026-11-07T12:00:00Z",
+      "peer_msisdn": "+2135550106",
+      "direction": "MISSED",
+      "duration_sec": 231
+    },
+    {
+      "timestamp_utc": "2026-11-07T16:00:00Z",
+      "peer_msisdn": "+2135550109",
+      "direction": "INCOMING",
+      "duration_sec": 117
+    },
+    {
+      "timestamp_utc": "2026-11-07T20:00:00Z",
+      "peer_msisdn": "+2135550110",
+      "direction": "MISSED",
+      "duration_sec": 419
+    },
+    {
+      "timestamp_utc": "2026-11-08T00:00:00Z",
+      "peer_msisdn": "+2135550108",
+      "direction": "INCOMING",
+      "duration_sec": 372
+    },
+    {
+      "timestamp_utc": "2026-11-08T04:00:00Z",
+      "peer_msisdn": "+2135550107",
+      "direction": "MISSED",
+      "duration_sec": 136
+    },
+    {
+      "timestamp_utc": "2026-11-08T08:00:00Z",
+      "peer_msisdn": "+2135550107",
+      "direction": "OUTGOING",
+      "duration_sec": 81
+    },
+    {
+      "timestamp_utc": "2026-11-08T12:00:00Z",
+      "peer_msisdn": "+2135550103",
+      "direction": "MISSED",
+      "duration_sec": 115
+    },
+    {
+      "timestamp_utc": "2026-11-08T16:00:00Z",
+      "peer_msisdn": "+2135550104",
+      "direction": "MISSED",
+      "duration_sec": 3
+    },
+    {
+      "timestamp_utc": "2026-11-08T20:00:00Z",
+      "peer_msisdn": "+2135550104",
+      "direction": "INCOMING",
+      "duration_sec": 365
+    },
+    {
+      "timestamp_utc": "2026-11-09T00:00:00Z",
+      "peer_msisdn": "+2135550111",
+      "direction": "OUTGOING",
+      "duration_sec": 258
+    },
+    {
+      "timestamp_utc": "2026-11-09T04:00:00Z",
+      "peer_msisdn": "+2135550107",
+      "direction": "MISSED",
+      "duration_sec": 102
+    },
+    {
+      "timestamp_utc": "2026-11-09T08:00:00Z",
+      "peer_msisdn": "+2135550108",
+      "direction": "INCOMING",
+      "duration_sec": 45
+    },
+    {
+      "timestamp_utc": "2026-11-09T12:00:00Z",
+      "peer_msisdn": "+2135550108",
+      "direction": "MISSED",
+      "duration_sec": 417
+    },
+    {
+      "timestamp_utc": "2026-11-09T16:00:00Z",
+      "peer_msisdn": "+2135550105",
+      "direction": "MISSED",
+      "duration_sec": 201
+    },
+    {
+      "timestamp_utc": "2026-11-09T20:00:00Z",
+      "peer_msisdn": "+2135550112",
+      "direction": "MISSED",
+      "duration_sec": 390
+    },
+    {
+      "timestamp_utc": "2026-11-10T00:00:00Z",
+      "peer_msisdn": "+2135550106",
+      "direction": "INCOMING",
+      "duration_sec": 367
+    },
+    {
+      "timestamp_utc": "2026-11-10T04:00:00Z",
+      "peer_msisdn": "+2135550105",
+      "direction": "INCOMING",
+      "duration_sec": 367
+    },
+    {
+      "timestamp_utc": "2026-11-10T08:00:00Z",
+      "peer_msisdn": "+2135550108",
+      "direction": "MISSED",
+      "duration_sec": 224
+    },
+    {
+      "timestamp_utc": "2026-11-10T12:00:00Z",
+      "peer_msisdn": "+2135550104",
+      "direction": "MISSED",
+      "duration_sec": 279
+    },
+    {
+      "timestamp_utc": "2026-11-10T16:00:00Z",
+      "peer_msisdn": "+2135550110",
+      "direction": "INCOMING",
+      "duration_sec": 98
+    },
+    {
+      "timestamp_utc": "2026-11-10T20:00:00Z",
+      "peer_msisdn": "+2135550112",
+      "direction": "OUTGOING",
+      "duration_sec": 174
+    },
+    {
+      "timestamp_utc": "2026-11-11T00:00:00Z",
+      "peer_msisdn": "+2135550101",
+      "direction": "OUTGOING",
+      "duration_sec": 123
+    },
+    {
+      "timestamp_utc": "2026-11-11T04:00:00Z",
+      "peer_msisdn": "+2135550111",
+      "direction": "OUTGOING",
+      "duration_sec": 378
+    },
+    {
+      "timestamp_utc": "2026-11-11T08:00:00Z",
+      "peer_msisdn": "+2135550101",
+      "direction": "OUTGOING",
+      "duration_sec": 368
+    },
+    {
+      "timestamp_utc": "2026-11-11T12:00:00Z",
+      "peer_msisdn": "+2135550112",
+      "direction": "INCOMING",
+      "duration_sec": 112
+    },
+    {
+      "timestamp_utc": "2026-11-11T16:00:00Z",
+      "peer_msisdn": "+2135550103",
+      "direction": "INCOMING",
+      "duration_sec": 71
+    },
+    {
+      "timestamp_utc": "2026-11-11T20:00:00Z",
+      "peer_msisdn": "+2135550111",
+      "direction": "OUTGOING",
+      "duration_sec": 414
+    },
+    {
+      "timestamp_utc": "2026-11-12T00:00:00Z",
+      "peer_msisdn": "+2135550110",
+      "direction": "OUTGOING",
+      "duration_sec": 67
+    },
+    {
+      "timestamp_utc": "2026-11-12T04:00:00Z",
+      "peer_msisdn": "+2135550109",
+      "direction": "INCOMING",
+      "duration_sec": 289
+    },
+    {
+      "timestamp_utc": "2026-11-12T08:00:00Z",
+      "peer_msisdn": "+2135550104",
+      "direction": "MISSED",
+      "duration_sec": 162
+    },
+    {
+      "timestamp_utc": "2026-11-12T12:00:00Z",
+      "peer_msisdn": "+2135550109",
+      "direction": "INCOMING",
+      "duration_sec": 232
+    },
+    {
+      "timestamp_utc": "2026-11-12T16:00:00Z",
+      "peer_msisdn": "+2135550103",
+      "direction": "MISSED",
+      "duration_sec": 358
+    },
+    {
+      "timestamp_utc": "2026-11-12T20:00:00Z",
+      "peer_msisdn": "+2135550103",
+      "direction": "MISSED",
+      "duration_sec": 28
+    },
+    {
+      "timestamp_utc": "2026-11-13T00:00:00Z",
+      "peer_msisdn": "+2135550107",
+      "direction": "MISSED",
+      "duration_sec": 211
+    },
+    {
+      "timestamp_utc": "2026-11-13T04:00:00Z",
+      "peer_msisdn": "+2135550104",
+      "direction": "INCOMING",
+      "duration_sec": 223
+    },
+    {
+      "timestamp_utc": "2026-11-13T08:00:00Z",
+      "peer_msisdn": "+2135550101",
+      "direction": "INCOMING",
+      "duration_sec": 107
+    },
+    {
+      "timestamp_utc": "2026-11-13T12:00:00Z",
+      "peer_msisdn": "+2135550101",
+      "direction": "INCOMING",
+      "duration_sec": 61
+    },
+    {
+      "timestamp_utc": "2026-11-13T16:00:00Z",
+      "peer_msisdn": "+2135550107",
+      "direction": "MISSED",
+      "duration_sec": 178
+    },
+    {
+      "timestamp_utc": "2026-11-13T20:00:00Z",
+      "peer_msisdn": "+2135550111",
+      "direction": "MISSED",
+      "duration_sec": 177
+    },
+    {
+      "timestamp_utc": "2026-11-14T00:00:00Z",
+      "peer_msisdn": "+2135550105",
+      "direction": "INCOMING",
+      "duration_sec": 312
+    },
+    {
+      "timestamp_utc": "2026-11-14T04:00:00Z",
+      "peer_msisdn": "+2135550104",
+      "direction": "MISSED",
+      "duration_sec": 65
+    },
+    {
+      "timestamp_utc": "2026-11-14T08:00:00Z",
+      "peer_msisdn": "+2135550104",
+      "direction": "INCOMING",
+      "duration_sec": 337
+    },
+    {
+      "timestamp_utc": "2026-11-14T12:00:00Z",
+      "peer_msisdn": "+2135550103",
+      "direction": "OUTGOING",
+      "duration_sec": 397
+    },
+    {
+      "timestamp_utc": "2026-11-14T16:00:00Z",
+      "peer_msisdn": "+2135550107",
+      "direction": "MISSED",
+      "duration_sec": 81
+    },
+    {
+      "timestamp_utc": "2026-11-14T20:00:00Z",
+      "peer_msisdn": "+2135550101",
+      "direction": "OUTGOING",
+      "duration_sec": 155
+    },
+    {
+      "timestamp_utc": "2026-11-15T00:00:00Z",
+      "peer_msisdn": "+2135550104",
+      "direction": "MISSED",
+      "duration_sec": 342
+    },
+    {
+      "timestamp_utc": "2026-11-15T04:00:00Z",
+      "peer_msisdn": "+2135550109",
+      "direction": "INCOMING",
+      "duration_sec": 63
+    },
+    {
+      "timestamp_utc": "2026-11-15T08:00:00Z",
+      "peer_msisdn": "+2135550103",
+      "direction": "OUTGOING",
+      "duration_sec": 52
+    },
+    {
+      "timestamp_utc": "2026-11-15T12:00:00Z",
+      "peer_msisdn": "+2135550109",
+      "direction": "MISSED",
+      "duration_sec": 138
+    },
+    {
+      "timestamp_utc": "2026-11-15T16:00:00Z",
+      "peer_msisdn": "+2135550104",
+      "direction": "INCOMING",
+      "duration_sec": 244
+    },
+    {
+      "timestamp_utc": "2026-11-15T20:00:00Z",
+      "peer_msisdn": "+2135550109",
+      "direction": "MISSED",
+      "duration_sec": 231
+    },
+    {
+      "timestamp_utc": "2026-11-16T00:00:00Z",
+      "peer_msisdn": "+2135550105",
+      "direction": "INCOMING",
+      "duration_sec": 113
+    },
+    {
+      "timestamp_utc": "2026-11-16T04:00:00Z",
+      "peer_msisdn": "+2135550105",
+      "direction": "OUTGOING",
+      "duration_sec": 47
+    },
+    {
+      "timestamp_utc": "2026-11-16T08:00:00Z",
+      "peer_msisdn": "+2135550111",
+      "direction": "INCOMING",
+      "duration_sec": 294
+    },
+    {
+      "timestamp_utc": "2026-11-16T12:00:00Z",
+      "peer_msisdn": "+2135550103",
+      "direction": "INCOMING",
+      "duration_sec": 392
+    },
+    {
+      "timestamp_utc": "2026-11-16T16:00:00Z",
+      "peer_msisdn": "+2135550103",
+      "direction": "OUTGOING",
+      "duration_sec": 146
+    },
+    {
+      "timestamp_utc": "2026-11-16T20:00:00Z",
+      "peer_msisdn": "+2135550112",
+      "direction": "OUTGOING",
+      "duration_sec": 134
+    },
+    {
+      "timestamp_utc": "2026-11-17T00:00:00Z",
+      "peer_msisdn": "+2135550105",
+      "direction": "INCOMING",
+      "duration_sec": 388
+    },
+    {
+      "timestamp_utc": "2026-11-17T04:00:00Z",
+      "peer_msisdn": "+2135550103",
+      "direction": "MISSED",
+      "duration_sec": 243
+    },
+    {
+      "timestamp_utc": "2026-11-17T08:00:00Z",
+      "peer_msisdn": "+2135550110",
+      "direction": "OUTGOING",
+      "duration_sec": 152
+    },
+    {
+      "timestamp_utc": "2026-11-17T12:00:00Z",
+      "peer_msisdn": "+2135550110",
+      "direction": "OUTGOING",
+      "duration_sec": 394
+    },
+    {
+      "timestamp_utc": "2026-11-17T16:00:00Z",
+      "peer_msisdn": "+2135550105",
+      "direction": "OUTGOING",
+      "duration_sec": 90
+    },
+    {
+      "timestamp_utc": "2026-11-17T20:00:00Z",
+      "peer_msisdn": "+2135550106",
+      "direction": "MISSED",
+      "duration_sec": 18
+    },
+    {
+      "timestamp_utc": "2026-11-18T00:00:00Z",
+      "peer_msisdn": "+2135550106",
+      "direction": "INCOMING",
+      "duration_sec": 279
+    }
+  ],
+  "browser_history": [
+    {
+      "url": "https://portal1.example.com/dossier/fictif/101",
+      "title": "Consultation Facture Fictive #101",
+      "visited_utc": "2026-11-01T13:00:00Z"
+    },
+    {
+      "url": "https://portal2.example.com/dossier/fictif/102",
+      "title": "Consultation Facture Fictive #102",
+      "visited_utc": "2026-11-01T18:00:00Z"
+    },
+    {
+      "url": "https://portal3.example.com/dossier/fictif/103",
+      "title": "Consultation Facture Fictive #103",
+      "visited_utc": "2026-11-01T23:00:00Z"
+    },
+    {
+      "url": "https://portal4.example.com/dossier/fictif/104",
+      "title": "Consultation Facture Fictive #104",
+      "visited_utc": "2026-11-02T04:00:00Z"
+    },
+    {
+      "url": "https://portal0.example.com/dossier/fictif/105",
+      "title": "Consultation Facture Fictive #105",
+      "visited_utc": "2026-11-02T09:00:00Z"
+    },
+    {
+      "url": "https://portal1.example.com/dossier/fictif/106",
+      "title": "Consultation Facture Fictive #106",
+      "visited_utc": "2026-11-02T14:00:00Z"
+    },
+    {
+      "url": "https://portal2.example.com/dossier/fictif/107",
+      "title": "Consultation Facture Fictive #107",
+      "visited_utc": "2026-11-02T19:00:00Z"
+    },
+    {
+      "url": "https://portal3.example.com/dossier/fictif/108",
+      "title": "Consultation Facture Fictive #108",
+      "visited_utc": "2026-11-03T00:00:00Z"
+    },
+    {
+      "url": "https://portal4.example.com/dossier/fictif/109",
+      "title": "Consultation Facture Fictive #109",
+      "visited_utc": "2026-11-03T05:00:00Z"
+    },
+    {
+      "url": "https://portal0.example.com/dossier/fictif/110",
+      "title": "Consultation Facture Fictive #110",
+      "visited_utc": "2026-11-03T10:00:00Z"
+    },
+    {
+      "url": "https://portal1.example.com/dossier/fictif/111",
+      "title": "Consultation Facture Fictive #111",
+      "visited_utc": "2026-11-03T15:00:00Z"
+    },
+    {
+      "url": "https://portal2.example.com/dossier/fictif/112",
+      "title": "Consultation Facture Fictive #112",
+      "visited_utc": "2026-11-03T20:00:00Z"
+    },
+    {
+      "url": "https://portal3.example.com/dossier/fictif/113",
+      "title": "Consultation Facture Fictive #113",
+      "visited_utc": "2026-11-04T01:00:00Z"
+    },
+    {
+      "url": "https://portal4.example.com/dossier/fictif/114",
+      "title": "Consultation Facture Fictive #114",
+      "visited_utc": "2026-11-04T06:00:00Z"
+    },
+    {
+      "url": "https://portal0.example.com/dossier/fictif/115",
+      "title": "Consultation Facture Fictive #115",
+      "visited_utc": "2026-11-04T11:00:00Z"
+    },
+    {
+      "url": "https://portal1.example.com/dossier/fictif/116",
+      "title": "Consultation Facture Fictive #116",
+      "visited_utc": "2026-11-04T16:00:00Z"
+    },
+    {
+      "url": "https://portal2.example.com/dossier/fictif/117",
+      "title": "Consultation Facture Fictive #117",
+      "visited_utc": "2026-11-04T21:00:00Z"
+    },
+    {
+      "url": "https://portal3.example.com/dossier/fictif/118",
+      "title": "Consultation Facture Fictive #118",
+      "visited_utc": "2026-11-05T02:00:00Z"
+    },
+    {
+      "url": "https://portal4.example.com/dossier/fictif/119",
+      "title": "Consultation Facture Fictive #119",
+      "visited_utc": "2026-11-05T07:00:00Z"
+    },
+    {
+      "url": "https://portal0.example.com/dossier/fictif/120",
+      "title": "Consultation Facture Fictive #120",
+      "visited_utc": "2026-11-05T12:00:00Z"
+    },
+    {
+      "url": "https://portal1.example.com/dossier/fictif/121",
+      "title": "Consultation Facture Fictive #121",
+      "visited_utc": "2026-11-05T17:00:00Z"
+    },
+    {
+      "url": "https://portal2.example.com/dossier/fictif/122",
+      "title": "Consultation Facture Fictive #122",
+      "visited_utc": "2026-11-05T22:00:00Z"
+    },
+    {
+      "url": "https://portal3.example.com/dossier/fictif/123",
+      "title": "Consultation Facture Fictive #123",
+      "visited_utc": "2026-11-06T03:00:00Z"
+    },
+    {
+      "url": "https://portal4.example.com/dossier/fictif/124",
+      "title": "Consultation Facture Fictive #124",
+      "visited_utc": "2026-11-06T08:00:00Z"
+    },
+    {
+      "url": "https://portal0.example.com/dossier/fictif/125",
+      "title": "Consultation Facture Fictive #125",
+      "visited_utc": "2026-11-06T13:00:00Z"
+    },
+    {
+      "url": "https://portal1.example.com/dossier/fictif/126",
+      "title": "Consultation Facture Fictive #126",
+      "visited_utc": "2026-11-06T18:00:00Z"
+    },
+    {
+      "url": "https://portal2.example.com/dossier/fictif/127",
+      "title": "Consultation Facture Fictive #127",
+      "visited_utc": "2026-11-06T23:00:00Z"
+    },
+    {
+      "url": "https://portal3.example.com/dossier/fictif/128",
+      "title": "Consultation Facture Fictive #128",
+      "visited_utc": "2026-11-07T04:00:00Z"
+    },
+    {
+      "url": "https://portal4.example.com/dossier/fictif/129",
+      "title": "Consultation Facture Fictive #129",
+      "visited_utc": "2026-11-07T09:00:00Z"
+    },
+    {
+      "url": "https://portal0.example.com/dossier/fictif/130",
+      "title": "Consultation Facture Fictive #130",
+      "visited_utc": "2026-11-07T14:00:00Z"
+    },
+    {
+      "url": "https://portal1.example.com/dossier/fictif/131",
+      "title": "Consultation Facture Fictive #131",
+      "visited_utc": "2026-11-07T19:00:00Z"
+    },
+    {
+      "url": "https://portal2.example.com/dossier/fictif/132",
+      "title": "Consultation Facture Fictive #132",
+      "visited_utc": "2026-11-08T00:00:00Z"
+    },
+    {
+      "url": "https://portal3.example.com/dossier/fictif/133",
+      "title": "Consultation Facture Fictive #133",
+      "visited_utc": "2026-11-08T05:00:00Z"
+    },
+    {
+      "url": "https://portal4.example.com/dossier/fictif/134",
+      "title": "Consultation Facture Fictive #134",
+      "visited_utc": "2026-11-08T10:00:00Z"
+    },
+    {
+      "url": "https://portal0.example.com/dossier/fictif/135",
+      "title": "Consultation Facture Fictive #135",
+      "visited_utc": "2026-11-08T15:00:00Z"
+    },
+    {
+      "url": "https://portal1.example.com/dossier/fictif/136",
+      "title": "Consultation Facture Fictive #136",
+      "visited_utc": "2026-11-08T20:00:00Z"
+    },
+    {
+      "url": "https://portal2.example.com/dossier/fictif/137",
+      "title": "Consultation Facture Fictive #137",
+      "visited_utc": "2026-11-09T01:00:00Z"
+    },
+    {
+      "url": "https://portal3.example.com/dossier/fictif/138",
+      "title": "Consultation Facture Fictive #138",
+      "visited_utc": "2026-11-09T06:00:00Z"
+    },
+    {
+      "url": "https://portal4.example.com/dossier/fictif/139",
+      "title": "Consultation Facture Fictive #139",
+      "visited_utc": "2026-11-09T11:00:00Z"
+    },
+    {
+      "url": "https://portal0.example.com/dossier/fictif/140",
+      "title": "Consultation Facture Fictive #140",
+      "visited_utc": "2026-11-09T16:00:00Z"
+    },
+    {
+      "url": "https://portal1.example.com/dossier/fictif/141",
+      "title": "Consultation Facture Fictive #141",
+      "visited_utc": "2026-11-09T21:00:00Z"
+    },
+    {
+      "url": "https://portal2.example.com/dossier/fictif/142",
+      "title": "Consultation Facture Fictive #142",
+      "visited_utc": "2026-11-10T02:00:00Z"
+    },
+    {
+      "url": "https://portal3.example.com/dossier/fictif/143",
+      "title": "Consultation Facture Fictive #143",
+      "visited_utc": "2026-11-10T07:00:00Z"
+    },
+    {
+      "url": "https://portal4.example.com/dossier/fictif/144",
+      "title": "Consultation Facture Fictive #144",
+      "visited_utc": "2026-11-10T12:00:00Z"
+    },
+    {
+      "url": "https://portal0.example.com/dossier/fictif/145",
+      "title": "Consultation Facture Fictive #145",
+      "visited_utc": "2026-11-10T17:00:00Z"
+    },
+    {
+      "url": "https://portal1.example.com/dossier/fictif/146",
+      "title": "Consultation Facture Fictive #146",
+      "visited_utc": "2026-11-10T22:00:00Z"
+    },
+    {
+      "url": "https://portal2.example.com/dossier/fictif/147",
+      "title": "Consultation Facture Fictive #147",
+      "visited_utc": "2026-11-11T03:00:00Z"
+    },
+    {
+      "url": "https://portal3.example.com/dossier/fictif/148",
+      "title": "Consultation Facture Fictive #148",
+      "visited_utc": "2026-11-11T08:00:00Z"
+    },
+    {
+      "url": "https://portal4.example.com/dossier/fictif/149",
+      "title": "Consultation Facture Fictive #149",
+      "visited_utc": "2026-11-11T13:00:00Z"
+    },
+    {
+      "url": "https://portal0.example.com/dossier/fictif/150",
+      "title": "Consultation Facture Fictive #150",
+      "visited_utc": "2026-11-11T18:00:00Z"
+    },
+    {
+      "url": "https://portal1.example.com/dossier/fictif/151",
+      "title": "Consultation Facture Fictive #151",
+      "visited_utc": "2026-11-11T23:00:00Z"
+    },
+    {
+      "url": "https://portal2.example.com/dossier/fictif/152",
+      "title": "Consultation Facture Fictive #152",
+      "visited_utc": "2026-11-12T04:00:00Z"
+    },
+    {
+      "url": "https://portal3.example.com/dossier/fictif/153",
+      "title": "Consultation Facture Fictive #153",
+      "visited_utc": "2026-11-12T09:00:00Z"
+    },
+    {
+      "url": "https://portal4.example.com/dossier/fictif/154",
+      "title": "Consultation Facture Fictive #154",
+      "visited_utc": "2026-11-12T14:00:00Z"
+    },
+    {
+      "url": "https://portal0.example.com/dossier/fictif/155",
+      "title": "Consultation Facture Fictive #155",
+      "visited_utc": "2026-11-12T19:00:00Z"
+    },
+    {
+      "url": "https://portal1.example.com/dossier/fictif/156",
+      "title": "Consultation Facture Fictive #156",
+      "visited_utc": "2026-11-13T00:00:00Z"
+    },
+    {
+      "url": "https://portal2.example.com/dossier/fictif/157",
+      "title": "Consultation Facture Fictive #157",
+      "visited_utc": "2026-11-13T05:00:00Z"
+    },
+    {
+      "url": "https://portal3.example.com/dossier/fictif/158",
+      "title": "Consultation Facture Fictive #158",
+      "visited_utc": "2026-11-13T10:00:00Z"
+    },
+    {
+      "url": "https://portal4.example.com/dossier/fictif/159",
+      "title": "Consultation Facture Fictive #159",
+      "visited_utc": "2026-11-13T15:00:00Z"
+    },
+    {
+      "url": "https://portal0.example.com/dossier/fictif/160",
+      "title": "Consultation Facture Fictive #160",
+      "visited_utc": "2026-11-13T20:00:00Z"
+    }
+  ]
+}

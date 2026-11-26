@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import uuid
+from datetime import datetime, timezone
 from typing import Any, Sequence
 
 from fastapi import HTTPException
@@ -461,6 +462,8 @@ async def create_node(
     case_id: uuid.UUID,
     payload: NodeCreate,
     actor_id: str,
+    layer_override: LayerId | None = None,
+    provenance_override: str = "USER_MANUAL",
 ) -> NodeResponse:
     """Create a new node in PostgreSQL, Neo4j, and log to Audit ledger."""
     await get_case(engine, case_id)
@@ -476,6 +479,7 @@ async def create_node(
         )
 
     node_def = NODE_TYPES[payload.type]
+    target_layer = (layer_override or node_def.layer).value
     node_id = uuid.uuid4()
 
     # 1. PostgreSQL insert
@@ -487,7 +491,7 @@ async def create_node(
                     id, case_id, type, layer, label, confidence, provenance,
                     properties, latitude, longitude
                 ) VALUES (
-                    :id, :case_id, :type, :layer, :label, :confidence, 'USER_MANUAL',
+                    :id, :case_id, :type, :layer, :label, :confidence, :provenance,
                     CAST(:properties AS JSONB), :latitude, :longitude
                 );
                 """
@@ -496,9 +500,10 @@ async def create_node(
                 "id": node_id,
                 "case_id": case_id,
                 "type": payload.type,
-                "layer": node_def.layer.value,
+                "layer": target_layer,
                 "label": payload.label,
                 "confidence": payload.confidence,
+                "provenance": provenance_override,
                 "properties": json.dumps(payload.properties),
                 "latitude": payload.latitude,
                 "longitude": payload.longitude,
@@ -511,10 +516,10 @@ async def create_node(
         "id": str(node_id),
         "case_id": str(case_id),
         "type": payload.type,
-        "layer": node_def.layer.value,
+        "layer": target_layer,
         "label": payload.label,
         "confidence": payload.confidence,
-        "provenance": "USER_MANUAL",
+        "provenance": provenance_override,
         "latitude": payload.latitude,
         "longitude": payload.longitude,
         **payload.properties,
@@ -535,7 +540,7 @@ async def create_node(
         action="CREATE_NODE",
         entity_type="node",
         entity_id=node_id,
-        after_state={"type": payload.type, "label": payload.label, "layer": node_def.layer.value},
+        after_state={"type": payload.type, "label": payload.label, "layer": target_layer},
         reason="Manual creation of node via Athar Studio toolbox",
     )
 
@@ -552,10 +557,10 @@ async def create_node(
         id=node_id,
         case_id=case_id,
         type=payload.type,
-        layer=node_def.layer.value,
+        layer=target_layer,
         label=payload.label,
         confidence=payload.confidence,
-        provenance="USER_MANUAL",
+        provenance=provenance_override,
         properties=payload.properties,
         latitude=payload.latitude,
         longitude=payload.longitude,
@@ -604,18 +609,23 @@ async def create_edge(
     tgt_type, _tgt_layer = rows[payload.target_id]
 
     # Validate relation against ontology
-    is_valid, reason = validate_relation(src_type, payload.type, tgt_type)
-    if not is_valid:
-        raise HTTPException(
-            status_code=400,
-            detail={
-                "code": "INVALID_RELATION_FOR_NODES",
-                "message": reason,
-                "source_type": src_type,
-                "target_type": tgt_type,
-                "relation_type": payload.type,
-            },
-        )
+    # (unless investigator explicitly creates a custom transverse link)
+    if not payload.allow_custom_relation:
+        is_valid, reason = validate_relation(src_type, payload.type, tgt_type)
+        if not is_valid:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "code": "INVALID_RELATION_FOR_NODES",
+                    "message": reason,
+                    "source_type": src_type,
+                    "target_type": tgt_type,
+                    "relation_type": payload.type,
+                },
+            )
+
+    valid_layers = {"VERIFIED", "OSINT_RAW", "INFRA", "HYPOTHESIS", "FLOWS"}
+    edge_layer = payload.layer if payload.layer in valid_layers else "HYPOTHESIS"
 
     edge_id = uuid.uuid4()
     # 1. PostgreSQL insert
@@ -627,7 +637,7 @@ async def create_edge(
                     id, case_id, type, source_id, target_id, layer,
                     confidence, provenance, properties
                 ) VALUES (
-                    :id, :case_id, :type, :source_id, :target_id, 'HYPOTHESIS',
+                    :id, :case_id, :type, :source_id, :target_id, :layer,
                     :confidence, 'USER_MANUAL', CAST(:properties AS JSONB)
                 );
                 """
@@ -638,24 +648,26 @@ async def create_edge(
                 "type": payload.type,
                 "source_id": payload.source_id,
                 "target_id": payload.target_id,
+                "layer": edge_layer,
                 "confidence": payload.confidence,
                 "properties": json.dumps(payload.properties),
             },
         )
 
     # 2. Neo4j insert
-    safe_rel_type = "".join(c for c in payload.type if c.isalnum() or c == "_")
+    safe_rel_type = "".join(c for c in payload.type if c.isalnum() or c == "_") or "RELIE_A"
     async with neo4j_driver.session() as session:
         await session.run(
             f"MATCH (s:Node {{id: $s}}), (t:Node {{id: $t}}) "
             f"MERGE (s)-[r:{safe_rel_type} {{id: $id}}]->(t) "
-            f"SET r.case_id = $case_id, r.confidence = $confidence, r.layer = 'HYPOTHESIS'",
+            f"SET r.case_id = $case_id, r.confidence = $confidence, r.layer = $layer",
             {
                 "s": str(payload.source_id),
                 "t": str(payload.target_id),
                 "id": str(edge_id),
                 "case_id": str(case_id),
                 "confidence": payload.confidence,
+                "layer": edge_layer,
             },
         )
 
@@ -669,6 +681,7 @@ async def create_edge(
         entity_id=edge_id,
         after_state={
             "type": payload.type,
+            "layer": edge_layer,
             "source_id": str(payload.source_id),
             "target_id": str(payload.target_id),
         },
@@ -689,7 +702,7 @@ async def create_edge(
         type=payload.type,
         source_id=payload.source_id,
         target_id=payload.target_id,
-        layer="HYPOTHESIS",
+        layer=edge_layer,
         confidence=payload.confidence,
         provenance="USER_MANUAL",
         properties=payload.properties,
@@ -1097,7 +1110,10 @@ async def update_node(
     if not row:
         raise HTTPException(
             status_code=404,
-            detail={"code": "NODE_NOT_FOUND", "message": f"Node '{node_id}' not found in case '{case_id}'"},
+            detail={
+                "code": "NODE_NOT_FOUND",
+                "message": f"Node '{node_id}' not found in case '{case_id}'",
+            },
         )
 
     old_label = row[3]
@@ -1114,7 +1130,8 @@ async def update_node(
     async with engine.begin() as conn:
         await conn.execute(
             text(
-                "UPDATE nodes SET label = :lbl, confidence = :conf, properties = CAST(:props AS JSONB), "
+                "UPDATE nodes SET label = :lbl, confidence = :conf, "
+                "properties = CAST(:props AS JSONB), "
                 "latitude = :lat, longitude = :lng, updated_at = :now "
                 "WHERE id = :id AND case_id = :cid;"
             ),
@@ -1135,7 +1152,13 @@ async def update_node(
         await session.run(
             "MATCH (n:Node {id: $id, case_id: $cid}) "
             "SET n.label = $lbl, n.confidence = $conf, n.updated_at = $now",
-            {"id": str(node_id), "cid": str(case_id), "lbl": new_label, "conf": new_conf, "now": now.isoformat()},
+            {
+                "id": str(node_id),
+                "cid": str(case_id),
+                "lbl": new_label,
+                "conf": new_conf,
+                "now": now.isoformat(),
+            },
         )
 
     # 3. Audit log

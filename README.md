@@ -122,14 +122,14 @@ L'application est accessible sur :
 ### 🧪 Suites de Tests & Assurance Qualité
 
 ```bash
-# Tests Backend (32 tests unitaires, API, SNA, audit SHA-256)
+# Tests Backend (57 tests unitaires, API, SNA, extraction PDF/HTML/NER, audit SHA-256)
 docker exec athar-backend pytest -v
 
 # Linter & Analyse Statique Backend
 docker exec -u root athar-backend ruff check app tests
 docker exec -u root athar-backend mypy app
 
-# Tests Frontend (6 tests unitaires, store, traductions, export)
+# Tests Frontend (87 tests unitaires, store, layouts, onglets, ingestion, traductions, export)
 docker exec athar-frontend npm test
 
 # Typecheck & Linter Frontend
@@ -149,11 +149,11 @@ docker exec athar-frontend npm run build
 | **1A** | Foundation (Docker, Health, Shells, `tokens.css`) | **LIVRÉ** | 2/2 tests health passing, multi-tier compose opérationnel |
 | **Opt A**| Migration PostgreSQL vers TimescaleDB HA PG16 | **LIVRÉ** | `timescale/timescaledb-ha:pg16` actif et persistant |
 | **1B** | Data (Ontologie 37 types, 47 relations, Seed 100 nœuds) | **LIVRÉ** | 10/10 tests registre/schéma passing, cas *Candy Wheels* idempotent |
-| **1C** | Graph API (CRUD, Expand 1/2 hops, Filtre Impact, Audit) | **LIVRÉ** | 6/6 tests API graph passing, registre Merkle SHA-256 vérifié |
+| **1C** | Graph API (CRUD, Expand 1/2 hops, Filtre Impact, Audit) | **LIVRÉ** | 7/7 tests API graph passing, registre Merkle SHA-256 vérifié |
 | **1D** | Canvas (GraphCanvasAdapter, Nœuds circulaires, 5 calques, Inspecteur) | **LIVRÉ** | Interface adaptateur stricte, store réversible Undo/Redo |
-| **1E** | SNA (16 algorithmes de graphe, Allowlist, Panneau SNA) | **LIVRÉ** | 13/13 tests SNA passing, exécution pure Python < 10 ms |
+| **1E** | SNA (16 algorithmes de graphe, Allowlist, Panneau SNA) | **LIVRÉ** | 13/13 tests SNA passing, exécution pure Python rapide (`< 100 ms`) |
 | **1F** | Views (Carte SIG 8 types GPS, Chronologie, Registre, Export PDF/JSON) | **LIVRÉ** | Multi-vues interactives, export conforme ISO 27037 |
-| **1G** | Hardening (Audit sécurité, couverture tests, accessibilité WCAG AA) | **LIVRÉ** | 38/38 tests cumulés passing, 0 erreurs lint/mypy/tsc, 0 emojis |
+| **1G** | Hardening (Audit sécurité, couverture tests, accessibilité WCAG AA) | **LIVRÉ** | 144/144 tests cumulés passing (`57` backend + `87` frontend), 0 erreurs `ruff`/`mypy`/`tsc`/`eslint`, 0 violations `axe-core` |
 
 ---
 

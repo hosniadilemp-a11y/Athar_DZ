@@ -12,10 +12,15 @@ from pydantic import BaseModel, ConfigDict, Field
 class EdgeCreate(BaseModel):
     """Payload to create a new directed edge."""
 
-    type: str = Field(..., description="Canonical relation type from registry")
+    type: str = Field(..., description="Canonical or investigator-defined relation type")
     source_id: UUID = Field(..., description="Source node UUID")
     target_id: UUID = Field(..., description="Target node UUID")
+    layer: str = Field(default="HYPOTHESIS", description="Target evidence layer")
     confidence: float = Field(default=1.0, ge=0.0, le=1.0)
+    allow_custom_relation: bool = Field(
+        default=False,
+        description="Allow investigator-defined transverse relation outside strict ontology pairs",
+    )
     properties: dict[str, Any] = Field(default_factory=dict)
 
 

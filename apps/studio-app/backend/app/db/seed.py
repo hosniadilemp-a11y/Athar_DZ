@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -152,6 +152,68 @@ def clean_meta_keys(meta: dict[str, Any]) -> dict[str, Any]:
     return clean
 
 
+def compute_topological_discovery_timestamps(
+    raw_nodes: list[dict[str, Any]],
+    raw_edges: list[dict[str, Any]],
+) -> dict[str, datetime]:
+    """Assign monotonically non-decreasing discovery timestamps along DAG causality.
+
+    Ensures every target entity discovered via a source entity has
+    created_at[target] >= created_at[source] so chronological playback reveals
+    causes before effects and leaves zero orphan/floating nodes.
+    """
+    node_ids = [n["id"] for n in raw_nodes]
+    depth: dict[str, int] = {nid: 0 for nid in node_ids}
+    max_depth_cap = 12
+
+    # Relax topological depths across all edges (cycle-safe cap)
+    for _ in range(min(len(node_ids) + 1, 24)):
+        changed = False
+        for e in raw_edges:
+            u, v = e["from"], e["to"]
+            if u in depth and v in depth and u != v:
+                candidate = min(depth[u] + 1, max_depth_cap)
+                if candidate > depth[v]:
+                    depth[v] = candidate
+                    changed = True
+        if not changed:
+            break
+
+    # Map topological tier -> realistic investigative calendar dates (Nov–Dec 2026)
+    tier_base_dates: list[datetime] = [
+        # Tier 0: Initial victims / complaints
+        datetime(2026, 11, 8, 9, 0, 0, tzinfo=timezone.utc),
+        # Tier 1: Direct ads / PVs / receipts
+        datetime(2026, 11, 10, 10, 0, 0, tzinfo=timezone.utc),
+        # Tier 2: Front pages / phones / domains
+        datetime(2026, 11, 12, 11, 0, 0, tzinfo=timezone.utc),
+        # Tier 3: Hosting / trackers / operators
+        datetime(2026, 11, 15, 14, 0, 0, tzinfo=timezone.utc),
+        # Tier 4: Telecom BTS / groups / lieutenants
+        datetime(2026, 11, 19, 10, 30, 0, tzinfo=timezone.utc),
+        # Tier 5: Mules / RIPs / dev / cashier
+        datetime(2026, 11, 24, 15, 0, 0, tzinfo=timezone.utc),
+        # Tier 6: Shell companies / crypto / kingpin
+        datetime(2026, 12, 1, 11, 0, 0, tzinfo=timezone.utc),
+        # Tier 7+: Global syndicate attribution
+        datetime(2026, 12, 5, 16, 30, 0, tzinfo=timezone.utc),
+    ]
+
+    timestamps: dict[str, datetime] = {}
+    for idx, nid in enumerate(node_ids):
+        d = depth.get(nid, 0)
+        if d < len(tier_base_dates):
+            base = tier_base_dates[d]
+        else:
+            base = tier_base_dates[-1] + timedelta(days=(d - len(tier_base_dates) + 1) * 2)
+        # Deterministic minute/second offsets within the tier's hour for fine granularity
+        min_off = (idx % 4) * 10
+        sec_off = (idx * 17) % 55
+        timestamps[nid] = base + timedelta(minutes=min_off, seconds=sec_off)
+
+    return timestamps
+
+
 async def seed_candy_wheels(
     json_path: Path | None = None,
     pg_engine: AsyncEngine | None = None,
@@ -233,6 +295,7 @@ async def seed_candy_wheels(
     graph_rep = raw_data["graph_representation"]
     raw_nodes = graph_rep["nodes"]
     raw_edges = graph_rep["edges"]
+    node_timestamps = compute_topological_discovery_timestamps(raw_nodes, raw_edges)
 
     processed_nodes: list[dict[str, Any]] = []
     node_id_map: dict[str, uuid.UUID] = {}
@@ -241,6 +304,7 @@ async def seed_candy_wheels(
         nid = n["id"]
         node_uuid = deterministic_uuid(f"node:{case_code}:{nid}")
         node_id_map[nid] = node_uuid
+        discovery_ts = node_timestamps[nid]
 
         raw_type = n["type"]
         canonical_type = RAW_TYPE_TO_CANONICAL.get(raw_type, "personne")
@@ -298,6 +362,8 @@ async def seed_candy_wheels(
                 },
                 "latitude": lat,
                 "longitude": lon,
+                "created_at": discovery_ts,
+                "updated_at": discovery_ts,
             }
         )
 
@@ -356,11 +422,15 @@ async def seed_candy_wheels(
                     """
                     INSERT INTO nodes (
                         id, case_id, type, layer, label, confidence,
-                        provenance, properties, latitude, longitude
+                        provenance, properties, latitude, longitude,
+                        created_at, updated_at
                     ) VALUES (
                         :id, :case_id, :type, :layer, :label, :confidence,
-                        :provenance, CAST(:properties AS JSONB), :latitude, :longitude
-                    ) ON CONFLICT (id) DO NOTHING;
+                        :provenance, CAST(:properties AS JSONB), :latitude, :longitude,
+                        :created_at, :updated_at
+                    ) ON CONFLICT (id) DO UPDATE SET
+                        created_at = EXCLUDED.created_at,
+                        updated_at = EXCLUDED.updated_at;
                     """
                 ),
                 {
@@ -476,6 +546,8 @@ async def seed_candy_wheels(
                 "provenance": p_node["provenance"],
                 "latitude": p_node["latitude"],
                 "longitude": p_node["longitude"],
+                "created_at": p_node["created_at"].isoformat(),
+                "updated_at": p_node["updated_at"].isoformat(),
                 **p_node["properties"],
             }
             # Clean None values for Neo4j property constraints

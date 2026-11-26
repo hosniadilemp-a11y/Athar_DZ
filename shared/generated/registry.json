@@ -4,7 +4,7 @@
     "version": "0.1.0",
     "total_layers": 5,
     "total_node_types": 37,
-    "total_relation_types": 47,
+    "total_relation_types": 48,
     "gps_enabled_count": 8,
     "layer_counts": {
       "VERIFIED": 11,
@@ -1434,6 +1434,45 @@
       "cardinality": "1:1",
       "is_directed": true,
       "description_fr": "Ancrage de l'ensemble du dossier dans l'arbre d'audit infalsifiable."
+    },
+    "EXTRAIT_DE": {
+      "name": "EXTRAIT_DE",
+      "label_fr": "Extrait de la pièce",
+      "label_en": "Extracted from Evidence",
+      "label_ar": "مستخرج من الدليل",
+      "allowed_sources": [
+        "personne",
+        "entreprise",
+        "vehicule",
+        "telephone",
+        "carte_sim",
+        "appareil_mobile",
+        "compte_bancaire",
+        "transaction_financiere",
+        "guichet_gab",
+        "crypto_wallet",
+        "transaction_crypto",
+        "compte_social",
+        "publication_sociale",
+        "canal_telegram",
+        "message_chat",
+        "adresse_email",
+        "site_web",
+        "identifiant_infrastructure",
+        "serveur_c2",
+        "fichier_apk",
+        "artefact_dfir",
+        "image_preuve",
+        "commune",
+        "wilaya"
+      ],
+      "allowed_targets": [
+        "scelle_numerique",
+        "document_judiciaire"
+      ],
+      "cardinality": "N:M",
+      "is_directed": true,
+      "description_fr": "Traçabilité probatoire reliant une entité extraite à la pièce numérique ou au procès-verbal source (Décisions D16 & D17)."
     }
   }
 }

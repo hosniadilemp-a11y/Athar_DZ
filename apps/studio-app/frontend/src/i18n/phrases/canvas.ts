@@ -196,6 +196,10 @@ export const CANVAS_PHRASES: PhraseBook = {
   'Zoom arrière (-)': { ar: 'تصغير (-)', en: 'Zoom out (-)' },
   'Ajuster la vue (Centrer)': { ar: 'ملاءمة العرض (توسيط)', en: 'Fit view (Center)' },
   'Ajuster la vue (Centrer) [0]': { ar: 'ملاءمة العرض (توسيط) [0]', en: 'Fit view (Center) [0]' },
+  'Minicarte radar': { ar: 'الخريطة المصغرة', en: 'Radar minimap' },
+  'Radar ({n})': { ar: 'الرادار ({n})', en: 'Radar ({n})' },
+  'Agrandir le radar': { ar: 'توسيع الرادار', en: 'Expand radar' },
+  'Réduire le radar': { ar: 'طي الرادار', en: 'Collapse radar' },
   'Analyse Réseau SNA (16 algorithmes graphiques)': {
     ar: 'تحليل الشبكات الاجتماعية SNA (16 خوارزمية جنائية)',
     en: 'Social Network Analysis SNA (16 forensic algorithms)',
@@ -207,6 +211,12 @@ export const CANVAS_PHRASES: PhraseBook = {
   // Toolbar – Sizes, Visibility, Labels & Person-Only Projection
   'Tailles & Affichage': { ar: 'الأحجام والعرض', en: 'Sizes & Display' },
   'Visibilité & Étiquettes': { ar: 'الظهور والتسميات', en: 'Visibility & Labels' },
+  'Affichage & Visibilité': { ar: 'العرض والظهور', en: 'Display & Visibility' },
+  'Style & Tailles': { ar: 'النمط والأحجام', en: 'Style & Sizes' },
+  "Personnaliser l'affichage et la visibilité du graphe": {
+    ar: 'تخصيص عرض المخطط وظهور التسميات والروابط',
+    en: 'Customize graph display, labels, and link visibility',
+  },
   'Déplier tout le graphe': { ar: 'توسيع كامل المخطط', en: 'Expand full graph' },
   "Déplier tout le graphe pour afficher l'ensemble des entités et relations": {
     ar: 'توسيع كامل المخطط لعرض جميع الكيانات والعلاقات',
@@ -350,4 +360,537 @@ export const CANVAS_PHRASES: PhraseBook = {
     en: 'Case saved and sealed in PostgreSQL / TimescaleDB.',
   },
   'Enregistrement': { ar: 'حفظ', en: 'Save' },
+  // Option A: Multi-Tab Investigation Workspace & Actor Sphere
+  "Onglets d'enquête et sous-graphes": {
+    ar: 'تبويبات التحقيق والرسوم البيانية الفرعية',
+    en: 'Investigation tabs and subgraphs',
+  },
+  'Dossier Général': { ar: 'الملف العام', en: 'General Case' },
+  "Sous-graphe isolé selon l'algorithme Actor Sphere": {
+    ar: 'رسم فرعي معزول وفق خوارزمية Actor Sphere',
+    en: 'Isolated subgraph via Actor Sphere algorithm',
+  },
+  "Vue d'ensemble complète du dossier": {
+    ar: 'نظرة شاملة كاملة على الملف',
+    en: 'Full case graph overview',
+  },
+  'Sphère ({n})': { ar: 'المجال ({n})', en: 'Sphere ({n})' },
+  '{n} nœuds': { ar: '{n} كيانات', en: '{n} nodes' },
+  "Fermer l'onglet {title}": { ar: 'إغلاق التبويب {title}', en: 'Close tab {title}' },
+  "Fermer l'onglet": { ar: 'إغلاق التبويب', en: 'Close tab' },
+  'Isoler un acteur dans un nouvel onglet': {
+    ar: 'عزل فاعل في تبويب جديد',
+    en: 'Isolate an actor in a new tab',
+  },
+  'Choisir un acteur à isoler': { ar: 'اختر فاعلاً لعزله', en: 'Choose an actor to isolate' },
+  'Filtrer une personne ou entreprise...': {
+    ar: 'تصفية شخص أو شركة...',
+    en: 'Filter a person or company...',
+  },
+  'Aucun acteur disponible': { ar: 'لا يوجد فاعل متاح', en: 'No actor available' },
+  "Arbre des Processus & Bassin d'Indices Non-Inclus": {
+    ar: 'شجرة المعالجة وحوض القرائن غير المدرجة',
+    en: 'Process Discovery Tree & Pending Clues Pool',
+  },
+  "Supervision de l'arbre des processus EDA et des indices en attente (Phase 3)": {
+    ar: 'مراقبة شجرة المعالجة الحدثية والقرائن قيد الانتظار (المرحلة 3)',
+    en: 'EDA process tree supervision and pending clues (Phase 3)',
+  },
+  'Processus & Bassin': { ar: 'المعالجة والحوض', en: 'Process & Pool' },
+  "Ouvrir dans un nouvel onglet d'investigation": {
+    ar: 'فتح في تبويب تحقيق جديد',
+    en: 'Open in new investigation tab',
+  },
+  "Acteur frontière : arrêt de l'expansion Actor Sphere": {
+    ar: 'فاعل حدودي: توقف توسع Actor Sphere',
+    en: 'Boundary actor: Actor Sphere expansion stops here',
+  },
+  'Frontière': { ar: 'حدودي', en: 'Boundary' },
+  "Basculer entre la vue d'ensemble et la vue restreinte de préjudice pour l'onglet actif": {
+    ar: 'التبديل بين العرض الكامل وعرض الضرر المحدود للتبويب النشط',
+    en: 'Toggle between full overview and critical impact view for the active tab',
+  },
+  'Onglet actif :': { ar: 'التبويب النشط :', en: 'Active tab:' },
+  'Onglet actif : {tab}': { ar: 'التبويب النشط : {tab}', en: 'Active tab: {tab}' },
+  'Tous les onglets ({n})': { ar: 'كل التبويبات ({n})', en: 'All tabs ({n})' },
+  'Afficher tous les onglets ouverts ({n})': {
+    ar: 'عرض كل التبويبات المفتوحة ({n})',
+    en: 'Show all open tabs ({n})',
+  },
+  'Onglets ouverts': { ar: 'التبويبات المفتوحة', en: 'Open tabs' },
+  'Échelle de zoom (10% – 1000%)': {
+    ar: 'مقياس التكبير (10% – 1000%)',
+    en: 'Zoom scale (10% – 1000%)',
+  },
+  'Choisir l\'échelle du graphe (10% à 1000%)': {
+    ar: 'اختر مقياس عرض المخطط (10% إلى 1000%)',
+    en: 'Choose graph scale (10% to 1000%)',
+  },
+  'Échelle :': { ar: 'المقياس :', en: 'Scale:' },
+  'Échelle du graphe': { ar: 'مقياس المخطط', en: 'Graph scale' },
+  'Échelle du graphe (Zoom) :': { ar: 'مقياس المخطط (التكبير) :', en: 'Graph scale (Zoom):' },
+  'Ajuster': { ar: 'ملاءمة', en: 'Fit' },
+  'Curseur d\'échelle de zoom': { ar: 'شريط تمرير مقياس التكبير', en: 'Zoom scale slider' },
+  'Visibilité par type :': { ar: 'الظهور حسب النوع :', en: 'Visibility by type:' },
+  '{n} / {total} visibles': { ar: '{n} / {total} ظاهر', en: '{n} / {total} visible' },
+  'Codage couleur des nœuds :': { ar: 'ترميز ألوان الكيانات :', en: 'Node color encoding:' },
+  'Intérieur (remplissage)': { ar: 'الداخل (التعبئة)', en: 'Interior (fill)' },
+  'Bordure (contour)': { ar: 'الإطار (الحدود)', en: 'Border (outline)' },
+  'Coloration du radar': { ar: 'تلوين الرادار', en: 'Radar coloring' },
+  'Calques': { ar: 'الطبقات', en: 'Layers' },
+
+  // Option B: Raw File Ingestion, Taxonomy & 3-Mode Process Discovery
+  'Mode 1 : Analyse Rapide': { ar: 'الوضع 1: تحليل سريع', en: 'Mode 1: Quick Analysis' },
+  'Extraction légère & prioritaire': {
+    ar: 'استخلاص خفيف وذو أولوية',
+    en: 'Lightweight & priority extraction',
+  },
+  'Exécute uniquement les extracteurs légers (métadonnées EXIF, vignettes, empreintes, titres OCR) à faible charge CPU/GPU.': {
+    ar: 'تشغيل المستخلصات الخفيفة فقط (بيانات EXIF، المصغرات، البصمات، عناوين OCR) بحمل منخفض على المعالج.',
+    en: 'Runs only lightweight extractors (EXIF metadata, thumbnails, fingerprints, OCR headers) with low CPU/GPU load.',
+  },
+  'Extraction rapide en attente (Moteur Phase 2)': {
+    ar: 'الاستخلاص السريع قيد الانتظار (محرك المرحلة 2)',
+    en: 'Quick extraction pending (Phase 2 Engine)',
+  },
+  'Mode 2 : Analyse Complète Étape par Étape': {
+    ar: 'الوضع 2: تحليل شامل خطوة بخطوة',
+    en: 'Mode 2: Complete Step-by-Step Analysis',
+  },
+  'Contrôle humain (Human-in-the-Loop)': {
+    ar: 'تحكم بشري مباشر (Human-in-the-Loop)',
+    en: 'Human-in-the-Loop control',
+  },
+  'Analyse exhaustive avec points de contrôle humains : vous validez chaque découverte intermédiaire avant de lancer les étapes suivantes.': {
+    ar: 'تحليل شامل مع نقاط تحقق بشرية: تصادق على كل نتيجة مرحلية قبل إطلاق الخطوات الموالية.',
+    en: 'Comprehensive analysis with human checkpoints: validate each intermediate finding before triggering the next steps.',
+  },
+  'Étape 1 en attente de validation humaine (Phase 2)': {
+    ar: 'الخطوة 1 بانتظار المصادقة البشرية (المرحلة 2)',
+    en: 'Step 1 awaiting human validation (Phase 2)',
+  },
+  'Mode 3 : Analyse Complète Autonome Récursive': {
+    ar: 'الوضع 3: تحليل ذاتي متكرر شامل',
+    en: 'Mode 3: Autonomous Recursive Full Analysis',
+  },
+  'Saturation informationnelle continue': {
+    ar: 'إشباع معلوماتي مستمر',
+    en: 'Continuous informational saturation',
+  },
+  'Orchestration autonome et récursive de tous les plugins SPI et recoupements jusqu’à saturation du Blackboard.': {
+    ar: 'تنسيق ذاتي ومتكرر لجميع إضافات SPI والتقاطعات حتى إشباع لوحة التبادل.',
+    en: 'Autonomous recursive orchestration of all SPI plugins and cross-checks until Blackboard saturation.',
+  },
+  'Pipeline récursif autonome planifié (Phase 6)': {
+    ar: 'مسار التحليل الذاتي المتكرر مجدول (المرحلة 6)',
+    en: 'Autonomous recursive pipeline scheduled (Phase 6)',
+  },
+  "Photographies & Captures d'Écran": {
+    ar: 'صور ولقطات شاشة',
+    en: 'Photographs & Screenshots',
+  },
+  'Notes Vocales & Fichiers Audio': {
+    ar: 'رسائل صوتية وملفات صوتية',
+    en: 'Voice Notes & Audio Files',
+  },
+  'Procès-Verbaux & Documents Texte': {
+    ar: 'محاضر ووثائق نصية',
+    en: 'Reports & Text Documents',
+  },
+  'Relevés Télécom & Extractions Bancaires': {
+    ar: 'كشوفات الاتصالات والاستخلاصات البنكية',
+    en: 'Telecom CDRs & Bank Extracts',
+  },
+  'Pages Web & Captures OSINT': {
+    ar: 'صفحات ويب ولقطات OSINT',
+    en: 'Web Pages & OSINT Captures',
+  },
+  'Vidéosurveillance & Vidéos': {
+    ar: 'كاميرات مراقبة ومقاطع فيديو',
+    en: 'CCTV Footage & Videos',
+  },
+  'Fichiers DFIR & Extractions Mobiles': {
+    ar: 'ملفات DFIR واستخلاصات الهواتف',
+    en: 'DFIR Files & Mobile Extractions',
+  },
+  'E-mails & Correspondances Brutes': {
+    ar: 'رسائل بريد إلكتروني ومراسلات خام',
+    en: 'Emails & Raw Correspondence',
+  },
+  "Conteneurs d'Archives": { ar: 'حاويات الأرشيف المضغوط', en: 'Compressed Archive Containers' },
+  'Pièce Numérique Brute': { ar: 'دليل رقمي خام', en: 'Raw Digital Evidence' },
+  'Extraction GPS, appareil et horodatage EXIF': {
+    ar: 'استخراج إحداثيات GPS والجهاز والطابع الزمني EXIF',
+    en: 'Extract GPS, device and EXIF timestamp',
+  },
+  'Lecture OCR des reçus, chèques et plaques': {
+    ar: 'قراءة OCR للإيصالات والشيكات ولوحات الترقيم',
+    en: 'OCR reading of receipts, cheques and license plates',
+  },
+  'Détection et vecteurs faciaux 512-d Qdrant': {
+    ar: 'كشف الوجوه وتوليد المتجهات 512-d Qdrant',
+    en: 'Face detection and 512-d Qdrant face embeddings',
+  },
+  'Détection objets et véhicules en arrière-plan': {
+    ar: 'كشف الأجسام والمركبات في الخلفية',
+    en: 'Background object and vehicle detection',
+  },
+  'Durée, codec, fréquence et empreinte acoustique': {
+    ar: 'المدة والترميز والتردد والبصمة الصوتية',
+    en: 'Duration, codec, sample rate and acoustic fingerprint',
+  },
+  'Transcription arabe dialectal algérien et montants DZD': {
+    ar: 'تفريغ صوتي بالدارجة الجزائرية والمبالغ بالدينار',
+    en: 'Algerian Arabic speech transcription and DZD amounts',
+  },
+  'Diarisation et séparation locuteur suspect / victime': {
+    ar: 'فصل المتحدثين وتمييز المشتبه به عن الضحية',
+    en: 'Speaker diarization (suspect vs. victim)',
+  },
+  'Extraction texte intégral et métadonnées auteur': {
+    ar: 'استخراج النص الكامل وبيانات المؤلف',
+    en: 'Full text and author metadata extraction',
+  },
+  'Analyse structurelle et pièces jointes bureautiques': {
+    ar: 'تحليل البنية والمرفقات المكتبية',
+    en: 'Structural analysis and office attachments',
+  },
+  'Repérage entités (noms, CCP/BaridiMob, téléphones)': {
+    ar: 'استخراج الكيانات (أسماء، CCP/بريدي موب، هواتف)',
+    en: 'Named entity extraction (names, CCP/BaridiMob, phones)',
+  },
+  'Détection schémas numéros DZ et comptes CCP': {
+    ar: 'كشف أنماط أرقام الجزائر وحسابات CCP',
+    en: 'Algerian phone pattern & CCP account detection',
+  },
+  'Ingestion massive CDR, bornages BTS et chronologie': {
+    ar: 'استيعاب سجلات CDR وتحديد أبراج BTS والتسلسل الزمني',
+    en: 'High-volume CDR ingestion, BTS triangulation & timeline',
+  },
+  'Extraction texte principal, e-mails et métadonnées OpenGraph': {
+    ar: 'استخراج النص الرئيسي والبريد وبيانات OpenGraph',
+    en: 'Main text, emails and OpenGraph metadata extraction',
+  },
+  'Repérage traceurs UA-*, Pixels Meta et liens sociaux': {
+    ar: 'رصد متعقبات UA-* وبكسلات Meta والروابط الاجتماعية',
+    en: 'Tracker UA-*, Meta Pixel & social link discovery',
+  },
+  'Scellement WARC et instantané probatoire': {
+    ar: 'أرشفة WARC مختومة ولقطة إثبات جنائي',
+    en: 'WARC forensic snapshot and probative sealing',
+  },
+  'Horodatage flux et découpage des images clés': {
+    ar: 'الطابع الزمني للبث واستخراج الإطارات الرئيسية',
+    en: 'Stream timestamping and keyframe extraction',
+  },
+  'Extraction plaques et véhicules sur images clés': {
+    ar: 'استخلاص لوحات الترقيم والمركبات من الإطارات الرئيسية',
+    en: 'License plate and vehicle extraction on keyframes',
+  },
+  'Rapprochement facial sur séquences extraites': {
+    ar: 'مطابقة الوجوه عبر المقاطع المستخلصة',
+    en: 'Facial matching across extracted sequences',
+  },
+  'Lecture sûre des bases SQLite (messages, journaux)': {
+    ar: 'قراءة آمنة لقواعد SQLite (رسائل، سجلات)',
+    en: 'Safe SQLite database reading (messages, logs)',
+  },
+  'Décompilation APK, permissions et URLs C2': {
+    ar: 'تفكيك تطبيقات APK وفحص الأذونات وروابط C2',
+    en: 'APK decompilation, permissions & C2 URL inspection',
+  },
+  'Inspection DNS, certificats TLS et flux PCAP': {
+    ar: 'فحص DNS وشهادات TLS وتدفقات PCAP',
+    en: 'DNS, TLS certificate & PCAP traffic inspection',
+  },
+  'En-têtes SMTP Received, émetteur et destinataires': {
+    ar: 'ترويسات SMTP Received والمرسل والمستلمون',
+    en: 'SMTP Received headers, sender and recipients',
+  },
+  'Vérification DKIM/DMARC et extraction pièces jointes': {
+    ar: 'التحقق من DKIM/DMARC واستخراج المرفقات',
+    en: 'DKIM/DMARC verification and attachment extraction',
+  },
+  'Inventaire arborescent et contrôle anti-Path Traversal': {
+    ar: 'جرد الشجرة وفحص الحماية ضد اجتياز المسار',
+    en: 'Tree inventory and anti-path-traversal check',
+  },
+  'Décompression sandboxée et scellement en cascade': {
+    ar: 'فك ضغط معزول وختم متسلسل للأدلة',
+    en: 'Sandboxed unpacking and cascaded evidence sealing',
+  },
+  'Identification binaire et scellement WORM MinIO': {
+    ar: 'التعرف الثنائي والختم الدائم WORM على MinIO',
+    en: 'Magic-byte identification and WORM MinIO sealing',
+  },
+  "Choix du mode d'investigation forensique": {
+    ar: 'اختيار وضع التحقيق الجنائي',
+    en: 'Forensic investigation mode selection',
+  },
+  "Fermer la fenêtre d'analyse": { ar: 'إغلاق نافذة التحليل', en: 'Close analysis dialog' },
+  'Empreinte SHA-256 locale (pré-scellage Phase 1)': {
+    ar: 'بصمة SHA-256 محلية (ما قبل الختم — المرحلة 1)',
+    en: 'Local SHA-256 digest (Phase 1 pre-seal)',
+  },
+  "Copier l'empreinte SHA-256 complète": {
+    ar: 'نسخ بصمة SHA-256 الكاملة',
+    en: 'Copy full SHA-256 digest',
+  },
+  'Le scellage serveur WORM ISO 27037 sera activé en Phase 2.': {
+    ar: 'سيتم تفعيل الختم الخادمي WORM ISO 27037 في المرحلة 2.',
+    en: 'Server WORM ISO 27037 sealing will activate in Phase 2.',
+  },
+  'Extracteurs SPI détectés pour ce format': {
+    ar: 'مستخلصات SPI المكتشفة لهذا التنسيق',
+    en: 'Detected SPI extractors for this format',
+  },
+  "Modes d'investigation disponibles": {
+    ar: 'أوضاع التحقيق المتاحة',
+    en: 'Available investigation modes',
+  },
+  'Lancer': { ar: 'إطلاق', en: 'Launch' },
+  "Le scellé numérique reste attaché au graphe. Vous pouvez lancer ou changer le mode plus tard depuis l'Inspecteur.": {
+    ar: 'يبقى الدليل الرقمي مرتبطًا بالمخطط. يمكنك إطلاق التحليل أو تغيير الوضع لاحقًا من المفتش.',
+    en: 'The digital seal stays attached to the graph. You can launch or switch the mode later from the Inspector.',
+  },
+  "En cours d'investigation": { ar: 'قيد التحقيق', en: 'Under investigation' },
+  'Saturation terminée': { ar: 'اكتمل الإشباع', en: 'Saturation complete' },
+  "En attente d'analyse": { ar: 'بانتظار التحليل', en: 'Pending analysis' },
+  "En attente du choix de mode par l'enquêteur": {
+    ar: 'بانتظار اختيار المحقق لوضع التحليل',
+    en: 'Awaiting investigator mode choice',
+  },
+  "Pipeline d'investigation & Scellé numérique": {
+    ar: 'مسار التحقيق والدليل الرقمي المختوم',
+    en: 'Investigation pipeline & digital seal',
+  },
+  "Pipeline d'Investigation SPI": { ar: 'مسار التحقيق SPI', en: 'SPI Investigation Pipeline' },
+  "Progression de l'analyse forensique": {
+    ar: 'تقدم التحليل الجنائي',
+    en: 'Forensic analysis progress',
+  },
+  "Changer ou lancer un mode d'analyse": {
+    ar: 'تغيير أو إطلاق وضع تحليل',
+    en: 'Switch or launch an analysis mode',
+  },
+  "Ouvrir le sélecteur d'analyse": {
+    ar: 'فتح محدد أوضاع التحليل',
+    en: 'Open analysis mode selector',
+  },
+  'Investigation forensique en cours sur ce scellé': {
+    ar: 'التحقيق الجنائي جاري على هذا الختم الرقمي',
+    en: 'Forensic investigation active on this seal',
+  },
+  "Scellé prêt : choisir un mode d'investigation": {
+    ar: 'الختم جاهز: اختر وضع التحقيق',
+    en: 'Seal ready: choose an investigation mode',
+  },
+  'Déposer un fichier brut pour scellage préliminaire SHA-256 et analyse SPI': {
+    ar: 'أفلت ملفًا خامًا لحساب SHA-256 الأولي وتحليل SPI',
+    en: 'Drop raw file for preliminary SHA-256 seal & SPI analysis',
+  },
+  'Importer un fichier brut comme scellé numérique': {
+    ar: 'استيراد ملف خام كدليل رقمي مختوم',
+    en: 'Import raw file as digital evidence seal',
+  },
+  'Importer un ou plusieurs fichiers bruts (calcul SHA-256 pré-scellage)': {
+    ar: 'استيراد ملف خام أو عدة ملفات (حساب SHA-256 الأولي)',
+    en: 'Import one or more raw files (pre-seal SHA-256 computation)',
+  },
+  'Importer fichier': { ar: 'استيراد ملف', en: 'Import file' },
+  'Scellé préliminaire "{name}" créé (SHA-256 local)': {
+    ar: 'تم إنشاء الختم الأولي "{name}" (SHA-256 محلي)',
+    en: 'Preliminary seal "{name}" created (local SHA-256)',
+  },
+  'Ingestion de pièce brute': { ar: 'إدخال دليل خام', en: 'Raw evidence ingestion' },
+  'Mode local temporaire (non persisté sur serveur)': {
+    ar: 'وضع محلي مؤقت (غير محفوظ على الخادم)',
+    en: 'Temporary local mode (not persisted on server)',
+  },
+  'Persistance scellé': { ar: 'حفظ الختم الرقمي', en: 'Seal persistence' },
+  'Empreinte SHA-256 locale': { ar: 'بصمة SHA-256 محلية', en: 'Local SHA-256 digest' },
+  'Outils disponibles': { ar: 'الأدوات المتاحة', en: 'Available tools' },
+  'Analyse Rapide': { ar: 'تحليل سريع', en: 'Quick Analysis' },
+  'Analyse Complète': { ar: 'تحليل شامل', en: 'Full Analysis' },
+  'Analyse Autonome': { ar: 'تحليل ذاتي', en: 'Autonomous Analysis' },
+  'Visualiser': { ar: 'معاينة', en: 'Preview' },
+  'Nouvel onglet': { ar: 'تبويب جديد', en: 'New tab' },
+  'Télécharger': { ar: 'تنزيل', en: 'Download' },
+  'Visualisation du fichier': { ar: 'معاينة الملف', en: 'File preview' },
+  "Configurer l'arbre des processus": {
+    ar: 'تهيئة شجرة العمليات',
+    en: 'Configure process tree',
+  },
+  'Arbre des processus': { ar: 'شجرة العمليات', en: 'Process tree' },
+  'Validation humaine requise': {
+    ar: 'مطلوب مصادقة بشرية',
+    en: 'Human validation required',
+  },
+  'Pause validation': { ar: 'نقطة مصادقة', en: 'Validation checkpoint' },
+  'Ajouter une étape personnalisée': {
+    ar: 'إضافة خطوة مخصصة',
+    en: 'Add custom step',
+  },
+  "Enregistrer l'arbre": { ar: 'حفظ الشجرة', en: 'Save tree' },
+  'Enregistré': { ar: 'تم الحفظ', en: 'Saved' },
+  'Pré-scellage SHA-256 & métadonnées structurelles': {
+    ar: 'بصمة SHA-256 الأولية والبيانات الوصفية الهيكلية',
+    en: 'SHA-256 pre-seal & structural metadata',
+  },
+  'Exécution des extracteurs SPI cochés': {
+    ar: 'تشغيل مستخلصات SPI المحددة',
+    en: 'Run checked SPI extractors',
+  },
+  "Corrélation graphe & création d'entités dérivées": {
+    ar: 'ربط المخطط وإنشاء الكيانات المشتقة',
+    en: 'Graph correlation & derived entity creation',
+  },
+  'Réinjection autonome récursive (saturation Blackboard)': {
+    ar: 'إعادة ضخ ذاتية متكررة (إشباع لوحة التبادل)',
+    en: 'Recursive autonomous feedback (Blackboard saturation)',
+  },
+  'Aperçu CSV ({shown} / {total} lignes)': {
+    ar: 'معاينة CSV ({shown} / {total} سطر)',
+    en: 'CSV preview ({shown} / {total} rows)',
+  },
+  "Aperçu binaire direct limité aux 64 premiers octets. Utilisez « Nouvel onglet » ou « Télécharger » pour l'ouvrir dans une application externe.": {
+    ar: 'المعاينة الثنائية المباشرة محدودة بأول 64 بايت. استخدم « تبويب جديد » أو « تنزيل » لفتحه في تطبيق خارجي.',
+    en: 'Direct binary preview limited to the first 64 bytes. Use "New tab" or "Download" to open externally.',
+  },
+  // Multi-node safe deletion modal & actions
+  '{n} entité(s) supprimée(s) du graphe (Ctrl+Z pour annuler).': {
+    ar: 'تم حذف {n} كيان(ات) من المخطط (Ctrl+Z للتراجع).',
+    en: '{n} entity(ies) deleted from graph (Ctrl+Z to undo).',
+  },
+  'Suppression effectuée': { ar: 'تم الحذف', en: 'Deletion completed' },
+  'Suppression impossible en mode compacté': {
+    ar: 'الحذف غير ممكن في الوضع المدمج',
+    en: 'Deletion blocked in compacted mode',
+  },
+  'Confirmer la suppression ({n} entité(s))': {
+    ar: 'تأكيد الحذف ({n} كيان(ات))',
+    en: 'Confirm deletion ({n} entity(ies))',
+  },
+  "Cette action est impossible en mode compacté : une tierce personne est impliquée dans les entités intermédiaires reliées aux nœuds sélectionnés. Affichez tout le graphe pour sélectionner manuellement les entités à supprimer.": {
+    ar: 'هذا الإجراء غير ممكن في الوضع المدمج: هناك شخص ثالث مرتبط بالكيانات الوسيطة بين العقد المحددة. اعرض كامل المخطط لتحديد الكيانات المراد حذفها يدوياً.',
+    en: 'This action is not possible in compacted mode: a third person is implicated in the intermediate entities linked to the selected nodes. Switch to the full graph to manually select the entities to delete.',
+  },
+  'Tierces personnes impliquées ({n}) :': {
+    ar: 'الأشخاص الثالثون المرتبطون ({n}) :',
+    en: 'Implicated third parties ({n}):',
+  },
+  'via': { ar: 'عبر', en: 'via' },
+  'Entités sélectionnées à supprimer ({n}) :': {
+    ar: 'الكيانات المحددة للحذف ({n}) :',
+    en: 'Selected entities to delete ({n}):',
+  },
+  // Phase 2A: Static PDF extraction & isolated validation
+  'Actif': { ar: 'نشط', en: 'Active' },
+  'Isoler pour valider ({n})': {
+    ar: 'عزل للتحقق من ({n})',
+    en: 'Isolate to validate ({n})',
+  },
+  '{n} à valider': { ar: '{n} للتحقق', en: '{n} to review' },
+  'Candidat': { ar: 'مرشح', en: 'Candidate' },
+  'Candidat extrait en attente de validation': {
+    ar: 'كيان مستخرج بانتظار المصادقة',
+    en: 'Extracted candidate awaiting validation',
+  },
+  'Validation des entités extraites': {
+    ar: 'التحقق من الكيانات المستخرجة',
+    en: 'Extracted entity validation',
+  },
+  'Indices extraits à valider': {
+    ar: 'الأدلة المستخرجة للمصادقة',
+    en: 'Extracted clues to validate',
+  },
+  'Mode 2 : Étape {c}/{t}': {
+    ar: 'الوضع 2 : المرحلة {c}/{t}',
+    en: 'Mode 2: Stage {c}/{t}',
+  },
+  "Exécuter l'étape suivante": {
+    ar: 'تنفيذ المرحلة التالية',
+    en: 'Run next stage',
+  },
+  'Valider la sélection ({n})': {
+    ar: 'اعتماد المحدد ({n})',
+    en: 'Validate selected ({n})',
+  },
+  'Écarter': { ar: 'استبعاد', en: 'Reject' },
+  'Valider': { ar: 'اعتماد', en: 'Validate' },
+  'Fusionner': { ar: 'دمج', en: 'Merge' },
+  'Confirmer': { ar: 'تأكيد', en: 'Confirm' },
+  "Confirmer l'ajout de {n} entité(s) au graphe d'enquête ?": {
+    ar: 'تأكيد إضافة {n} كيان(ات) إلى مخطط التحقيق؟',
+    en: 'Confirm adding {n} entity(ies) to the investigation graph?',
+  },
+  'Confirmer le rejet de {n} candidat(s) ?': {
+    ar: 'تأكيد استبعاد {n} مرشح(ات)؟',
+    en: 'Confirm rejecting {n} candidate(s)?',
+  },
+  'Tous les candidats extraits ont été arbitrés.': {
+    ar: 'تم البت في جميع الكيانات المستخرجة.',
+    en: 'All extracted candidates have been reviewed.',
+  },
+  'Doublon potentiel : {name}': {
+    ar: 'تكرار محتمل : {name}',
+    en: 'Potential duplicate: {name}',
+  },
+  '{n} indice(s) prêt(s) pour publication Blackboard (Phase 2B)': {
+    ar: '{n} مؤشر(ات) جاهزة للنشر في لوحة التبادل (المرحلة 2B)',
+    en: '{n} clue(s) ready for Blackboard publication (Phase 2B)',
+  },
+  'Étape suivante exécutée': { ar: 'تم تنفيذ المرحلة التالية', en: 'Next stage executed' },
+  'Extraction': { ar: 'الاستخراج الجنائي', en: 'Extraction' },
+  'Extraction PDF': { ar: 'استخراج PDF', en: 'PDF Extraction' },
+  'Indice écarté': { ar: 'تم استبعاد المؤشر', en: 'Candidate rejected' },
+  'Indice fusionné avec le nœud existant': {
+    ar: 'تم دمج المؤشر مع العقدة الحالية',
+    en: 'Candidate merged with existing node',
+  },
+  'Entité validée et ajoutée au graphe': {
+    ar: 'تم اعتماد الكيان وإضافته للمخطط',
+    en: 'Entity validated and added to graph',
+  },
+  'Validation isolée': { ar: 'مصادقة معزولة', en: 'Isolated validation' },
+  'Validation groupée': { ar: 'مصادقة جماعية', en: 'Bulk validation' },
+  '{n} entité(s) validée(s) et reliée(s) à la pièce': {
+    ar: 'تم اعتماد {n} كيان(ات) وربطها بالوثيقة',
+    en: '{n} entity(ies) validated and linked to evidence',
+  },
+  '{n} candidat(s) écarté(s)': { ar: 'تم استبعاد {n} مرشح(ات)', en: '{n} candidate(s) rejected' },
+  'Entités intermédiaires entre les nœuds (également supprimées) ({n}) :': {
+    ar: 'الكيانات الوسيطة بين العقد (سيتم حذفها أيضاً) ({n}) :',
+    en: 'Intermediate entities between nodes (also deleted) ({n}):',
+  },
+  'Total : {nodes} entité(s) et {edges} liaison(s) associée(s) seront supprimées.': {
+    ar: 'الإجمالي: سيتم حذف {nodes} كيان(ات) و {edges} رابط(روابط) مرتبط(ة).',
+    en: 'Total: {nodes} entity(ies) and {edges} associated link(s) will be deleted.',
+  },
+  'Afficher tout le graphe et sélectionner les nœuds': {
+    ar: 'عرض كامل المخطط وتحديد الكيانات',
+    en: 'Show full graph and select nodes',
+  },
+  'Supprimer ({n})': { ar: 'حذف ({n})', en: 'Delete ({n})' },
+  'Supprimer la sélection ({n})': {
+    ar: 'حذف التحديد ({n})',
+    en: 'Delete selection ({n})',
+  },
+  'Supprimer ce nœud': { ar: 'حذف هذا الكيان', en: 'Delete this node' },
+  'Qualification judiciaire (Suspect / Victime / Témoin) :': {
+    ar: 'الصفة القضائية (مشتبه فيه / ضحية / شاهد) :',
+    en: 'Judicial role (Suspect / Victim / Witness):',
+  },
+  'Inverser Source ↔ Cible': {
+    ar: 'عكس المصدر ↔ الهدف',
+    en: 'Swap Source ↔ Target',
+  },
+  'Sens inverse': {
+    ar: 'اتجاه عكسي',
+    en: 'Reverse direction',
+  },
+  'Utiliser la relation personnalisée : {name}': {
+    ar: 'استخدام علاقة مخصصة : {name}',
+    en: 'Use custom relation: {name}',
+  },
 };

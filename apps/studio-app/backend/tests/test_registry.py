@@ -1,6 +1,6 @@
-"""Unit tests for the Athar Ontological Registry (Milestone 1B).
+"""Unit tests for the Athar Ontological Registry (Milestone 1B + D16).
 
-Asserts exact counts (37 node types, 47 relations, 5 layers, 8 GPS nodes)
+Asserts exact counts (37 node types, 48 relations, 5 layers, 8 GPS nodes)
 and validates edge relationship schemas and constraints.
 """
 
@@ -74,9 +74,13 @@ def test_gps_enabled_node_types_exact_8() -> None:
     assert len(gps_nodes) == 8
 
 
-def test_relation_types_exact_47() -> None:
-    """Must have exactly 47 defined canonical relations."""
-    assert len(RELATION_TYPES) == 47
+def test_relation_types_exact_48() -> None:
+    """Must have exactly 48 defined canonical relations (incl. D16/D17 EXTRAIT_DE)."""
+    assert len(RELATION_TYPES) == 48
+    assert "EXTRAIT_DE" in RELATION_TYPES
+    extrait_de = RELATION_TYPES["EXTRAIT_DE"]
+    for html_entity in ("publication_sociale", "message_chat", "serveur_c2", "fichier_apk"):
+        assert html_entity in extrait_de.allowed_sources
 
 
 def test_all_relations_reference_valid_node_types() -> None:
@@ -141,7 +145,7 @@ def test_export_registry(tmp_path: Path) -> None:
     """Export functions must generate valid JSON matching counts."""
     data = export_registry_dict()
     assert data["metadata"]["total_node_types"] == 37
-    assert data["metadata"]["total_relation_types"] == 47
+    assert data["metadata"]["total_relation_types"] == 48
     assert data["metadata"]["gps_enabled_count"] == 8
 
     out_file = tmp_path / "registry.json"

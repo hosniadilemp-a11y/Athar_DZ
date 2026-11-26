@@ -3,6 +3,10 @@ import type { PhraseBook } from './index';
 export const PANELS_PHRASES: PhraseBook = {
   // InspectorPanel – node inspector
   'Fermer l\'inspecteur': { ar: 'إغلاق لوحة التفتيش', en: 'Close inspector' },
+  'Boîte à Outils & Calques': { ar: 'صندوق الأدوات والطبقات', en: 'Toolbox & Layers' },
+  'Réduire le panneau gauche': { ar: 'طي اللوحة اليسرى', en: 'Collapse left panel' },
+  'Ouvrir le panneau gauche': { ar: 'فتح اللوحة اليسرى', en: 'Expand left panel' },
+  "Ouvrir l'inspecteur": { ar: 'فتح لوحة التفتيش', en: 'Open inspector' },
   'Synthèse de l\'affaire et boîte des indices': {
     ar: 'ملخص القضية وصندوق الأدلة',
     en: 'Case summary and clue inbox',

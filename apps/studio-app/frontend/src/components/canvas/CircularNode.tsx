@@ -4,12 +4,9 @@ import type { LayerId } from '../../types/registry';
 import { NodeIcon } from './NodeIcon';
 import registryDataRaw from '../../registry/registry.json';
 import type { RegistryData } from '../../types/registry';
-import { MoreHorizontal, Volume2, Pin } from 'lucide-react';
-import {
-  useGraphStore,
-  ONTOLOGY_CATEGORY_COLORS,
-  NODE_TYPE_TO_CATEGORY,
-} from '../../store/useGraphStore';
+import { MoreHorizontal, Volume2, Pin, Shield, Clock, ScanSearch } from 'lucide-react';
+import { useGraphStore, ONTOLOGY_CATEGORY_COLORS, NODE_TYPE_TO_CATEGORY } from '../../store/useGraphStore';
+import { getLocalFileEntry } from '../../utils/localFileStore';
 import { useI18n } from '../../context/I18nContext';
 
 const registry = registryDataRaw as unknown as RegistryData;
@@ -19,6 +16,8 @@ interface CircularNodeProps {
   isSelected: boolean;
   isLinkSource?: boolean;
   isDragging?: boolean;
+  isBoundaryAnchor?: boolean;
+  isSharedAsset?: boolean;
   zoom?: number;
   hiddenNeighborsCount?: number;
   expandedNeighborsCount?: number;
@@ -33,44 +32,6 @@ const LAYER_BORDER_COLORS: Record<LayerId, string> = {
   INFRA: 'var(--color-layer-3-infra)',
   HYPOTHESIS: 'var(--color-layer-4-hypothesis)',
   FLOWS: 'var(--color-layer-5-flows)',
-};
-
-const LAYER_BADGES: Record<LayerId, { label: string; bg: string; border: string; color: string; tooltip: string }> = {
-  VERIFIED: {
-    label: '✓ PV',
-    bg: 'rgba(16, 185, 129, 0.22)',
-    border: '1.5px solid #10b981',
-    color: '#10b981',
-    tooltip: 'Fait judiciairement établi sous scellé (ISO 27037)',
-  },
-  OSINT_RAW: {
-    label: '🌐 OSINT',
-    bg: 'rgba(56, 189, 248, 0.22)',
-    border: '1.5px solid #38bdf8',
-    color: '#38bdf8',
-    tooltip: 'Source ouverte / Renseignement brut du web',
-  },
-  INFRA: {
-    label: '📡 CDR',
-    bg: 'rgba(129, 140, 248, 0.22)',
-    border: '1.5px solid #818cf8',
-    color: '#818cf8',
-    tooltip: 'Vecteur technique / Bornage opérateur / C2',
-  },
-  FLOWS: {
-    label: '💳 Flux',
-    bg: 'rgba(245, 158, 11, 0.22)',
-    border: '1.5px solid #f59e0b',
-    color: '#f59e0b',
-    tooltip: 'Transaction financière / Virement / BaridiMob',
-  },
-  HYPOTHESIS: {
-    label: '❓ Piste',
-    bg: 'rgba(236, 72, 153, 0.22)',
-    border: '1.5px dashed #ec4899',
-    color: '#ec4899',
-    tooltip: "Piste d'enquête / Hypothèse de travail interne",
-  },
 };
 
 /**
@@ -111,6 +72,8 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
   isSelected,
   isLinkSource = false,
   isDragging = false,
+  isBoundaryAnchor = false,
+  isSharedAsset = false,
   zoom,
   hiddenNeighborsCount = 0,
   expandedNeighborsCount = 0,
@@ -118,9 +81,13 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
   onContextMenu,
   onDragStart,
 }) => {
-  const { trLabel } = useI18n();
+  const { tr, trLabel } = useI18n();
   const typeDef = registry.node_types[node.type];
-  const iconName = typeDef?.icon || 'help-circle';
+  const customIcon =
+    typeof node.properties?.custom_icon === 'string' && node.properties.custom_icon
+      ? node.properties.custom_icon
+      : null;
+  const iconName = customIcon || typeDef?.icon || 'help-circle';
   const layerDef = registry.layers[node.layer];
   const localizedNodeLabel = trLabel(node.label);
 
@@ -129,7 +96,6 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
 
   // Global store states
   const snaOverlay = useGraphStore((s) => s.snaVisualOverlay);
-  const investigationMode = useGraphStore((s) => s.investigationMode);
   const updateNodeLabel = useGraphStore((s) => s.updateNodeLabel);
   const graphCustomization = useGraphStore((s) => s.graphCustomization);
   const visibleNodeLabelTypes = useGraphStore((s) => s.visibleNodeLabelTypes);
@@ -169,7 +135,7 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
   const snaBadge = snaOverlay?.nodeBadges?.[node.id];
 
   // Dynamic Sizing & Colors from GraphCustomization + Adaptive Zoom Scaling
-  const baseNodeSize = graphCustomization?.nodeSize || 64;
+  const baseNodeSize = graphCustomization?.nodeSize || 56;
 
   let adaptiveMultiplier = 1.0;
   if (zoom !== undefined) {
@@ -181,18 +147,22 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
   const halfSize = size / 2;
   const labelSize = graphCustomization?.nodeLabelSize || 12.5;
 
-  const isCategoryMode = graphCustomization?.colorMode !== 'layer';
   const categoryKey = NODE_TYPE_TO_CATEGORY[node.type] || 'acteurs';
   const categoryColor = ONTOLOGY_CATEGORY_COLORS[categoryKey] || '#3b82f6';
 
-  // Border strictly follows Calque (layer) or SNA overlay
+  // Node encoding: interior fill/icon = Entity Category; border = Forensic Layer (or SNA overlay)
   const defaultBorderColor = LAYER_BORDER_COLORS[node.layer] || 'var(--color-border-default)';
   const activeBorderColor = snaColor || defaultBorderColor;
-  const iconOrFillColor = isCategoryMode ? categoryColor : activeBorderColor;
+  const iconOrFillColor = categoryColor;
   const isHypothesis = node.layer === 'HYPOTHESIS';
 
-  // Evidence / Forensic Portrait Photo
-  const photoUrl = (node.properties?.photo_url as string) || (node.properties?.photo as string);
+  // Evidence / Forensic Portrait Photo (including dropped raw images from localFileStore)
+  const localImgUrl =
+    node.properties?.detected_family === 'image'
+      ? getLocalFileEntry(node.id, node.properties?.client_sha256 as string | undefined)?.blobUrl
+      : undefined;
+  const photoUrl =
+    (node.properties?.photo_url as string) || (node.properties?.photo as string) || localImgUrl;
   const [imgError, setImgError] = useState(false);
   const hasPhoto = Boolean(photoUrl);
   const showPhoto = hasPhoto && (graphCustomization?.showNodePhotos !== false) && !imgError;
@@ -247,62 +217,61 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
 
   return (
     <div
-      role="button"
-      tabIndex={0}
-      aria-label={`${node.label} (${typeDef?.label_fr || node.type}, couche ${layerDef?.label_fr || node.layer})`}
-      aria-pressed={isSelected}
       style={{
         position: 'absolute',
         left: `${(node.x ?? 0) - halfSize}px`,
         top: `${(node.y ?? 0) - halfSize}px`,
         width: `${size}px`,
         height: `${size}px`,
-        cursor: isDragging ? 'grabbing' : 'grab',
         userSelect: 'none',
         transition: isDragging
           ? 'none'
           : 'left 0.45s cubic-bezier(0.16, 1, 0.3, 1), top 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
         zIndex: isHovered ? 60 : isDragging ? 50 : isSelected ? 30 : 10,
       }}
-      onClick={(e) => {
-        e.stopPropagation();
-        onSelect(node.id, e.shiftKey || e.ctrlKey);
-      }}
-      onDoubleClick={(e) => {
-        e.stopPropagation();
-        setIsEditing(true);
-      }}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onContextMenu(e, node.id);
-      }}
-      onMouseDown={(e) => {
-        if (e.button === 0 && !isEditing) {
-          onDragStart(e, node.id);
-        }
-      }}
-      onKeyDown={handleKeyDown}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`canvas-circular-node ${isDragging ? 'is-dragging' : ''}`}
+      className={`canvas-circular-node ${isDragging ? 'is-dragging' : ''} ${
+        isSharedAsset ? 'is-shared-asset' : ''
+      } ${node.properties?.__is_extraction_candidate ? 'is-extraction-candidate' : ''}`}
     >
-      {/* Circular Body (100% Solid Opaque, Non-transparent) */}
+      {/* Circular Body (Interior = Category, Border = Forensic Calque) */}
       <div
+        role="button"
+        tabIndex={0}
+        aria-label={`${node.label} (${typeDef?.label_fr || node.type}, couche ${layerDef?.label_fr || node.layer})`}
+        aria-pressed={isSelected}
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelect(node.id, e.shiftKey || e.ctrlKey);
+        }}
+        onDoubleClick={(e) => {
+          e.stopPropagation();
+          setIsEditing(true);
+        }}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onContextMenu(e, node.id);
+        }}
+        onMouseDown={(e) => {
+          if (e.button === 0 && !isEditing) {
+            onDragStart(e, node.id);
+          }
+        }}
+        onKeyDown={handleKeyDown}
         style={{
           width: `${size}px`,
           height: `${size}px`,
+          cursor: isDragging ? 'grabbing' : 'grab',
           borderRadius: 'var(--radius-full)',
-          backgroundColor: '#182234', // Solid opaque base preventing underlying edges from showing through
-          background: isCategoryMode
-            ? `radial-gradient(circle, ${categoryColor}3d 0%, #182234 85%)`
-            : `radial-gradient(circle, ${activeBorderColor}36 0%, #182234 85%)`,
-          borderWidth: isHypothesis ? '2.5px' : '2.5px',
-          borderStyle: isHypothesis ? 'dashed' : 'solid',
+          backgroundColor: 'var(--color-bg-surface)',
+          background: `radial-gradient(circle, ${categoryColor}66 0%, ${categoryColor}2b 65%, var(--color-bg-surface) 100%)`,
+          borderWidth: '3.5px',
+          borderStyle:
+            isHypothesis || node.properties?.__is_extraction_candidate ? 'dashed' : 'solid',
           borderColor: isLinkSource
             ? 'var(--color-status-warning)'
-            : isSelected
-            ? '#ef4444'
             : activeBorderColor,
           boxShadow: isHovered
             ? `0 0 0 3.5px var(--color-accent-primary), 0 8px 24px rgba(0, 0, 0, 0.7)`
@@ -311,7 +280,7 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
             : snaColor
             ? `0 0 0 3px ${snaColor}44, 0 0 14px ${snaColor}88`
             : isSelected
-            ? '0 0 0 3.5px rgba(239, 68, 68, 0.4), 0 0 18px rgba(239, 68, 68, 0.85)'
+            ? '0 0 0 3.5px var(--color-accent-primary), 0 0 18px rgba(37, 99, 235, 0.6)'
             : '0 2px 8px rgba(0, 0, 0, 0.45)',
           display: 'flex',
           alignItems: 'center',
@@ -404,8 +373,9 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
               top: '-8px',
               left: '50%',
               transform: 'translateX(-50%)',
-              backgroundColor: snaColor || 'var(--color-accent-primary)',
-              color: '#ffffff',
+              backgroundColor: 'var(--color-bg-elevated)',
+              color: 'var(--color-text-primary)',
+              border: `1.5px solid ${snaColor || 'var(--color-accent-primary)'}`,
               fontSize: '10.5px',
               fontWeight: 700,
               padding: '1px 6px',
@@ -419,125 +389,141 @@ export const CircularNode: React.FC<CircularNodeProps> = React.memo(({
           </span>
         )}
 
-        {/* Evidentiary Layer Badge (Top-Right: Nature vs Calque Dual Architecture) */}
-        {LAYER_BADGES[node.layer] && (
+        {/* Option A: Actor Sphere Boundary Anchor Badge */}
+        {isBoundaryAnchor && (
           <span
-            className="layer-status-pill font-mono"
-            title={`${LAYER_BADGES[node.layer].tooltip}${node.confidence !== null && node.confidence !== undefined ? ` • Certitude ${Math.round(node.confidence * 100)}%` : ''}`}
-            style={{
-              position: 'absolute',
-              top: '-6px',
-              right: '-6px',
-              backgroundColor: LAYER_BADGES[node.layer].bg,
-              border: LAYER_BADGES[node.layer].border,
-              color: LAYER_BADGES[node.layer].color,
-              fontSize: '9px',
-              fontWeight: 800,
-              padding: '0 5px',
-              borderRadius: 'var(--radius-sm)',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
-              whiteSpace: 'nowrap',
-              zIndex: 5,
-              pointerEvents: 'none',
-              lineHeight: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '3px',
-            }}
+            className="node-boundary-pill font-mono"
+            title={tr("Acteur frontière : arrêt de l'expansion Actor Sphere")}
           >
-            <span>{LAYER_BADGES[node.layer].label}</span>
-            {investigationMode === 'analyst' &&
-              node.confidence !== null &&
-              node.confidence !== undefined &&
-              node.confidence < 1.0 && (
-                <span style={{ opacity: 0.85, fontSize: '8.5px' }}>
-                  {Math.round(node.confidence * 100)}%
-                </span>
-              )}
+            <Shield size={9} />
+            <span>{tr('Frontière')}</span>
           </span>
         )}
 
-        {/* Clickable Granular Expansion Badge (+N hidden connected entities / -N collapse) */}
-        {(hiddenNeighborsCount > 0 || expandedNeighborsCount > 0) && (
-          <button
-            type="button"
-            title={
-              hiddenNeighborsCount > 0
-                ? `Cliquer pour déplier ${hiddenNeighborsCount} entité(s) cachée(s) liée(s) à ${node.label}`
-                : `Cliquer pour replier ${expandedNeighborsCount} entité(s) liée(s) à ${node.label}`
-            }
-            aria-label={
-              hiddenNeighborsCount > 0
-                ? `Déplier ${hiddenNeighborsCount} entités liées`
-                : `Replier ${expandedNeighborsCount} entités liées`
-            }
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleExpandNodeConnections(node.id);
-            }}
-            style={{
-              position: 'absolute',
-              top: '-6px',
-              left: '-6px',
-              minWidth: '20px',
-              height: '20px',
-              borderRadius: 'var(--radius-full)',
-              backgroundColor:
-                hiddenNeighborsCount > 0
-                  ? 'var(--color-accent-primary)'
-                  : 'var(--color-bg-elevated)',
-              color:
-                hiddenNeighborsCount > 0
-                  ? 'var(--color-text-on-accent)'
-                  : 'var(--color-text-secondary)',
-              border: '1.5px solid var(--color-border-default)',
-              fontSize: '10px',
-              fontFamily: 'var(--font-mono)',
-              fontWeight: 700,
-              padding: '0 4px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              boxShadow: 'var(--shadow-xs)',
-              zIndex: 6,
-            }}
+        {/* Option B / Phase 2A: Investigation Pipeline & Pending Candidate Badges */}
+        {typeof node.properties?.pending_candidates_count === 'number' &&
+        node.properties.pending_candidates_count > 0 ? (
+          <span
+            className="node-investigation-pill font-mono"
+            title={tr('Isoler la pièce pour valider les {n} indice(s)', {
+              n: node.properties.pending_candidates_count,
+            })}
           >
-            {hiddenNeighborsCount > 0 ? `+${hiddenNeighborsCount}` : `-${expandedNeighborsCount}`}
-          </button>
-        )}
+            <ScanSearch size={9} aria-hidden="true" />
+            <span>
+              {tr('{n} à valider', { n: node.properties.pending_candidates_count })}
+            </span>
+          </span>
+        ) : node.properties?.__is_extraction_candidate ? (
+          <span
+            className="node-pending-pill font-mono"
+            title={tr('Candidat extrait en attente de validation')}
+          >
+            <Clock size={9} aria-hidden="true" />
+            <span>{tr('Candidat')}</span>
+          </span>
+        ) : node.properties?.investigation_status === 'active_investigation' ? (
+          <span
+            className="node-investigation-pill font-mono"
+            title={tr("Investigation forensique en cours sur ce scellé")}
+          >
+            <ScanSearch size={9} aria-hidden="true" />
+            <span>{tr("En cours d'investigation")}</span>
+          </span>
+        ) : (Boolean(node.properties?.is_raw_evidence) ||
+            node.type === 'scelle_numerique' ||
+            typeof node.properties?.client_sha256 === 'string') &&
+          node.properties?.investigation_status === 'pending_analysis' ? (
+          <span
+            className="node-pending-pill font-mono"
+            title={tr("Scellé prêt : choisir un mode d'investigation")}
+          >
+            <Clock size={9} aria-hidden="true" />
+            <span>{tr("En attente d'analyse")}</span>
+          </span>
+        ) : null}
+      </div>
 
-        {/* Context Menu Button */}
+      {/* Clickable Granular Expansion Badge (+N hidden connected entities / -N collapse) */}
+      {(hiddenNeighborsCount > 0 || expandedNeighborsCount > 0) && (
         <button
           type="button"
-          aria-label={`Options pour ${node.label}`}
+          title={
+            hiddenNeighborsCount > 0
+              ? `Cliquer pour déplier ${hiddenNeighborsCount} entité(s) cachée(s) liée(s) à ${node.label}`
+              : `Cliquer pour replier ${expandedNeighborsCount} entité(s) liée(s) à ${node.label}`
+          }
+          aria-label={
+            hiddenNeighborsCount > 0
+              ? `Déplier ${hiddenNeighborsCount} entités liées`
+              : `Replier ${expandedNeighborsCount} entités liées`
+          }
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleExpandNodeConnections(node.id);
+          }}
           style={{
             position: 'absolute',
-            bottom: '-6px',
-            right: '-6px',
-            width: '18px',
-            height: '18px',
+            top: '-6px',
+            left: '-6px',
+            minWidth: '20px',
+            height: '20px',
             borderRadius: 'var(--radius-full)',
-            backgroundColor: 'var(--color-bg-elevated)',
-            border: '1px solid var(--color-border-default)',
+            backgroundColor:
+              hiddenNeighborsCount > 0
+                ? 'var(--color-accent-primary)'
+                : 'var(--color-bg-elevated)',
+            color:
+              hiddenNeighborsCount > 0
+                ? 'var(--color-text-on-accent)'
+                : 'var(--color-text-secondary)',
+            border: '1.5px solid var(--color-border-default)',
+            fontSize: '10px',
+            fontFamily: 'var(--font-mono)',
+            fontWeight: 700,
+            padding: '0 4px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            padding: 0,
-            color: 'var(--color-text-muted)',
-            zIndex: 4,
-          }}
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={(e) => {
-            e.stopPropagation();
-            onContextMenu(e, node.id);
+            boxShadow: 'var(--shadow-xs)',
+            zIndex: 6,
           }}
         >
-          <MoreHorizontal size={12} />
+          {hiddenNeighborsCount > 0 ? `+${hiddenNeighborsCount}` : `-${expandedNeighborsCount}`}
         </button>
-      </div>
+      )}
+
+      {/* Context Menu Button */}
+      <button
+        type="button"
+        aria-label={`Options pour ${node.label}`}
+        style={{
+          position: 'absolute',
+          bottom: '-6px',
+          right: '-6px',
+          width: '18px',
+          height: '18px',
+          borderRadius: 'var(--radius-full)',
+          backgroundColor: 'var(--color-bg-elevated)',
+          border: '1px solid var(--color-border-default)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          padding: 0,
+          color: 'var(--color-text-muted)',
+          zIndex: 4,
+        }}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          onContextMenu(e, node.id);
+        }}
+      >
+        <MoreHorizontal size={12} />
+      </button>
 
       {/* Fixed Label Below Circle (Positioned absolutely so circle never moves on hover) */}
       {showLabel && (

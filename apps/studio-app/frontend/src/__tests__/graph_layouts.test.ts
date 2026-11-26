@@ -2,12 +2,15 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
   computeGraphLayout,
   computePersonGraphProjection,
+  computeGraphFitViewport,
   stepLiveForcePhysics,
+  analyzeBulkNodeDeletion,
   type GraphLayoutType,
 } from '../utils/graphLayouts';
 import { useGraphStore } from '../store/useGraphStore';
 import type { GraphNode, GraphEdge } from '../types/graph';
 import { getAvailableRelationsForNodes, getRelationLabel } from '../i18n/phrases/relations';
+import { ALGERIA_WILAYAS, searchWilayas, searchDairasByWilaya, searchCommunesByDaira } from '../utils/algeriaGeo';
 
 describe('Graph Layout Algorithms & Edge Cases', () => {
   const createMockNode = (id: string, layer: GraphNode['layer'] = 'VERIFIED', type: string = 'personne'): GraphNode => ({
@@ -98,10 +101,12 @@ describe('Graph Layout Algorithms & Edge Cases', () => {
       });
 
       // L1 < L2 < L3 < L4 < L5
-      expect(dists[0]).toBeLessThan(dists[1]!);
-      expect(dists[1]).toBeLessThan(dists[2]!);
-      expect(dists[2]).toBeLessThan(dists[3]!);
-      expect(dists[3]).toBeLessThan(dists[4]!);
+      expect(dists).toHaveLength(5);
+      const [d0 = 0, d1 = 0, d2 = 0, d3 = 0, d4 = 0] = dists;
+      expect(d0).toBeLessThan(d1);
+      expect(d1).toBeLessThan(d2);
+      expect(d2).toBeLessThan(d3);
+      expect(d3).toBeLessThan(d4);
     });
 
     it('handles missing intermediate layers without crashing', () => {
@@ -170,11 +175,16 @@ describe('Graph Layout Algorithms & Edge Cases', () => {
       expect(result).toHaveLength(5);
 
       const yMap = new Map(result.map((n) => [n.id, n.y ?? 0]));
+      const getY = (id: string): number => {
+        const val = yMap.get(id);
+        expect(val).toBeDefined();
+        return val ?? Number.NaN;
+      };
       // Wilaya (tier 0) is higher than target (tier 1), higher than phone (tier 2), etc.
-      expect(yMap.get('admin')!).toBeLessThan(yMap.get('target')!);
-      expect(yMap.get('target')!).toBeLessThan(yMap.get('phone')!);
-      expect(yMap.get('phone')!).toBeLessThan(yMap.get('c2')!);
-      expect(yMap.get('c2')!).toBeLessThan(yMap.get('bank')!);
+      expect(getY('admin')).toBeLessThan(getY('target'));
+      expect(getY('target')).toBeLessThan(getY('phone'));
+      expect(getY('phone')).toBeLessThan(getY('c2'));
+      expect(getY('c2')).toBeLessThan(getY('bank'));
     });
   });
 
@@ -417,7 +427,10 @@ describe('Graph Layout Algorithms & Edge Cases', () => {
         createMockEdge('fatima', 'acc-1'),
         createMockEdge('fatima', 'phone-1'),
         createMockEdge('acc-1', 'dist-0'),
-        ...distantNodes.slice(0, -1).map((n, i) => createMockEdge(n.id, distantNodes[i + 1]!.id)),
+        ...distantNodes.slice(0, -1).flatMap((n, i) => {
+          const next = distantNodes[i + 1];
+          return next ? [createMockEdge(n.id, next.id)] : [];
+        }),
       ];
 
       const projection = computePersonGraphProjection(
@@ -519,6 +532,136 @@ describe('Graph Layout Algorithms & Edge Cases', () => {
       expect(getRelationLabel('PHOTO_DE_PROFIL_DE', 'fr')).toBe('Photo de profil du compte');
       expect(getRelationLabel('PUBLIE_ANNONCE', 'fr')).toBe('Publie l’annonce commerciale');
       expect(getRelationLabel('COMPTE_BENEFICIAIRE', 'fr')).toBe('Compte bancaire / postal bénéficiaire');
+    });
+  });
+
+  describe('Auto-Fit Graph Viewport', () => {
+    it('returns default viewport when graph is empty', () => {
+      expect(computeGraphFitViewport([], 800, 600)).toEqual({ panX: 0, panY: 0, zoom: 1 });
+    });
+
+    it('zooms out and centers wide concentric layouts inside smaller viewports', () => {
+      const nodes = Array.from({ length: 40 }, (_, i) =>
+        createMockNode(`fit-${i}`, i % 2 === 0 ? 'FLOWS' : 'VERIFIED')
+      );
+      const layouted = computeGraphLayout(nodes, [], 'concentric');
+      const fit = computeGraphFitViewport(layouted, 760, 560, 56);
+
+      expect(fit.zoom).toBeGreaterThanOrEqual(0.35);
+      expect(fit.zoom).toBeLessThanOrEqual(1.35);
+      expect(Number.isFinite(fit.panX)).toBe(true);
+      expect(Number.isFinite(fit.panY)).toBe(true);
+    });
+
+    it('frames compact person subgraphs closer than 100% by default', () => {
+      const nodes: GraphNode[] = Array.from({ length: 5 }, (_, i) => ({
+        ...createMockNode(`compact-${i}`, 'VERIFIED'),
+        x: 520 + (i % 3) * 110,
+        y: 380 + Math.floor(i / 3) * 110,
+      }));
+      const fit = computeGraphFitViewport(nodes, 1000, 720, 56);
+
+      expect(fit.zoom).toBeGreaterThan(1.0);
+      expect(fit.zoom).toBeLessThanOrEqual(1.35);
+    });
+
+    it('keeps disconnected 14-node force layouts compact without exploding outward', () => {
+      const nodes = Array.from({ length: 14 }, (_, i) =>
+        createMockNode(`disc-${i}`, 'VERIFIED', 'scelle_numerique')
+      );
+      const layouted = computeGraphLayout(nodes, [], 'force');
+      const xs = layouted.map((n) => n.x ?? 0);
+      const ys = layouted.map((n) => n.y ?? 0);
+      const spanX = Math.max(...xs) - Math.min(...xs);
+      const spanY = Math.max(...ys) - Math.min(...ys);
+
+      expect(spanX).toBeLessThanOrEqual(700);
+      expect(spanY).toBeLessThanOrEqual(700);
+    });
+
+    it('displays the full graph automatically when an investigation has no person entities', () => {
+      const nodes = [
+        createMockNode('file-1', 'VERIFIED', 'scelle_numerique'),
+        createMockNode('file-2', 'VERIFIED', 'image_preuve'),
+      ];
+      const edges = [createMockEdge('file-1', 'file-2')];
+      const projection = computePersonGraphProjection(nodes, edges, true, new Set());
+
+      expect(projection.visibleNodes).toHaveLength(2);
+      expect(projection.visibleEdges).toHaveLength(1);
+    });
+  });
+
+  describe('Bulk Node Deletion Safety Analysis', () => {
+    it('deletes only explicitly selected nodes in full-graph mode', () => {
+      const a = createMockNode('a', 'VERIFIED', 'personne');
+      const b = createMockNode('b', 'VERIFIED', 'personne');
+      const m = createMockNode('m', 'FLOWS', 'telephone');
+      const edges = [createMockEdge('a', 'm'), createMockEdge('m', 'b')];
+
+      const analysis = analyzeBulkNodeDeletion(['a', 'b'], [a, b, m], edges, false, new Set());
+      expect(analysis.status).toBe('ready');
+      expect(analysis.primaryNodes.map((n) => n.id)).toEqual(['a', 'b']);
+      expect(analysis.intermediateNodes).toHaveLength(0);
+      expect(analysis.allNodeIdsToDelete).toEqual(['a', 'b']);
+      expect(analysis.affectedEdgeCount).toBe(2);
+    });
+
+    it('includes exclusive hidden intermediate entities when deleting a pair in compacted mode', () => {
+      const a = createMockNode('a', 'VERIFIED', 'personne');
+      const b = createMockNode('b', 'VERIFIED', 'personne');
+      const m = createMockNode('m', 'FLOWS', 'telephone');
+      const edges = [createMockEdge('a', 'm'), createMockEdge('m', 'b')];
+
+      const analysis = analyzeBulkNodeDeletion(['a', 'b'], [a, b, m], edges, true, new Set());
+      expect(analysis.status).toBe('ready');
+      expect(analysis.primaryNodes.map((n) => n.id)).toEqual(['a', 'b']);
+      expect(analysis.intermediateNodes.map((n) => n.id)).toEqual(['m']);
+      expect(analysis.allNodeIdsToDelete.sort()).toEqual(['a', 'b', 'm']);
+      expect(analysis.blockingThirdParties).toHaveLength(0);
+    });
+
+    it('blocks compacted pair deletion when an intermediate entity implicates a third unselected person', () => {
+      const a = createMockNode('a', 'VERIFIED', 'personne');
+      const b = createMockNode('b', 'VERIFIED', 'personne');
+      const c = createMockNode('c', 'HYPOTHESIS', 'personne');
+      const m = createMockNode('m', 'FLOWS', 'compte_bancaire');
+      const edges = [
+        createMockEdge('a', 'm'),
+        createMockEdge('m', 'b'),
+        createMockEdge('m', 'c'),
+      ];
+
+      const analysis = analyzeBulkNodeDeletion(['a', 'b'], [a, b, c, m], edges, true, new Set());
+      expect(analysis.status).toBe('blocked_third_party');
+      expect(analysis.blockingThirdParties).toHaveLength(1);
+      expect(analysis.blockingThirdParties[0]?.person.id).toBe('c');
+      expect(analysis.blockingThirdParties[0]?.viaIntermediates.map((n) => n.id)).toEqual(['m']);
+      expect(analysis.allNodeIdsToDelete.sort()).toEqual(['a', 'b', 'm']);
+      expect(analysis.allNodeIdsToDelete).not.toContain('c');
+    });
+  });
+
+  describe('Algeria Geo Suggestions & Bidirectional Entity-Pair Relations', () => {
+    it('supports accent-insensitive wilaya suggestions and guided Wilaya -> Daïra -> Commune cascade', () => {
+      expect(ALGERIA_WILAYAS.length).toBe(58);
+      const algiers = searchWilayas('alger');
+      expect(algiers.some((w) => w.code === '16')).toBe(true);
+
+      const dairas = searchDairasByWilaya('16', 'sidi');
+      expect(dairas.some((d) => d.name.toLowerCase().includes("sidi m'hamed"))).toBe(true);
+
+      const communes = searchCommunesByDaira('16', "Sidi M'Hamed", 'alger');
+      expect(communes.some((c) => c.commune_name_ascii === 'Alger Centre')).toBe(true);
+    });
+
+    it('returns phone-person relations in both directions (telephone -> personne and personne -> telephone)', () => {
+      const pToT = getAvailableRelationsForNodes('personne', 'telephone').map((r) => r.key);
+      const tToP = getAvailableRelationsForNodes('telephone', 'personne').map((r) => r.key);
+
+      expect(pToT).toContain('UTILISE_TELEPHONE');
+      expect(tToP).toContain('UTILISE_TELEPHONE');
+      expect(tToP).toContain('TITULAIRE_LIGNE_SIM');
     });
   });
 });

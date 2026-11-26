@@ -1,7 +1,7 @@
 """Athar Ontological Registry — Single Source of Truth.
 
 Defines the 37 canonical node types, their 5 operational layers,
-GPS capabilities, and the 47 permitted relational edge schemas.
+GPS capabilities, and the 48 permitted relational edge schemas.
 Exportable to JSON for client consumption and verification.
 """
 
@@ -1109,7 +1109,7 @@ RELATION_TYPES: dict[str, RelationTypeDefinition] = {
         cardinality="N:1",
         description_fr="Cliché de vidéosurveillance ou photo saisie identifiant la voiture.",
     ),
-    # 42-47: Procédure, Scellés WORM & Merkle
+    # 42-48: Procédure, Scellés WORM & Merkle
     "CONTIENT_PROCES_VERBAL": RelationTypeDefinition(
         name="CONTIENT_PROCES_VERBAL",
         label_fr="Contient le Procès-Verbal",
@@ -1169,6 +1169,45 @@ RELATION_TYPES: dict[str, RelationTypeDefinition] = {
         allowed_targets=["preuve_merkle"],
         cardinality="1:1",
         description_fr="Ancrage de l'ensemble du dossier dans l'arbre d'audit infalsifiable.",
+    ),
+    "EXTRAIT_DE": RelationTypeDefinition(
+        name="EXTRAIT_DE",
+        label_fr="Extrait de la pièce",
+        label_en="Extracted from Evidence",
+        label_ar="مستخرج من الدليل",
+        allowed_sources=[
+            "personne",
+            "entreprise",
+            "vehicule",
+            "telephone",
+            "carte_sim",
+            "appareil_mobile",
+            "compte_bancaire",
+            "transaction_financiere",
+            "guichet_gab",
+            "crypto_wallet",
+            "transaction_crypto",
+            "compte_social",
+            "publication_sociale",
+            "canal_telegram",
+            "message_chat",
+            "adresse_email",
+            "site_web",
+            "identifiant_infrastructure",
+            "serveur_c2",
+            "fichier_apk",
+            "artefact_dfir",
+            "image_preuve",
+            "commune",
+            "wilaya",
+        ],
+        allowed_targets=["scelle_numerique", "document_judiciaire"],
+        cardinality="N:M",
+        is_directed=True,
+        description_fr=(
+            "Traçabilité probatoire reliant une entité extraite à la pièce "
+            "numérique ou au procès-verbal source (Décisions D16 & D17)."
+        ),
     ),
 }
 

@@ -105,6 +105,92 @@ POSTGRES_DDL_STATEMENTS: Sequence[str] = (
     );
     """,
     "CREATE INDEX IF NOT EXISTS idx_cdrs_case_time ON telecom_cdrs(case_id, timestamp DESC);",
+    # 6. Evidence files metadata & local pre-WORM staging (Blackboard-ready Phase 2A)
+    """
+    CREATE TABLE IF NOT EXISTS evidence_files (
+        id UUID PRIMARY KEY,
+        case_id UUID NOT NULL REFERENCES cases(id) ON DELETE CASCADE,
+        node_id UUID NOT NULL REFERENCES nodes(id) ON DELETE CASCADE,
+        original_filename VARCHAR(255) NOT NULL,
+        mime_type VARCHAR(128) NOT NULL DEFAULT 'application/pdf',
+        byte_size BIGINT NOT NULL,
+        sha256 VARCHAR(64) NOT NULL,
+        storage_path TEXT NOT NULL,
+        metadata_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+        blackboard_sync_status VARCHAR(32) NOT NULL DEFAULT 'NOT_PUBLISHED',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(case_id, node_id)
+    );
+    """,
+    (
+        "CREATE INDEX IF NOT EXISTS idx_evidence_files_case_node "
+        "ON evidence_files(case_id, node_id);"
+    ),
+    (
+        "CREATE INDEX IF NOT EXISTS idx_evidence_files_bb_sync "
+        "ON evidence_files(blackboard_sync_status);"
+    ),
+    # 7. Extraction runs (Mode 1 quick & Mode 2 step-by-step)
+    """
+    CREATE TABLE IF NOT EXISTS extraction_runs (
+        id UUID PRIMARY KEY,
+        case_id UUID NOT NULL REFERENCES cases(id) ON DELETE CASCADE,
+        source_node_id UUID NOT NULL REFERENCES nodes(id) ON DELETE CASCADE,
+        mode VARCHAR(32) NOT NULL,
+        current_stage INT NOT NULL DEFAULT 0,
+        total_stages INT NOT NULL DEFAULT 1,
+        status VARCHAR(32) NOT NULL,
+        selected_tools JSONB NOT NULL DEFAULT '[]'::jsonb,
+        summary_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+        started_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        completed_at TIMESTAMPTZ
+    );
+    """,
+    (
+        "CREATE INDEX IF NOT EXISTS idx_extraction_runs_case_node "
+        "ON extraction_runs(case_id, source_node_id);"
+    ),
+    # 8. Staged extracted candidate entities (isolated validation + Blackboard-ready)
+    """
+    CREATE TABLE IF NOT EXISTS extracted_candidates (
+        id UUID PRIMARY KEY,
+        case_id UUID NOT NULL REFERENCES cases(id) ON DELETE CASCADE,
+        run_id UUID NOT NULL REFERENCES extraction_runs(id) ON DELETE CASCADE,
+        source_node_id UUID NOT NULL REFERENCES nodes(id) ON DELETE CASCADE,
+        entity_type VARCHAR(64) NOT NULL,
+        suggested_layer VARCHAR(32) NOT NULL,
+        label VARCHAR(255) NOT NULL,
+        normalized_value VARCHAR(512) NOT NULL,
+        attributes_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+        confidence DOUBLE PRECISION NOT NULL DEFAULT 0.85,
+        extractor_tool VARCHAR(128) NOT NULL,
+        stage_number INT NOT NULL DEFAULT 1,
+        source_page INT NOT NULL DEFAULT 1,
+        source_locator VARCHAR(128) NOT NULL DEFAULT '',
+        quote_snippet TEXT NOT NULL DEFAULT '',
+        matched_existing_node_id UUID,
+        validation_status VARCHAR(32) NOT NULL DEFAULT 'PENDING',
+        promoted_node_id UUID,
+        validated_by VARCHAR(128),
+        validated_at TIMESTAMPTZ,
+        blackboard_sync_status VARCHAR(32) NOT NULL DEFAULT 'NOT_PUBLISHED',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    """,
+    (
+        "ALTER TABLE extracted_candidates "
+        "ADD COLUMN IF NOT EXISTS source_locator VARCHAR(128) NOT NULL DEFAULT '';"
+    ),
+    (
+        "CREATE INDEX IF NOT EXISTS idx_candidates_case_node "
+        "ON extracted_candidates(case_id, source_node_id);"
+    ),
+    "CREATE INDEX IF NOT EXISTS idx_candidates_run ON extracted_candidates(run_id);",
+    "CREATE INDEX IF NOT EXISTS idx_candidates_status ON extracted_candidates(validation_status);",
+    (
+        "CREATE INDEX IF NOT EXISTS idx_candidates_bb_sync "
+        "ON extracted_candidates(blackboard_sync_status);"
+    ),
 )
 
 

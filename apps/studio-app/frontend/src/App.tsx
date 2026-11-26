@@ -1,10 +1,25 @@
-import { useEffect, useState, useCallback } from 'react';
-import { ShieldCheck, FileText } from 'lucide-react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { ShieldCheck, FileText, PanelRightOpen } from 'lucide-react';
 import { useGraphStore } from './store/useGraphStore';
+import { computeTabScopedGraph } from './utils/tabScope';
+import {
+  classifyFileTaxonomy,
+  computeClientSha256,
+  isIngestionModeLive,
+  isStaticIngestionSupportedFile,
+  sanitizeFileName,
+} from './utils/fileIngestion';
+import {
+  rebindLocalFileNodeId,
+  registerLocalFile,
+  type LocalFileEntry,
+} from './utils/localFileStore';
 import type { GraphNode } from './types/graph';
 import { DesktopMenuBar } from './components/menubar/DesktopMenuBar';
 import { AppSubBar } from './components/menubar/AppSubBar';
 import { GraphCanvasAdapter } from './components/canvas/GraphCanvasAdapter';
+import { IngestionPopover } from './components/canvas/IngestionPopover';
+import { WorkspaceTabsBar } from './components/canvas/WorkspaceTabsBar';
 import { Toolbar, type ActiveViewMode } from './components/canvas/Toolbar';
 import { ContextMenu } from './components/canvas/ContextMenu';
 import { LayerChangeDialog } from './components/canvas/LayerChangeDialog';
@@ -23,6 +38,8 @@ import { PhaseNoticeModal } from './components/modals/PhaseNoticeModal';
 import { AddNodeModal, type AddNodeData } from './components/modals/AddNodeModal';
 import { NewCaseModal } from './components/modals/NewCaseModal';
 import { OpenCaseModal } from './components/modals/OpenCaseModal';
+import { FilePreviewModal } from './components/modals/FilePreviewModal';
+import { DeleteNodesModal } from './components/modals/DeleteNodesModal';
 import { useToast } from './context/ToastContext';
 import { useI18n } from './context/I18nContext';
 import type { CaseItem, GraphResponse } from './types/graph';
@@ -49,7 +66,7 @@ export function App() {
     setError,
     selectNode,
     selectAllNodes,
-    deleteNode,
+    requestDeleteNodes,
     selectEdge,
     clearSelection,
     setViewport,
@@ -58,13 +75,37 @@ export function App() {
     openContextMenu,
     undo,
     redo,
+    tabs,
+    activeTabId,
+    toggleTabImpactView,
+    activeIngestionPopoverNodeId,
+    openIngestionPopover,
+    closeIngestionPopover,
+    updateNodeAnalysisConfig,
+    triggerNodeInvestigation,
+    uploadPdfForNode,
+    runPdfExtraction,
+    openActorTab,
+    registerTabAddedNode,
+    reconcileOptimisticNodeId,
   } = useGraphStore();
+
+  const activeTab = useMemo(
+    () => tabs.find((t) => t.id === activeTabId) ?? null,
+    [tabs, activeTabId]
+  );
+
+  const { scopedNodes, scopedEdges } = useMemo(
+    () => computeTabScopedGraph(nodes, edges, activeTab, activeLayers, isImpactView),
+    [nodes, edges, activeTab, activeLayers, isImpactView]
+  );
 
   const [activeView, setActiveView] = useState<ActiveViewMode>('graph');
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isInspectorOpen, setIsInspectorOpen] = useState(true);
   const [isSnaOpen, setIsSnaOpen] = useState(false);
   const [selectedSnaAlgo, setSelectedSnaAlgo] = useState<string>('betweenness');
+  const [previewFileEntry, setPreviewFileEntry] = useState<LocalFileEntry | null>(null);
 
   const handleOpenSna = (algoKey?: string) => {
     if (algoKey) setSelectedSnaAlgo(algoKey);
@@ -73,6 +114,7 @@ export function App() {
 
   // Resizable Panels State (Left Toolbox & Right Inspector)
   const [leftWidth, setLeftWidth] = useState(260);
+  const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
   const [rightWidth, setRightWidth] = useState(340);
   const [isResizingLeft, setIsResizingLeft] = useState(false);
   const [isResizingRight, setIsResizingRight] = useState(false);
@@ -105,6 +147,11 @@ export function App() {
 
   // Switch or reload active case
   const handleSelectCase = useCallback((selectedCase: CaseItem) => {
+    try {
+      window.localStorage.setItem('athar.activeCaseId', selectedCase.id);
+    } catch {
+      // Ignore storage quota / private mode errors
+    }
     setActiveCase(selectedCase);
     setLoading(true);
 
@@ -126,6 +173,11 @@ export function App() {
 
   // Handle newly created case
   const handleCaseCreated = useCallback((newCase: CaseItem) => {
+    try {
+      window.localStorage.setItem('athar.activeCaseId', newCase.id);
+    } catch {
+      // Ignore storage quota / private mode errors
+    }
     setActiveCase(newCase);
     setGraphData({
       case_id: newCase.id,
@@ -159,8 +211,23 @@ export function App() {
       .then((cases: CaseItem[]) => {
         if (!isSubscribed) return;
         if (cases.length > 0) {
-          const mainCase = cases.find((c) => c.code.includes('CANDY') || c.code.includes('ATHAR')) ?? cases[0] ?? null;
+          let savedCaseId: string | null = null;
+          try {
+            savedCaseId = window.localStorage.getItem('athar.activeCaseId');
+          } catch {
+            savedCaseId = null;
+          }
+          const mainCase =
+            (savedCaseId ? cases.find((c) => c.id === savedCaseId) : undefined) ??
+            cases.find((c) => c.code.includes('CANDY') || c.code.includes('ATHAR')) ??
+            cases[0] ??
+            null;
           if (mainCase) {
+            try {
+              window.localStorage.setItem('athar.activeCaseId', mainCase.id);
+            } catch {
+              // Ignore storage quota / private mode errors
+            }
             setActiveCase(mainCase);
 
             return fetch(`${API_BASE}/api/v1/cases/${mainCase.id}/graph?impact_only=false`)
@@ -217,17 +284,36 @@ export function App() {
         e.preventDefault();
         setLeftWidth((w) => Math.min(550, w + 24));
       } else if (e.key === 'Delete' || e.key === 'Backspace') {
-        if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
-        if (selectedNodeId) {
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) return;
+        const idsToDelete =
+          selectedNodeIds.length > 0 ? selectedNodeIds : selectedNodeId ? [selectedNodeId] : [];
+        if (idsToDelete.length > 0) {
           e.preventDefault();
-          deleteNode(selectedNodeId);
+          requestDeleteNodes(idsToDelete);
+        }
+      } else if (e.key === 'Escape') {
+        if (document.querySelector('[role="dialog"]')) return;
+        useGraphStore.getState().stepEscapeLinkMode();
+      } else if (!e.ctrlKey && !e.metaKey && !e.altKey && activeView === 'graph') {
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) return;
+        const low = e.key.toLowerCase();
+        if (low === 'v') {
+          e.preventDefault();
+          useGraphStore.getState().setCanvasToolMode('select');
+        } else if (low === 'h') {
+          e.preventDefault();
+          useGraphStore.getState().setCanvasToolMode('pan');
+        } else if (low === 'l') {
+          e.preventDefault();
+          const st = useGraphStore.getState();
+          st.setLinkMode(!st.isLinkMode);
         }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedNodeId, undo, redo, selectAllNodes, deleteNode]);
+  }, [selectedNodeId, selectedNodeIds, activeView, undo, redo, selectAllNodes, requestDeleteNodes]);
 
   // Window mouse drag listener for adjusting left and right panel widths
   useEffect(() => {
@@ -274,21 +360,10 @@ export function App() {
     return () => window.removeEventListener('resize', handleWindowResize);
   }, []);
 
-  // Handle Impact View Toggle
+  // Handle Impact View Toggle (scoped to the active investigation tab)
   const handleToggleImpactView = useCallback(() => {
-    if (!activeCase) return;
-    const targetImpact = !isImpactView;
-    setLoading(true);
-
-    fetch(`${API_BASE}/api/v1/cases/${activeCase.id}/graph?impact_only=${targetImpact}`)
-      .then((r) => r.json())
-      .then((graphRes: GraphResponse) => {
-        setGraphData(graphRes);
-      })
-      .catch((err) => {
-        setError(err instanceof Error ? err.message : 'Erreur de bascule Impact');
-      });
-  }, [activeCase, isImpactView, setGraphData, setError, setLoading]);
+    toggleTabImpactView();
+  }, [toggleTabImpactView]);
 
   // Handle 1-hop or 2-hop Expansion (reveals hidden connections immediately + merges from backend)
   const handleExpand = useCallback(
@@ -333,7 +408,7 @@ export function App() {
           setLoading(false);
         });
     },
-    [activeCase, selectedNodeId, mergeExpandedNodes, setLoading, toast, tr]
+    [activeCase, selectedNodeId, mergeExpandedNodes, setLoading, toast, tr, trLabel]
   );
 
   // Handle Add Node at Center
@@ -455,6 +530,163 @@ export function App() {
     setIsPhaseNoticeOpen(true);
   };
 
+  const handleDropRawFiles = useCallback(
+    async (files: FileList, canvasX?: number, canvasY?: number) => {
+      if (!activeCase || !files || files.length === 0) return;
+
+      const baseX =
+        typeof canvasX === 'number'
+          ? canvasX
+          : Math.round((420 - viewport.panX) / Math.max(viewport.zoom, 0.2));
+      const baseY =
+        typeof canvasY === 'number'
+          ? canvasY
+          : Math.round((280 - viewport.panY) / Math.max(viewport.zoom, 0.2));
+
+      const fileList = Array.from(files);
+      for (let idx = 0; idx < fileList.length; idx += 1) {
+        const file = fileList[idx];
+        if (!file) continue;
+
+        const cleanName = sanitizeFileName(file.name);
+        const dropX = baseX + idx * 44;
+        const dropY = baseY + idx * 36;
+        const clientSha256 = await computeClientSha256(file);
+        const taxonomy = classifyFileTaxonomy(cleanName, file.type);
+        const tempId = `node-file-${Date.now()}-${idx}`;
+        const mimeType = file.type || 'application/octet-stream';
+        const entityType = taxonomy.expectedDerivedType || 'scelle_numerique';
+
+        await registerLocalFile(tempId, clientSha256, file, taxonomy.family);
+
+        const nodeProps: Record<string, unknown> = {
+          file_name: cleanName,
+          mime_type: mimeType,
+          file_size_bytes: file.size,
+          client_sha256: clientSha256,
+          sha256_scope: 'phase1_local_preseal',
+          is_raw_evidence: true,
+          custom_icon: taxonomy.icon,
+          selected_plugins: taxonomy.plugins.map((p) => p.id),
+          detected_family: taxonomy.family,
+          detected_family_label: taxonomy.labelFr,
+          expected_derived_type: entityType,
+          investigation_status: 'pending_analysis',
+          analysis_mode: null,
+          analysis_progress: 0,
+          analysis_stage: "En attente du choix de mode par l'enquêteur",
+        };
+
+        const optimisticNode: GraphNode = {
+          id: tempId,
+          case_id: activeCase.id,
+          type: entityType,
+          label: cleanName,
+          layer: 'VERIFIED',
+          confidence: 1.0,
+          provenance: 'LOCAL_FILE_DROP',
+          properties: nodeProps,
+          latitude: null,
+          longitude: null,
+          x: dropX,
+          y: dropY,
+          radius: 28,
+        };
+
+        const storeBefore = useGraphStore.getState();
+        const nextExpanded = new Set(storeBefore.expandedHiddenNodeIds);
+        nextExpanded.add(tempId);
+        const nextLayers = new Set(storeBefore.activeLayers);
+        nextLayers.add('VERIFIED');
+        const nextForcedLabels = new Set(storeBefore.forcedVisibleNodeLabelIds);
+        nextForcedLabels.add(tempId);
+        useGraphStore.setState({
+          expandedHiddenNodeIds: nextExpanded,
+          activeLayers: nextLayers,
+          forcedVisibleNodeLabelIds: nextForcedLabels,
+        });
+
+        mergeExpandedNodes([optimisticNode], []);
+        registerTabAddedNode(tempId);
+        updateNodePosition(tempId, dropX, dropY, false);
+        selectNode(tempId, false);
+        setIsInspectorOpen(true);
+        if (idx === 0) {
+          openIngestionPopover(tempId);
+        }
+
+        toast.success(
+          tr('Scellé préliminaire "{name}" créé (SHA-256 local)', { name: cleanName }),
+          tr('Ingestion de pièce brute')
+        );
+
+        fetch(`${API_BASE}/api/v1/cases/${activeCase.id}/nodes`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Actor-Id': 'investigator_front',
+          },
+          body: JSON.stringify({
+            type: entityType,
+            label: cleanName,
+            confidence: 1.0,
+            provenance: 'LOCAL_FILE_DROP',
+            properties: nodeProps,
+          }),
+        })
+          .then(async (r) => {
+            if (!r.ok) {
+              const errJson = await r.json().catch(() => ({}));
+              const msg = errJson.detail?.message || errJson.detail || `Erreur serveur (${r.status})`;
+              throw new Error(msg);
+            }
+            return r.json();
+          })
+          .then((createdNode: GraphNode) => {
+            if (!createdNode || !createdNode.id) return;
+            createdNode.x = dropX;
+            createdNode.y = dropY;
+            createdNode.layer = createdNode.layer || 'VERIFIED';
+
+            rebindLocalFileNodeId(tempId, createdNode.id);
+
+            const storeNow = useGraphStore.getState();
+            const layersNow = new Set(storeNow.activeLayers);
+            layersNow.add(createdNode.layer);
+            useGraphStore.setState({ activeLayers: layersNow });
+
+            reconcileOptimisticNodeId(tempId, createdNode);
+
+            if (isStaticIngestionSupportedFile(cleanName, mimeType)) {
+              void uploadPdfForNode(createdNode.id, file).catch((uploadErr) => {
+                console.error('Erreur téléversement pièce statique:', uploadErr);
+              });
+            }
+          })
+          .catch((err) => {
+            console.error('Erreur création scellé brut:', err);
+            toast.warning(
+              err instanceof Error ? err.message : tr('Mode local temporaire (non persisté sur serveur)'),
+              tr('Persistance scellé')
+            );
+          });
+      }
+    },
+    [
+      activeCase,
+      viewport,
+      mergeExpandedNodes,
+      registerTabAddedNode,
+      updateNodePosition,
+      selectNode,
+      openIngestionPopover,
+      reconcileOptimisticNodeId,
+      uploadPdfForNode,
+      toast,
+      tr,
+    ]
+  );
+
   const handleRunPlaybook = () => {
     toast.info(
       "Scénario d'enquête recommandé exécuté : 3 nouveaux indices dirigés vers la Boîte d'Arbitrage (Review-Run).",
@@ -466,8 +698,6 @@ export function App() {
     <div className="app-shell" style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
       {/* 1. Desktop Native Menu Bar (32px) */}
       <DesktopMenuBar
-        activeView={activeView}
-        onChangeView={setActiveView}
         onOpenExport={() => setIsExportOpen(true)}
         onOpenCaseProps={() => setIsCasePropsOpen(true)}
         onNewCase={() => setIsNewCaseOpen(true)}
@@ -480,8 +710,12 @@ export function App() {
         onTriggerPhaseNotice={handleTriggerPhaseNotice}
         onAddNode={handleAddNodeAtCenter}
         onSelectAll={selectAllNodes}
+        onUndo={undo}
+        onRedo={redo}
         onDeleteSelected={() => {
-          if (selectedNodeId) deleteNode(selectedNodeId);
+          const idsToDelete =
+            selectedNodeIds.length > 0 ? selectedNodeIds : selectedNodeId ? [selectedNodeId] : [];
+          if (idsToDelete.length > 0) requestDeleteNodes(idsToDelete);
         }}
         onResetZoom={resetViewport}
         onToggleSna={handleOpenSna}
@@ -496,11 +730,42 @@ export function App() {
         onTriggerPhaseNotice={handleTriggerPhaseNotice}
       />
 
+      {/* 2b. Full-Width View Switcher & Tab Actions Bar (Graphe, Carte SIG, Chronologie, Tableau, Audit, Exporter) */}
+      <Toolbar
+        section="header"
+        activeView={activeView}
+        onChangeView={setActiveView}
+        isSnaOpen={isSnaOpen}
+        onToggleSna={() => setIsSnaOpen((prev) => !prev)}
+        onOpenExport={() => setIsExportOpen(true)}
+        onToggleImpactView={handleToggleImpactView}
+        onRunRecommendedScenario={handleRunPlaybook}
+        onImportFiles={(files) => {
+          void handleDropRawFiles(files);
+        }}
+      />
+
+      {/* 2c. Full-Width Graph Sub-Toolbar (never clipped or hidden behind side panels) */}
+      {activeView === 'graph' && (
+        <Toolbar
+          section="graph_subbar"
+          activeView={activeView}
+          onChangeView={setActiveView}
+          isSnaOpen={isSnaOpen}
+          onToggleSna={() => setIsSnaOpen((prev) => !prev)}
+          onOpenExport={() => setIsExportOpen(true)}
+          onToggleImpactView={handleToggleImpactView}
+          onRunRecommendedScenario={handleRunPlaybook}
+        />
+      )}
+
       {/* 3. Main Workspace Area: Left Panel + Center Stage + Right Inspector */}
       <main className="main-workspace" style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }}>
-        {/* Left Toolbox and Layers Accordion (resizable) */}
+        {/* Left Toolbox and Layers Accordion (resizable & collapsible) */}
         <LeftAccordion
           style={{ width: `${leftWidth}px`, flexShrink: 0 }}
+          isCollapsed={isLeftCollapsed}
+          onToggleCollapse={() => setIsLeftCollapsed((prev) => !prev)}
           onAddNodeAtCenter={handleAddNodeAtCenter}
           onOpenAuditViewer={() => setActiveView('audit')}
           onFilterCategory={(cat) => {
@@ -551,42 +816,36 @@ export function App() {
         />
 
         {/* Resizer Handle: Left Sidebar (Accessible Keyboard & Mouse) */}
-        <div
-          className="resizer-handle-left"
-          tabIndex={0}
-          role="separator"
-          aria-orientation="vertical"
-          aria-label="Redimensionner le panneau gauche"
-          aria-valuenow={leftWidth}
-          aria-valuemin={170}
-          aria-valuemax={550}
-          onMouseDown={(e) => {
-            e.preventDefault();
-            setIsResizingLeft(true);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'ArrowLeft') {
+        {!isLeftCollapsed && (
+          <div
+            className="resizer-handle-left"
+            tabIndex={0}
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Redimensionner le panneau gauche"
+            aria-valuenow={leftWidth}
+            aria-valuemin={170}
+            aria-valuemax={550}
+            onMouseDown={(e) => {
               e.preventDefault();
-              setLeftWidth((w) => Math.max(170, w - 16));
-            } else if (e.key === 'ArrowRight') {
-              e.preventDefault();
-              setLeftWidth((w) => Math.min(550, w + 16));
-            }
-          }}
-        />
+              setIsResizingLeft(true);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                setLeftWidth((w) => Math.max(170, w - 16));
+              } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                setLeftWidth((w) => Math.min(550, w + 16));
+              }
+            }}
+          />
+        )}
 
         {/* Center Canvas Area */}
-        <div style={{ flex: 1, position: 'relative', height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          {/* Sub-Header Toolbar */}
-          <Toolbar
-            activeView={activeView}
-            onChangeView={setActiveView}
-            isSnaOpen={isSnaOpen}
-            onToggleSna={() => setIsSnaOpen((prev) => !prev)}
-            onOpenExport={() => setIsExportOpen(true)}
-            onToggleImpactView={handleToggleImpactView}
-            onRunRecommendedScenario={handleRunPlaybook}
-          />
+        <div className="center-workspace-column">
+          {/* Browser-like Investigation Tabs Bar flush with the view */}
+          <WorkspaceTabsBar onTriggerPhaseNotice={handleTriggerPhaseNotice} />
 
           {/* SNA Panel Dialog */}
           {isSnaOpen && (
@@ -703,14 +962,51 @@ export function App() {
                 onToggleSna={() => setIsSnaOpen((prev) => !prev)}
                 isSnaOpen={isSnaOpen}
                 onAddNodeAtPosition={handleAddNodeAtPosition}
+                onDropRawFiles={(files, x, y) => {
+                  void handleDropRawFiles(files, x, y);
+                }}
               />
             )}
           </div>
 
+          {/* Option B: Floating 3-Mode Selector & Process Tree Popover (Works across all workspace views) */}
+          <IngestionPopover
+            node={nodes.find((n) => n.id === activeIngestionPopoverNodeId) ?? null}
+            onClose={closeIngestionPopover}
+            onLaunchMode={(nodeId, mode, stageLabel, selectedPlugins) => {
+              const target = nodes.find((n) => n.id === nodeId);
+              const fileName = String(target?.properties?.file_name || target?.label || '');
+              const mimeType = String(target?.properties?.mime_type || '');
+              if (
+                isIngestionModeLive(mode, fileName, mimeType) &&
+                (mode === 'quick' || mode === 'step_by_step')
+              ) {
+                void runPdfExtraction(nodeId, mode, selectedPlugins).catch((err) => {
+                  toast.error(
+                    err instanceof Error ? err.message : tr('Erreur extraction'),
+                    tr('Extraction')
+                  );
+                });
+                return;
+              }
+              void triggerNodeInvestigation(nodeId, mode, stageLabel);
+            }}
+            onIsolateNode={(nodeId) => openActorTab(nodeId)}
+            onUpdateConfig={updateNodeAnalysisConfig}
+            onPreviewFile={(entry) => setPreviewFileEntry(entry)}
+            onTriggerPhaseNotice={handleTriggerPhaseNotice}
+          />
+
           {/* Context Menu Modal */}
           <ContextMenu
+            activeView={activeView}
             onExpand={handleExpand}
             onInspect={() => setIsInspectorOpen(true)}
+            onLocateInGraph={(nodeId) => {
+              selectNode(nodeId, false);
+              setActiveView('graph');
+              setIsInspectorOpen(true);
+            }}
           />
 
           {/* Forensic Layer Change Modal */}
@@ -720,8 +1016,8 @@ export function App() {
           <ExportDialog isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} />
         </div>
 
-        {/* Right Inspector & Context Panel (resizable & keyboard accessible) */}
-        {isInspectorOpen && (
+        {/* Right Inspector & Context Panel (resizable & collapsible) */}
+        {isInspectorOpen ? (
           <>
             <div
               className="resizer-handle-right"
@@ -753,9 +1049,22 @@ export function App() {
               onTriggerTool={() => {
                 setIsSnaOpen(true);
               }}
+              onPreviewFile={(entry) => setPreviewFileEntry(entry)}
               onTriggerPhaseNotice={handleTriggerPhaseNotice}
             />
           </>
+        ) : (
+          <aside className="panel-right is-collapsed" aria-label={tr("Ouvrir l'inspecteur")}>
+            <button
+              type="button"
+              className="btn btn-ghost btn-xs panel-left-collapse-btn"
+              onClick={() => setIsInspectorOpen(true)}
+              title={tr("Ouvrir l'inspecteur")}
+              aria-label={tr("Ouvrir l'inspecteur")}
+            >
+              <PanelRightOpen size={14} />
+            </button>
+          </aside>
         )}
       </main>
 
@@ -763,8 +1072,8 @@ export function App() {
       <footer className="status-bar" role="contentinfo" aria-label={tr("Barre d'état judiciaire et intégrité forensique")}>
         <div className="status-bar-left">
           <span>{tr('Affaire : {code}', { code: activeCase?.code || '—' })}</span>
-          <span>{tr('Nœuds affichés : {n}', { n: nodes.length })}</span>
-          <span>{tr('Relations : {n}', { n: edges.length })}</span>
+          <span>{tr('Nœuds affichés : {n}', { n: scopedNodes.length })}</span>
+          <span>{tr('Relations : {n}', { n: scopedEdges.length })}</span>
         </div>
 
         <div className="status-bar-right">
@@ -835,6 +1144,13 @@ export function App() {
         onClose={() => setIsOpenCaseModalOpen(false)}
         onSelectCase={handleSelectCase}
       />
+
+      <FilePreviewModal
+        entry={previewFileEntry}
+        onClose={() => setPreviewFileEntry(null)}
+      />
+
+      <DeleteNodesModal />
     </div>
   );
 }

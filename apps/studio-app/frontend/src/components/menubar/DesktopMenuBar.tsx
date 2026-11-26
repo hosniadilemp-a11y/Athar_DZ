@@ -6,23 +6,15 @@ import {
   ChevronDown,
   ChevronRight,
   User,
-  Target,
-  Share2,
-  Circle,
-  GitFork,
-  Grid,
 } from 'lucide-react';
 import { useGraphStore } from '../../store/useGraphStore';
 import { useI18n } from '../../context/I18nContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useToast } from '../../context/ToastContext';
 import type { Locale } from '../../i18n/translations';
-import type { ActiveViewMode } from '../canvas/Toolbar';
 import type { ToolSpec } from '../modals/ToolInfoModal';
 
 interface DesktopMenuBarProps {
-  activeView: ActiveViewMode;
-  onChangeView: (view: ActiveViewMode) => void;
   onOpenExport: () => void;
   onOpenCaseProps: () => void;
   onNewCase?: () => void;
@@ -32,6 +24,8 @@ interface DesktopMenuBarProps {
   onTriggerPhaseNotice: (featureName: string, targetPhase: string) => void;
   onAddNode: (typeKey: string) => void;
   onSelectAll: () => void;
+  onUndo?: () => void;
+  onRedo?: () => void;
   onDeleteSelected: () => void;
   onResetZoom: () => void;
   onToggleSna: (algoKey?: string) => void;
@@ -39,8 +33,6 @@ interface DesktopMenuBarProps {
 }
 
 export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
-  activeView,
-  onChangeView,
   onOpenExport,
   onOpenCaseProps,
   onNewCase,
@@ -50,6 +42,8 @@ export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
   onTriggerPhaseNotice,
   onAddNode,
   onSelectAll,
+  onUndo,
+  onRedo,
   onDeleteSelected,
   onResetZoom,
   onToggleSna,
@@ -58,7 +52,7 @@ export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
   const { locale, setLocale, t, tr } = useI18n();
   const { theme, toggleTheme } = useTheme();
   const toast = useToast();
-  const { activeLayout, applyLayout, investigationMode, toggleInvestigationMode } = useGraphStore();
+  const { investigationMode, toggleInvestigationMode } = useGraphStore();
 
   const handleToggleMode = () => {
     toggleInvestigationMode();
@@ -112,7 +106,6 @@ export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
     <nav
       ref={menubarRef}
       className="desktop-menubar"
-      role="menubar"
       aria-label="Menu principal de l'application"
     >
       {/* Left Group: Logo & 8 Dropdown Menus */}
@@ -251,7 +244,7 @@ export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
               role="menuitem"
               onClick={() => {
                 closeDropdown();
-                alert('Annulation effectuée.');
+                onUndo?.();
               }}
             >
               <span>Annuler Dernière Action</span>
@@ -263,7 +256,7 @@ export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
               role="menuitem"
               onClick={() => {
                 closeDropdown();
-                alert('Action rétablie.');
+                onRedo?.();
               }}
             >
               <span>Rétablir</span>
@@ -996,7 +989,7 @@ export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
           </div>
         </div>
 
-        {/* 7. Menu Affichage */}
+        {/* 7. Menu Affichage (Utilitaires globaux d'affichage — sans doublon avec la barre des vues) */}
         <div className="menubar-item">
           <button
             type="button"
@@ -1011,128 +1004,9 @@ export const DesktopMenuBar: React.FC<DesktopMenuBarProps> = ({
           <div className={`menu-dropdown ${openMenu === 'view' ? 'is-open' : ''}`} role="menu">
             <button
               type="button"
-              className={`menu-dropdown-item ${activeView === 'graph' ? 'active' : ''}`}
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onChangeView('graph');
-              }}
-            >
-              <span>Tableau des Indices (Graphe Visuel)</span>
-            </button>
-            <button
-              type="button"
-              className={`menu-dropdown-item ${activeView === 'timeline' ? 'active' : ''}`}
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onChangeView('timeline');
-              }}
-            >
-              <span>Chronologie Temporelle Forensique</span>
-            </button>
-            <button
-              type="button"
-              className={`menu-dropdown-item ${activeView === 'map' ? 'active' : ''}`}
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onChangeView('map');
-              }}
-            >
-              <span>Carte Géographique des Bornages &amp; SIG</span>
-            </button>
-            <button
-              type="button"
-              className={`menu-dropdown-item ${activeView === 'table' ? 'active' : ''}`}
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onChangeView('table');
-              }}
-            >
-              <span>Vue Tableau Accessible (WCAG AA)</span>
-            </button>
-            <button
-              type="button"
-              className={`menu-dropdown-item ${activeView === 'audit' ? 'active' : ''}`}
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                onChangeView('audit');
-              }}
-            >
-              <span>Registre d&apos;Audit Forensique (ISO 27037)</span>
-            </button>
-            <div className="menu-dropdown-divider" />
-            <div style={{ padding: '4px 10px', fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
-              Disposition du Graphe
-            </div>
-            <button
-              type="button"
-              className={`menu-dropdown-item ${activeLayout === 'concentric' ? 'active' : ''}`}
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                applyLayout('concentric');
-              }}
-            >
-              <Target size={13} className="text-accent" />
-              <span>Concentrique par Calque (Forensique)</span>
-            </button>
-            <button
-              type="button"
-              className={`menu-dropdown-item ${activeLayout === 'force' ? 'active' : ''}`}
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                applyLayout('force');
-              }}
-            >
-              <Share2 size={13} className="text-accent" />
-              <span>Organique (Force-Directed)</span>
-            </button>
-            <button
-              type="button"
-              className={`menu-dropdown-item ${activeLayout === 'circular' ? 'active' : ''}`}
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                applyLayout('circular');
-              }}
-            >
-              <Circle size={13} className="text-accent" />
-              <span>Circulaire Global</span>
-            </button>
-            <button
-              type="button"
-              className={`menu-dropdown-item ${activeLayout === 'hierarchical' ? 'active' : ''}`}
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                applyLayout('hierarchical');
-              }}
-            >
-              <GitFork size={13} className="text-accent" />
-              <span>Hiérarchique (Chaîne Criminelle)</span>
-            </button>
-            <button
-              type="button"
-              className={`menu-dropdown-item ${activeLayout === 'grid' ? 'active' : ''}`}
-              role="menuitem"
-              onClick={() => {
-                closeDropdown();
-                applyLayout('grid');
-              }}
-            >
-              <Grid size={13} className="text-accent" />
-              <span>Grille Matricielle Ordonnée</span>
-            </button>
-            <div className="menu-dropdown-divider" />
-            <button
-              type="button"
               className="menu-dropdown-item is-future-phase"
               role="menuitem"
+              aria-disabled="true"
               onClick={() => {
                 closeDropdown();
                 onTriggerPhaseNotice('Coffre-fort des Preuves Certifiées WORM', 'Phase 2');

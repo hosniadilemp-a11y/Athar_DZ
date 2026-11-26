@@ -24,6 +24,34 @@ export interface GraphNode {
   is_impact?: boolean;
 }
 
+export type InvestigationTabKind = 'master' | 'actor_sphere';
+
+export type AnalysisMode = 'quick' | 'step_by_step' | 'recursive';
+
+export type InvestigationStatus = 'pending_analysis' | 'active_investigation' | 'saturated';
+
+export interface TabVisualSnapshot {
+  panX: number;
+  panY: number;
+  zoom: number;
+  activeLayout: 'concentric' | 'force' | 'circular' | 'hierarchical' | 'grid';
+  activeLayers: LayerId[];
+  isPersonOnlyGraph: boolean;
+  isImpactOnly: boolean;
+  selectedNodeId: string | null;
+  nodePositions?: Record<string, { x: number; y: number }>;
+  addedNodeIds?: string[];
+}
+
+export interface InvestigationTab {
+  id: string;
+  kind: InvestigationTabKind;
+  title: string;
+  focalNodeId: string | null;
+  closable: boolean;
+  snapshot: TabVisualSnapshot;
+}
+
 export interface GraphEdge {
   id: string;
   case_id: string;

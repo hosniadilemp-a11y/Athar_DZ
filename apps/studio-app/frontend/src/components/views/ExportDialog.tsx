@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useGraphStore } from '../../store/useGraphStore';
+import { computeTabScopedGraph } from '../../utils/tabScope';
 import { exportCaseToJson, printForensicReport } from '../../services/exportService';
 import { API_BASE } from '../../config';
 import { FileDown, Printer, ShieldCheck, X } from 'lucide-react';
@@ -11,9 +12,19 @@ interface ExportDialogProps {
 }
 
 export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) => {
-  const { activeCase, nodes, edges } = useGraphStore();
-  const { tr, dir } = useI18n();
+  const { activeCase, nodes, edges, activeLayers, tabs, activeTabId, isImpactView } = useGraphStore();
+  const { tr, trLabel, dir } = useI18n();
   const [auditVerified, setAuditVerified] = useState(true);
+
+  const activeTab = useMemo(
+    () => tabs.find((t) => t.id === activeTabId) ?? null,
+    [tabs, activeTabId]
+  );
+
+  const { scopedNodes, scopedEdges } = useMemo(
+    () => computeTabScopedGraph(nodes, edges, activeTab, activeLayers, isImpactView),
+    [nodes, edges, activeTab, activeLayers, isImpactView]
+  );
 
   useEffect(() => {
     if (!activeCase) return;
@@ -30,8 +41,8 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) =
     exportDate: new Date().toISOString(),
     actorId: 'investigator_front',
     auditVerified,
-    nodes,
-    edges,
+    nodes: scopedNodes,
+    edges: scopedEdges,
   };
 
   return (
@@ -82,7 +93,12 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) =
 
         <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
           {tr('Dossier : {title} ({code})', { title: activeCase.title, code: activeCase.code })}<br />
-          {tr('Volume : {nodes} entités et {edges} relations actives.', { nodes: nodes.length, edges: edges.length })}
+          {activeTab?.kind === 'actor_sphere' && (
+            <>
+              {tr('Onglet actif : {tab}', { tab: trLabel(activeTab.title) })}<br />
+            </>
+          )}
+          {tr('Volume : {nodes} entités et {edges} relations actives.', { nodes: scopedNodes.length, edges: scopedEdges.length })}
         </p>
 
         <div

@@ -23,6 +23,7 @@
 ### Excluded from Phase 1 (Deferred to Phases 2–6)
 - Moteur d'archivage MinIO WORM S3 & RFC 3161 (`Phase 2`)
 - Moteur plein-texte Elasticsearch 8.14 & Bassin d'indices non-inclus opérationnel (`Phase 2`)
+- Contrat backend `ForensicPluginSPI` & registre `ProcessRegistry` (`Phase 2`)
 - Active OSINT execution / scraping & Temporal.io event loops (`Phase 3`)
 - Process Discovery Tree interactif connecté au bus EDA (`Phase 3`)
 - Dynamic Dataflow multimodal GPU & Qdrant vector DB ArcFace 512-d (`Phase 4`)
@@ -42,7 +43,7 @@
 | **1D Canvas** | `GraphCanvasAdapter`, `CircularGraphCanvas`, Zustand slices + undo/redo, context menu, inspector, table alternative, pinning (`pinnedNodeIds`) | Keyboard walkthrough clean, `tsc`, `vitest` 33 passed, `build` clean | <span style="color:#10b981;">✔ COMPLETED</span> |
 | **1E SNA (16x)** | 16 pure deterministic algorithms in Python NetworkX, SNA panel with method/params display | All 16 registered, tested, and timed on 100-node seed | <span style="color:#10b981;">✔ COMPLETED</span> |
 | **1F Views & Polish** | Left accordion (5 layers, 37 DnD/kbd), Timeline, GIS Map, PDF/JSON export, FR/AR/EN + RTL, Dark/Light, disabled Phase N badges | `ui-ux-rules.md` DoD passes on every view | <span style="color:#10b981;">✔ COMPLETED</span> |
-| **1G Hardening & UI Hooks** | Full test suite, `pip-audit`, `npm audit`, accessibility pass, Option A tab toggle, Option B surface popover 3 modes | All milestone checklists green; Phase 1 closed cleanly | <span style="color:#fbbf24;">⏳ IN PROGRESS (90%)</span> |
+| **1G Hardening & UI Hooks** | Full test suite, `pip-audit`, `npm audit`, accessibility pass, Option A tab toggle, Option B surface popover 3 modes | All milestone checklists green; Phase 1 closed cleanly | <span style="color:#10b981;">✔ COMPLETED</span> |
 
 ---
 

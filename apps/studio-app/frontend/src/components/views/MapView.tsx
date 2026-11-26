@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useGraphStore, NODE_TYPE_TO_CATEGORY, ONTOLOGY_CATEGORY_COLORS } from '../../store/useGraphStore';
+import { computeTabScopedGraph } from '../../utils/tabScope';
 import { useI18n } from '../../context/I18nContext';
 import { getRelationLabel } from '../../i18n/phrases/relations';
 import { NodeIcon } from '../canvas/NodeIcon';
@@ -23,6 +24,8 @@ if (typeof window !== 'undefined' && window.MouseEvent) {
 import registryDataRaw from '../../registry/registry.json';
 import type { RegistryData, LayerId } from '../../types/registry';
 import type { GraphNode } from '../../types/graph';
+
+type GpsGraphNode = GraphNode & { latitude: number; longitude: number };
 import {
   MapPin,
   AlertCircle,
@@ -42,7 +45,7 @@ const LAYER_COLORS: Record<LayerId, string> = {
   VERIFIED: '#10b981',
   OSINT_RAW: '#3b82f6',
   INFRA: '#06b6d4',
-  HYPOTHESIS: '#eab308',
+  HYPOTHESIS: '#ef4444',
   FLOWS: '#f59e0b',
 };
 
@@ -54,7 +57,27 @@ const OSM_TILE_LAYER = {
 
 export const MapView: React.FC = () => {
   const { t, tr, trLabel, locale } = useI18n();
-  const { nodes, edges, selectedNodeId, selectNode } = useGraphStore();
+  const {
+    nodes: allNodes,
+    edges: allEdges,
+    activeLayers,
+    tabs,
+    activeTabId,
+    isImpactView,
+    selectedNodeId,
+    selectNode,
+    openContextMenu,
+  } = useGraphStore();
+
+  const activeTab = useMemo(
+    () => tabs.find((t) => t.id === activeTabId) ?? null,
+    [tabs, activeTabId]
+  );
+
+  const { scopedNodes: nodes, scopedEdges: edges } = useMemo(
+    () => computeTabScopedGraph(allNodes, allEdges, activeTab, activeLayers, isImpactView),
+    [allNodes, allEdges, activeTab, activeLayers, isImpactView]
+  );
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -97,7 +120,7 @@ export const MapView: React.FC = () => {
 
   // Separate GPS-valid and non-geolocated nodes
   const { gpsNodes, skippedNodes } = useMemo(() => {
-    const valid: GraphNode[] = [];
+    const valid: GpsGraphNode[] = [];
     const skipped: GraphNode[] = [];
 
     nodes.forEach((n) => {
@@ -111,7 +134,7 @@ export const MapView: React.FC = () => {
         n.longitude >= -9.0 &&
         n.longitude <= 13.0
       ) {
-        valid.push(n);
+        valid.push({ ...n, latitude: n.latitude, longitude: n.longitude });
       } else {
         skipped.push(n);
       }
@@ -219,7 +242,7 @@ export const MapView: React.FC = () => {
     const isClusteredMode = zoomLevel <= 11;
 
     // Helper to render an individual forensic node marker
-    const renderNodeMarker = (node: GraphNode, lat: number, lon: number) => {
+    const renderNodeMarker = (node: GpsGraphNode, lat: number, lon: number) => {
       const isSelected = selectedNodeId === node.id;
       const typeDef = registry.node_types[node.type];
       const category = NODE_TYPE_TO_CATEGORY[node.type] || 'acteurs';
@@ -293,6 +316,13 @@ export const MapView: React.FC = () => {
         selectNode(node.id);
       });
 
+      marker.on('contextmenu', (e: L.LeafletMouseEvent) => {
+        e.originalEvent.preventDefault();
+        e.originalEvent.stopPropagation();
+        selectNode(node.id);
+        openContextMenu(e.originalEvent.clientX, e.originalEvent.clientY, node.id);
+      });
+
       const popupHtml = `
         <div style="font-family: inherit; font-size: 11.5px; color: #f8fafc; min-width: 180px;">
           <div style="font-weight: 700; font-size: 12.5px; color: #ffffff; margin-bottom: 2px;">
@@ -319,7 +349,7 @@ export const MapView: React.FC = () => {
             </div>
           ` : ''}
           <div style="font-size: 9.5px; color: #64748b; font-family: monospace; margin-top: 4px;">
-            GPS: ${node.latitude!.toFixed(4)}°, ${node.longitude!.toFixed(4)}°
+            GPS: ${node.latitude.toFixed(4)}°, ${node.longitude.toFixed(4)}°
           </div>
         </div>
       `;
@@ -334,19 +364,21 @@ export const MapView: React.FC = () => {
 
     // Mode A: Clustered Mode when Zoomed Out (zoom <= 11)
     if (isClusteredMode) {
-      const wilayaClusters = new Map<string, { lat: number; lon: number; nodes: GraphNode[]; wilaya: string }>();
+      const wilayaClusters = new Map<string, { lat: number; lon: number; nodes: GpsGraphNode[]; wilaya: string }>();
 
       filteredGpsNodes.forEach((node) => {
         const w = getNodeWilaya(node);
-        if (!wilayaClusters.has(w)) {
-          wilayaClusters.set(w, {
-            lat: node.latitude!,
-            lon: node.longitude!,
+        let cluster = wilayaClusters.get(w);
+        if (!cluster) {
+          cluster = {
+            lat: node.latitude,
+            lon: node.longitude,
             nodes: [],
             wilaya: w,
-          });
+          };
+          wilayaClusters.set(w, cluster);
         }
-        wilayaClusters.get(w)!.nodes.push(node);
+        cluster.nodes.push(node);
       });
 
       wilayaClusters.forEach((cluster) => {
@@ -406,33 +438,38 @@ export const MapView: React.FC = () => {
 
           markersGroup.addLayer(clusterMarker);
         } else if (count === 1) {
-          const n = cluster.nodes[0]!;
-          renderNodeMarker(n, n.latitude!, n.longitude!);
+          const n = cluster.nodes[0];
+          if (n) {
+            renderNodeMarker(n, n.latitude, n.longitude);
+          }
         }
       });
       return;
     }
 
     // Mode B: Detailed Street Zoom (zoom >= 12) - Render individual markers & polylines
-    const clusterMap = new Map<string, GraphNode[]>();
+    const clusterMap = new Map<string, GpsGraphNode[]>();
     filteredGpsNodes.forEach((node) => {
-      const lat = node.latitude!;
-      const lon = node.longitude!;
+      const lat = node.latitude;
+      const lon = node.longitude;
       const key = `${lat.toFixed(3)},${lon.toFixed(3)}`;
-      if (!clusterMap.has(key)) {
-        clusterMap.set(key, []);
+      let bucket = clusterMap.get(key);
+      if (!bucket) {
+        bucket = [];
+        clusterMap.set(key, bucket);
       }
-      clusterMap.get(key)!.push(node);
+      bucket.push(node);
     });
 
     const posMap = new Map<string, [number, number]>();
     clusterMap.forEach((clusterNodes) => {
+      const first = clusterNodes[0];
+      if (!first) return;
       if (clusterNodes.length === 1) {
-        const n = clusterNodes[0]!;
-        posMap.set(n.id, [n.latitude!, n.longitude!]);
+        posMap.set(first.id, [first.latitude, first.longitude]);
       } else {
-        const centerLat = clusterNodes[0]!.latitude!;
-        const centerLon = clusterNodes[0]!.longitude!;
+        const centerLat = first.latitude;
+        const centerLon = first.longitude;
         const count = clusterNodes.length;
         const spreadRadius = 0.0022;
 
@@ -448,7 +485,7 @@ export const MapView: React.FC = () => {
     posMapRef.current = posMap;
 
     filteredGpsNodes.forEach((node) => {
-      const coords = posMap.get(node.id) || [node.latitude!, node.longitude!];
+      const coords = posMap.get(node.id) || [node.latitude, node.longitude];
       renderNodeMarker(node, coords[0], coords[1]);
     });
 
@@ -486,7 +523,7 @@ export const MapView: React.FC = () => {
         linesGroup.addLayer(polyline);
       });
     }
-  }, [filteredGpsNodes, edges, selectedNodeId, selectNode, showGeographicLinks, getNodeWilaya, locale, currentZoom]);
+  }, [filteredGpsNodes, edges, selectedNodeId, selectNode, openContextMenu, showGeographicLinks, getNodeWilaya, locale, currentZoom]);
 
   // Center / FlyTo Node
   const handleFocusNode = useCallback((node: GraphNode) => {
@@ -513,8 +550,8 @@ export const MapView: React.FC = () => {
       <aside
         className="map-tree-sidebar"
         style={{
-          width: isTreeOpen ? '290px' : '36px',
-          minWidth: isTreeOpen ? '290px' : '36px',
+          width: isTreeOpen ? '240px' : '36px',
+          minWidth: isTreeOpen ? '240px' : '36px',
         }}
         aria-label="Arborescence territoriale et classification des entités"
       >
@@ -572,7 +609,7 @@ export const MapView: React.FC = () => {
             </div>
 
             {/* Tree Content Branches */}
-            <div className="map-tree-scroll" role="tree" aria-label="Arborescence territoriale des entités">
+            <div className="map-tree-scroll" role="region" aria-label="Arborescence territoriale des entités">
               {availableWilayas.map(([wilayaName, count]) => {
                 const isSelected = selectedWilayaFilter === wilayaName;
                 const wilayaKey = `wilaya_${wilayaName}`;
@@ -617,6 +654,12 @@ export const MapView: React.FC = () => {
                               key={node.id}
                               className={`map-tree-leaf-item ${isNodeSelected ? 'selected' : ''}`}
                               onClick={() => handleFocusNode(node)}
+                              onContextMenu={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                selectNode(node.id);
+                                openContextMenu(e.clientX, e.clientY, node.id);
+                              }}
                               title={`${trLabel(node.label)} (${node.latitude?.toFixed(4)}, ${node.longitude?.toFixed(4)})`}
                             >
                               <NodeIcon name={typeDef?.icon || 'map-pin'} size={12} style={{ color: catColor }} />
@@ -660,6 +703,12 @@ export const MapView: React.FC = () => {
                           type="button"
                           className="map-tree-leaf-item"
                           onClick={() => selectNode(node.id)}
+                          onContextMenu={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            selectNode(node.id);
+                            openContextMenu(e.clientX, e.clientY, node.id);
+                          }}
                           style={{ opacity: 0.7 }}
                         >
                           <NodeIcon name={registry.node_types[node.type]?.icon || 'help-circle'} size={12} />

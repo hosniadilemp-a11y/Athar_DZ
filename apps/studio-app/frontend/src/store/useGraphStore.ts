@@ -4,9 +4,31 @@
  */
 
 import { create } from './createStore';
-import type { GraphNode, GraphEdge, CaseItem, GraphResponse } from '../types/graph';
+import type {
+  GraphNode,
+  GraphEdge,
+  CaseItem,
+  GraphResponse,
+  InvestigationTab,
+  AnalysisMode,
+} from '../types/graph';
 import type { LayerId } from '../types/registry';
+import type {
+  ExtractedCandidate,
+  ExtractionRun,
+  ValidateCandidatesRequest,
+} from '../types/ingestion';
 import { computeGraphLayout, type GraphLayoutType } from '../utils/graphLayouts';
+import { computeActorSphere } from '../utils/actorSphere';
+import { getLocalFileEntry } from '../utils/localFileStore';
+import {
+  advanceExtractionStage,
+  fetchNodeCandidates,
+  startNodeExtraction,
+  uploadNodePdf,
+  validateNodeCandidates,
+} from '../services/ingestionApi';
+import { API_BASE } from '../config';
 
 export type { GraphLayoutType };
 
@@ -119,7 +141,7 @@ export interface GraphCustomizationState {
 }
 
 export const DEFAULT_GRAPH_CUSTOMIZATION: GraphCustomizationState = {
-  nodeSize: 64,
+  nodeSize: 56,
   nodeLabelSize: 12.5,
   edgeThickness: 2,
   edgeLabelSize: 11,
@@ -160,7 +182,9 @@ export interface GraphStoreState {
 
   // View slice
   viewport: ViewportState;
+  viewportFitNonce: number;
   activeLayers: Set<LayerId>;
+  canvasToolMode: 'select' | 'pan';
   isLinkMode: boolean;
   linkSourceNodeId: string | null;
   activeLayout: GraphLayoutType;
@@ -234,7 +258,7 @@ export interface GraphStoreState {
     updates: {
       label?: string;
       confidence?: number;
-      properties?: Record<string, any>;
+      properties?: Record<string, unknown>;
     }
   ) => Promise<void>;
 
@@ -253,6 +277,16 @@ export interface GraphStoreState {
     targetLayer: LayerId | null;
   };
 
+  // Option A: Multi-Tab Investigation Workspace slice
+  tabs: InvestigationTab[];
+  activeTabId: string;
+  loadedTabsCaseId: string | null;
+  initTabsForCase: (caseId: string, caseNodes: GraphNode[]) => void;
+  openActorTab: (nodeId: string) => void;
+  switchTab: (tabId: string) => void;
+  closeTab: (tabId: string) => void;
+  toggleTabImpactView: () => void;
+
   // Reversible History slice
   undoStack: Command[];
   redoStack: Command[];
@@ -268,6 +302,10 @@ export interface GraphStoreState {
   selectNode: (id: string | null, isMulti?: boolean) => void;
   selectAllNodes: () => void;
   deleteNode: (id: string) => void;
+  pendingDeleteNodeIds: string[] | null;
+  requestDeleteNodes: (ids: string[]) => void;
+  cancelDeleteNodes: () => void;
+  deleteNodes: (ids: string[]) => void;
   selectEdge: (id: string | null) => void;
   clearSelection: () => void;
 
@@ -279,8 +317,10 @@ export interface GraphStoreState {
   toggleLayer: (layer: LayerId) => void;
   setAllLayers: (active: boolean) => void;
   applyLayout: (layoutType: GraphLayoutType) => void;
+  setCanvasToolMode: (mode: 'select' | 'pan') => void;
   setLinkMode: (active: boolean) => void;
   setLinkSourceNodeId: (id: string | null) => void;
+  stepEscapeLinkMode: () => 'cleared_source' | 'exited_link_mode' | 'cleared_selection';
   createManualEdge: (
     sourceId: string,
     targetId: string,
@@ -292,6 +332,7 @@ export interface GraphStoreState {
 
   // Canvas Node Position actions (with reversible command)
   updateNodePosition: (nodeId: string, x: number, y: number, recordHistory?: boolean) => void;
+  updateActiveTabNodePositions: (posMap: Map<string, { x: number; y: number }>) => void;
 
   // Context Menu actions
   openContextMenu: (x: number, y: number, nodeId: string) => void;
@@ -301,6 +342,34 @@ export interface GraphStoreState {
   openLayerChangeModal: (nodeId: string, targetLayer: LayerId) => void;
   closeLayerChangeModal: () => void;
 
+  // Option B: Raw File Ingestion & Analysis Popover slice
+  activeIngestionPopoverNodeId: string | null;
+  openIngestionPopover: (nodeId: string) => void;
+  closeIngestionPopover: () => void;
+  registerTabAddedNode: (nodeId: string) => void;
+  reconcileOptimisticNodeId: (tempId: string, savedNode: GraphNode) => void;
+  updateNodeAnalysisConfig: (
+    nodeId: string,
+    config: { selected_plugins?: string[]; process_tree?: Record<string, unknown> }
+  ) => void;
+  triggerNodeInvestigation: (nodeId: string, mode: AnalysisMode, stageLabel: string) => Promise<void>;
+
+  // Phase 2A: Static Manual PDF Extraction & Isolated Candidate Validation
+  extractionRunsByNodeId: Record<string, ExtractionRun | null>;
+  candidatesByNodeId: Record<string, ExtractedCandidate[]>;
+  extractionLoadingNodeId: string | null;
+  selectedCandidateId: string | null;
+  selectCandidate: (candidateId: string | null) => void;
+  uploadPdfForNode: (nodeId: string, file: File) => Promise<void>;
+  runPdfExtraction: (
+    nodeId: string,
+    mode: 'quick' | 'step_by_step',
+    selectedTools: string[]
+  ) => Promise<void>;
+  advancePdfStage: (nodeId: string, runId: string) => Promise<void>;
+  loadNodeCandidates: (nodeId: string) => Promise<void>;
+  validateCandidates: (nodeId: string, payload: ValidateCandidatesRequest) => Promise<number>;
+
   // Mutation commands with Undo/Redo
   executeCommand: (command: Command) => void;
   undo: () => void;
@@ -308,6 +377,89 @@ export interface GraphStoreState {
 }
 
 const DEFAULT_LAYERS: Set<LayerId> = new Set(['VERIFIED', 'OSINT_RAW', 'INFRA', 'HYPOTHESIS', 'FLOWS']);
+
+function createMasterTab(): InvestigationTab {
+  return {
+    id: 'master',
+    kind: 'master',
+    title: 'Dossier Général',
+    focalNodeId: null,
+    closable: false,
+    snapshot: {
+      panX: 0,
+      panY: 0,
+      zoom: 1,
+      activeLayout: 'force',
+      activeLayers: Array.from(DEFAULT_LAYERS),
+      isPersonOnlyGraph: true,
+      isImpactOnly: false,
+      selectedNodeId: null,
+    },
+  };
+}
+
+function computeIsolatedTabPositions(
+  allNodes: GraphNode[],
+  allEdges: GraphEdge[],
+  focalNodeId: string,
+  layoutType: GraphLayoutType = 'force'
+): Record<string, { x: number; y: number }> {
+  const sphere = computeActorSphere(allNodes, allEdges, focalNodeId);
+  const sphereNodes = allNodes
+    .filter((n) => sphere.nodeIds.has(n.id))
+    .map((n) => ({ ...n, x: undefined, y: undefined }));
+  const sphereEdges = allEdges.filter((e) => sphere.edgeIds.has(e.id));
+
+  const layouted = computeGraphLayout(sphereNodes, sphereEdges, layoutType, {
+    centerX: 600,
+    centerY: 420,
+  });
+
+  const positions: Record<string, { x: number; y: number }> = {};
+  layouted.forEach((n) => {
+    if (typeof n.x === 'number' && typeof n.y === 'number') {
+      positions[n.id] = { x: n.x, y: n.y };
+    }
+  });
+  return positions;
+}
+
+function buildTabsForCase(caseNodes: GraphNode[], caseEdges: GraphEdge[] = []): InvestigationTab[] {
+  const master = createMasterTab();
+  const hasAnyPerson = caseNodes.some(
+    (n) => n.type === 'personne' || n.type.toLowerCase() === 'person'
+  );
+  if (!hasAnyPerson) {
+    master.snapshot.isPersonOnlyGraph = false;
+  }
+  const tabs: InvestigationTab[] = [master];
+  const amineNode = caseNodes.find(
+    (n) =>
+      (n.type === 'personne' || n.type.toLowerCase() === 'person') &&
+      n.label.toLowerCase().includes('amine b.')
+  );
+  if (amineNode) {
+    tabs.push({
+      id: `tab-actor-${amineNode.id}`,
+      kind: 'actor_sphere',
+      title: 'Suspect : Amine B.',
+      focalNodeId: amineNode.id,
+      closable: true,
+      snapshot: {
+        panX: 0,
+        panY: 0,
+        zoom: 1,
+        activeLayout: 'force',
+        activeLayers: Array.from(DEFAULT_LAYERS),
+        isPersonOnlyGraph: false,
+        isImpactOnly: false,
+        selectedNodeId: amineNode.id,
+        nodePositions: computeIsolatedTabPositions(caseNodes, caseEdges, amineNode.id, 'force'),
+      },
+    });
+  }
+  return tabs;
+}
 
 export const useGraphStore = create<GraphStoreState>((set, get) => ({
   activeCase: null,
@@ -324,7 +476,9 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
   selectedEdgeId: null,
 
   viewport: { panX: 0, panY: 0, zoom: 1 },
+  viewportFitNonce: 0,
   activeLayers: new Set(DEFAULT_LAYERS),
+  canvasToolMode: 'select',
   isLinkMode: false,
   linkSourceNodeId: null,
   activeLayout: 'force',
@@ -336,6 +490,12 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
   snaVisualOverlay: null,
   setSnaVisualOverlay: (overlay) => set({ snaVisualOverlay: overlay }),
   clearSnaVisualOverlay: () => set({ snaVisualOverlay: null }),
+
+  extractionRunsByNodeId: {},
+  candidatesByNodeId: {},
+  extractionLoadingNodeId: null,
+  selectedCandidateId: null,
+  selectCandidate: (candidateId) => set({ selectedCandidateId: candidateId }),
 
   investigationMode: 'investigator',
   toggleInvestigationMode: () =>
@@ -472,7 +632,8 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
       const queue = [nodeId];
 
       while (queue.length > 0) {
-        const curr = queue.shift()!;
+        const curr = queue.shift();
+        if (!curr) continue;
         state.edges.forEach((e) => {
           let neighbor: string | null = null;
           if (e.source_id === curr) neighbor = e.target_id;
@@ -625,6 +786,167 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     targetLayer: null,
   },
 
+  tabs: [createMasterTab()],
+  activeTabId: 'master',
+  loadedTabsCaseId: null,
+  activeIngestionPopoverNodeId: null,
+
+  initTabsForCase: (caseId, caseNodes) => {
+    const nextTabs = buildTabsForCase(caseNodes, get().edges);
+    const master = nextTabs[0] ?? createMasterTab();
+    set((state) => ({
+      tabs: nextTabs,
+      activeTabId: 'master',
+      loadedTabsCaseId: caseId,
+      activeIngestionPopoverNodeId: null,
+      viewport: { panX: master.snapshot.panX, panY: master.snapshot.panY, zoom: master.snapshot.zoom },
+      viewportFitNonce: state.viewportFitNonce + 1,
+      activeLayout: master.snapshot.activeLayout,
+      activeLayers: new Set(master.snapshot.activeLayers),
+      isPersonOnlyGraph: master.snapshot.isPersonOnlyGraph,
+      isImpactView: master.snapshot.isImpactOnly,
+    }));
+  },
+
+  openActorTab: (nodeId) => {
+    const state = get();
+    const targetNode = state.nodes.find((n) => n.id === nodeId);
+    if (!targetNode) return;
+
+    const existing = state.tabs.find((t) => t.kind === 'actor_sphere' && t.focalNodeId === nodeId);
+    if (existing) {
+      get().switchTab(existing.id);
+      return;
+    }
+
+    const newTab: InvestigationTab = {
+      id: `tab-actor-${nodeId}`,
+      kind: 'actor_sphere',
+      title: targetNode.label,
+      focalNodeId: nodeId,
+      closable: true,
+      snapshot: {
+        panX: 0,
+        panY: 0,
+        zoom: 1,
+        activeLayout: 'force',
+        activeLayers: Array.from(DEFAULT_LAYERS),
+        isPersonOnlyGraph: false,
+        isImpactOnly: false,
+        selectedNodeId: nodeId,
+        nodePositions: computeIsolatedTabPositions(state.nodes, state.edges, nodeId, 'force'),
+      },
+    };
+
+    set({ tabs: [...state.tabs, newTab] });
+    get().switchTab(newTab.id);
+
+    const isEvidence =
+      Boolean(targetNode.properties?.is_raw_evidence) ||
+      targetNode.type === 'scelle_numerique' ||
+      targetNode.type === 'document_judiciaire' ||
+      typeof targetNode.properties?.client_sha256 === 'string';
+    if (isEvidence && !nodeId.startsWith('temp-') && !nodeId.startsWith('node-file-')) {
+      void get()
+        .loadNodeCandidates(nodeId)
+        .catch(() => {
+          // Non-fatal in offline/unit-test environments without a live API server
+        });
+    }
+  },
+
+  switchTab: (tabId) => {
+    const state = get();
+    if (state.activeTabId === tabId) return;
+    const targetTab = state.tabs.find((t) => t.id === tabId);
+    if (!targetTab) return;
+
+    const outgoingTab = state.tabs.find((t) => t.id === state.activeTabId);
+    const currentSnapshot = {
+      panX: state.viewport.panX,
+      panY: state.viewport.panY,
+      zoom: state.viewport.zoom,
+      activeLayout: state.activeLayout,
+      activeLayers: Array.from(state.activeLayers),
+      isPersonOnlyGraph: state.isPersonOnlyGraph,
+      isImpactOnly: state.isImpactView,
+      selectedNodeId: state.selectedNodeId,
+      ...(outgoingTab?.snapshot.nodePositions ? { nodePositions: outgoingTab.snapshot.nodePositions } : {}),
+      ...(outgoingTab?.snapshot.addedNodeIds ? { addedNodeIds: outgoingTab.snapshot.addedNodeIds } : {}),
+    };
+
+    const updatedTabs = state.tabs.map((t) =>
+      t.id === state.activeTabId ? { ...t, snapshot: currentSnapshot } : t
+    );
+
+    const nextSelectedId = targetTab.snapshot.selectedNodeId;
+    set({
+      tabs: updatedTabs,
+      activeTabId: targetTab.id,
+      activeIngestionPopoverNodeId: null,
+      viewport: {
+        panX: targetTab.snapshot.panX,
+        panY: targetTab.snapshot.panY,
+        zoom: targetTab.snapshot.zoom,
+      },
+      activeLayout: targetTab.snapshot.activeLayout,
+      activeLayers: new Set(targetTab.snapshot.activeLayers),
+      isPersonOnlyGraph: targetTab.snapshot.isPersonOnlyGraph,
+      isImpactView: targetTab.snapshot.isImpactOnly,
+      selectedNodeId: nextSelectedId,
+      selectedNodeIds: nextSelectedId ? [nextSelectedId] : [],
+      selectedEdgeId: null,
+    });
+  },
+
+  closeTab: (tabId) => {
+    const state = get();
+    const targetTab = state.tabs.find((t) => t.id === tabId);
+    if (!targetTab || !targetTab.closable) return;
+
+    const remainingTabs = state.tabs.filter((t) => t.id !== tabId);
+    if (state.activeTabId !== tabId) {
+      set({ tabs: remainingTabs });
+      return;
+    }
+
+    const fallbackTab = remainingTabs.find((t) => t.id === 'master') ?? remainingTabs[0];
+    if (!fallbackTab) return;
+
+    const nextSelectedId = fallbackTab.snapshot.selectedNodeId;
+    set({
+      tabs: remainingTabs,
+      activeTabId: fallbackTab.id,
+      activeIngestionPopoverNodeId: null,
+      viewport: {
+        panX: fallbackTab.snapshot.panX,
+        panY: fallbackTab.snapshot.panY,
+        zoom: fallbackTab.snapshot.zoom,
+      },
+      activeLayout: fallbackTab.snapshot.activeLayout,
+      activeLayers: new Set(fallbackTab.snapshot.activeLayers),
+      isPersonOnlyGraph: fallbackTab.snapshot.isPersonOnlyGraph,
+      isImpactView: fallbackTab.snapshot.isImpactOnly,
+      selectedNodeId: nextSelectedId,
+      selectedNodeIds: nextSelectedId ? [nextSelectedId] : [],
+      selectedEdgeId: null,
+    });
+  },
+
+  toggleTabImpactView: () => {
+    const state = get();
+    const nextImpact = !state.isImpactView;
+    const updatedTabs = state.tabs.map((t) =>
+      t.id === state.activeTabId
+        ? { ...t, snapshot: { ...t.snapshot, isImpactOnly: nextImpact } }
+        : t
+    );
+    set({
+      isImpactView: nextImpact,
+      tabs: updatedTabs,
+    });
+  },
+
   undoStack: [],
   redoStack: [],
 
@@ -641,7 +963,7 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
 
     // Check if we need to apply layout to new nodes
     const unpositionedNodes = res.nodes.filter((n) => !existingPosMap.has(n.id));
-    let layoutedPositions = new Map<string, { x: number; y: number }>();
+    const layoutedPositions = new Map<string, { x: number; y: number }>();
 
     if (unpositionedNodes.length > 0) {
       const computed = computeGraphLayout(res.nodes, res.edges, get().activeLayout);
@@ -675,6 +997,10 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
       isLoading: false,
       error: null,
     });
+
+    if (get().loadedTabsCaseId !== res.case_id) {
+      get().initTabsForCase(res.case_id, positionedNodes);
+    }
   },
 
   mergeExpandedNodes: (newNodes, newEdges) => {
@@ -892,6 +1218,11 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
       selectedNodeIds: get().selectedNodeIds.filter((nId) => nId !== id),
     });
 
+    const affectedTab = get().tabs.find((t) => t.focalNodeId === id && t.closable);
+    if (affectedTab) {
+      get().closeTab(affectedTab.id);
+    }
+
     get().executeCommand({
       id: `delete-${id}-${Date.now()}`,
       description: `Suppression de ${targetNode.label}`,
@@ -910,11 +1241,103 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     });
   },
 
+  pendingDeleteNodeIds: null,
+
+  requestDeleteNodes: (ids: string[]) => {
+    const existingIds = new Set(get().nodes.map((n) => n.id));
+    const uniqueIds = Array.from(new Set(ids)).filter((id) => existingIds.has(id));
+    if (uniqueIds.length === 0) return;
+    set({ pendingDeleteNodeIds: uniqueIds });
+  },
+
+  cancelDeleteNodes: () => set({ pendingDeleteNodeIds: null }),
+
+  deleteNodes: (ids: string[]) => {
+    const idSet = new Set(ids);
+    if (idSet.size === 0) return;
+
+    const currentNodes = get().nodes;
+    const currentEdges = get().edges;
+    const deletedNodes = currentNodes.filter((n) => idSet.has(n.id));
+    if (deletedNodes.length === 0) return;
+
+    const remainingNodes = currentNodes.filter((n) => !idSet.has(n.id));
+    const remainingEdges = currentEdges.filter(
+      (e) => !idSet.has(e.source_id) && !idSet.has(e.target_id)
+    );
+    const deletedEdges = currentEdges.filter(
+      (e) => idSet.has(e.source_id) || idSet.has(e.target_id)
+    );
+
+    const nextSelectedNodeIds = get().selectedNodeIds.filter((nId) => !idSet.has(nId));
+    const currentSelectedId = get().selectedNodeId;
+    const nextSelectedNodeId =
+      currentSelectedId && idSet.has(currentSelectedId)
+        ? (nextSelectedNodeIds[0] ?? null)
+        : currentSelectedId;
+
+    set({
+      nodes: remainingNodes,
+      edges: remainingEdges,
+      selectedNodeId: nextSelectedNodeId,
+      selectedNodeIds: nextSelectedNodeIds,
+      selectedEdgeId: null,
+      pendingDeleteNodeIds: null,
+    });
+
+    const affectedTabs = get().tabs.filter(
+      (t) => t.closable && t.focalNodeId && idSet.has(t.focalNodeId)
+    );
+    affectedTabs.forEach((tab) => get().closeTab(tab.id));
+
+    const description =
+      deletedNodes.length === 1
+        ? `Suppression de ${deletedNodes[0]?.label ?? ''}`
+        : `Suppression de ${deletedNodes.length} entités`;
+
+    get().executeCommand({
+      id: `delete-bulk-${Date.now()}`,
+      description,
+      undo: () => {
+        set({
+          nodes: [...get().nodes, ...deletedNodes],
+          edges: [...get().edges, ...deletedEdges],
+        });
+      },
+      redo: () => {
+        set({
+          nodes: get().nodes.filter((n) => !idSet.has(n.id)),
+          edges: get().edges.filter(
+            (e) => !idSet.has(e.source_id) && !idSet.has(e.target_id)
+          ),
+        });
+      },
+    });
+
+    const activeCase = get().activeCase;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (activeCase && typeof fetch === 'function') {
+      deletedNodes.forEach((n) => {
+        if (uuidRegex.test(n.id)) {
+          fetch(`${API_BASE}/api/v1/cases/${activeCase.id}/nodes/${n.id}`, {
+            method: 'DELETE',
+            headers: {
+              'X-Actor-Id': 'investigator_front',
+            },
+          }).catch(() => {
+            // Non-blocking in Phase 1
+          });
+        }
+      });
+    }
+  },
+
   selectEdge: (id) => set({ selectedEdgeId: id, selectedNodeId: null, selectedNodeIds: [] }),
   clearSelection: () => set({ selectedNodeId: null, selectedNodeIds: [], selectedEdgeId: null }),
 
   setViewport: (panX, panY, zoom) =>
-    set({ viewport: { panX, panY, zoom: Math.min(Math.max(zoom, 0.2), 3.0) } }),
+    set({ viewport: { panX, panY, zoom: Math.min(Math.max(zoom, 0.1), 10.0) } }),
 
   panBy: (dx, dy) => {
     const { panX, panY, zoom } = get().viewport;
@@ -923,11 +1346,15 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
 
   zoomBy: (factor) => {
     const { panX, panY, zoom } = get().viewport;
-    const nextZoom = Math.min(Math.max(zoom * factor, 0.2), 3.0);
+    const nextZoom = Math.min(Math.max(zoom * factor, 0.1), 10.0);
     set({ viewport: { panX, panY, zoom: nextZoom } });
   },
 
-  resetViewport: () => set({ viewport: { panX: 0, panY: 0, zoom: 1 } }),
+  resetViewport: () =>
+    set((state) => ({
+      viewport: { panX: 0, panY: 0, zoom: 1 },
+      viewportFitNonce: state.viewportFitNonce + 1,
+    })),
 
   toggleLayer: (layer) => {
     const current = new Set(get().activeLayers);
@@ -944,20 +1371,88 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
   },
 
   applyLayout: (layoutType) => {
-    const { nodes, edges, activeLayout } = get();
+    const { nodes, edges, activeLayout, tabs, activeTabId, pinnedNodeIds } = get();
     if (nodes.length === 0) {
       set({ activeLayout: layoutType });
       return;
     }
 
+    const activeTab = tabs.find((t) => t.id === activeTabId);
+    if (activeTab?.kind === 'actor_sphere' && activeTab.focalNodeId) {
+      const sphere = computeActorSphere(nodes, edges, activeTab.focalNodeId);
+      const prevPositions = activeTab.snapshot.nodePositions ?? {};
+      const sphereNodes = nodes
+        .filter((n) => sphere.nodeIds.has(n.id))
+        .map((n) => {
+          const p = prevPositions[n.id];
+          return p ? { ...n, x: p.x, y: p.y } : { ...n, x: undefined, y: undefined };
+        });
+      const sphereEdges = edges.filter((e) => sphere.edgeIds.has(e.id));
+
+      const updatedSphere = computeGraphLayout(
+        sphereNodes,
+        sphereEdges,
+        layoutType,
+        { centerX: 600, centerY: 420 },
+        pinnedNodeIds
+      );
+
+      const nextPositions: Record<string, { x: number; y: number }> = { ...prevPositions };
+      updatedSphere.forEach((n) => {
+        if (typeof n.x === 'number' && typeof n.y === 'number') {
+          nextPositions[n.id] = { x: n.x, y: n.y };
+        }
+      });
+
+      const targetTabId = activeTab.id;
+      const previousLayout = activeLayout;
+
+      set((state) => ({
+        activeLayout: layoutType,
+        viewportFitNonce: state.viewportFitNonce + 1,
+        tabs: state.tabs.map((t) =>
+          t.id === targetTabId
+            ? { ...t, snapshot: { ...t.snapshot, activeLayout: layoutType, nodePositions: nextPositions } }
+            : t
+        ),
+      }));
+
+      get().executeCommand({
+        id: `layout-tab-${targetTabId}-${layoutType}-${Date.now()}`,
+        description: `Disposition de l'onglet : ${layoutType}`,
+        undo: () => {
+          set({
+            activeLayout: get().activeTabId === targetTabId ? previousLayout : get().activeLayout,
+            tabs: get().tabs.map((t) =>
+              t.id === targetTabId
+                ? { ...t, snapshot: { ...t.snapshot, activeLayout: previousLayout, nodePositions: prevPositions } }
+                : t
+            ),
+          });
+        },
+        redo: () => {
+          set({
+            activeLayout: get().activeTabId === targetTabId ? layoutType : get().activeLayout,
+            tabs: get().tabs.map((t) =>
+              t.id === targetTabId
+                ? { ...t, snapshot: { ...t.snapshot, activeLayout: layoutType, nodePositions: nextPositions } }
+                : t
+            ),
+          });
+        },
+      });
+      return;
+    }
+
     const previousNodes = nodes;
     const previousLayout = activeLayout;
-    const updatedNodes = computeGraphLayout(nodes, edges, layoutType, undefined, get().pinnedNodeIds);
+    const updatedNodes = computeGraphLayout(nodes, edges, layoutType, undefined, pinnedNodeIds);
 
-    set({
+    set((state) => ({
       nodes: updatedNodes,
       activeLayout: layoutType,
-    });
+      viewportFitNonce: state.viewportFitNonce + 1,
+    }));
 
     get().executeCommand({
       id: `layout-${layoutType}-${Date.now()}`,
@@ -971,12 +1466,30 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     });
   },
 
+  setCanvasToolMode: (mode) => {
+    set({ canvasToolMode: mode, isLinkMode: false, linkSourceNodeId: null });
+  },
+
   setLinkMode: (active) => {
     set({ isLinkMode: active, linkSourceNodeId: null });
   },
 
   setLinkSourceNodeId: (id) => {
     set({ linkSourceNodeId: id });
+  },
+
+  stepEscapeLinkMode: () => {
+    const state = get();
+    if (state.isLinkMode) {
+      if (state.linkSourceNodeId !== null) {
+        set({ linkSourceNodeId: null });
+        return 'cleared_source';
+      }
+      set({ isLinkMode: false, linkSourceNodeId: null });
+      return 'exited_link_mode';
+    }
+    state.clearSelection();
+    return 'cleared_selection';
   },
 
   createManualEdge: (sourceId, targetId, relationType, layer, confidence, notes) => {
@@ -999,8 +1512,9 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     const finalLayer: LayerId = layer || 'HYPOTHESIS';
     const finalConf = typeof confidence === 'number' ? confidence : 0.9;
 
+    const tempEdgeId = `edge-manual-${Date.now()}`;
     const newEdge: GraphEdge = {
-      id: `edge-manual-${Date.now()}`,
+      id: tempEdgeId,
       case_id: get().activeCase?.id || 'case-candy-wheels',
       source_id: sourceId,
       target_id: targetId,
@@ -1012,8 +1526,12 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     };
 
     const previousEdges = edges;
+    const nextActiveLayers = new Set(get().activeLayers);
+    nextActiveLayers.add(finalLayer);
+
     set({
       edges: [...previousEdges, newEdge],
+      activeLayers: nextActiveLayers,
       isLinkMode: true,
       linkSourceNodeId: null,
       selectedEdgeId: newEdge.id,
@@ -1023,24 +1541,131 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
       id: `create-manual-edge-${newEdge.id}`,
       description: `Créer liaison : ${sourceNode.label} -> ${targetNode.label} (${finalType})`,
       undo: () => {
-        set({ edges: get().edges.filter((e) => e.id !== newEdge.id) });
+        set({
+          edges: get().edges.filter((e) => e.id !== newEdge.id && e.id !== tempEdgeId),
+        });
       },
       redo: () => {
         set({ edges: [...get().edges, newEdge] });
       },
     });
+
+    // Persist newly created manual edge to backend PostgreSQL / Neo4j
+    const activeCase = get().activeCase;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (
+      activeCase &&
+      uuidRegex.test(sourceId) &&
+      uuidRegex.test(targetId) &&
+      typeof fetch === 'function'
+    ) {
+      fetch(`${API_BASE}/api/v1/cases/${activeCase.id}/edges`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Actor-Id': 'investigator_front',
+        },
+        body: JSON.stringify({
+          type: finalType,
+          source_id: sourceId,
+          target_id: targetId,
+          layer: finalLayer,
+          confidence: finalConf,
+          allow_custom_relation: true,
+          properties: { label: notes || finalType },
+        }),
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((savedEdge: GraphEdge | null) => {
+          if (!savedEdge || !savedEdge.id) return;
+          newEdge.id = savedEdge.id;
+          set((state) => ({
+            edges: state.edges.map((e) =>
+              e.id === tempEdgeId
+                ? {
+                    ...e,
+                    id: savedEdge.id,
+                    layer: (savedEdge.layer as LayerId) || e.layer,
+                    created_at: savedEdge.created_at,
+                    updated_at: savedEdge.updated_at,
+                  }
+                : e
+            ),
+            selectedEdgeId:
+              state.selectedEdgeId === tempEdgeId ? savedEdge.id : state.selectedEdgeId,
+          }));
+        })
+        .catch(() => {
+          // Keep optimistic edge visible even if network fails
+        });
+    }
   },
 
   updateNodePosition: (nodeId, x, y, recordHistory = false) => {
-    const nodes = get().nodes;
-    const target = nodes.find((n) => n.id === nodeId);
+    const state = get();
+    const target = state.nodes.find((n) => n.id === nodeId);
     if (!target) return;
+
+    const activeTab = state.tabs.find((t) => t.id === state.activeTabId);
+    if (activeTab?.kind === 'actor_sphere') {
+      const targetTabId = activeTab.id;
+      const prevTabPositions = activeTab.snapshot.nodePositions ?? {};
+      const oldPos = prevTabPositions[nodeId] ?? { x: target.x ?? 0, y: target.y ?? 0 };
+      const nextPositions = { ...prevTabPositions, [nodeId]: { x, y } };
+
+      set({
+        tabs: state.tabs.map((t) =>
+          t.id === targetTabId
+            ? { ...t, snapshot: { ...t.snapshot, nodePositions: nextPositions } }
+            : t
+        ),
+      });
+
+      if (recordHistory && (oldPos.x !== x || oldPos.y !== y)) {
+        get().executeCommand({
+          id: `move-tab-${targetTabId}-${nodeId}-${Date.now()}`,
+          description: `Déplacement de ${target.label}`,
+          undo: () => {
+            set({
+              tabs: get().tabs.map((t) =>
+                t.id === targetTabId
+                  ? {
+                      ...t,
+                      snapshot: {
+                        ...t.snapshot,
+                        nodePositions: { ...(t.snapshot.nodePositions ?? {}), [nodeId]: oldPos },
+                      },
+                    }
+                  : t
+              ),
+            });
+          },
+          redo: () => {
+            set({
+              tabs: get().tabs.map((t) =>
+                t.id === targetTabId
+                  ? {
+                      ...t,
+                      snapshot: {
+                        ...t.snapshot,
+                        nodePositions: { ...(t.snapshot.nodePositions ?? {}), [nodeId]: { x, y } },
+                      },
+                    }
+                  : t
+              ),
+            });
+          },
+        });
+      }
+      return;
+    }
 
     const oldX = target.x ?? 0;
     const oldY = target.y ?? 0;
 
     set({
-      nodes: nodes.map((n) => (n.id === nodeId ? { ...n, x, y } : n)),
+      nodes: state.nodes.map((n) => (n.id === nodeId ? { ...n, x, y } : n)),
     });
 
     if (recordHistory && (oldX !== x || oldY !== y)) {
@@ -1059,6 +1684,36 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
         },
       });
     }
+  },
+
+  updateActiveTabNodePositions: (posMap) => {
+    if (posMap.size === 0) return;
+    const state = get();
+    const activeTab = state.tabs.find((t) => t.id === state.activeTabId);
+
+    if (activeTab?.kind === 'actor_sphere') {
+      const nextPositions: Record<string, { x: number; y: number }> = {
+        ...(activeTab.snapshot.nodePositions ?? {}),
+      };
+      posMap.forEach((pos, id) => {
+        nextPositions[id] = { x: pos.x, y: pos.y };
+      });
+      set({
+        tabs: state.tabs.map((t) =>
+          t.id === activeTab.id
+            ? { ...t, snapshot: { ...t.snapshot, nodePositions: nextPositions } }
+            : t
+        ),
+      });
+      return;
+    }
+
+    set({
+      nodes: state.nodes.map((n) => {
+        const pos = posMap.get(n.id);
+        return pos ? { ...n, x: pos.x, y: pos.y } : n;
+      }),
+    });
   },
 
   openContextMenu: (x, y, nodeId) => {
@@ -1083,6 +1738,325 @@ export const useGraphStore = create<GraphStoreState>((set, get) => ({
     set({
       layerChangeModal: { isOpen: false, nodeId: null, targetLayer: null },
     });
+  },
+
+  openIngestionPopover: (nodeId) => {
+    set({ activeIngestionPopoverNodeId: nodeId });
+  },
+
+  closeIngestionPopover: () => {
+    set({ activeIngestionPopoverNodeId: null });
+  },
+
+  registerTabAddedNode: (nodeId) => {
+    set((state) => {
+      const updatedTabs = state.tabs.map((t) => {
+        if (t.id !== state.activeTabId) return t;
+        const prevIds = t.snapshot.addedNodeIds ?? [];
+        if (prevIds.includes(nodeId)) return t;
+        return {
+          ...t,
+          snapshot: {
+            ...t.snapshot,
+            addedNodeIds: [...prevIds, nodeId],
+          },
+        };
+      });
+      return { tabs: updatedTabs };
+    });
+  },
+
+  reconcileOptimisticNodeId: (tempId, savedNode) => {
+    set((state) => {
+      const nextForcedVisible = new Set(state.forcedVisibleNodeLabelIds);
+      if (nextForcedVisible.has(tempId)) {
+        nextForcedVisible.delete(tempId);
+        nextForcedVisible.add(savedNode.id);
+      }
+      const nextExpanded = new Set(state.expandedHiddenNodeIds);
+      if (nextExpanded.has(tempId)) {
+        nextExpanded.delete(tempId);
+        nextExpanded.add(savedNode.id);
+      }
+      return {
+        nodes: state.nodes.map((n) => (n.id === tempId ? { ...n, ...savedNode } : n)),
+        edges: state.edges.map((e) => ({
+          ...e,
+          source_id: e.source_id === tempId ? savedNode.id : e.source_id,
+          target_id: e.target_id === tempId ? savedNode.id : e.target_id,
+        })),
+        selectedNodeId: state.selectedNodeId === tempId ? savedNode.id : state.selectedNodeId,
+        selectedNodeIds: state.selectedNodeIds.map((id) => (id === tempId ? savedNode.id : id)),
+        forcedVisibleNodeLabelIds: nextForcedVisible,
+        expandedHiddenNodeIds: nextExpanded,
+        activeIngestionPopoverNodeId:
+          state.activeIngestionPopoverNodeId === tempId ? savedNode.id : state.activeIngestionPopoverNodeId,
+        tabs: state.tabs.map((t) => {
+          const added = t.snapshot.addedNodeIds;
+          const nextAdded = added ? added.map((id) => (id === tempId ? savedNode.id : id)) : undefined;
+          let nextPositions = t.snapshot.nodePositions;
+          if (nextPositions && tempId in nextPositions) {
+            const { [tempId]: tempPos, ...rest } = nextPositions;
+            nextPositions = tempPos ? { ...rest, [savedNode.id]: tempPos } : rest;
+          }
+          return {
+            ...t,
+            snapshot: {
+              ...t.snapshot,
+              selectedNodeId: t.snapshot.selectedNodeId === tempId ? savedNode.id : t.snapshot.selectedNodeId,
+              ...(nextAdded ? { addedNodeIds: nextAdded } : {}),
+              ...(nextPositions ? { nodePositions: nextPositions } : {}),
+            },
+          };
+        }),
+      };
+    });
+  },
+
+  updateNodeAnalysisConfig: (nodeId, config) => {
+    set((state) => ({
+      nodes: state.nodes.map((n) => {
+        if (n.id !== nodeId) return n;
+        return {
+          ...n,
+          properties: {
+            ...n.properties,
+            ...(config.selected_plugins !== undefined ? { selected_plugins: config.selected_plugins } : {}),
+            ...(config.process_tree !== undefined ? { process_tree: config.process_tree } : {}),
+          },
+        };
+      }),
+    }));
+  },
+
+  triggerNodeInvestigation: async (nodeId, mode, stageLabel) => {
+    const state = get();
+    const target = state.nodes.find((n) => n.id === nodeId);
+    if (!target) return;
+
+    const initialProgress = mode === 'quick' ? 15 : mode === 'step_by_step' ? 10 : 5;
+    const nextProperties = {
+      ...target.properties,
+      investigation_status: 'active_investigation',
+      analysis_mode: mode,
+      analysis_progress: initialProgress,
+      analysis_stage: stageLabel,
+      investigation_started_at: new Date().toISOString(),
+    };
+
+    set((prev) => ({
+      nodes: prev.nodes.map((n) => (n.id === nodeId ? { ...n, properties: nextProperties } : n)),
+      activeIngestionPopoverNodeId:
+        prev.activeIngestionPopoverNodeId === nodeId ? null : prev.activeIngestionPopoverNodeId,
+    }));
+
+    const activeCase = get().activeCase;
+    if (activeCase && !nodeId.startsWith('temp-') && !nodeId.startsWith('node-file-')) {
+      try {
+        await fetch(`/api/v1/cases/${activeCase.id}/nodes/${nodeId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Actor-Id': 'investigator_front',
+          },
+          body: JSON.stringify({
+            properties: nextProperties,
+            reason: `Initialisation mode d'investigation (${mode}) — Phase 1 surface UI`,
+          }),
+        });
+      } catch (err) {
+        console.error('Erreur mise à jour mode investigation:', err);
+      }
+    }
+  },
+
+  uploadPdfForNode: async (nodeId, file) => {
+    const activeCase = get().activeCase;
+    const target = get().nodes.find((n) => n.id === nodeId);
+    if (!activeCase || !target || nodeId.startsWith('temp-') || nodeId.startsWith('node-file-')) {
+      return;
+    }
+    const clientSha =
+      typeof target.properties?.client_sha256 === 'string'
+        ? target.properties.client_sha256
+        : undefined;
+    const uploaded = await uploadNodePdf(activeCase.id, nodeId, file, clientSha);
+    const metaKey = uploaded.mime_type === 'text/html' ? 'html_metadata' : 'pdf_metadata';
+    set((prev) => ({
+      nodes: prev.nodes.map((n) =>
+        n.id === nodeId
+          ? {
+              ...n,
+              properties: {
+                ...n.properties,
+                evidence_file_id: uploaded.evidence_file_id,
+                server_sha256: uploaded.sha256,
+                sha256_verified: true,
+                evidence_metadata: uploaded.metadata,
+                [metaKey]: uploaded.metadata,
+                blackboard_sync_status: uploaded.blackboard_sync_status,
+              },
+            }
+          : n
+      ),
+    }));
+  },
+
+  runPdfExtraction: async (nodeId, mode, selectedTools) => {
+    const state = get();
+    const activeCase = state.activeCase;
+    const target = state.nodes.find((n) => n.id === nodeId);
+    if (!activeCase || !target) return;
+    if (nodeId.startsWith('temp-') || nodeId.startsWith('node-file-')) {
+      throw new Error("Le scellé est en cours d'enregistrement sur le serveur, réessayez dans un instant.");
+    }
+
+    set({ extractionLoadingNodeId: nodeId });
+    try {
+      if (!target.properties?.server_sha256) {
+        const local = getLocalFileEntry(
+          nodeId,
+          typeof target.properties?.client_sha256 === 'string'
+            ? target.properties.client_sha256
+            : undefined
+        );
+        if (local?.file) {
+          await get().uploadPdfForNode(nodeId, local.file);
+        }
+      }
+
+      const res = await startNodeExtraction(activeCase.id, nodeId, mode, selectedTools);
+      const pendingCount = res.counts.pending ?? 0;
+      const run = res.latest_run;
+      const nextStatus = run?.status === 'COMPLETED' ? 'saturated' : 'active_investigation';
+      const nextProgress =
+        run?.status === 'COMPLETED' ? 100 : Math.round(((run?.current_stage ?? 1) / (run?.total_stages ?? 3)) * 100);
+      const nextStage =
+        run?.status === 'COMPLETED'
+          ? `Extraction terminée (${pendingCount} candidat(s) à valider)`
+          : `Étape ${run?.current_stage ?? 1}/${run?.total_stages ?? 3} terminée (${pendingCount} candidat(s))`;
+
+      set((prev) => ({
+        extractionRunsByNodeId: { ...prev.extractionRunsByNodeId, [nodeId]: run },
+        candidatesByNodeId: { ...prev.candidatesByNodeId, [nodeId]: res.candidates },
+        nodes: prev.nodes.map((n) =>
+          n.id === nodeId
+            ? {
+                ...n,
+                properties: {
+                  ...n.properties,
+                  investigation_status: nextStatus,
+                  analysis_mode: mode,
+                  analysis_progress: nextProgress,
+                  analysis_stage: nextStage,
+                  pending_candidates_count: pendingCount,
+                },
+              }
+            : n
+        ),
+      }));
+    } finally {
+      set({ extractionLoadingNodeId: null });
+    }
+  },
+
+  advancePdfStage: async (nodeId, runId) => {
+    const activeCase = get().activeCase;
+    if (!activeCase) return;
+    set({ extractionLoadingNodeId: nodeId });
+    try {
+      const res = await advanceExtractionStage(activeCase.id, runId);
+      const pendingCount = res.counts.pending ?? 0;
+      const run = res.latest_run;
+      const nextStatus = run?.status === 'COMPLETED' ? 'saturated' : 'active_investigation';
+      const nextProgress =
+        run?.status === 'COMPLETED' ? 100 : Math.round(((run?.current_stage ?? 2) / (run?.total_stages ?? 3)) * 100);
+      const nextStage =
+        run?.status === 'COMPLETED'
+          ? `Analyse étape par étape terminée (${pendingCount} candidat(s) à valider)`
+          : `Étape ${run?.current_stage ?? 2}/${run?.total_stages ?? 3} terminée (${pendingCount} candidat(s))`;
+
+      set((prev) => ({
+        extractionRunsByNodeId: { ...prev.extractionRunsByNodeId, [nodeId]: run },
+        candidatesByNodeId: { ...prev.candidatesByNodeId, [nodeId]: res.candidates },
+        nodes: prev.nodes.map((n) =>
+          n.id === nodeId
+            ? {
+                ...n,
+                properties: {
+                  ...n.properties,
+                  investigation_status: nextStatus,
+                  analysis_progress: nextProgress,
+                  analysis_stage: nextStage,
+                  pending_candidates_count: pendingCount,
+                },
+              }
+            : n
+        ),
+      }));
+    } finally {
+      set({ extractionLoadingNodeId: null });
+    }
+  },
+
+  loadNodeCandidates: async (nodeId) => {
+    const activeCase = get().activeCase;
+    if (!activeCase || nodeId.startsWith('temp-') || nodeId.startsWith('node-file-')) return;
+    const res = await fetchNodeCandidates(activeCase.id, nodeId);
+    set((prev) => ({
+      extractionRunsByNodeId: { ...prev.extractionRunsByNodeId, [nodeId]: res.latest_run },
+      candidatesByNodeId: { ...prev.candidatesByNodeId, [nodeId]: res.candidates },
+    }));
+  },
+
+  validateCandidates: async (nodeId, payload) => {
+    const activeCase = get().activeCase;
+    if (!activeCase) return 0;
+    set({ extractionLoadingNodeId: nodeId });
+    try {
+      const res = await validateNodeCandidates(activeCase.id, nodeId, payload);
+      const newNodes = res.created_nodes as unknown as GraphNode[];
+      const newEdges = res.created_edges as unknown as GraphEdge[];
+
+      if (newNodes.length > 0 || newEdges.length > 0) {
+        get().mergeExpandedNodes(newNodes, newEdges);
+        newNodes.forEach((n) => get().registerTabAddedNode(n.id));
+        set((prev) => {
+          const nextExpanded = new Set(prev.expandedHiddenNodeIds);
+          const nextLabels = new Set(prev.forcedVisibleNodeLabelIds);
+          newNodes.forEach((n) => {
+            nextExpanded.add(n.id);
+            nextLabels.add(n.id);
+          });
+          return {
+            expandedHiddenNodeIds: nextExpanded,
+            forcedVisibleNodeLabelIds: nextLabels,
+          };
+        });
+      }
+
+      const refreshed = await fetchNodeCandidates(activeCase.id, nodeId);
+      set((prev) => ({
+        extractionRunsByNodeId: { ...prev.extractionRunsByNodeId, [nodeId]: refreshed.latest_run },
+        candidatesByNodeId: { ...prev.candidatesByNodeId, [nodeId]: refreshed.candidates },
+        selectedCandidateId: null,
+        nodes: prev.nodes.map((n) =>
+          n.id === nodeId
+            ? {
+                ...n,
+                properties: {
+                  ...n.properties,
+                  pending_candidates_count: res.pending_remaining,
+                },
+              }
+            : n
+        ),
+      }));
+
+      return res.processed_count;
+    } finally {
+      set({ extractionLoadingNodeId: null });
+    }
   },
 
   executeCommand: (command) => {

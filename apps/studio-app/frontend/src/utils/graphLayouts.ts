@@ -71,7 +71,7 @@ export function computeGraphLayout(
         computed = computeForceDirectedLayout(nodes, edges, cx, cy);
         break;
       case 'hierarchical':
-        computed = computeHierarchicalLayout(nodes, edges, cx, cy);
+        computed = computeHierarchicalLayout(nodes, edges, cx);
         break;
       case 'grid':
         computed = computeGridLayout(nodes, cx, cy);
@@ -254,8 +254,8 @@ function computeForceDirectedLayout(
       posTarget.dy += fy;
     });
 
-    // 3. Center gravity force (pulls disconnected and peripheral nodes towards center)
-    const gravity = 0.04;
+    // 3. Center gravity force (stronger on sparse/disconnected graphs to prevent outward drift)
+    const gravity = edges.length === 0 ? 0.28 : 0.08;
     nodes.forEach((node) => {
       const pos = positions.get(node.id);
       if (!pos) return;
@@ -279,40 +279,68 @@ function computeForceDirectedLayout(
     });
   }
 
-  // 5. Post-pass: Minimum separation buffer (prevent overlapping circles)
-  const minSeparation = 78;
-  for (let i = 0; i < count; i++) {
-    const nodeA = nodes[i];
-    if (!nodeA) continue;
-    const posA = positions.get(nodeA.id);
-    if (!posA) continue;
-
-    for (let j = i + 1; j < count; j++) {
-      const nodeB = nodes[j];
-      if (!nodeB) continue;
-      const posB = positions.get(nodeB.id);
-      if (!posB) continue;
-
-      let dx = posB.x - posA.x;
-      let dy = posB.y - posA.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < minSeparation && dist > 0) {
-        const overlap = (minSeparation - dist) / 2;
-        const pushX = (dx / dist) * overlap;
-        const pushY = (dy / dist) * overlap;
-        posA.x -= pushX;
-        posA.y -= pushY;
-        posB.x += pushX;
-        posB.y += pushY;
-      }
-    }
-  }
-
-  // 6. Recenter and scale slightly to fit viewport nicely
+  // 5. Normalize overall bounding span proportionally to sqrt(N) so small/disconnected graphs stay compact
   let minX = Infinity;
   let maxX = -Infinity;
   let minY = Infinity;
   let maxY = -Infinity;
+
+  positions.forEach((p) => {
+    if (p.x < minX) minX = p.x;
+    if (p.x > maxX) maxX = p.x;
+    if (p.y < minY) minY = p.y;
+    if (p.y > maxY) maxY = p.y;
+  });
+
+  const rawCenterX = (minX + maxX) / 2;
+  const rawCenterY = (minY + maxY) / 2;
+  const rawMaxSpan = Math.max(maxX - minX, maxY - minY, 1);
+  const targetMaxSpan = Math.min(1350, Math.max(260, Math.ceil(Math.sqrt(count)) * 135));
+
+  if (rawMaxSpan > targetMaxSpan) {
+    const scaleFactor = targetMaxSpan / rawMaxSpan;
+    positions.forEach((p) => {
+      p.x = rawCenterX + (p.x - rawCenterX) * scaleFactor;
+      p.y = rawCenterY + (p.y - rawCenterY) * scaleFactor;
+    });
+  }
+
+  // 6. Post-pass: Minimum separation buffer (prevent overlapping circles after compaction)
+  const minSeparation = 90;
+  for (let pass = 0; pass < 3; pass++) {
+    for (let i = 0; i < count; i++) {
+      const nodeA = nodes[i];
+      if (!nodeA) continue;
+      const posA = positions.get(nodeA.id);
+      if (!posA) continue;
+
+      for (let j = i + 1; j < count; j++) {
+        const nodeB = nodes[j];
+        if (!nodeB) continue;
+        const posB = positions.get(nodeB.id);
+        if (!posB) continue;
+
+        const dx = posB.x - posA.x;
+        const dy = posB.y - posA.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < minSeparation && dist > 0) {
+          const overlap = (minSeparation - dist) / 2;
+          const pushX = (dx / dist) * overlap;
+          const pushY = (dy / dist) * overlap;
+          posA.x -= pushX;
+          posA.y -= pushY;
+          posB.x += pushX;
+          posB.y += pushY;
+        }
+      }
+    }
+  }
+
+  // 7. Recenter around (cx, cy)
+  minX = Infinity;
+  maxX = -Infinity;
+  minY = Infinity;
+  maxY = -Infinity;
 
   positions.forEach((p) => {
     if (p.x < minX) minX = p.x;
@@ -343,8 +371,7 @@ function computeForceDirectedLayout(
 function computeHierarchicalLayout(
   nodes: GraphNode[],
   _edges: GraphEdge[],
-  cx: number,
-  _cy: number
+  cx: number
 ): GraphNode[] {
   // Determine tier based on entity type and layer
   const getTier = (node: GraphNode): number => {
@@ -566,7 +593,8 @@ export function computePersonGraphProjection(
   const hiddenNeighborCountByNode = new Map<string, number>();
   const expandedNeighborCountByNode = new Map<string, number>();
 
-  if (!isPersonOnlyGraph) {
+  const hasAnyPerson = layerFilteredNodes.some((n) => isPersonEntity(n));
+  if (!isPersonOnlyGraph || !hasAnyPerson) {
     return {
       visibleNodes: layerFilteredNodes,
       visibleEdges: allEdges,
@@ -651,7 +679,9 @@ export function computePersonGraphProjection(
     ];
 
     while (queue.length > 0) {
-      const { currId, intermediateIds, edgeIds } = queue.shift()!;
+      const item = queue.shift();
+      if (!item) continue;
+      const { currId, intermediateIds, edgeIds } = item;
       const neighbors = adj.get(currId) || [];
 
       for (const { neighborId, edge } of neighbors) {
@@ -670,23 +700,24 @@ export function computePersonGraphProjection(
                 : [neighborId, startNode.id];
             const pairKey = `mediated__${pA}__${pB}`;
 
-            if (!pairMediationMap.has(pairKey)) {
-              pairMediationMap.set(pairKey, {
+            let entry = pairMediationMap.get(pairKey);
+            if (!entry) {
+              entry = {
                 nodeA: pA,
                 nodeB: pB,
                 intermediateNodes: new Map(),
                 underlyingEdges: new Map(),
-              });
+              };
+              pairMediationMap.set(pairKey, entry);
             }
-
-            const entry = pairMediationMap.get(pairKey)!;
+            const targetEntry = entry;
             intermediateIds.forEach((hid) => {
               const hNode = nodeById.get(hid);
-              if (hNode) entry.intermediateNodes.set(hid, hNode);
+              if (hNode) targetEntry.intermediateNodes.set(hid, hNode);
             });
             [...edgeIds, edge.id].forEach((eid) => {
               const foundEdge = allEdges.find((ae) => ae.id === eid);
-              if (foundEdge) entry.underlyingEdges.set(eid, foundEdge);
+              if (foundEdge) targetEntry.underlyingEdges.set(eid, foundEdge);
             });
           }
           // Do not traverse past ANY visible node (paths split at visible intermediate nodes)
@@ -761,6 +792,218 @@ export function computePersonGraphProjection(
     visibleEdges: [...directEdges, ...mediatedEdges],
     hiddenNeighborCountByNode,
     expandedNeighborCountByNode,
+  };
+}
+
+export const MIN_GRAPH_ZOOM = 0.1;
+export const MAX_GRAPH_ZOOM = 10.0;
+
+/**
+ * Computes pan/zoom so all visible nodes fit comfortably centered inside the canvas container.
+ * Uses compact framing margins so initial view opens closer and legible while fitting key entities.
+ */
+export function computeGraphFitViewport(
+  nodes: GraphNode[],
+  containerWidth: number,
+  containerHeight: number,
+  nodeSize = 56
+): { panX: number; panY: number; zoom: number } {
+  if (nodes.length === 0) {
+    return { panX: 0, panY: 0, zoom: 1 };
+  }
+
+  const safeW = Math.max(containerWidth, 320);
+  const safeH = Math.max(containerHeight, 240);
+  const pad = Math.max(48, Math.round(nodeSize * 0.9));
+
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+
+  nodes.forEach((n) => {
+    const x = n.x ?? DEFAULT_CENTER_X;
+    const y = n.y ?? DEFAULT_CENTER_Y;
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  });
+
+  minX -= pad;
+  maxX += pad;
+  minY -= pad;
+  maxY += pad;
+
+  const boundsW = Math.max(maxX - minX, 220);
+  const boundsH = Math.max(maxY - minY, 160);
+
+  const fitZoom = Math.min((safeW - 24) / boundsW, (safeH - 24) / boundsH);
+  const zoomedFit = fitZoom * 1.25;
+  const zoom = Number(Math.min(Math.max(zoomedFit, 0.72), 1.35).toFixed(2));
+
+  const centerX = (minX + maxX) / 2;
+  const centerY = (minY + maxY) / 2;
+  const panX = Math.round(safeW / 2 - centerX * zoom);
+  const panY = Math.round(safeH / 2 - centerY * zoom);
+
+  return { panX, panY, zoom };
+}
+
+export interface BulkDeletionThirdParty {
+  person: GraphNode;
+  viaIntermediates: GraphNode[];
+}
+
+export interface BulkDeletionAnalysis {
+  status: 'ready' | 'blocked_third_party';
+  primaryNodes: GraphNode[];
+  intermediateNodes: GraphNode[];
+  allNodeIdsToDelete: string[];
+  affectedEdgeCount: number;
+  blockingThirdParties: BulkDeletionThirdParty[];
+}
+
+/**
+ * Analyzes a multi-node deletion request.
+ * - In full graph mode: deletes strictly the selected nodes.
+ * - In compacted (Person-only) mode: when a pair of selected visible nodes is connected via
+ *   mediated hidden intermediate entities, includes those intermediates in the deletion list —
+ *   UNLESS a third unselected person is also implicated through any of those intermediates,
+ *   in which case deletion is blocked and the user is invited to switch to Full Graph view.
+ */
+export function analyzeBulkNodeDeletion(
+  selectedIds: string[],
+  allNodes: GraphNode[],
+  allEdges: GraphEdge[],
+  isPersonOnlyGraph: boolean,
+  expandedHiddenNodeIds: Set<string> = new Set()
+): BulkDeletionAnalysis {
+  const uniqueSelectedIds = Array.from(new Set(selectedIds));
+  const selectedSet = new Set(uniqueSelectedIds);
+  const nodeById = new Map<string, GraphNode>();
+  allNodes.forEach((n) => nodeById.set(n.id, n));
+
+  const primaryNodes = uniqueSelectedIds
+    .map((id) => nodeById.get(id))
+    .filter((n): n is GraphNode => Boolean(n));
+
+  if (primaryNodes.length === 0) {
+    return {
+      status: 'ready',
+      primaryNodes: [],
+      intermediateNodes: [],
+      allNodeIdsToDelete: [],
+      affectedEdgeCount: 0,
+      blockingThirdParties: [],
+    };
+  }
+
+  const intermediateIdSet = new Set<string>();
+
+  if (isPersonOnlyGraph && primaryNodes.length >= 2) {
+    const projection = computePersonGraphProjection(
+      allNodes,
+      allEdges,
+      true,
+      expandedHiddenNodeIds
+    );
+
+    projection.visibleEdges.forEach((edge) => {
+      if (
+        edge.properties?.is_mediated === true &&
+        selectedSet.has(edge.source_id) &&
+        selectedSet.has(edge.target_id)
+      ) {
+        const rawIntermediates = edge.properties?.intermediate_node_ids;
+        if (Array.isArray(rawIntermediates)) {
+          rawIntermediates.forEach((id) => {
+            if (typeof id === 'string' && !selectedSet.has(id) && nodeById.has(id)) {
+              intermediateIdSet.add(id);
+            }
+          });
+        }
+      }
+    });
+  }
+
+  const intermediateNodes = Array.from(intermediateIdSet)
+    .map((id) => nodeById.get(id))
+    .filter((n): n is GraphNode => Boolean(n));
+
+  // Check if any third unselected person is implicated via any candidate intermediate node
+  const thirdPartyMap = new Map<string, { person: GraphNode; viaMap: Map<string, GraphNode> }>();
+
+  if (intermediateNodes.length > 0) {
+    const adj = new Map<string, string[]>();
+    allNodes.forEach((n) => adj.set(n.id, []));
+    allEdges.forEach((e) => {
+      if (nodeById.has(e.source_id) && nodeById.has(e.target_id)) {
+        adj.get(e.source_id)?.push(e.target_id);
+        adj.get(e.target_id)?.push(e.source_id);
+      }
+    });
+
+    intermediateNodes.forEach((interNode) => {
+      const visited = new Set<string>([interNode.id]);
+      const queue: Array<{ id: string; hops: number }> = [{ id: interNode.id, hops: 0 }];
+
+      while (queue.length > 0) {
+        const curr = queue.shift();
+        if (!curr) continue;
+        const neighbors = adj.get(curr.id) || [];
+
+        for (const nbId of neighbors) {
+          if (visited.has(nbId) || selectedSet.has(nbId)) continue;
+          visited.add(nbId);
+
+          const nbNode = nodeById.get(nbId);
+          if (!nbNode) continue;
+
+          if (isPersonEntity(nbNode)) {
+            let entry = thirdPartyMap.get(nbNode.id);
+            if (!entry) {
+              entry = { person: nbNode, viaMap: new Map() };
+              thirdPartyMap.set(nbNode.id, entry);
+            }
+            entry.viaMap.set(interNode.id, interNode);
+            continue;
+          }
+
+          if (
+            !ADMINISTRATIVE_CONTAINER_TYPES.has(nbNode.type.toLowerCase()) &&
+            curr.hops < 4
+          ) {
+            queue.push({ id: nbId, hops: curr.hops + 1 });
+          }
+        }
+      }
+    });
+  }
+
+  const blockingThirdParties: BulkDeletionThirdParty[] = Array.from(thirdPartyMap.values()).map(
+    (entry) => ({
+      person: entry.person,
+      viaIntermediates: Array.from(entry.viaMap.values()),
+    })
+  );
+
+  const allDeleteSet = new Set<string>([
+    ...primaryNodes.map((n) => n.id),
+    ...intermediateNodes.map((n) => n.id),
+  ]);
+
+  const affectedEdgeCount = allEdges.filter(
+    (e) => allDeleteSet.has(e.source_id) || allDeleteSet.has(e.target_id)
+  ).length;
+
+  return {
+    status: blockingThirdParties.length > 0 ? 'blocked_third_party' : 'ready',
+    primaryNodes,
+    intermediateNodes,
+    allNodeIdsToDelete: Array.from(allDeleteSet),
+    affectedEdgeCount,
+    blockingThirdParties,
   };
 }
 

@@ -6,122 +6,88 @@ import {
   ZoomIn,
   ZoomOut,
   Maximize2,
-  Sparkles,
   BrainCircuit,
-  LayoutGrid,
-  Target,
-  Circle,
-  Share2,
-  GitFork,
-  Grid,
-  Check,
-  Tag,
 } from 'lucide-react';
-import { useGraphStore, type GraphLayoutType } from '../../store/useGraphStore';
+import { useGraphStore } from '../../store/useGraphStore';
 import { useI18n } from '../../context/I18nContext';
+import { MIN_GRAPH_ZOOM, MAX_GRAPH_ZOOM } from '../../utils/graphLayouts';
 
 interface CanvasFloatingPaletteProps {
-  onToggleImpactView: () => void;
   onToggleSna?: () => void;
   isSnaOpen?: boolean;
+  containerWidth?: number;
+  containerHeight?: number;
 }
-
-interface LayoutItem {
-  key: GraphLayoutType;
-  labelFr: string;
-  descFr: string;
-  icon: React.ReactNode;
-}
-
-const LAYOUT_OPTIONS: LayoutItem[] = [
-  {
-    key: 'concentric',
-    labelFr: 'Concentrique par Calque',
-    descFr: 'Anneaux stratifiés selon les 5 calques de preuve',
-    icon: <Target size={13} />,
-  },
-  {
-    key: 'force',
-    labelFr: 'Organique (Forces)',
-    descFr: 'Regroupement physique par connexions et clusters',
-    icon: <Share2 size={13} />,
-  },
-  {
-    key: 'circular',
-    labelFr: 'Circulaire Global',
-    descFr: 'Disposition orbitale régulière sur grand cercle',
-    icon: <Circle size={13} />,
-  },
-  {
-    key: 'hierarchical',
-    labelFr: 'Hiérarchique',
-    descFr: 'Arborescence par niveau (Territoire -> Cibles -> Flux)',
-    icon: <GitFork size={13} />,
-  },
-  {
-    key: 'grid',
-    labelFr: 'Grille Compacte',
-    descFr: 'Matrice ordonnée par type et statut de scellé',
-    icon: <Grid size={13} />,
-  },
-];
 
 export const CanvasFloatingPalette: React.FC<CanvasFloatingPaletteProps> = ({
-  onToggleImpactView,
   onToggleSna,
   isSnaOpen = false,
+  containerWidth = 800,
+  containerHeight = 600,
 }) => {
   const { tr } = useI18n();
   const {
-    zoomBy,
+    viewport,
+    setViewport,
     resetViewport,
+    canvasToolMode,
+    setCanvasToolMode,
     isLinkMode,
     setLinkMode,
-    isImpactView,
-    nodes,
-    totalCaseNodes,
-    activeLayout,
-    applyLayout,
-    graphCustomization,
-    setGraphCustomization,
   } = useGraphStore();
 
-  const [isLayoutMenuOpen, setIsLayoutMenuOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isScaleOpen, setIsScaleOpen] = useState(false);
+  const scaleRef = useRef<HTMLDivElement>(null);
 
-  const labelMode = graphCustomization?.labelDensityMode || 'smart';
-  const handleCycleLabelMode = () => {
-    const nextMode = labelMode === 'smart' ? 'all' : labelMode === 'all' ? 'none' : 'smart';
-    setGraphCustomization({ labelDensityMode: nextMode });
-  };
-
-  // Close dropdown on outside click
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsLayoutMenuOpen(false);
+    if (!isScaleOpen) return;
+    const handleOutside = (e: MouseEvent) => {
+      if (scaleRef.current && !scaleRef.current.contains(e.target as Node)) {
+        setIsScaleOpen(false);
       }
     };
-    if (isLayoutMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [isLayoutMenuOpen]);
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsScaleOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isScaleOpen]);
 
-  const activeLayoutItem = LAYOUT_OPTIONS.find((l) => l.key === activeLayout);
-  const activeLayoutLabel = activeLayoutItem ? tr(activeLayoutItem.labelFr) : activeLayout;
+  const applyCenteredZoom = (targetZoom: number) => {
+    const clampedZoom = Math.min(Math.max(targetZoom, MIN_GRAPH_ZOOM), MAX_GRAPH_ZOOM);
+    const currentZoom = Math.max(viewport.zoom || 1, 0.01);
+    const cx = containerWidth / 2;
+    const cy = containerHeight / 2;
+    const ratio = clampedZoom / currentZoom;
+    const nextPanX = cx - (cx - viewport.panX) * ratio;
+    const nextPanY = cy - (cy - viewport.panY) * ratio;
+    setViewport(nextPanX, nextPanY, clampedZoom);
+  };
+
+  const currentScalePercent = Math.round((viewport?.zoom || 1) * 100);
+  const isSelectActive = canvasToolMode === 'select' && !isLinkMode;
+  const isPanActive = canvasToolMode === 'pan' && !isLinkMode;
 
   return (
     <nav
       className="canvas-floating-palette"
       role="toolbar"
       aria-label={tr('Outils de navigation et manipulation du canevas')}
+      onMouseDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
     >
       {/* Pointer / Selection */}
       <button
         type="button"
-        className={`btn btn-ghost btn-sm ${!isLinkMode ? 'active' : ''}`}
-        onClick={() => setLinkMode(false)}
+        className={`btn btn-ghost btn-sm ${isSelectActive ? 'active' : ''}`}
+        onClick={() => setCanvasToolMode('select')}
+        aria-pressed={isSelectActive}
         aria-label={tr('Mode Sélection (Pointeur)')}
         title={tr('Mode Sélection (Pointeur) [V]')}
       >
@@ -131,8 +97,9 @@ export const CanvasFloatingPalette: React.FC<CanvasFloatingPaletteProps> = ({
       {/* Pan / Move */}
       <button
         type="button"
-        className="btn btn-ghost btn-sm"
-        onClick={() => resetViewport()}
+        className={`btn btn-ghost btn-sm ${isPanActive ? 'active' : ''}`}
+        onClick={() => setCanvasToolMode('pan')}
+        aria-pressed={isPanActive}
         aria-label={tr('Déplacer le canevas (Pan)')}
         title={tr('Déplacer le canevas (Glisser avec clic gauche) [H]')}
       >
@@ -153,73 +120,84 @@ export const CanvasFloatingPalette: React.FC<CanvasFloatingPaletteProps> = ({
 
       <div className="palette-divider" role="separator" />
 
-      {/* Graph Layout Selector Trigger */}
-      <div className="palette-layout-wrapper" ref={dropdownRef}>
+      {/* Zoom Out */}
+      <button
+        type="button"
+        className="btn btn-ghost btn-sm"
+        onClick={() => applyCenteredZoom((viewport?.zoom || 1) * 0.8)}
+        aria-label={tr('Zoom arrière')}
+        title={tr('Zoom arrière (-)')}
+      >
+        <ZoomOut size={14} />
+      </button>
+
+      {/* Scale Selector (10% - 1000%) */}
+      <div className="palette-scale-wrap" ref={scaleRef}>
         <button
           type="button"
-          className={`btn btn-ghost btn-sm ${isLayoutMenuOpen ? 'active' : ''}`}
-          onClick={() => setIsLayoutMenuOpen(!isLayoutMenuOpen)}
-          aria-haspopup="true"
-          aria-expanded={isLayoutMenuOpen}
-          aria-label={tr('Choisir la disposition du graphe')}
-          title={tr('Changer la disposition du graphe (Actif : {layout})', { layout: activeLayoutLabel })}
+          className={`btn btn-ghost btn-sm palette-scale-trigger font-mono ${isScaleOpen ? 'active' : ''}`}
+          onClick={() => setIsScaleOpen((prev) => !prev)}
+          aria-expanded={isScaleOpen}
+          aria-label={tr('Échelle de zoom (10% – 1000%)')}
+          title={tr('Choisir l\'échelle du graphe (10% à 1000%)')}
         >
-          <LayoutGrid size={14} className="text-accent" />
+          <span>{currentScalePercent}%</span>
         </button>
 
-        {isLayoutMenuOpen && (
-          <div className="palette-layout-dropdown" role="menu" aria-label={tr('Dispositions du graphe')}>
-            <div className="palette-layout-header">
-              <span>{tr('Disposition du Graphe')}</span>
-            </div>
-            {LAYOUT_OPTIONS.map((opt) => {
-              const isCurrent = activeLayout === opt.key;
-              return (
+        {isScaleOpen && (
+          <div
+            className="palette-scale-popover"
+            role="dialog"
+            aria-label={tr('Échelle de zoom (10% – 1000%)')}
+            onMouseDown={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+          >
+            <div className="palette-scale-header">
+              <span className="palette-scale-title">{tr('Échelle du graphe')}</span>
+              <div className="palette-scale-actions">
+                <span className="palette-scale-badge font-mono">{currentScalePercent}%</span>
                 <button
-                  key={opt.key}
                   type="button"
-                  className={`palette-layout-item ${isCurrent ? 'active' : ''}`}
-                  role="menuitem"
+                  className="btn btn-secondary btn-xs"
                   onClick={() => {
-                    applyLayout(opt.key);
-                    setIsLayoutMenuOpen(false);
+                    resetViewport();
+                    setIsScaleOpen(false);
                   }}
                 >
-                  <span className="palette-layout-icon">{opt.icon}</span>
-                  <div className="palette-layout-text">
-                    <span className="palette-layout-title">{tr(opt.labelFr)}</span>
-                    <span className="palette-layout-desc">{tr(opt.descFr)}</span>
-                  </div>
-                  {isCurrent && <Check size={12} className="text-accent" />}
+                  {tr('Ajuster')}
                 </button>
-              );
-            })}
+              </div>
+            </div>
+
+            <div className="palette-scale-slider-row">
+              <span className="palette-scale-bound font-mono">10%</span>
+              <input
+                type="range"
+                className="modern-horizontal-slider"
+                min={10}
+                max={1000}
+                step={1}
+                value={Math.min(Math.max(currentScalePercent, 10), 1000)}
+                onChange={(e) => applyCenteredZoom(Number(e.target.value) / 100)}
+                onMouseDown={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+                aria-label={tr('Curseur d\'échelle de zoom')}
+              />
+              <span className="palette-scale-bound font-mono">1000%</span>
+            </div>
           </div>
         )}
       </div>
-
-      <div className="palette-divider" role="separator" />
 
       {/* Zoom In */}
       <button
         type="button"
         className="btn btn-ghost btn-sm"
-        onClick={() => zoomBy(1.2)}
+        onClick={() => applyCenteredZoom((viewport?.zoom || 1) * 1.25)}
         aria-label={tr('Zoom avant')}
         title={tr('Zoom avant (+)')}
       >
         <ZoomIn size={14} />
-      </button>
-
-      {/* Zoom Out */}
-      <button
-        type="button"
-        className="btn btn-ghost btn-sm"
-        onClick={() => zoomBy(0.8)}
-        aria-label={tr('Zoom arrière')}
-        title={tr('Zoom arrière (-)')}
-      >
-        <ZoomOut size={14} />
       </button>
 
       {/* Fit / Reset */}
@@ -233,56 +211,22 @@ export const CanvasFloatingPalette: React.FC<CanvasFloatingPaletteProps> = ({
         <Maximize2 size={14} />
       </button>
 
-      <div className="palette-divider" role="separator" />
-
-      {/* Impact View Toggle */}
-      <button
-        type="button"
-        className={`btn btn-ghost btn-sm palette-chip-btn ${isImpactView ? 'active' : ''}`}
-        onClick={onToggleImpactView}
-        aria-pressed={isImpactView}
-        aria-label={tr('Vue Impact : {n} sur {total} nœuds', { n: nodes.length, total: totalCaseNodes || 100 })}
-        title={tr('Basculer entre la vue d\'ensemble (100 nœuds) et la vue restreinte de préjudice (35 nœuds)')}
-      >
-        <Sparkles size={14} className={isImpactView ? 'text-accent' : 'text-muted'} />
-        <span className="font-mono text-xs">
-          {nodes.length}/{totalCaseNodes || 100}
-        </span>
-      </button>
-
-      {/* Label Density Mode Selector (Anti-crowding) */}
-      <button
-        type="button"
-        className={`btn btn-ghost btn-sm palette-chip-btn ${labelMode !== 'all' ? 'active' : ''}`}
-        onClick={handleCycleLabelMode}
-        aria-label="Densité des libellés du graphe"
-        title={`Mode d'affichage des libellés : ${
-          labelMode === 'smart'
-            ? 'Intelligent (Cibles clés & Survol)'
-            : labelMode === 'all'
-            ? 'Tous les libellés affichés'
-            : 'Épuré (Nœuds seuls / Au clic)'
-        } [Cliquer pour changer]`}
-      >
-        <Tag size={13} className={labelMode === 'smart' ? 'text-accent' : 'text-muted'} />
-        <span className="text-xs" style={{ fontWeight: 600 }}>
-          {labelMode === 'smart' ? 'Survol' : labelMode === 'all' ? 'Tous' : 'Épuré'}
-        </span>
-      </button>
-
       {/* SNA Launcher */}
       {onToggleSna && (
-        <button
-          type="button"
-          className={`btn btn-ghost btn-sm palette-chip-btn ${isSnaOpen ? 'active' : ''}`}
-          onClick={onToggleSna}
-          aria-pressed={isSnaOpen}
-          aria-label={tr('Analyse Réseau SNA (16 algorithmes graphiques)')}
-          title={tr('Ouvrir le panneau d\'analyse de centralité et détection de communautés (SNA)')}
-        >
-          <BrainCircuit size={14} className={isSnaOpen ? 'text-accent' : 'text-muted'} />
-          <span className="text-xs">SNA</span>
-        </button>
+        <>
+          <div className="palette-divider" role="separator" />
+          <button
+            type="button"
+            className={`btn btn-ghost btn-sm palette-chip-btn ${isSnaOpen ? 'active' : ''}`}
+            onClick={onToggleSna}
+            aria-pressed={isSnaOpen}
+            aria-label={tr('Analyse Réseau SNA (16 algorithmes graphiques)')}
+            title={tr('Ouvrir le panneau d\'analyse de centralité et détection de communautés (SNA)')}
+          >
+            <BrainCircuit size={14} className={isSnaOpen ? 'text-accent' : 'text-muted'} />
+            <span className="text-xs">SNA</span>
+          </button>
+        </>
       )}
     </nav>
   );

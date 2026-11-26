@@ -39,6 +39,7 @@
   --color-accent-border: rgba(37, 99, 235, 0.4);
   --color-accent-text: #60a5fa;
   --color-text-on-accent: #ffffff;
+  --color-surface-document: #ffffff;
 
   /* Four Semantic Status Colors (Status Only) */
   --color-status-success: #10b981;
@@ -61,12 +62,12 @@
   --color-status-info-border: rgba(2, 132, 199, 0.35);
   --color-status-info-text: #38bdf8;
 
-  /* Five Forensic Layer Colors (Decision D1 — distinct from status & neutral) */
-  --color-layer-1-verified: #14b8a6;
+  /* Five Forensic Layer Colors (Synced with registry.json; HYPOTHESIS = Red) */
+  --color-layer-1-verified: #10b981;
   --color-layer-2-osint: #06b6d4;
-  --color-layer-3-infra: #6366f1;
-  --color-layer-4-hypothesis: #a855f7;
-  --color-layer-5-flows: #d97706;
+  --color-layer-3-infra: #8b5cf6;
+  --color-layer-4-hypothesis: #ef4444;
+  --color-layer-5-flows: #f59e0b;
 
   /* Eight Forensic Domain Colors */
   --color-domain-territoire: #10b981;
@@ -78,8 +79,8 @@
   --color-domain-biometrie: #a855f7;
   --color-domain-preuve: #ea580c;
 
-  --color-hypothesis-bg: rgba(168, 85, 247, 0.08);
-  --color-hypothesis-border: rgba(168, 85, 247, 0.35);
+  --color-hypothesis-bg: rgba(239, 68, 68, 0.12);
+  --color-hypothesis-border: rgba(239, 68, 68, 0.45);
 
   /* Typography */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
@@ -147,10 +148,12 @@
   /* Z-index Scale */
   --z-base: 1;
   --z-panel: 10;
-  --z-topbar: 20;
-  --z-header: 20;
-  --z-modal: 40;
-  --z-toast: 50;
+  --z-resizer: 15;
+  --z-topbar: 25;
+  --z-header: 35;
+  --z-popover: 45;
+  --z-modal: 60;
+  --z-toast: 80;
 
   /* Elevation Shadows */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
@@ -196,6 +199,7 @@
   --color-accent-border: rgba(29, 78, 216, 0.3);
   --color-accent-text: #1d4ed8;
   --color-text-on-accent: #ffffff;
+  --color-surface-document: #ffffff;
 
   --color-status-success: #047857;
   --color-status-success-bg: rgba(4, 120, 87, 0.1);
@@ -217,14 +221,14 @@
   --color-status-info-border: rgba(3, 105, 161, 0.3);
   --color-status-info-text: #075985;
 
-  --color-layer-1-verified: #0f766e;
+  --color-layer-1-verified: #047857;
   --color-layer-2-osint: #0e7490;
-  --color-layer-3-infra: #4338ca;
-  --color-layer-4-hypothesis: #7e22ce;
+  --color-layer-3-infra: #6d28d9;
+  --color-layer-4-hypothesis: #dc2626;
   --color-layer-5-flows: #b45309;
 
-  --color-hypothesis-bg: rgba(126, 34, 206, 0.08);
-  --color-hypothesis-border: rgba(126, 34, 206, 0.3);
+  --color-hypothesis-bg: rgba(220, 38, 38, 0.1);
+  --color-hypothesis-border: rgba(220, 38, 38, 0.4);
 
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);

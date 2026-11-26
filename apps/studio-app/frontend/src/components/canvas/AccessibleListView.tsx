@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useGraphStore } from '../../store/useGraphStore';
+import { computeTabScopedGraph } from '../../utils/tabScope';
 import { useI18n } from '../../context/I18nContext';
 import { getRelationLabel } from '../../i18n/phrases/relations';
 import { NodeIcon } from './NodeIcon';
@@ -9,47 +10,43 @@ import type { RegistryData } from '../../types/registry';
 const registry = registryDataRaw as unknown as RegistryData;
 
 export const AccessibleListView: React.FC = () => {
-  const { nodes, edges, selectedNodeId, selectNode, openContextMenu } = useGraphStore();
-  const { tr, trLabel, label, dir, locale } = useI18n();
+  const {
+    nodes: allNodes,
+    edges: allEdges,
+    activeLayers,
+    tabs,
+    activeTabId,
+    isImpactView,
+    selectedNodeId,
+    selectNode,
+    openContextMenu,
+  } = useGraphStore();
+  const { tr, trLabel, label, locale } = useI18n();
   const [activeTab, setActiveTab] = useState<'nodes' | 'edges'>('nodes');
 
-  const tableStyle: React.CSSProperties = {
-    width: '100%',
-    borderCollapse: 'collapse',
-    fontSize: 'var(--text-sm)',
-    textAlign: dir === 'rtl' ? 'right' : 'left',
-  };
+  const currentWorkspaceTab = useMemo(
+    () => tabs.find((t) => t.id === activeTabId) ?? null,
+    [tabs, activeTabId]
+  );
 
-  const thStyle: React.CSSProperties = { padding: 'var(--space-2)' };
+  const { scopedNodes: nodes, scopedEdges: edges } = useMemo(
+    () => computeTabScopedGraph(allNodes, allEdges, currentWorkspaceTab, activeLayers, isImpactView),
+    [allNodes, allEdges, currentWorkspaceTab, activeLayers, isImpactView]
+  );
 
   return (
     <div
+      className="accessible-list-shell"
       role="region"
       aria-label={tr('Tableau des entités et relations')}
-      style={{
-        width: '100%',
-        height: '100%',
-        overflowY: 'auto',
-        backgroundColor: 'var(--color-bg-canvas)',
-        padding: 'var(--space-4)',
-      }}
     >
-      <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
+      <div className="accessible-list-tabs" role="tablist">
         <button
           type="button"
           role="tab"
           aria-selected={activeTab === 'nodes'}
+          className={`btn btn-sm ${activeTab === 'nodes' ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => setActiveTab('nodes')}
-          style={{
-            padding: 'var(--space-2) var(--space-4)',
-            backgroundColor: activeTab === 'nodes' ? 'var(--color-accent-primary)' : 'var(--color-bg-surface)',
-            color: activeTab === 'nodes' ? 'var(--color-text-on-accent)' : 'var(--color-text-secondary)',
-            border: '1px solid var(--color-border-default)',
-            borderRadius: 'var(--radius-sm)',
-            cursor: 'pointer',
-            fontSize: 'var(--text-sm)',
-            fontWeight: 600,
-          }}
         >
           {tr('Entités')} ({nodes.length})
         </button>
@@ -57,112 +54,95 @@ export const AccessibleListView: React.FC = () => {
           type="button"
           role="tab"
           aria-selected={activeTab === 'edges'}
+          className={`btn btn-sm ${activeTab === 'edges' ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => setActiveTab('edges')}
-          style={{
-            padding: 'var(--space-2) var(--space-4)',
-            backgroundColor: activeTab === 'edges' ? 'var(--color-accent-primary)' : 'var(--color-bg-surface)',
-            color: activeTab === 'edges' ? 'var(--color-text-on-accent)' : 'var(--color-text-secondary)',
-            border: '1px solid var(--color-border-default)',
-            borderRadius: 'var(--radius-sm)',
-            cursor: 'pointer',
-            fontSize: 'var(--text-sm)',
-            fontWeight: 600,
-          }}
         >
           {tr('Relations')} ({edges.length})
         </button>
       </div>
 
-      {activeTab === 'nodes' ? (
-        nodes.length === 0 ? (
-          <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>{tr('Aucune entité trouvée')}</p>
+      <div className="accessible-list-scroll">
+        {activeTab === 'nodes' ? (
+          nodes.length === 0 ? (
+            <p className="accessible-list-empty">{tr('Aucune entité trouvée')}</p>
+          ) : (
+            <table className="accessible-list-table">
+              <thead>
+                <tr>
+                  <th>{tr('Type')}</th>
+                  <th>{tr('Libellé')}</th>
+                  <th>{tr('Couche')}</th>
+                  <th>{tr('Confiance')}</th>
+                  <th>{tr('Actions')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {nodes.map((node) => {
+                  const isSelected = selectedNodeId === node.id;
+                  const typeDef = registry.node_types[node.type];
+                  const layerDef = registry.layers[node.layer];
+                  return (
+                    <tr
+                      key={node.id}
+                      onClick={() => selectNode(node.id)}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        selectNode(node.id);
+                        openContextMenu(e.clientX, e.clientY, node.id);
+                      }}
+                      className={isSelected ? 'is-selected' : ''}
+                    >
+                      <td>
+                        <div className="accessible-list-type-cell">
+                          <NodeIcon name={typeDef?.icon || 'help-circle'} size={15} />
+                          <span>{label(typeDef, node.type)}</span>
+                        </div>
+                      </td>
+                      <td className="accessible-list-label-cell">{trLabel(node.label)}</td>
+                      <td>
+                        <span
+                          className="accessible-list-layer-badge font-mono"
+                          style={{
+                            borderColor: layerDef?.color || 'var(--color-border-default)',
+                            color: layerDef?.color,
+                          }}
+                        >
+                          {label(layerDef, node.layer)}
+                        </span>
+                      </td>
+                      <td className="font-mono">
+                        {node.confidence !== null ? `${Math.round(node.confidence * 100)}%` : '—'}
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-xs"
+                          aria-label={tr('Inspecter {label}', { label: trLabel(node.label) })}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openContextMenu(e.clientX || 200, e.clientY || 200, node.id);
+                          }}
+                        >
+                          {tr('Actions')}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )
+        ) : edges.length === 0 ? (
+          <p className="accessible-list-empty">{tr('Aucune relation trouvée')}</p>
         ) : (
-          <table style={tableStyle}>
+          <table className="accessible-list-table">
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--color-border-default)', color: 'var(--color-text-muted)' }}>
-                <th style={thStyle}>{tr('Type')}</th>
-                <th style={thStyle}>{tr('Libellé')}</th>
-                <th style={thStyle}>{tr('Couche')}</th>
-                <th style={thStyle}>{tr('Confiance')}</th>
-                <th style={thStyle}>{tr('Actions')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {nodes.map((node) => {
-                const isSelected = selectedNodeId === node.id;
-                const typeDef = registry.node_types[node.type];
-                const layerDef = registry.layers[node.layer];
-                return (
-                  <tr
-                    key={node.id}
-                    onClick={() => selectNode(node.id)}
-                    style={{
-                      borderBottom: '1px solid var(--color-border-subtle)',
-                      backgroundColor: isSelected ? 'var(--color-accent-subtle)' : 'transparent',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <td style={{ padding: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                      <NodeIcon name={typeDef?.icon || 'help-circle'} size={16} />
-                      <span>{label(typeDef, node.type)}</span>
-                    </td>
-                    <td style={{ padding: 'var(--space-2)', fontWeight: 600 }}>{trLabel(node.label)}</td>
-                    <td style={{ padding: 'var(--space-2)' }}>
-                      <span
-                        style={{
-                          padding: '2px 6px',
-                          borderRadius: 'var(--radius-sm)',
-                          fontSize: 'var(--text-xs)',
-                          fontFamily: 'var(--font-mono)',
-                          backgroundColor: 'var(--color-bg-surface)',
-                          border: `1px solid ${layerDef?.color || 'var(--color-border-default)'}`,
-                          color: layerDef?.color,
-                        }}
-                      >
-                        {label(layerDef, node.layer)}
-                      </span>
-                    </td>
-                    <td style={{ padding: 'var(--space-2)', fontFamily: 'var(--font-mono)' }}>
-                      {node.confidence !== null ? `${Math.round(node.confidence * 100)}%` : '—'}
-                    </td>
-                    <td style={{ padding: 'var(--space-2)' }}>
-                      <button
-                        type="button"
-                        aria-label={tr('Inspecter {label}', { label: trLabel(node.label) })}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openContextMenu(e.clientX || 200, e.clientY || 200, node.id);
-                        }}
-                        style={{
-                          padding: '2px 8px',
-                          backgroundColor: 'var(--color-bg-elevated)',
-                          border: '1px solid var(--color-border-default)',
-                          borderRadius: 'var(--radius-sm)',
-                          color: 'var(--color-text-secondary)',
-                          cursor: 'pointer',
-                          fontSize: 'var(--text-xs)',
-                        }}
-                      >
-                        {tr('Actions')}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )
-      ) : (
-        edges.length === 0 ? (
-          <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-sm)' }}>{tr('Aucune relation trouvée')}</p>
-        ) : (
-          <table style={tableStyle}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--color-border-default)', color: 'var(--color-text-muted)' }}>
-                <th style={thStyle}>{tr('Type Relation')}</th>
-                <th style={thStyle}>{tr('Source')}</th>
-                <th style={thStyle}>{tr('Cible')}</th>
-                <th style={thStyle}>{tr('Couche')}</th>
+              <tr>
+                <th>{tr('Type Relation')}</th>
+                <th>{tr('Source')}</th>
+                <th>{tr('Cible')}</th>
+                <th>{tr('Couche')}</th>
               </tr>
             </thead>
             <tbody>
@@ -172,20 +152,18 @@ export const AccessibleListView: React.FC = () => {
                 const relDef = registry.relation_types?.[edge.type];
                 const layerDef = registry.layers[edge.layer];
                 return (
-                  <tr key={edge.id} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
-                    <td style={{ padding: 'var(--space-2)' }}>
-                      {getRelationLabel(edge.type, locale) || label(relDef, edge.type)}
-                    </td>
-                    <td style={{ padding: 'var(--space-2)' }}>{srcNode ? trLabel(srcNode.label) : edge.source_id}</td>
-                    <td style={{ padding: 'var(--space-2)' }}>{tgtNode ? trLabel(tgtNode.label) : edge.target_id}</td>
-                    <td style={{ padding: 'var(--space-2)' }}>{label(layerDef, edge.layer)}</td>
+                  <tr key={edge.id}>
+                    <td>{getRelationLabel(edge.type, locale) || label(relDef, edge.type)}</td>
+                    <td>{srcNode ? trLabel(srcNode.label) : edge.source_id}</td>
+                    <td>{tgtNode ? trLabel(tgtNode.label) : edge.target_id}</td>
+                    <td>{label(layerDef, edge.layer)}</td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-        )
-      )}
+        )}
+      </div>
     </div>
   );
 };

@@ -26,8 +26,11 @@ import {
 } from '../../store/useGraphStore';
 import {
   ALGERIA_WILAYAS,
-  getDairasByWilaya,
+  getDairaObjectsByWilaya,
   getCommunesByDaira,
+  searchWilayas,
+  searchDairasByWilaya,
+  searchCommunesByDaira,
 } from '../../utils/algeriaGeo';
 
 const registry = registryDataRaw as unknown as RegistryData;
@@ -37,7 +40,7 @@ export interface AddNodeData {
   label: string;
   layer: LayerId;
   confidence: number;
-  properties: Record<string, any>;
+  properties: Record<string, unknown>;
   x: number;
   y: number;
 }
@@ -91,6 +94,194 @@ const SOCIAL_PLATFORMS = [
   'Autre Réseau',
 ];
 
+const PERSON_JUDICIAL_STATUS_OPTIONS = [
+  { value: 'Suspect', labelFr: 'Suspect / Mis en cause' },
+  { value: 'Victime', labelFr: 'Victime' },
+  { value: 'Témoin', labelFr: 'Témoin' },
+  { value: 'Complice', labelFr: 'Complice / Co-auteur' },
+  { value: 'Prête-nom / Mule', labelFr: 'Prête-nom / Mule' },
+  { value: 'Plaignant', labelFr: 'Plaignant' },
+  { value: 'Tiers', labelFr: 'Tiers / Non qualifié' },
+];
+
+interface GeoSuggestionOption {
+  value: string;
+  label: string;
+  secondary?: string;
+}
+
+interface GeoSuggestionSelectProps {
+  label: string;
+  placeholder: string;
+  value: string;
+  options: GeoSuggestionOption[];
+  onSelect: (value: string) => void;
+}
+
+const GeoSuggestionSelect: React.FC<GeoSuggestionSelectProps> = ({
+  label,
+  placeholder,
+  value,
+  options,
+  onSelect,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  const selectedOption = useMemo(
+    () => options.find((opt) => opt.value === value),
+    [options, value]
+  );
+
+  useEffect(() => {
+    const handleOutside = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+        setQuery('');
+      }
+    };
+    if (isOpen) {
+      document.addEventListener('mousedown', handleOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [isOpen]);
+
+  const filtered = useMemo(() => {
+    const q = query
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+    if (!q) return options;
+    return options.filter((opt) => {
+      const l = opt.label
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+      const s = (opt.secondary || '').toLowerCase();
+      return l.includes(q) || s.includes(query.trim().toLowerCase());
+    });
+  }, [options, query]);
+
+  return (
+    <div ref={wrapperRef} style={{ position: 'relative' }}>
+      <label
+        style={{
+          fontSize: '10px',
+          fontWeight: 600,
+          color: 'var(--color-text-secondary)',
+          display: 'block',
+          marginBottom: '2px',
+        }}
+      >
+        {label}
+      </label>
+      <div
+        onClick={() => setIsOpen(true)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          backgroundColor: 'var(--color-bg-elevated)',
+          border: isOpen
+            ? '1px solid var(--color-accent-primary)'
+            : '1px solid var(--color-border-default)',
+          borderRadius: 'var(--radius-sm)',
+          padding: '3px 6px',
+          cursor: 'pointer',
+        }}
+      >
+        <input
+          type="text"
+          value={isOpen ? query : selectedOption?.label || value}
+          placeholder={placeholder}
+          onFocus={() => {
+            setIsOpen(true);
+            setQuery('');
+          }}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setIsOpen(true);
+          }}
+          style={{
+            flex: 1,
+            minWidth: 0,
+            background: 'transparent',
+            border: 'none',
+            outline: 'none',
+            fontSize: '11px',
+            color: 'var(--color-text-primary)',
+          }}
+        />
+        <ChevronDown size={13} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+      </div>
+      {isOpen && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            marginTop: '2px',
+            maxHeight: '190px',
+            overflowY: 'auto',
+            backgroundColor: 'var(--color-bg-surface)',
+            border: '1px solid var(--color-border-default)',
+            borderRadius: 'var(--radius-sm)',
+            boxShadow: '0 8px 20px rgba(0, 0, 0, 0.45)',
+            zIndex: 60,
+            padding: '2px',
+          }}
+        >
+          {filtered.length === 0 ? (
+            <div style={{ padding: '6px 8px', fontSize: '10.5px', color: 'var(--color-text-muted)' }}>
+              Aucun résultat
+            </div>
+          ) : (
+            filtered.map((opt) => {
+              const isSelected = opt.value === value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    onSelect(opt.value);
+                    setIsOpen(false);
+                    setQuery('');
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                    textAlign: 'start',
+                    padding: '4px 7px',
+                    borderRadius: 'var(--radius-xs)',
+                    border: 'none',
+                    backgroundColor: isSelected ? 'var(--color-accent-subtle)' : 'transparent',
+                    color: isSelected ? 'var(--color-accent-text)' : 'var(--color-text-primary)',
+                    fontSize: '11px',
+                    fontWeight: isSelected ? 700 : 400,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <span>{opt.label}</span>
+                  {opt.secondary && (
+                    <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
+                      {opt.secondary}
+                    </span>
+                  )}
+                </button>
+              );
+            })
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Entity types that naturally require/benefit from photo evidence by default
 const PHOTO_CENTRIC_TYPES = new Set([
   'personne',
@@ -118,7 +309,7 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
 
   // Common Forensic Meta
   const [layer, setLayer] = useState<LayerId>('VERIFIED');
-  const [confidence, setConfidence] = useState(0.85);
+  const [confidence, setConfidence] = useState(1.0);
   const [customAlias, setCustomAlias] = useState('');
 
   // Photographic Evidence (local file or URL)
@@ -134,6 +325,7 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
   const [alias, setAlias] = useState('');
   const [dateNaissance, setDateNaissance] = useState('');
   const [cin, setCin] = useState('');
+  const [personStatus, setPersonStatus] = useState<string>('Suspect');
 
   // Email
   const [emailAddress, setEmailAddress] = useState('');
@@ -179,8 +371,11 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
   // Validation error banner
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  // Sync initial type
+  // Sync initial type & default 100% certainty when opened
   useEffect(() => {
+    if (isOpen) {
+      setConfidence(1.0);
+    }
     if (initialType) {
       setType(initialType);
       const typeDef = registry.node_types[initialType];
@@ -206,12 +401,15 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
 
   // Cascading updates for Daïras and Communes
   const availableDairas = useMemo(() => {
-    return getDairasByWilaya(selectedWilayaCode);
+    return getDairaObjectsByWilaya(selectedWilayaCode);
   }, [selectedWilayaCode]);
 
   useEffect(() => {
-    if (availableDairas.length > 0 && !availableDairas.includes(selectedDaira)) {
-      setSelectedDaira(availableDairas[0] || '');
+    if (
+      availableDairas.length > 0 &&
+      !availableDairas.some((d) => d.name.toLowerCase() === selectedDaira.toLowerCase())
+    ) {
+      setSelectedDaira(availableDairas[0]?.name || '');
     }
   }, [availableDairas, selectedDaira]);
 
@@ -333,7 +531,7 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
     setValidationError(null);
 
     let derivedLabel = '';
-    const properties: Record<string, any> = {
+    const properties: Record<string, unknown> = {
       photo_url: photoUrl.trim() || undefined,
       photo: photoUrl.trim() || undefined,
     };
@@ -393,6 +591,12 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
       properties.alias = alias.trim() || undefined;
       properties.date_naissance = dateNaissance.trim() || undefined;
       properties.cin = cin.trim() || undefined;
+      properties.status_judiciaire = personStatus;
+      properties.role = personStatus.toLowerCase().includes('suspect')
+        ? 'suspect'
+        : personStatus.toLowerCase().includes('victime')
+        ? 'victime'
+        : personStatus.toLowerCase();
     }
     // 5. Véhicule
     else if (type === 'vehicule') {
@@ -430,22 +634,61 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
       properties.url_site = cleanUrl;
       properties.hebergeur = hebergeurSite.trim() || undefined;
     }
-    // 8. Adresse / Territoire (Cascading Wilaya / Daira / Commune)
-    else if (type === 'adresse' || type === 'lieu') {
+    // 8. Territoire Algérien : Wilaya / Daïra / Commune / Adresse / BTS
+    else if (
+      type === 'wilaya' ||
+      type === 'daira' ||
+      type === 'commune' ||
+      type === 'adresse' ||
+      type === 'lieu' ||
+      type === 'antenne_bts'
+    ) {
       const wilayaObj = ALGERIA_WILAYAS.find((w) => w.code === selectedWilayaCode);
       const wilayaName = wilayaObj ? wilayaObj.name : 'Alger';
+      const wilayaAr = wilayaObj ? wilayaObj.nameAr : '';
+      const dairaObj = availableDairas.find((d) => d.name === selectedDaira);
+      const communeObj = availableCommunes.find((c) => c.commune_name_ascii === selectedCommune);
       const cleanRue = rueDetails.trim();
-      
-      derivedLabel = cleanRue
-        ? `${cleanRue}, ${selectedCommune} (${wilayaName})`
-        : `${selectedCommune}, ${selectedDaira} (${wilayaName})`;
 
-      properties.wilaya_code = selectedWilayaCode;
-      properties.wilaya = wilayaName;
-      properties.daira = selectedDaira;
-      properties.commune = selectedCommune;
-      properties.rue = cleanRue || undefined;
-      properties.adresse_complete = derivedLabel;
+      if (type === 'wilaya') {
+        derivedLabel = wilayaObj ? wilayaObj.label : `${selectedWilayaCode} - ${wilayaName}`;
+        properties.code_wilaya = selectedWilayaCode;
+        properties.wilaya_code = selectedWilayaCode;
+        properties.wilaya = wilayaName;
+        properties.nom_fr = wilayaName;
+        properties.nom_ar = wilayaAr || undefined;
+      } else if (type === 'daira') {
+        derivedLabel = `${selectedDaira} (${wilayaName})`;
+        properties.code_wilaya = selectedWilayaCode;
+        properties.wilaya_code = selectedWilayaCode;
+        properties.wilaya = wilayaName;
+        properties.daira = selectedDaira;
+        properties.nom_fr = selectedDaira;
+        properties.nom_ar = dairaObj?.nameAr || undefined;
+      } else if (type === 'commune') {
+        derivedLabel = cleanRue
+          ? `${cleanRue}, ${selectedCommune} (${wilayaName})`
+          : `${selectedCommune} (${wilayaName})`;
+        properties.id_commune = communeObj?.id;
+        properties.code_wilaya = selectedWilayaCode;
+        properties.wilaya_code = selectedWilayaCode;
+        properties.wilaya = wilayaName;
+        properties.daira = selectedDaira;
+        properties.commune = selectedCommune;
+        properties.nom_fr = selectedCommune;
+        properties.nom_ar = communeObj?.commune_name || undefined;
+        properties.rue = cleanRue || undefined;
+      } else {
+        derivedLabel = cleanRue
+          ? `${cleanRue}, ${selectedCommune} (${wilayaName})`
+          : `${selectedCommune}, ${selectedDaira} (${wilayaName})`;
+        properties.wilaya_code = selectedWilayaCode;
+        properties.wilaya = wilayaName;
+        properties.daira = selectedDaira;
+        properties.commune = selectedCommune;
+        properties.rue = cleanRue || undefined;
+        properties.adresse_complete = derivedLabel;
+      }
     }
     // 9. Autre / Générique
     else {
@@ -1042,7 +1285,42 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
             >
               <div style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <User size={14} />
-                État-Civil &amp; Identité de la Personne
+                État-Civil &amp; Qualification dans l'Enquête
+              </div>
+              <div>
+                <label style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: '4px' }}>
+                  {tr('Qualification judiciaire (Suspect / Victime / Témoin) :')}
+                </label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                  {PERSON_JUDICIAL_STATUS_OPTIONS.map((opt) => {
+                    const isSelected = personStatus === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setPersonStatus(opt.value)}
+                        style={{
+                          fontSize: '10.5px',
+                          fontWeight: isSelected ? 700 : 500,
+                          padding: '3px 8px',
+                          borderRadius: '12px',
+                          border: isSelected
+                            ? '1px solid var(--color-accent-primary)'
+                            : '1px solid var(--color-border-default)',
+                          backgroundColor: isSelected
+                            ? 'var(--color-accent-subtle)'
+                            : 'var(--color-bg-elevated)',
+                          color: isSelected
+                            ? 'var(--color-accent-text)'
+                            : 'var(--color-text-secondary)',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {opt.labelFr}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div>
@@ -1395,8 +1673,13 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
             </div>
           )}
 
-          {/* 8. ADRESSE / LIEU / TERRITOIRE (CASCADING 58 WILAYAS -> DAÏRAS -> COMMUNES) */}
-          {(type === 'adresse' || type === 'lieu' || type === 'antenne_bts') && (
+          {/* 8. TERRITOIRE ALGÉRIEN (WILAYA -> DAÏRA -> COMMUNE AVEC SUGGESTIONS) */}
+          {(type === 'wilaya' ||
+            type === 'daira' ||
+            type === 'commune' ||
+            type === 'adresse' ||
+            type === 'lieu' ||
+            type === 'antenne_bts') && (
             <div
               style={{
                 padding: '10px',
@@ -1410,107 +1693,81 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
             >
               <div style={{ fontSize: '11px', fontWeight: 700, color: '#eab308', display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <MapPin size={14} />
-                Division Territoriale Officielle (58 Wilayas d'Algérie)
+                Division Territoriale Officielle (58 Wilayas · 548 Daïras · 1 541 Communes)
               </div>
 
-              {/* 3 Cascading Selectors: Wilaya -> Daïra -> Commune */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: '6px' }}>
-                <div>
-                  <label style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px' }}>
-                    1. Wilaya (58) * :
-                  </label>
-                  <select
-                    value={selectedWilayaCode}
-                    onChange={(e) => setSelectedWilayaCode(e.target.value)}
-                    style={{
-                      width: '100%',
-                      fontSize: '11px',
-                      padding: '4px 6px',
-                      backgroundColor: 'var(--color-bg-elevated)',
-                      border: '1px solid var(--color-border-default)',
-                      borderRadius: 'var(--radius-sm)',
-                      color: 'var(--color-text-primary)',
-                    }}
-                  >
-                    {ALGERIA_WILAYAS.map((w) => (
-                      <option key={w.code} value={w.code}>
-                        {w.label} ({w.nameAr})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px' }}>
-                    2. Daïra * :
-                  </label>
-                  <select
-                    value={selectedDaira}
-                    onChange={(e) => setSelectedDaira(e.target.value)}
-                    style={{
-                      width: '100%',
-                      fontSize: '11px',
-                      padding: '4px 6px',
-                      backgroundColor: 'var(--color-bg-elevated)',
-                      border: '1px solid var(--color-border-default)',
-                      borderRadius: 'var(--radius-sm)',
-                      color: 'var(--color-text-primary)',
-                    }}
-                  >
-                    {availableDairas.map((d) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px' }}>
-                    3. Commune * :
-                  </label>
-                  <select
-                    value={selectedCommune}
-                    onChange={(e) => setSelectedCommune(e.target.value)}
-                    style={{
-                      width: '100%',
-                      fontSize: '11px',
-                      padding: '4px 6px',
-                      backgroundColor: 'var(--color-bg-elevated)',
-                      border: '1px solid var(--color-border-default)',
-                      borderRadius: 'var(--radius-sm)',
-                      color: 'var(--color-text-primary)',
-                    }}
-                  >
-                    {availableCommunes.map((c) => (
-                      <option key={c.id} value={c.commune_name_ascii}>
-                        {c.commune_name_ascii} ({c.commune_name})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px' }}>
-                  Rue, Numéro, Bâtiment / Repère (Optionnel) :
-                </label>
-                <input
-                  type="text"
-                  value={rueDetails}
-                  onChange={(e) => setRueDetails(e.target.value)}
-                  placeholder="ex: 14 Rue Didouche Mourad, Hangar Zone Industrielle..."
-                  style={{
-                    width: '100%',
-                    fontSize: '11px',
-                    padding: '4px 8px',
-                    backgroundColor: 'var(--color-bg-elevated)',
-                    border: '1px solid var(--color-border-default)',
-                    borderRadius: 'var(--radius-sm)',
-                    color: 'var(--color-text-primary)',
-                  }}
+              {/* Guided Cascading Suggestion Selectors */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns:
+                    type === 'wilaya' ? '1fr' : type === 'daira' ? '1fr 1fr' : '1fr 1fr 1fr',
+                  gap: '6px',
+                }}
+              >
+                <GeoSuggestionSelect
+                  label="1. Wilaya (58) * :"
+                  placeholder="Rechercher code ou nom (ex: 16, Alger)..."
+                  value={selectedWilayaCode}
+                  options={searchWilayas('').map((w) => ({
+                    value: w.code,
+                    label: w.label,
+                    secondary: w.nameAr,
+                  }))}
+                  onSelect={(val) => setSelectedWilayaCode(val)}
                 />
+
+                {type !== 'wilaya' && (
+                  <GeoSuggestionSelect
+                    label="2. Daïra * :"
+                    placeholder="Rechercher une daïra..."
+                    value={selectedDaira}
+                    options={searchDairasByWilaya(selectedWilayaCode, '').map((d) => ({
+                      value: d.name,
+                      label: d.name,
+                      secondary: d.nameAr,
+                    }))}
+                    onSelect={(val) => setSelectedDaira(val)}
+                  />
+                )}
+
+                {type !== 'wilaya' && type !== 'daira' && (
+                  <GeoSuggestionSelect
+                    label="3. Commune * :"
+                    placeholder="Rechercher une commune..."
+                    value={selectedCommune}
+                    options={searchCommunesByDaira(selectedWilayaCode, selectedDaira, '').map((c) => ({
+                      value: c.commune_name_ascii,
+                      label: c.commune_name_ascii,
+                      secondary: c.commune_name,
+                    }))}
+                    onSelect={(val) => setSelectedCommune(val)}
+                  />
+                )}
               </div>
+
+              {type !== 'wilaya' && type !== 'daira' && (
+                <div>
+                  <label style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px' }}>
+                    Rue, Numéro, Bâtiment / Repère (Optionnel) :
+                  </label>
+                  <input
+                    type="text"
+                    value={rueDetails}
+                    onChange={(e) => setRueDetails(e.target.value)}
+                    placeholder="ex: 14 Rue Didouche Mourad, Zone Industrielle..."
+                    style={{
+                      width: '100%',
+                      fontSize: '11px',
+                      padding: '4px 8px',
+                      backgroundColor: 'var(--color-bg-elevated)',
+                      border: '1px solid var(--color-border-default)',
+                      borderRadius: 'var(--radius-sm)',
+                      color: 'var(--color-text-primary)',
+                    }}
+                  />
+                </div>
+              )}
             </div>
           )}
 
@@ -1524,6 +1781,9 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
             type !== 'compte_reseau' &&
             type !== 'publication_reseau' &&
             type !== 'site_web' &&
+            type !== 'wilaya' &&
+            type !== 'daira' &&
+            type !== 'commune' &&
             type !== 'adresse' &&
             type !== 'lieu' &&
             type !== 'antenne_bts' && (

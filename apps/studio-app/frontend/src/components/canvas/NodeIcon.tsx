@@ -33,9 +33,12 @@ import {
   Shield,
   ShieldCheck,
   Smartphone,
+  Table,
   Tag,
   User,
   UserCheck,
+  Video,
+  Archive,
   HelpCircle,
 } from 'lucide-react';
 
@@ -48,6 +51,7 @@ interface NodeIconProps {
 
 const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: string; style?: React.CSSProperties }>> = {
   activity: Activity,
+  archive: Archive,
   'arrow-right-left': ArrowRightLeft,
   banknote: Banknote,
   binary: Binary,
@@ -80,9 +84,11 @@ const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: 
   shield: Shield,
   'shield-check': ShieldCheck,
   smartphone: Smartphone,
+  table: Table,
   tag: Tag,
   user: User,
   'user-check': UserCheck,
+  video: Video,
 };
 
 export const NodeIcon: React.FC<NodeIconProps> = ({ name, size = 20, className, style }) => {

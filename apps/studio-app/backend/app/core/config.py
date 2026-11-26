@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     app_env: str = "development"
     actor_id: str = "opj-benali-unauthenticated"
     cors_origin: str = "http://127.0.0.1:5173,http://localhost:5173"
+    upload_dir: str = "/var/lib/athar/uploads"
+    hf_models_dir: str = "/app/models/hf"
+    camel_ner_url: str = "http://camel-ner:8010"
 
     @property
     def cors_origins_list(self) -> list[str]:
